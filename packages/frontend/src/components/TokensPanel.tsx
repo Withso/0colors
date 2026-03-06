@@ -26,7 +26,7 @@ import {
   ContextMenuSubContent,
 } from './ui/context-menu';
 import { Tooltip, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import * as TooltipPrimitive from "@radix-ui/react-tooltip@1.1.8";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +38,7 @@ import {
   AlertDialogTitle,
 } from './ui/alert-dialog';
 import { ScrubberInput } from './ScrubberInput';
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { isTokenNameTaken } from '../utils/nameValidation';
 import { MAX_TOKEN_NAME, MAX_GROUP_NAME, MAX_PROJECT_NAME, MAX_PAGE_NAME, MAX_PALETTE_NAME } from '../utils/textLimits';
 import { Tip } from './Tip';

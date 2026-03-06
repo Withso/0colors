@@ -14,7 +14,7 @@ import { MAX_TOKEN_NAME, MAX_GROUP_NAME, MAX_PAGE_NAME, MAX_THEME_NAME } from '.
 import { isTokenHiddenInTheme } from '../utils/visibility';
 import { evaluateAllTokenAssignments, TokenAssignExportResult } from '../utils/advanced-logic-engine';
 import { tokenColorToNativeCSS } from '../utils/tokenFormatters';
-import * as TooltipPrimitive from "@radix-ui/react-tooltip@1.1.8";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import type { ProjectComputedTokens } from '../utils/computed-tokens';
 
 interface TokenTablePopupProps {

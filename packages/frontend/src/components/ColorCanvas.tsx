@@ -10,7 +10,7 @@ import { Zap, GripVertical, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Tip } from './Tip';
 import { motion, AnimatePresence } from 'motion/react';
 import namer from 'color-namer';
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { isNodeNameTaken } from '../utils/nameValidation';
 import { MAX_NODE_NAME } from '../utils/textLimits';
 import { isNodeHiddenInTheme, toggleVisibilityMap } from '../utils/visibility';

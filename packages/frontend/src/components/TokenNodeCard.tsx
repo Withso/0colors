@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command';
 import { cn } from './ui/utils';
 import { Tip } from './Tip';
-import * as TooltipPrimitive from "@radix-ui/react-tooltip@1.1.8";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { hslToRgb, rgbToHex, hslToOklch } from '../utils/color-conversions';
 import { rgbToHct } from '../utils/hct-utils';
 

@@ -49,7 +49,7 @@ import { hctToRgb, rgbToHct, hctToHex } from './utils/hct-utils';
 import { copyTextToClipboard } from './utils/clipboard';
 import { hslToRgb, rgbToHex, rgbToHsl, hslToOklch as hslToOklchBase, oklchToHsl } from './utils/color-conversions';
 import { getUniqueTokenName, getUniqueNodeName } from './utils/nameValidation';
-import { toast, Toaster } from "sonner@2.0.3";
+import { toast, Toaster } from "sonner";
 import { Tip } from './components/Tip';
 import {
   evaluateChannelLogic,
