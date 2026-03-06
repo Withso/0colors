@@ -1,0 +1,342 @@
+@import "https://cdn.jsdelivr.net/npm/primereact@11/resources/themes/lara-light-blue/theme.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 15px;
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+
+  /* Geist Dark Theme Palette */
+  --geist-bg-000: #000000;
+  --geist-bg-100: #0a0a0a;
+  --geist-bg-200: #111111;
+  --geist-gray-100: #111111;
+  --geist-gray-200: #1a1a1a;
+  --geist-gray-300: #252525;
+  --geist-gray-400: #333333;
+  --geist-gray-500: #454545;
+  --geist-gray-600: #666666;
+  --geist-gray-700: #878787;
+  --geist-gray-800: #a1a1a1;
+  --geist-gray-900: #cfcfcf;
+  --geist-gray-1000: #ededed;
+  --geist-blue-400: #52a8ff;
+  --geist-blue-600: #1e8aff;
+  --geist-blue-700: #0070f3;
+  --geist-blue-900: #0051a8;
+
+  --background: #000000;
+  --foreground: #ededed;
+  --card: #111111;
+  --card-foreground: #ededed;
+  --popover: #111111;
+  --popover-foreground: #ededed;
+  --primary: #ededed;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #ededed;
+  --muted: #1a1a1a;
+  --muted-foreground: #a1a1a1;
+  --accent: #1a1a1a;
+  --accent-foreground: #ededed;
+  --destructive: #e5484d;
+  --destructive-foreground: #ffffff;
+  --border: #333333;
+  --input: #1a1a1a;
+  --input-background: #111111;
+  --switch-background: #454545;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #454545;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.5rem;
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #ededed;
+  --sidebar-primary: #0070f3;
+  --sidebar-primary-foreground: #ededed;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #ededed;
+  --sidebar-border: #333333;
+  --sidebar-ring: #454545;
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #ededed;
+  --card: #111111;
+  --card-foreground: #ededed;
+  --popover: #111111;
+  --popover-foreground: #ededed;
+  --primary: #ededed;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #ededed;
+  --muted: #1a1a1a;
+  --muted-foreground: #a1a1a1;
+  --accent: #1a1a1a;
+  --accent-foreground: #ededed;
+  --destructive: #e5484d;
+  --destructive-foreground: #ffffff;
+  --border: #333333;
+  --input: #1a1a1a;
+  --ring: #454545;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #ededed;
+  --sidebar-primary: #0070f3;
+  --sidebar-primary-foreground: #ededed;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #ededed;
+  --sidebar-border: #333333;
+  --sidebar-ring: #454545;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  html {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* Geist Mono for code elements */
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* Prevent text selection during drag operations */
+  body.dragging,
+  body.dragging *,
+  body.selecting,
+  body.selecting * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+  }
+
+  /* Ensure Radix Tabs content visibility is controlled properly */
+  [data-slot="tabs-content"][data-state="inactive"] {
+    display: none !important;
+  }
+
+  [data-slot="tabs-content"][data-state="active"] {
+    display: flex !important;
+    flex-direction: column;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes goBackFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* Sonner toast overrides for Geist dark theme */
+[data-sonner-toaster] [data-sonner-toast] [data-icon] svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] svg {
+  color: #0070f3 !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] svg {
+  color: #f33 !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="success"],
+[data-sonner-toaster] [data-sonner-toast][data-type="error"],
+[data-sonner-toaster] [data-sonner-toast][data-type="info"],
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"] {
+  background: rgba(26, 26, 26, 0.95) !important;
+  border-color: #2a2a2a !important;
+  color: #ededed !important;
+}
+
+/* ── Diamond Slider Thumb ──────────────────────────────────────────────
+   All color/gamut sliders (.color-slider) and the palette lightness
+   dual-range sliders (.palette-range-slider) share the same rotated-
+   square (diamond) knob style.  !important overrides inline Tailwind
+   pseudo-class utilities applied on the palette range inputs.
+
+   .color-slider thumbs use var(--slider-thumb-color) so the diamond
+   is filled with the current gradient colour at the thumb position.
+   .palette-range-slider thumbs keep a fixed navy fill since they sit
+   on non-gradient utility tracks.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* Ensure the diamond thumb is never clipped */
+.color-slider,
+.palette-range-slider {
+  overflow: visible !important;
+}
+
+/* ── Shared diamond shape (both classes) ──────────────────────────── */
+
+/* WebKit / Blink (Chrome, Edge, Safari, Opera) */
+.color-slider::-webkit-slider-thumb,
+.palette-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 14px !important;
+  height: 14px !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 2px !important;
+  transform: rotate(45deg) !important;
+  cursor: grab !important;
+  margin-top: -3px !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.color-slider::-webkit-slider-thumb:active,
+.palette-range-slider::-webkit-slider-thumb:active {
+  cursor: grabbing !important;
+}
+
+/* Firefox */
+.color-slider::-moz-range-thumb,
+.palette-range-slider::-moz-range-thumb {
+  appearance: none !important;
+  width: 14px !important;
+  height: 14px !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 2px !important;
+  transform: rotate(45deg) !important;
+  cursor: grab !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.color-slider::-moz-range-thumb:active,
+.palette-range-slider::-moz-range-thumb:active {
+  cursor: grabbing !important;
+}
+
+/* ── Color-slider: transparent fill that shows the gradient colour ─ */
+.color-slider::-webkit-slider-thumb {
+  background: var(--slider-thumb-color, transparent) !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+.color-slider::-webkit-slider-thumb:active {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(255, 255, 255, 0.2), 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+.color-slider::-moz-range-thumb {
+  background: var(--slider-thumb-color, transparent) !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+.color-slider::-moz-range-thumb:active {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(255, 255, 255, 0.2), 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── Palette-range-slider: fixed navy fill for utility tracks ────── */
+.palette-range-slider::-webkit-slider-thumb {
+  background: #1a237e !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+}
+.palette-range-slider::-webkit-slider-thumb:active {
+  box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.35), 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+}
+.palette-range-slider::-moz-range-thumb {
+  background: #1a237e !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+}
+.palette-range-slider::-moz-range-thumb:active {
+  box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.35), 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* WebKit slider track — remove default track styling */
+.color-slider::-webkit-slider-runnable-track,
+.palette-range-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* Firefox track */
+.color-slider::-moz-range-track,
+.palette-range-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: transparent;
+}
