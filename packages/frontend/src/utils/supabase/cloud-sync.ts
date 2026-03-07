@@ -380,7 +380,7 @@ export async function getCloudMeta(accessToken: string): Promise<{
       cloudProjectIds,
       isAdmin: data.isAdmin ?? false,
       isTemplateAdmin: data.isTemplateAdmin ?? false,
-      cloudProjectLimit: data.cloudProjectLimit !== undefined ? data.cloudProjectLimit : 2,
+      cloudProjectLimit: data.cloudProjectLimit !== undefined ? data.cloudProjectLimit : 20,
     };
   } catch (e) {
     console.log(`Cloud meta error: ${e}`);
@@ -507,14 +507,14 @@ function handleBeforeUnload() {
   // rely on localStorage dirty state to retry on the next app load.
   try {
     const body = JSON.stringify({ projects: snapshots });
-    
+
     if (body.length < 60000) {
       fetch(`${SERVER_BASE}/sync-batch`, {
         method: 'POST',
         headers: makeHeaders(state.accessToken, true),
         body,
         keepalive: true,
-      }).catch(() => {});
+      }).catch(() => { });
     }
     // For larger payloads, dirty state is persisted in localStorage
     // and will be synced on next app load — no sendBeacon (lacks auth headers).

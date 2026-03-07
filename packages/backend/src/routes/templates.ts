@@ -30,15 +30,24 @@ router.get('/templates', async (c) => {
         const snapshots = await kvMget(snapshotKeys);
 
         // Filter for projects with isTemplate flag (check snapshot.isTemplate or snapshot.project.isTemplate)
-        const templates = projectIds
-            .map((id, idx) => ({
-                projectId: id,
-                name: snapshots[idx]?.project?.name ?? snapshots[idx]?.name ?? 'Untitled',
-                snapshot: snapshots[idx],
-            }))
-            .filter(p => p.snapshot?.isTemplate === true || p.snapshot?.project?.isTemplate === true);
+        const projects = projectIds
+            .map((id, idx) => {
+                const snap = snapshots[idx];
+                return {
+                    id: id,
+                    name: snap?.project?.name ?? snap?.name ?? 'Untitled',
+                    isTemplate: true,
+                    storage_data: snap || {},
+                    // Add an index so the frontend dropdown knows which one is active globally
+                    _origIdx: idx
+                };
+            })
+            .filter(p => p.storage_data?.isTemplate === true || p.storage_data?.project?.isTemplate === true);
 
-        return c.json({ templates });
+        // Re-number the indices after filtering
+        projects.forEach((p, i) => { p._origIdx = i; });
+
+        return c.json({ projects });
     } catch (err: any) {
         console.error('[templates] Error:', err);
         return c.json({ error: err.message || 'Internal server error' }, 500);

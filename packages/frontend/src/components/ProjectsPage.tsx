@@ -80,6 +80,7 @@ interface ProjectsPageProps {
   cloudSyncStatus?: string;
   onForceCloudRefresh?: () => void;
   onOpenAISettings?: () => void;
+  cloudProjectLimit: number;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -159,13 +160,13 @@ function FolderCard({
       : 'Empty project';
 
   // ── Derived palette ──
-  const backDark    = `hsl(${hue}, 42%, 22%)`;
-  const backMid     = `hsl(${hue}, 40%, 18%)`;
-  const frontTop    = `hsla(${hue}, 58%, 52%, 0.82)`;
-  const frontBot    = `hsla(${hue}, 48%, 38%, 0.88)`;
-  const glassEdge   = `hsla(${hue}, 60%, 82%, 0.55)`;
+  const backDark = `hsl(${hue}, 42%, 22%)`;
+  const backMid = `hsl(${hue}, 40%, 18%)`;
+  const frontTop = `hsla(${hue}, 58%, 52%, 0.82)`;
+  const frontBot = `hsla(${hue}, 48%, 38%, 0.88)`;
+  const glassEdge = `hsla(${hue}, 60%, 82%, 0.55)`;
   const glassBorder = `hsla(${hue}, 45%, 68%, 0.30)`;
-  const badgeBg     = `hsla(${hue}, 30%, 88%, 0.18)`;
+  const badgeBg = `hsla(${hue}, 30%, 88%, 0.18)`;
   const badgeBorder = `hsla(${hue}, 35%, 76%, 0.22)`;
 
   // Unique gradient id to avoid SVG conflicts when multiple cards render
@@ -191,9 +192,8 @@ function FolderCard({
   return (
     <div
       ref={innerRef}
-      className={`group relative cursor-pointer transition-all duration-300 ease-out select-none ${
-        isHighlighted ? 'scale-[1.04]' : 'hover:scale-[1.03] hover:-translate-y-1'
-      }`}
+      className={`group relative cursor-pointer transition-all duration-300 ease-out select-none ${isHighlighted ? 'scale-[1.04]' : 'hover:scale-[1.03] hover:-translate-y-1'
+        }`}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -395,6 +395,7 @@ export function ProjectsPage({
   cloudSyncStatus,
   onForceCloudRefresh,
   onOpenAISettings,
+  cloudProjectLimit,
 }: ProjectsPageProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
@@ -436,9 +437,19 @@ export function ProjectsPage({
 
   // Split projects into template, cloud, and local
   const templateProjects = useMemo(() => projects.filter(p => p.isTemplate), [projects]);
-  const cloudProjects = useMemo(() => projects.filter(p => p.isCloud && !p.isTemplate), [projects]);
-  const localProjects = useMemo(() => projects.filter(p => !p.isCloud && !p.isTemplate), [projects]);
-  const canCreateCloudProject = isAuthenticated && (isAdmin || cloudProjects.length < 2);
+  // Always include the sample project in the cloud projects array visually as the first element.
+  const cloudProjects = useMemo(() => {
+    const list = projects.filter(p => p.isCloud && !p.isTemplate);
+    const sampleProj = projects.find(p => p.id === 'sample-project');
+    if (sampleProj && !list.some(p => p.id === 'sample-project')) {
+      return [sampleProj, ...list];
+    }
+    return list;
+  }, [projects]);
+  const localProjects = useMemo(() => projects.filter(p => !p.isCloud && !p.isTemplate && p.id !== 'sample-project'), [projects]);
+  // The 'sample-project' doesn't count towards the user's limit since it's just a read-only viewer.
+  const userCloudProjectCount = cloudProjects.filter(p => p.id !== 'sample-project').length;
+  const canCreateCloudProject = isAuthenticated && (isAdmin || userCloudProjectCount < cloudProjectLimit);
 
   const renderProjectGrid = (projectList: typeof projects) => (
     <div
@@ -591,14 +602,19 @@ export function ProjectsPage({
               <div className="flex items-center gap-2.5">
                 <Cloud className="w-4 h-4 text-[#4488ff]" />
                 <h2 className="text-[15px] text-[#ccc] font-medium">Supabase Cloud</h2>
-                <span
-                  className="text-[11px] px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(68, 136, 255, 0.12)', color: '#6699ff', border: '1px solid rgba(68, 136, 255, 0.15)' }}
-                >
-                  {isAdmin
-                    ? `${cloudProjects.length}`
-                    : `${cloudProjects.length}/2`}
-                </span>
+                {isAuthenticated && !isAdmin && (
+                  <span className="text-[10px] bg-[#1a2a44] text-[#4488ff] px-2 py-0.5 rounded-full font-medium ml-2">
+                    {userCloudProjectCount}/{cloudProjectLimit}
+                  </span>
+                )}
+                {isAdmin && (
+                  <span
+                    className="text-[11px] px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(68, 136, 255, 0.12)', color: '#6699ff', border: '1px solid rgba(68, 136, 255, 0.15)' }}
+                  >
+                    {cloudProjects.length}
+                  </span>
+                )}
                 {cloudSyncStatus === 'syncing' && (
                   <span className="text-[11px] text-[#4488ff] animate-pulse">Syncing...</span>
                 )}

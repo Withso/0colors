@@ -684,8 +684,8 @@ export function generateConversationTitle(firstMessage: string): string {
 // Cloud sync is a secondary layer for authenticated users.
 
 const AI_CONVERSATIONS_KEY = '0colors-ai-conversations';
-export const MAX_CONVERSATIONS = 2;
-export const MAX_MESSAGES_PER_CONVERSATION = 40;
+export const MAX_CONVERSATIONS = 50;
+export const MAX_MESSAGES_PER_CONVERSATION = 250;
 
 /** Trim a single conversation's messages to the limit.
  *  Keeps the first message (for title context) and the most recent messages. */
