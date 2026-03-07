@@ -5,12 +5,14 @@ import { TokenTablePopup } from './components/TokenTablePopup';
 import { DevModePanel } from './components/DevModePanel';
 import { ShortcutsPanel } from './components/ShortcutsPanel';
 import { ProjectsPage } from './components/ProjectsPage';
+import { CommunityPage } from './components/CommunityPage';
+import { PublishModal } from './components/PublishModal';
 import { CodePreview } from './components/CodePreview';
 import { MultiPageExport } from './components/MultiPageExport';
 import { CommandPalette } from './components/CommandPalette';
 import { ColorNode, DesignToken, TokenProject, TokenGroup, CanvasState, Page, Theme, NodeAdvancedLogic, ExpressionToken, ConditionRow, ChannelLogic, TokenAssignmentLogic, DevConfig, createDefaultDevConfig } from './components/types';
 import { Button } from './components/ui/button';
-import { Plus, Share2, Download, Upload, Copy, Palette, Library, ChevronDown, Edit2, Trash2, RotateCcw, ArrowLeft, Search, LayoutGrid, Code, Workflow, RefreshCw, Type, Wand2, Film, Grid, Crown, CircleDot, Ruler, Table, SwatchBook, Undo2, Redo2, Maximize, Locate, Lightbulb, RotateCw, Eye, EyeOff, Tag, Command, BookOpen, Lock, Sparkles, Terminal, User, LogOut } from 'lucide-react';
+import { Plus, Globe, Share2, Download, Upload, Copy, Palette, Library, ChevronDown, Edit2, Trash2, RotateCcw, ArrowLeft, Search, LayoutGrid, Code, Workflow, RefreshCw, Type, Wand2, Film, Grid, Crown, CircleDot, Ruler, Table, SwatchBook, Undo2, Redo2, Maximize, Locate, Lightbulb, RotateCw, Eye, EyeOff, Tag, Command, BookOpen, Lock, Sparkles, Terminal, User, LogOut } from 'lucide-react';
 import { AskAIChat } from './components/AskAIChat';
 import { AISettingsPopup } from './components/AISettingsPopup';
 import {
@@ -59,7 +61,7 @@ import {
   getEffectiveBaseValues,
 } from './utils/advanced-logic-engine';
 import { isAdvancedDraft } from './utils/advanced-draft-registry';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 
 // ── Cloud sync & auth ──
 import { AuthModal } from './components/AuthModal';
@@ -988,8 +990,10 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const viewingProjects = location.pathname === '/projects' || location.pathname === '/';
+  const viewingCommunity = location.pathname.startsWith('/community');
 
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
   const [shareLink, setShareLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -1035,22 +1039,73 @@ export default function App() {
   useEffect(() => {
     // Redirect logic for the root path
     if (location.pathname === '/') {
-      if (!authSession && projects.length <= 1) { // 1 because of sample-project or default empty
-        navigate('/sample-project', { replace: true });
-      } else {
-        navigate('/projects', { replace: true });
-      }
+      navigate('/projects', { replace: true });
       return;
     }
 
-    // Sync URL -> activeProjectId
+    // Sync URL -> activeProjectId / state
     if (location.pathname.startsWith('/project/')) {
       const pid = location.pathname.replace('/project/', '');
       if (activeProjectId !== pid) setActiveProjectId(pid);
     } else if (location.pathname.startsWith('/sample-project')) {
       if (activeProjectId !== 'sample-project') setActiveProjectId('sample-project');
+    } else if (location.pathname === '/community' || location.pathname.startsWith('/community/')) {
+      // Handled by viewingCommunity derived state
     }
   }, [location.pathname, authSession, projects.length, activeProjectId, navigate]);
+
+  const handleRemixProject = async (project: any) => {
+    try {
+      const response = await fetch(`${SERVER_BASE}/community/${project.slug}`);
+      if (!response.ok) throw new Error('Failed to fetch project details');
+      const result = await response.json();
+
+      const newProjectId = importProjectJSON(JSON.stringify(result.data), true);
+
+      if (typeof newProjectId === 'string') {
+        navigate(`/project/${newProjectId}`);
+        toast.success(`Successfully remixed "${project.title}"`);
+      }
+    } catch (err) {
+      console.error('Remix error:', err);
+      toast.error('Failed to remix project');
+    }
+  };
+
+  const handlePublishProject = async (data: { title: string; description: string; allowRemix: boolean; thumbnailDataUrl?: string }) => {
+    if (!authSession) throw new Error('Must be signed in to publish');
+
+    const project = projects.find(p => p.id === activeProjectId);
+    if (!project) throw new Error('Project not found');
+
+    const projectData = exportProjectJSON(activeProjectId);
+
+    const res = await fetch(`${SERVER_BASE}/community/publish`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${publicAnonKey}`,
+        'X-User-Token': authSession.accessToken,
+      },
+      body: JSON.stringify({
+        projectId: activeProjectId,
+        title: data.title,
+        description: data.description,
+        allowRemix: data.allowRemix,
+        thumbnailDataUrl: data.thumbnailDataUrl,
+        data: projectData,
+      }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to publish');
+    }
+
+    toast.success('Project published to community!');
+    // Mark project as published locally if needed
+    setProjects(prev => prev.map(p => p.id === activeProjectId ? { ...p, isPublished: true } : p));
+  };
 
   // Advanced Logic Layer — stored separately from nodes
   const [advancedLogic, setAdvancedLogic] = useState<NodeAdvancedLogic[]>(() => {
@@ -9008,7 +9063,230 @@ export default function App() {
     URL.revokeObjectURL(url);
   }, [allNodes, tokens, groups, projects, canvasStates, pages, themes, advancedLogic]);
 
-  const importProjectJSON = useCallback(() => {
+  const importProjectJSON = useCallback((content?: string, asDuplicate = false): string | void => {
+    const processContent = (fileContent: string): string | void => {
+      try {
+        console.log('📦 Processing import, size:', fileContent?.length);
+
+        if (!fileContent || fileContent.trim() === '') {
+          alert('Error: The file is empty.');
+          return;
+        }
+
+        let imported;
+        try {
+          imported = JSON.parse(fileContent);
+        } catch (parseError) {
+          console.error('❌ JSON parse error:', parseError);
+          alert('Error: The file is not valid JSON.\n\n' + parseError);
+          return;
+        }
+
+        // Validate structure
+        const hasProject = imported?.project || imported?.collection;
+        const hasNodes = Array.isArray(imported?.nodes);
+        const hasTokens = Array.isArray(imported?.tokens);
+        const hasRequiredArrays = hasNodes && hasTokens;
+
+        if (hasProject && hasRequiredArrays) {
+          // ── Run schema migrations ──
+          const importMigration = migrateToLatest({
+            nodes: imported.nodes || [],
+            tokens: imported.tokens || [],
+            groups: imported.groups || [],
+            pages: imported.pages || [],
+            themes: imported.themes || [],
+            schemaVersion: imported.schemaVersion,
+          });
+          if (importMigration.migrated) {
+            imported.nodes = importMigration.data.nodes;
+            imported.tokens = importMigration.data.tokens;
+            imported.groups = importMigration.data.groups;
+            imported.pages = importMigration.data.pages;
+            imported.themes = importMigration.data.themes;
+          }
+
+          const timestamp = Date.now();
+          const newProjectId = `project-${timestamp}`;
+          const importedProject = imported.project || imported.collection;
+          const newProject: TokenProject = {
+            id: newProjectId,
+            name: (importedProject.name || 'Untitled Project') + (asDuplicate ? ' (Copy)' : ' (Imported)'),
+            isExpanded: true,
+            isSample: false,
+            folderColor: importedProject.folderColor ?? Math.floor(Math.random() * 360),
+          };
+
+          // Remapping tables
+          const nodeIdMap = new Map<string, string>();
+          const groupIdMap = new Map<string, string>();
+          const tokenIdMap = new Map<string, string>();
+          const pageIdMap = new Map<string, string>();
+          const themeIdMap = new Map<string, string>();
+
+          (imported.nodes || []).forEach((node: any, i: number) => nodeIdMap.set(node.id, `node-${timestamp}-${i}`));
+          (imported.groups || []).forEach((group: any, i: number) => groupIdMap.set(group.id, `group-${timestamp}-${i}`));
+          (imported.tokens || []).forEach((token: any, i: number) => tokenIdMap.set(token.id, `token-${timestamp}-${i}`));
+
+          // Pages
+          const importedPages = Array.isArray(imported.pages) ? imported.pages : [];
+          let newPages: Page[];
+          if (importedPages.length > 0) {
+            importedPages.forEach((page: any, i: number) => pageIdMap.set(page.id, `page-${timestamp}-p${i}`));
+            newPages = importedPages.map((page: any) => ({
+              ...page,
+              id: pageIdMap.get(page.id)!,
+              projectId: newProjectId,
+            }));
+          } else {
+            const defaultPageId = `page-${timestamp}`;
+            const uniquePageIds = new Set<string>();
+            (imported.nodes || []).forEach((n: any) => { if (n.pageId) uniquePageIds.add(n.pageId); });
+            (imported.groups || []).forEach((g: any) => { if (g.pageId) uniquePageIds.add(g.pageId); });
+            (imported.tokens || []).forEach((t: any) => { if (t.pageId) uniquePageIds.add(t.pageId); });
+            uniquePageIds.forEach(pid => pageIdMap.set(pid, defaultPageId));
+            newPages = [{ id: defaultPageId, name: 'Page 1', projectId: newProjectId, createdAt: timestamp }];
+          }
+
+          // Themes
+          const importedThemes = Array.isArray(imported.themes) ? imported.themes : [];
+          let newThemes: Theme[];
+          if (importedThemes.length > 0) {
+            importedThemes.forEach((theme: any, i: number) => themeIdMap.set(theme.id, `theme-${timestamp}-t${i}`));
+            newThemes = importedThemes.map((theme: any) => ({
+              ...theme,
+              id: themeIdMap.get(theme.id)!,
+              projectId: newProjectId,
+            }));
+          } else {
+            const defaultThemeId = `theme-${timestamp}`;
+            const uniqueThemeIds = new Set<string>();
+            (imported.nodes || []).forEach((n: any) => {
+              if (n.themeOverrides) Object.keys(n.themeOverrides).forEach(k => uniqueThemeIds.add(k));
+              if (n.tokenAssignments) Object.keys(n.tokenAssignments).forEach(k => uniqueThemeIds.add(k));
+              if (n.valueTokenAssignments) Object.keys(n.valueTokenAssignments).forEach(k => uniqueThemeIds.add(k));
+            });
+            (imported.tokens || []).forEach((t: any) => {
+              if (t.themeValues) Object.keys(t.themeValues).forEach(k => uniqueThemeIds.add(k));
+            });
+            uniqueThemeIds.forEach(tid => themeIdMap.set(tid, defaultThemeId));
+            newThemes = [{ id: defaultThemeId, name: 'Default', projectId: newProjectId, createdAt: timestamp, isPrimary: true }];
+          }
+
+          const remapThemeKeys = <T,>(dict: Record<string, T> | undefined): Record<string, T> | undefined => {
+            if (!dict) return dict;
+            const remapped: Record<string, T> = {};
+            for (const [oldId, val] of Object.entries(dict)) {
+              remapped[themeIdMap.get(oldId) || oldId] = val;
+            }
+            return remapped;
+          };
+
+          const newGroups = (imported.groups || []).map((group: any) => ({
+            ...group,
+            id: groupIdMap.get(group.id)!,
+            projectId: newProjectId,
+            pageId: pageIdMap.get(group.pageId) || newPages[0].id,
+            paletteNodeId: group.paletteNodeId ? nodeIdMap.get(group.paletteNodeId) || group.paletteNodeId : undefined,
+          }));
+
+          const newTokens = (imported.tokens || []).map((token: any) => ({
+            ...token,
+            id: tokenIdMap.get(token.id)!,
+            projectId: newProjectId,
+            pageId: pageIdMap.get(token.pageId) || newPages[0].id,
+            groupId: token.groupId ? groupIdMap.get(token.groupId) || null : null,
+            themeValues: remapThemeKeys(token.themeValues),
+            themeVisibility: remapThemeKeys(token.themeVisibility),
+          }));
+
+          const remapTokenAssignments = (assignments: any): any => {
+            if (!assignments) return assignments;
+            const remapped: any = {};
+            for (const [oldThemeId, tokenIds] of Object.entries(assignments)) {
+              const newThemeId = themeIdMap.get(oldThemeId) || oldThemeId;
+              remapped[newThemeId] = Array.isArray(tokenIds)
+                ? (tokenIds as string[]).map(tid => tokenIdMap.get(tid) || tid)
+                : tokenIdMap.get(tokenIds as string) || tokenIds;
+            }
+            return remapped;
+          };
+
+          const newNodes = (imported.nodes || []).map((node: any) => ({
+            ...node,
+            colorSpace: node.colorSpace || 'hsl',
+            id: nodeIdMap.get(node.id)!,
+            projectId: newProjectId,
+            pageId: pageIdMap.get(node.pageId) || newPages[0].id,
+            parentId: node.parentId ? nodeIdMap.get(node.parentId) || null : null,
+            tokenIds: (node.tokenIds || []).map((tid: string) => tokenIdMap.get(tid) || tid),
+            tokenId: node.tokenId ? tokenIdMap.get(node.tokenId) || node.tokenId : node.tokenId,
+            tokenAssignments: remapTokenAssignments(node.tokenAssignments),
+            ownTokenId: node.ownTokenId ? tokenIdMap.get(node.ownTokenId) || node.ownTokenId : node.ownTokenId,
+            valueTokenId: node.valueTokenId ? tokenIdMap.get(node.valueTokenId) || node.valueTokenId : node.valueTokenId,
+            valueTokenAssignments: node.valueTokenAssignments ? remapTokenAssignments(node.valueTokenAssignments) : undefined,
+            tokenGroupId: node.tokenGroupId ? groupIdMap.get(node.tokenGroupId) || node.tokenGroupId : node.tokenGroupId,
+            autoAssignGroupId: node.autoAssignGroupId ? groupIdMap.get(node.autoAssignGroupId) || node.autoAssignGroupId : node.autoAssignGroupId,
+            autoAssignedTokenId: node.autoAssignedTokenId ? tokenIdMap.get(node.autoAssignedTokenId) || node.autoAssignedTokenId : node.autoAssignedTokenId,
+            themeOverrides: remapThemeKeys(node.themeOverrides),
+            themeVisibility: remapThemeKeys(node.themeVisibility),
+          }));
+
+          const newCanvasStates = (imported.canvasState ? [imported.canvasState] : newPages).map(p => ({
+            pan: { x: 0, y: 0 }, zoom: 1,
+            ...p,
+            projectId: newProjectId,
+            pageId: pageIdMap.get(p.id) || p.id,
+          }));
+
+          const importedLogic = Array.isArray(imported.advancedLogic) ? imported.advancedLogic : [];
+          const newLogicEntries = importedLogic
+            .filter((l: any) => nodeIdMap.has(l.nodeId))
+            .map((entry: any) => ({
+              ...entry,
+              nodeId: nodeIdMap.get(entry.nodeId)!,
+              channels: Object.fromEntries(Object.entries(entry.channels || {}).map(([k, ch]: [string, any]) => [k, {
+                ...ch,
+                rows: (ch.rows || []).map((row: any) => ({
+                  ...row, id: `${row.id}-imp-${timestamp}`,
+                  tokens: (row.tokens || []).map((et: any) => ({ ...et, refNodeId: nodeIdMap.get(et.refNodeId) || et.refNodeId, refTokenId: tokenIdMap.get(et.refTokenId) || et.refTokenId }))
+                }))
+              }])),
+              tokenAssignment: entry.tokenAssignment ? {
+                ...entry.tokenAssignment,
+                rows: (entry.tokenAssignment.rows || []).map((row: any) => ({
+                  ...row, id: `${row.id}-imp-${timestamp}`,
+                  tokens: (row.tokens || []).map((et: any) => ({ ...et, refNodeId: nodeIdMap.get(et.refNodeId) || et.refNodeId, refTokenId: tokenIdMap.get(et.refTokenId) || et.refTokenId }))
+                })),
+                fallbackTokenId: tokenIdMap.get(entry.tokenAssignment.fallbackTokenId) || entry.tokenAssignment.fallbackTokenId,
+              } : undefined,
+            }));
+
+          setProjects(prev => [...prev, newProject]);
+          setPages(prev => [...prev, ...newPages]);
+          setThemes(prev => [...prev, ...newThemes]);
+          setGroups(prev => [...prev, ...newGroups]);
+          setTokens(prev => [...prev, ...newTokens]);
+          setAllNodes(prev => [...prev, ...newNodes]);
+          setCanvasStates(prev => [...prev, ...newCanvasStates]);
+          if (newLogicEntries.length > 0) setAdvancedLogic(prev => [...prev, ...newLogicEntries]);
+
+          setHighlightedProjectId(newProjectId);
+          setTimeout(() => setHighlightedProjectId(null), 3000);
+          return newProjectId;
+        } else {
+          alert('Invalid project file format.');
+        }
+      } catch (error) {
+        console.error('❌ Failed to import project:', error);
+        alert('Error importing project: ' + (error instanceof Error ? error.message : String(error)));
+      }
+    };
+
+    if (content) {
+      return processContent(content);
+    }
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json,application/json';
@@ -9017,344 +9295,8 @@ export default function App() {
       if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
-          try {
-            const fileContent = event.target?.result as string;
-            console.log('📦 File loaded, size:', fileContent?.length, 'characters');
-
-            if (!fileContent || fileContent.trim() === '') {
-              alert('Error: The file is empty.');
-              return;
-            }
-
-            let imported;
-            try {
-              imported = JSON.parse(fileContent);
-            } catch (parseError) {
-              console.error('❌ JSON parse error:', parseError);
-              alert('Error: The file is not valid JSON.\n\n' + parseError);
-              return;
-            }
-
-            console.log('📦 RAW JSON:', fileContent.substring(0, 500));
-            console.log('📦 Imported data:', imported);
-            console.log('📦 Type:', typeof imported);
-            console.log('📦 Keys:', imported && typeof imported === 'object' ? Object.keys(imported) : 'N/A');
-            console.log('📦 Has project?', !!imported?.project);
-            console.log('📦 Has collection?', !!imported?.collection);
-            console.log('📦 Has nodes?', Array.isArray(imported?.nodes), '- Count:', imported?.nodes?.length);
-            console.log('📦 Has tokens?', Array.isArray(imported?.tokens), '- Count:', imported?.tokens?.length);
-            console.log('📦 Has groups?', Array.isArray(imported?.groups), '- Count:', imported?.groups?.length);
-
-            // Validate structure - be more lenient for debugging
-            const hasProject = imported?.project || imported?.collection;
-            const hasNodes = Array.isArray(imported?.nodes);
-            const hasTokens = Array.isArray(imported?.tokens);
-            const hasRequiredArrays = hasNodes && hasTokens;
-
-            console.log('🔍 Validation:', { hasProject, hasNodes, hasTokens, hasRequiredArrays });
-
-            if (hasProject && hasRequiredArrays) {
-              // ── Run schema migrations on imported data ──
-              const importMigration = migrateToLatest({
-                nodes: imported.nodes || [],
-                tokens: imported.tokens || [],
-                groups: imported.groups || [],
-                pages: imported.pages || [],
-                themes: imported.themes || [],
-                schemaVersion: imported.schemaVersion,
-              });
-              if (importMigration.migrated) {
-                console.log(`🔄 Import migration: ${importMigration.appliedMigrations.join(', ')}`);
-                imported.nodes = importMigration.data.nodes;
-                imported.tokens = importMigration.data.tokens;
-                imported.groups = importMigration.data.groups;
-                imported.pages = importMigration.data.pages;
-                imported.themes = importMigration.data.themes;
-              }
-
-              const timestamp = Date.now();
-              const newProjectId = `project-${timestamp}`;
-              const importedProject = imported.project || imported.collection;
-              const newProject: TokenProject = {
-                id: newProjectId,
-                name: (importedProject.name || 'Untitled Project') + ' (Imported)',
-                isExpanded: true,
-                isSample: false,
-                folderColor: importedProject.folderColor ?? Math.floor(Math.random() * 360),
-              };
-
-              console.log('Creating new project:', newProject);
-
-              // ── Build ALL ID remapping tables ──
-              const nodeIdMap = new Map<string, string>();
-              const groupIdMap = new Map<string, string>();
-              const tokenIdMap = new Map<string, string>();
-              const pageIdMap = new Map<string, string>();
-              const themeIdMap = new Map<string, string>();
-
-              // Pre-register node IDs first (two-pass for forward references)
-              (imported.nodes || []).forEach((node: any, i: number) => {
-                nodeIdMap.set(node.id, `node-${timestamp}-${i}`);
-              });
-              (imported.groups || []).forEach((group: any, i: number) => {
-                groupIdMap.set(group.id, `group-${timestamp}-${i}`);
-              });
-              (imported.tokens || []).forEach((token: any, i: number) => {
-                tokenIdMap.set(token.id, `token-${timestamp}-${i}`);
-              });
-
-              // ── Pages: import from file or create a default ──
-              const importedPages = Array.isArray(imported.pages) ? imported.pages : [];
-              let newPages: Page[];
-              if (importedPages.length > 0) {
-                importedPages.forEach((page: any, i: number) => {
-                  pageIdMap.set(page.id, `page-${timestamp}-p${i}`);
-                });
-                newPages = importedPages.map((page: any) => ({
-                  ...page,
-                  id: pageIdMap.get(page.id)!,
-                  projectId: newProjectId,
-                }));
-              } else {
-                const defaultPageId = `page-${timestamp}`;
-                // Map all old pageIds found on nodes to this one default page
-                const uniquePageIds = new Set<string>();
-                (imported.nodes || []).forEach((n: any) => { if (n.pageId) uniquePageIds.add(n.pageId); });
-                (imported.groups || []).forEach((g: any) => { if (g.pageId) uniquePageIds.add(g.pageId); });
-                (imported.tokens || []).forEach((t: any) => { if (t.pageId) uniquePageIds.add(t.pageId); });
-                uniquePageIds.forEach(pid => pageIdMap.set(pid, defaultPageId));
-                newPages = [{ id: defaultPageId, name: 'Page 1', projectId: newProjectId, createdAt: timestamp }];
-              }
-
-              // ── Themes: import from file or create a default ──
-              const importedThemes = Array.isArray(imported.themes) ? imported.themes : [];
-              let newThemes: Theme[];
-              if (importedThemes.length > 0) {
-                importedThemes.forEach((theme: any, i: number) => {
-                  themeIdMap.set(theme.id, `theme-${timestamp}-t${i}`);
-                });
-                newThemes = importedThemes.map((theme: any) => ({
-                  ...theme,
-                  id: themeIdMap.get(theme.id)!,
-                  projectId: newProjectId,
-                }));
-              } else {
-                const defaultThemeId = `theme-${timestamp}`;
-                // Map all old themeIds found in data to default theme
-                const uniqueThemeIds = new Set<string>();
-                (imported.nodes || []).forEach((n: any) => {
-                  if (n.themeOverrides) Object.keys(n.themeOverrides).forEach(k => uniqueThemeIds.add(k));
-                  if (n.tokenAssignments) Object.keys(n.tokenAssignments).forEach(k => uniqueThemeIds.add(k));
-                  if (n.valueTokenAssignments) Object.keys(n.valueTokenAssignments).forEach(k => uniqueThemeIds.add(k));
-                });
-                (imported.tokens || []).forEach((t: any) => {
-                  if (t.themeValues) Object.keys(t.themeValues).forEach(k => uniqueThemeIds.add(k));
-                });
-                uniqueThemeIds.forEach(tid => themeIdMap.set(tid, defaultThemeId));
-                newThemes = [{ id: defaultThemeId, name: 'Default', projectId: newProjectId, createdAt: timestamp, isPrimary: true }];
-              }
-
-              // ── Helper: remap theme-keyed dicts ──
-              const remapThemeKeys = <T,>(dict: Record<string, T> | undefined): Record<string, T> | undefined => {
-                if (!dict) return dict;
-                const remapped: Record<string, T> = {};
-                for (const [oldId, val] of Object.entries(dict)) {
-                  remapped[themeIdMap.get(oldId) || oldId] = val;
-                }
-                return remapped;
-              };
-
-              const newGroups = (imported.groups || []).map((group: any) => ({
-                ...group,
-                id: groupIdMap.get(group.id)!,
-                projectId: newProjectId,
-                pageId: pageIdMap.get(group.pageId) || newPages[0].id,
-                paletteNodeId: group.paletteNodeId ? nodeIdMap.get(group.paletteNodeId) || group.paletteNodeId : undefined,
-              }));
-
-              const newTokens = (imported.tokens || []).map((token: any) => ({
-                ...token,
-                id: tokenIdMap.get(token.id)!,
-                projectId: newProjectId,
-                pageId: pageIdMap.get(token.pageId) || newPages[0].id,
-                groupId: token.groupId ? groupIdMap.get(token.groupId) || null : null,
-                themeValues: remapThemeKeys(token.themeValues),
-                themeVisibility: remapThemeKeys(token.themeVisibility),
-              }));
-
-              // ── Helper: remap token assignment objects ──
-              const remapTokenAssignments = (assignments: any): any => {
-                if (!assignments) return assignments;
-                const remapped: any = {};
-                for (const [oldThemeId, tokenIds] of Object.entries(assignments)) {
-                  const newThemeId = themeIdMap.get(oldThemeId) || oldThemeId;
-                  remapped[newThemeId] = Array.isArray(tokenIds)
-                    ? (tokenIds as string[]).map(tid => tokenIdMap.get(tid) || tid)
-                    : tokenIdMap.get(tokenIds as string) || tokenIds;
-                }
-                return remapped;
-              };
-
-              const newNodes = (imported.nodes || []).map((node: any) => {
-                const tokenIds = node.tokenId
-                  ? [tokenIdMap.get(node.tokenId) || node.tokenId]
-                  : (node.tokenIds || []).map((tid: string) => tokenIdMap.get(tid) || tid);
-
-                return {
-                  ...node,
-                  colorSpace: node.colorSpace || 'hsl',
-                  id: nodeIdMap.get(node.id)!,
-                  projectId: newProjectId,
-                  pageId: pageIdMap.get(node.pageId) || newPages[0].id,
-                  parentId: node.parentId ? nodeIdMap.get(node.parentId) || null : null,
-                  tokenIds,
-                  tokenId: node.tokenId ? tokenIdMap.get(node.tokenId) || node.tokenId : node.tokenId,
-                  tokenAssignments: remapTokenAssignments(node.tokenAssignments),
-                  ownTokenId: node.ownTokenId ? tokenIdMap.get(node.ownTokenId) || node.ownTokenId : node.ownTokenId,
-                  valueTokenId: node.valueTokenId ? tokenIdMap.get(node.valueTokenId) || node.valueTokenId : node.valueTokenId,
-                  valueTokenAssignments: node.valueTokenAssignments ? remapTokenAssignments(node.valueTokenAssignments) : undefined,
-                  tokenGroupId: node.tokenGroupId ? groupIdMap.get(node.tokenGroupId) || node.tokenGroupId : node.tokenGroupId,
-                  autoAssignGroupId: node.autoAssignGroupId ? groupIdMap.get(node.autoAssignGroupId) || node.autoAssignGroupId : node.autoAssignGroupId,
-                  autoAssignedTokenId: node.autoAssignedTokenId ? tokenIdMap.get(node.autoAssignedTokenId) || node.autoAssignedTokenId : node.autoAssignedTokenId,
-                  themeOverrides: remapThemeKeys(node.themeOverrides),
-                  themeVisibility: remapThemeKeys(node.themeVisibility),
-                };
-              });
-
-              // ── Canvas states ──
-              const newCanvasStates: CanvasState[] = [];
-              if (imported.canvasState) {
-                newCanvasStates.push({
-                  ...imported.canvasState,
-                  projectId: newProjectId,
-                  pageId: pageIdMap.get(imported.canvasState.pageId) || newPages[0].id,
-                });
-              } else {
-                newPages.forEach(p => {
-                  newCanvasStates.push({ projectId: newProjectId, pageId: p.id, pan: { x: 0, y: 0 }, zoom: 1 });
-                });
-              }
-
-              // ── Advanced logic ──
-              const importedLogic: NodeAdvancedLogic[] = Array.isArray(imported.advancedLogic) ? imported.advancedLogic : [];
-              const newLogicEntries: NodeAdvancedLogic[] = importedLogic
-                .filter((l: any) => nodeIdMap.has(l.nodeId))
-                .map((entry: any) => ({
-                  ...entry,
-                  nodeId: nodeIdMap.get(entry.nodeId)!,
-                  channels: Object.fromEntries(
-                    Object.entries(entry.channels || {}).map(([key, ch]: [string, any]) => [key, {
-                      ...ch,
-                      rows: (ch.rows || []).map((row: any) => ({
-                        ...row,
-                        id: `${row.id}-imp-${timestamp}`,
-                        tokens: (row.tokens || []).map((et: any) => ({
-                          ...et,
-                          refNodeId: et.refNodeId ? nodeIdMap.get(et.refNodeId) || et.refNodeId : et.refNodeId,
-                          refTokenId: et.refTokenId ? tokenIdMap.get(et.refTokenId) || et.refTokenId : et.refTokenId,
-                        })),
-                      })),
-                    }])
-                  ),
-                  tokenAssignment: entry.tokenAssignment ? {
-                    ...entry.tokenAssignment,
-                    rows: (entry.tokenAssignment.rows || []).map((row: any) => ({
-                      ...row,
-                      id: `${row.id}-imp-${timestamp}`,
-                      tokens: (row.tokens || []).map((et: any) => ({
-                        ...et,
-                        refNodeId: et.refNodeId ? nodeIdMap.get(et.refNodeId) || et.refNodeId : et.refNodeId,
-                        refTokenId: et.refTokenId ? tokenIdMap.get(et.refTokenId) || et.refTokenId : et.refTokenId,
-                      })),
-                    })),
-                    fallbackTokenId: entry.tokenAssignment.fallbackTokenId
-                      ? tokenIdMap.get(entry.tokenAssignment.fallbackTokenId) || entry.tokenAssignment.fallbackTokenId
-                      : entry.tokenAssignment.fallbackTokenId,
-                  } : entry.tokenAssignment,
-                  // Theme-specific overrides: remap theme keys and expression refs
-                  themeChannels: entry.themeChannels ? Object.fromEntries(
-                    Object.entries(entry.themeChannels).map(([tid, channels]: [string, any]) => [
-                      themeIdMap.get(tid) || tid,
-                      Object.fromEntries(
-                        Object.entries(channels || {}).map(([key, ch]: [string, any]) => [key, {
-                          ...ch,
-                          rows: (ch.rows || []).map((row: any) => ({
-                            ...row,
-                            id: `${row.id}-imp-${timestamp}`,
-                            tokens: (row.tokens || []).map((et: any) => ({
-                              ...et,
-                              refNodeId: et.refNodeId ? nodeIdMap.get(et.refNodeId) || et.refNodeId : et.refNodeId,
-                              refTokenId: et.refTokenId ? tokenIdMap.get(et.refTokenId) || et.refTokenId : et.refTokenId,
-                            })),
-                          })),
-                        }])
-                      ),
-                    ])
-                  ) : undefined,
-                  themeBaseValues: entry.themeBaseValues ? remapThemeKeys(entry.themeBaseValues) : undefined,
-                  themeTokenAssignment: entry.themeTokenAssignment ? Object.fromEntries(
-                    Object.entries(entry.themeTokenAssignment).map(([tid, ta]: [string, any]) => [
-                      themeIdMap.get(tid) || tid,
-                      {
-                        ...ta,
-                        rows: (ta.rows || []).map((row: any) => ({
-                          ...row,
-                          id: `${row.id}-imp-${timestamp}`,
-                          tokens: (row.tokens || []).map((et: any) => ({
-                            ...et,
-                            refNodeId: et.refNodeId ? nodeIdMap.get(et.refNodeId) || et.refNodeId : et.refNodeId,
-                            refTokenId: et.refTokenId ? tokenIdMap.get(et.refTokenId) || et.refTokenId : et.refTokenId,
-                          })),
-                        })),
-                        fallbackTokenId: ta.fallbackTokenId
-                          ? tokenIdMap.get(ta.fallbackTokenId) || ta.fallbackTokenId
-                          : ta.fallbackTokenId,
-                      },
-                    ])
-                  ) : undefined,
-                }));
-
-              setProjects(prev => {
-                console.log('Adding project to list. Current projects:', prev.length);
-                const updated = [...prev, newProject];
-                console.log('New projects count:', updated.length);
-                return updated;
-              });
-              setPages(prev => [...prev, ...newPages]);
-              setThemes(prev => [...prev, ...newThemes]);
-              setGroups(prev => [...prev, ...newGroups]);
-              setTokens(prev => [...prev, ...newTokens]);
-              setAllNodes(prev => [...prev, ...newNodes]);
-              setCanvasStates(prev => [...prev, ...newCanvasStates]);
-              if (newLogicEntries.length > 0) {
-                setAdvancedLogic(prev => [...prev, ...newLogicEntries]);
-              }
-
-              console.log('✅ Project imported successfully:', newProject.name);
-
-              // Highlight the imported project without switching to it
-              setHighlightedProjectId(newProjectId);
-              setTimeout(() => setHighlightedProjectId(null), 3000);
-            } else {
-              console.error('❌ Invalid JSON structure. Expected project/collection, nodes, and tokens.');
-              const receivedKeys = imported && typeof imported === 'object' ? Object.keys(imported) : [];
-              console.log('❌ Received keys:', receivedKeys);
-              console.log('❌ Validation failed:');
-              console.log('  - Has project/collection?', hasProject);
-              console.log('  - Has nodes array?', hasNodes);
-              console.log('  - Has tokens array?', hasTokens);
-
-              let errorMsg = 'Invalid project file format.\n\n';
-              if (!hasProject) errorMsg += '• Missing "project" object\n';
-              if (!Array.isArray(imported.nodes)) errorMsg += '• Missing or invalid "nodes" array\n';
-              if (!Array.isArray(imported.tokens)) errorMsg += '• Missing or invalid "tokens" array\n';
-
-              alert(errorMsg + '\nPlease make sure you\'re importing a valid project export.');
-            }
-          } catch (error) {
-            console.error('❌ Failed to import project:', error);
-            alert('Error importing project: ' + (error instanceof Error ? error.message : String(error)));
-          }
+          const fileContent = event.target?.result as string;
+          processContent(fileContent);
         };
         reader.readAsText(file);
       }
@@ -10995,1058 +10937,1102 @@ export default function App() {
     );
   }
 
-  // If viewing projects page, show that instead of the app
-  if (viewingProjects) {
-    return (
-      <>
-        <ProjectsPage
-          cloudProjectLimit={2}
-          projects={projects}
-          allNodes={allNodes}
-          tokens={tokens}
-          collections={[]} // Using empty array as we don't have separate collections
-          groups={groups}
-          onSelectProject={handleSelectProject}
-          onCreateProject={handleCreateProject}
-          onDuplicateProject={duplicateProject}
-          onDeleteProject={deleteProject}
-          onImportProject={importProjectJSON}
-          onExportProject={exportProjectJSON}
-          highlightedProjectId={highlightedProjectId}
-          isAuthenticated={!!authSession}
-          isAdmin={!!authSession?.isAdmin}
-          isTemplateAdmin={!!authSession?.isTemplateAdmin}
-          userEmail={authSession?.email}
-          onSignOut={handleSignOut}
-          cloudSyncStatus={cloudSyncStatus}
-          onForceCloudRefresh={handleForceCloudRefresh}
-          onOpenAISettings={() => setShowAISettingsPopup(true)}
-        />
-        {showAISettingsPopup && (
-          <AISettingsPopup
-            onClose={() => setShowAISettingsPopup(false)}
-            onSettingsSaved={handleAISettingsSaved}
-            projectContext={aiProjectContext}
-          />
-        )}
-      </>
-    );
-  }
-
   return (
-    <div className="h-screen flex bg-[#000] p-2 gap-2 overflow-hidden">
-      <Toaster
-        position="bottom-right"
-        theme="dark"
-        toastOptions={{
-          style: {
-            background: 'rgba(26, 26, 26, 0.95)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid #2a2a2a',
-            color: '#ededed',
-            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
-            borderRadius: '8px',
-            fontSize: '13px',
-          },
-        }}
-      />
-      {/* TokensPanel - Floating Island */}
-      <TokensPanel
-        tokens={pageTokens}
-        nodes={nodes}
-        allProjectTokens={allProjectTokens}
-        allProjectNodes={allProjectNodes}
-        projects={projects}
-        pages={pages}
-        groups={groups}
-        activeProjectId={activeProjectId}
-        activePageId={activePageId}
-        activeThemeId={activeThemeId}
-        isPrimaryTheme={isViewingPrimaryTheme}
-        primaryThemeId={primaryTheme?.id}
-        showAllVisible={showAllVisible}
-        onAddToken={addToken}
-        onUpdateToken={updateToken}
-        onDeleteToken={deleteToken}
-        onUpdateProjects={setProjects}
-        onUpdatePages={setPages}
-        onUpdateGroups={setGroups}
-        onExportProject={exportProjectJSON}
-        onImportProject={importProjectJSON}
-        onUpdateNode={updateNode}
-        onDeleteNode={deleteNode}
-        onNavigateToNode={(nodeId) => {
-          setSelectedNodeId(nodeId);
-          setSelectedNodeIds([nodeId]);
-          // Dispatch event for ColorCanvas to handle navigation with animation
-          const event = new CustomEvent('navigateToNode', { detail: { nodeId } });
-          window.dispatchEvent(event);
-        }}
-        onNavigateToProjects={handleBackToProjects}
-        advancedLogic={advancedLogic}
-        cloudSyncStatus={effectiveCloudSyncStatus}
-        lastSyncedAt={activeProjectLastSyncedAt}
-        lastSyncError={lastSyncError}
-        onManualSync={handleManualSync}
-        dirtyCount={cloudDirtyCount}
-        readOnly={false}
-      />
+    <Routes>
+      <Route path="/" element={<Navigate to="/projects" replace />} />
+      <Route path="/projects" element={
+        <>
+          <ProjectsPage
+            cloudProjectLimit={2}
+            projects={projects}
+            allNodes={allNodes}
+            tokens={tokens}
+            collections={[]}
+            groups={groups}
+            onSelectProject={handleSelectProject}
+            onCreateProject={handleCreateProject}
+            onDuplicateProject={duplicateProject}
+            onDeleteProject={deleteProject}
+            onImportProject={importProjectJSON}
+            onExportProject={exportProjectJSON}
+            highlightedProjectId={highlightedProjectId}
+            isAuthenticated={!!authSession}
+            isAdmin={!!authSession?.isAdmin}
+            isTemplateAdmin={!!authSession?.isTemplateAdmin}
+            userEmail={authSession?.email}
+            onSignOut={handleSignOut}
+            cloudSyncStatus={cloudSyncStatus}
+            onForceCloudRefresh={handleForceCloudRefresh}
+            onOpenAISettings={() => setShowAISettingsPopup(true)}
+          />
+          {showAISettingsPopup && (
+            <AISettingsPopup
+              onClose={() => setShowAISettingsPopup(false)}
+              onSettingsSaved={handleAISettingsSaved}
+              projectContext={aiProjectContext}
+            />
+          )}
+        </>
+      } />
+      <Route path="/community" element={
+        <CommunityPage
+          onBack={() => navigate('/projects')}
+          onSelectProject={(slug) => navigate(`/community/${slug}`)}
+          onRemixProject={handleRemixProject}
+          isAuthenticated={!!authSession}
+          onSignIn={() => setShowAuthModal(true)}
+        />
+      } />
+      <Route path="/project/:id" element={<EditorView />} />
+      <Route path="/sample-project" element={<EditorView />} />
+      <Route path="/community/:slug" element={<EditorView isCommunityView={true} />} />
+    </Routes>
+  );
 
-      {/* Right Column - Header + Canvas as separate islands */}
-      <div className="flex-1 flex flex-col gap-2 min-h-0">
-        {/* Top Bar - Floating Island */}
-        <div className="shrink-0 relative bg-[#111] rounded-2xl px-4 h-14 flex items-center justify-between select-none">
-          <>
-            {/* Left: View Mode Switcher + Search */}
-            <div className="flex items-center gap-3">
-              {viewMode === 'export' ? (
-                <button
-                  onClick={() => setViewMode('canvas')}
-                  className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md text-[11px] text-[#555] hover:text-[#aaa] transition-colors cursor-pointer"
-                >
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  <span>Back</span>
-                </button>
-              ) : (
-                <>
-                  {/* View Switcher */}
-                  <div className="flex p-1 bg-[#111] border border-[#333] rounded-lg">
-                    <Tip label="Canvas View" side="bottom">
-                      <button
-                        onClick={() => setViewMode('canvas')}
-                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'canvas'
-                          ? 'bg-[#333] text-[#ededed] shadow-sm'
-                          : 'text-[#666] hover:text-[#a1a1a1]'
-                          }`}
-                      >
-                        <Workflow className="h-4 w-4" />
-                      </button>
-                    </Tip>
-                    <Tip label="Code Preview" side="bottom">
-                      <button
-                        onClick={() => setViewMode('code')}
-                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'code'
-                          ? 'bg-[#333] text-[#ededed] shadow-sm'
-                          : 'text-[#666] hover:text-[#a1a1a1]'
-                          }`}
-                      >
-                        <Code className="h-4 w-4" />
-                      </button>
-                    </Tip>
-                  </div>
+  function EditorView({ isCommunityView = false }: { isCommunityView?: boolean }) {
+    // Use viewingCommunity to avoid lint warning and potentially drive UI logic
+    const _isCommunity = viewingCommunity || isCommunityView;
 
-                  {/* Export button */}
-                  <Tip label="Export Tokens" side="bottom">
-                    <button
-                      onClick={() => setViewMode('export')}
-                      className="w-8 h-8 rounded-md flex items-center justify-center text-[#666] hover:text-[#a1a1a1] transition-all"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </Tip>
-                </>
-              )}
-            </div>
+    return (
+      <div className={`h-screen flex bg-[#000] p-2 gap-2 overflow-hidden ${_isCommunity && isCommunityView ? 'community-view' : ''}`}>
+        <Toaster
+          position="bottom-right"
+          theme="dark"
+          toastOptions={{
+            style: {
+              background: 'rgba(26, 26, 26, 0.95)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid #2a2a2a',
+              color: '#ededed',
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
+              borderRadius: '8px',
+              fontSize: '13px',
+            },
+          }}
+        />
+        {/* TokensPanel - Floating Island */}
+        <TokensPanel
+          tokens={pageTokens}
+          nodes={nodes}
+          allProjectTokens={allProjectTokens}
+          allProjectNodes={allProjectNodes}
+          projects={projects}
+          pages={pages}
+          groups={groups}
+          activeProjectId={activeProjectId}
+          activePageId={activePageId}
+          activeThemeId={activeThemeId}
+          isPrimaryTheme={isViewingPrimaryTheme}
+          primaryThemeId={primaryTheme?.id}
+          showAllVisible={showAllVisible}
+          onAddToken={addToken}
+          onUpdateToken={updateToken}
+          onDeleteToken={deleteToken}
+          onUpdateProjects={setProjects}
+          onUpdatePages={setPages}
+          onUpdateGroups={setGroups}
+          onExportProject={exportProjectJSON}
+          onImportProject={importProjectJSON}
+          onUpdateNode={updateNode}
+          onDeleteNode={deleteNode}
+          onNavigateToNode={(nodeId) => {
+            setSelectedNodeId(nodeId);
+            setSelectedNodeIds([nodeId]);
+            // Dispatch event for ColorCanvas to handle navigation with animation
+            const event = new CustomEvent('navigateToNode', { detail: { nodeId } });
+            window.dispatchEvent(event);
+          }}
+          onNavigateToProjects={handleBackToProjects}
+          advancedLogic={advancedLogic}
+          cloudSyncStatus={effectiveCloudSyncStatus}
+          lastSyncedAt={activeProjectLastSyncedAt}
+          lastSyncError={lastSyncError}
+          onManualSync={handleManualSync}
+          dirtyCount={cloudDirtyCount}
+          readOnly={isCommunityView}
+        />
 
-            {/* Center: Page Selector */}
-            {viewMode !== 'export' && (
-              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
-                  {/* Text Area - Handles Double Click for Rename */}
-                  <div
-                    className="px-2 h-full flex items-center cursor-default select-none max-w-[200px]"
-                    onDoubleClick={(e) => {
-                      e.stopPropagation();
-                      const currentPage = pages.find(p => p.id === activePageId);
-                      if (currentPage) {
-                        setEditingPageId(activePageId);
-                        setEditingPageName(currentPage.name);
-                      }
-                    }}
+        {/* Right Column - Header + Canvas as separate islands */}
+        <div className="flex-1 flex flex-col gap-2 min-h-0">
+          {/* Top Bar - Floating Island */}
+          <div className="shrink-0 relative bg-[#111] rounded-2xl px-4 h-14 flex items-center justify-between select-none">
+            <>
+              {/* Left: View Mode Switcher + Search */}
+              <div className="flex items-center gap-3">
+                {viewMode === 'export' ? (
+                  <button
+                    onClick={() => setViewMode('canvas')}
+                    className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md text-[11px] text-[#555] hover:text-[#aaa] transition-colors cursor-pointer"
                   >
-                    {editingPageId === activePageId ? (
-                      <input
-                        value={editingPageName}
-                        onChange={(e) => setEditingPageName(e.target.value)}
-                        maxLength={32}
-                        onBlur={() => {
-                          if (editingPageName.trim() && editingPageName !== pages.find(p => p.id === activePageId)?.name) {
-                            handleRenamePage(activePageId, editingPageName.trim());
-                          }
-                          setEditingPageId(null);
-                          setEditingPageName('');
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    <span>Back</span>
+                  </button>
+                ) : (
+                  <>
+                    {/* View Switcher */}
+                    <div className="flex p-1 bg-[#111] border border-[#333] rounded-lg">
+                      <Tip label="Canvas View" side="bottom">
+                        <button
+                          onClick={() => setViewMode('canvas')}
+                          className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'canvas'
+                            ? 'bg-[#333] text-[#ededed] shadow-sm'
+                            : 'text-[#666] hover:text-[#a1a1a1]'
+                            }`}
+                        >
+                          <Workflow className="h-4 w-4" />
+                        </button>
+                      </Tip>
+                      <Tip label="Code Preview" side="bottom">
+                        <button
+                          onClick={() => setViewMode('code')}
+                          className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'code'
+                            ? 'bg-[#333] text-[#ededed] shadow-sm'
+                            : 'text-[#666] hover:text-[#a1a1a1]'
+                            }`}
+                        >
+                          <Code className="h-4 w-4" />
+                        </button>
+                      </Tip>
+                    </div>
+
+                    {/* Export button */}
+                    <Tip label="Export Tokens" side="bottom">
+                      <button
+                        onClick={() => setViewMode('export')}
+                        className="w-8 h-8 rounded-md flex items-center justify-center text-[#666] hover:text-[#a1a1a1] transition-all"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
+                    </Tip>
+                  </>
+                )}
+              </div>
+
+              {/* Center: Page Selector */}
+              {viewMode !== 'export' && (
+                <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
+                    {/* Text Area - Handles Double Click for Rename */}
+                    <div
+                      className="px-2 h-full flex items-center cursor-default select-none max-w-[200px]"
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        const currentPage = pages.find(p => p.id === activePageId);
+                        if (currentPage) {
+                          setEditingPageId(activePageId);
+                          setEditingPageName(currentPage.name);
+                        }
+                      }}
+                    >
+                      {editingPageId === activePageId ? (
+                        <input
+                          value={editingPageName}
+                          onChange={(e) => setEditingPageName(e.target.value)}
+                          maxLength={32}
+                          onBlur={() => {
                             if (editingPageName.trim() && editingPageName !== pages.find(p => p.id === activePageId)?.name) {
                               handleRenamePage(activePageId, editingPageName.trim());
                             }
                             setEditingPageId(null);
                             setEditingPageName('');
-                          } else if (e.key === 'Escape') {
-                            setEditingPageId(null);
-                            setEditingPageName('');
-                          }
-                        }}
-                        className="bg-transparent border-none outline-none text-white w-24 p-0 h-auto font-medium text-center"
-                        autoFocus
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ) : (
-                      <span className="truncate">
-                        {pages.find(p => p.id === activePageId)?.name || 'Page'}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Dropdown Trigger - Only Icon */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
-                        <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60] ml-[-60px]">
-                      <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
-                        Pages
-                      </div>
-                      {pages
-                        .filter(p => p.projectId === activeProjectId)
-                        .sort((a, b) => a.createdAt - b.createdAt)
-                        .map(page => (
-                          <DropdownMenuItem
-                            key={page.id}
-                            onClick={() => {
-                              if (editingPageId !== page.id) {
-                                handleSwitchPage(page.id);
-                              }
-                            }}
-                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activePageId === page.id
-                              ? 'bg-[#141820] text-[#ededed]'
-                              : 'text-[#878787]'
-                              } group mb-0.5`}
-                          >
-                            <div className="flex items-center gap-2 overflow-hidden flex-1">
-                              {editingPageId === page.id ? (
-                                <input
-                                  value={editingPageName}
-                                  onChange={(e) => setEditingPageName(e.target.value)}
-                                  maxLength={32}
-                                  onBlur={() => {
-                                    if (editingPageName.trim() && editingPageName !== page.name) {
-                                      handleRenamePage(page.id, editingPageName.trim());
-                                    }
-                                    setEditingPageId(null);
-                                    setEditingPageName('');
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      if (editingPageName.trim() && editingPageName !== page.name) {
-                                        handleRenamePage(page.id, editingPageName.trim());
-                                      }
-                                      setEditingPageId(null);
-                                      setEditingPageName('');
-                                    } else if (e.key === 'Escape') {
-                                      setEditingPageId(null);
-                                      setEditingPageName('');
-                                    }
-                                  }}
-                                  className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
-                                  autoFocus
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              ) : (
-                                <span
-                                  className="truncate flex-1"
-                                  onDoubleClick={(e) => {
-                                    if (isSampleMode) return;
-                                    e.stopPropagation();
-                                    setEditingPageId(page.id);
-                                    setEditingPageName(page.name);
-                                  }}
-                                >
-                                  {page.name}
-                                </span>
-                              )}
-                            </div>
-
-                            {editingPageId !== page.id && (
-                              <div className="flex items-center gap-1">
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  {pages.filter(p => p.projectId === activeProjectId).length > 1 && (
-                                    <Tip label="Delete Page" side="right">
-                                      <div
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (confirm(`Delete page "${page.name}"? All nodes and tokens on this page will be deleted.`)) {
-                                            handleDeletePage(page.id);
-                                          }
-                                        }}
-                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#e5484d] transition-colors"
-                                      >
-                                        <Trash2 className="h-3 w-3" />
-                                      </div>
-                                    </Tip>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </DropdownMenuItem>
-                        ))}
-                      <div className="h-[1px] bg-[#252525] my-1" />
-                      <DropdownMenuItem
-                        onClick={handleCreatePage}
-                        className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
-                      >
-                        <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
-                          <Plus className="h-3 w-3" />
-                        </div>
-                        <span>Add new page</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            )}
-
-            {viewMode === 'export' && (
-              <div className="absolute left-1/2 transform -translate-x-1/2">
-                <span className="text-[13px] text-[#777] tracking-wide">Multi-Page Token Export</span>
-              </div>
-            )}
-
-            {/* Right: Theme Selector */}
-            {viewMode !== 'export' && (
-              <div className="flex items-center gap-1.5">
-                {/* Table icon — independent from theme dropdown */}
-                <Tip label="Token Overview Table" side="bottom">
-                  <button
-                    onClick={() => setShowTokenTable(prev => !prev)}
-                    className={`flex items-center gap-2 h-9 px-3 rounded-lg border transition-all cursor-pointer ${showTokenTable ? 'border-[#333] bg-[#1a1a1a] text-[#ededed]' : 'border-transparent hover:border-[#333] hover:bg-[#1a1a1a] text-[#999] hover:text-[#ededed]'}`}
-                  >
-                    <Table className="h-4 w-4" />
-                    <span className="text-[13px]">Token Table</span>
-                  </button>
-                </Tip>
-                {/* Dev Mode toggle — moved to bottom toolbar */}
-                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
-                  {/* Theme Name Area - Handles Double Click */}
-                  <div className="flex items-center px-2 h-full gap-2 cursor-default select-none max-w-[200px]">
-                    {themes.find(t => t.id === activeThemeId)?.isPrimary ? (
-                      <Crown className="h-3.5 w-3.5 text-yellow-500/80 fill-yellow-500/80 shrink-0" />
-                    ) : (
-                      <SwatchBook className="h-3.5 w-3.5 text-[#777] shrink-0" />
-                    )}
-
-                    <div
-                      className="flex items-center h-full overflow-hidden"
-                      onDoubleClick={(e) => {
-                        if (isSampleMode) return;
-                        e.stopPropagation();
-                        const currentTheme = themes.find(t => t.id === activeThemeId);
-                        if (currentTheme) {
-                          setEditingThemeId(activeThemeId);
-                          setEditingThemeName(currentTheme.name);
-                        }
-                      }}
-                    >
-                      {editingThemeId === activeThemeId ? (
-                        <input
-                          value={editingThemeName}
-                          onChange={(e) => setEditingThemeName(e.target.value)}
-                          maxLength={32}
-                          onBlur={() => {
-                            if (editingThemeName.trim() && editingThemeName !== themes.find(t => t.id === activeThemeId)?.name) {
-                              handleRenameTheme(activeThemeId, editingThemeName.trim());
-                            }
-                            setEditingThemeId(null);
-                            setEditingThemeName('');
                           }}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                              if (editingThemeName.trim() && editingThemeName !== themes.find(t => t.id === activeThemeId)?.name) {
-                                handleRenameTheme(activeThemeId, editingThemeName.trim());
+                              if (editingPageName.trim() && editingPageName !== pages.find(p => p.id === activePageId)?.name) {
+                                handleRenamePage(activePageId, editingPageName.trim());
                               }
-                              setEditingThemeId(null);
-                              setEditingThemeName('');
+                              setEditingPageId(null);
+                              setEditingPageName('');
                             } else if (e.key === 'Escape') {
-                              setEditingThemeId(null);
-                              setEditingThemeName('');
+                              setEditingPageId(null);
+                              setEditingPageName('');
                             }
                           }}
-                          className="bg-transparent border-none outline-none text-white w-24 p-0 h-auto font-medium"
+                          className="bg-transparent border-none outline-none text-white w-24 p-0 h-auto font-medium text-center"
                           autoFocus
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
                         <span className="truncate">
-                          {themes.find(t => t.id === activeThemeId)?.name || 'Theme'}
+                          {pages.find(p => p.id === activePageId)?.name || 'Page'}
                         </span>
                       )}
                     </div>
-                  </div>
 
-                  {/* Dropdown Trigger - Only Icon */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
-                        <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60]">
-                      <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
-                        Themes
-                      </div>
-                      {themes
-                        .filter(t => t.projectId === activeProjectId)
-                        .sort((a, b) => a.createdAt - b.createdAt)
-                        .map((theme, index) => (
-                          <DropdownMenuItem
-                            key={theme.id}
-                            onClick={() => {
-                              if (editingThemeId !== theme.id) {
-                                handleSwitchTheme(theme.id);
-                              }
-                            }}
-                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activeThemeId === theme.id
-                              ? 'bg-[#141820] text-[#ededed]'
-                              : 'text-[#878787]'
-                              } group mb-0.5`}
-                          >
-                            <div className="flex items-center gap-2 overflow-hidden flex-1">
-                              {/* Primary Indicator (default theme is always primary — not switchable) */}
-                              <div
-                                className="w-5 h-5 flex items-center justify-center flex-shrink-0"
-                                title={theme.isPrimary ? "Primary Theme" : ""}
-                              >
-                                {theme.isPrimary ? (
-                                  <Crown className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />
+                    {/* Dropdown Trigger - Only Icon */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
+                          <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60] ml-[-60px]">
+                        <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
+                          Pages
+                        </div>
+                        {pages
+                          .filter(p => p.projectId === activeProjectId)
+                          .sort((a, b) => a.createdAt - b.createdAt)
+                          .map(page => (
+                            <DropdownMenuItem
+                              key={page.id}
+                              onClick={() => {
+                                if (editingPageId !== page.id) {
+                                  handleSwitchPage(page.id);
+                                }
+                              }}
+                              className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activePageId === page.id
+                                ? 'bg-[#141820] text-[#ededed]'
+                                : 'text-[#878787]'
+                                } group mb-0.5`}
+                            >
+                              <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                {editingPageId === page.id ? (
+                                  <input
+                                    value={editingPageName}
+                                    onChange={(e) => setEditingPageName(e.target.value)}
+                                    maxLength={32}
+                                    onBlur={() => {
+                                      if (editingPageName.trim() && editingPageName !== page.name) {
+                                        handleRenamePage(page.id, editingPageName.trim());
+                                      }
+                                      setEditingPageId(null);
+                                      setEditingPageName('');
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        if (editingPageName.trim() && editingPageName !== page.name) {
+                                          handleRenamePage(page.id, editingPageName.trim());
+                                        }
+                                        setEditingPageId(null);
+                                        setEditingPageName('');
+                                      } else if (e.key === 'Escape') {
+                                        setEditingPageId(null);
+                                        setEditingPageName('');
+                                      }
+                                    }}
+                                    className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
+                                    autoFocus
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
                                 ) : (
-                                  <SwatchBook className={`h-3.5 w-3.5 flex-shrink-0 ${activeThemeId === theme.id ? 'text-[#888]' : 'text-[#555]'
-                                    }`} />
+                                  <span
+                                    className="truncate flex-1"
+                                    onDoubleClick={(e) => {
+                                      if (isSampleMode) return;
+                                      e.stopPropagation();
+                                      setEditingPageId(page.id);
+                                      setEditingPageName(page.name);
+                                    }}
+                                  >
+                                    {page.name}
+                                  </span>
                                 )}
                               </div>
 
-                              {editingThemeId === theme.id ? (
-                                <input
-                                  value={editingThemeName}
-                                  onChange={(e) => setEditingThemeName(e.target.value)}
-                                  maxLength={32}
-                                  onBlur={() => {
-                                    if (editingThemeName.trim() && editingThemeName !== theme.name) {
-                                      handleRenameTheme(theme.id, editingThemeName.trim());
-                                    }
-                                    setEditingThemeId(null);
-                                    setEditingThemeName('');
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
+                              {editingPageId !== page.id && (
+                                <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {pages.filter(p => p.projectId === activeProjectId).length > 1 && (
+                                      <Tip label="Delete Page" side="right">
+                                        <div
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (confirm(`Delete page "${page.name}"? All nodes and tokens on this page will be deleted.`)) {
+                                              handleDeletePage(page.id);
+                                            }
+                                          }}
+                                          className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#e5484d] transition-colors"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </div>
+                                      </Tip>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        <div className="h-[1px] bg-[#252525] my-1" />
+                        <DropdownMenuItem
+                          onClick={handleCreatePage}
+                          className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
+                        >
+                          <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
+                            <Plus className="h-3 w-3" />
+                          </div>
+                          <span>Add new page</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              )}
+
+              {viewMode === 'export' && (
+                <div className="absolute left-1/2 transform -translate-x-1/2">
+                  <span className="text-[13px] text-[#777] tracking-wide">Multi-Page Token Export</span>
+                </div>
+              )}
+
+              {/* Right: Theme Selector */}
+              {viewMode !== 'export' && (
+                <div className="flex items-center gap-1.5">
+                  {/* Table icon — independent from theme dropdown */}
+                  <Tip label="Token Overview Table" side="bottom">
+                    <button
+                      onClick={() => setShowTokenTable(prev => !prev)}
+                      className={`flex items-center gap-2 h-9 px-3 rounded-lg border transition-all cursor-pointer ${showTokenTable ? 'border-[#333] bg-[#1a1a1a] text-[#ededed]' : 'border-transparent hover:border-[#333] hover:bg-[#1a1a1a] text-[#999] hover:text-[#ededed]'}`}
+                    >
+                      <Table className="h-4 w-4" />
+                      <span className="text-[13px]">Token Table</span>
+                    </button>
+                  </Tip>
+                  {/* Dev Mode toggle — moved to bottom toolbar */}
+                  <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
+                    {/* Theme Name Area - Handles Double Click */}
+                    <div className="flex items-center px-2 h-full gap-2 cursor-default select-none max-w-[200px]">
+                      {themes.find(t => t.id === activeThemeId)?.isPrimary ? (
+                        <Crown className="h-3.5 w-3.5 text-yellow-500/80 fill-yellow-500/80 shrink-0" />
+                      ) : (
+                        <SwatchBook className="h-3.5 w-3.5 text-[#777] shrink-0" />
+                      )}
+
+                      <div
+                        className="flex items-center h-full overflow-hidden"
+                        onDoubleClick={(e) => {
+                          if (isSampleMode) return;
+                          e.stopPropagation();
+                          const currentTheme = themes.find(t => t.id === activeThemeId);
+                          if (currentTheme) {
+                            setEditingThemeId(activeThemeId);
+                            setEditingThemeName(currentTheme.name);
+                          }
+                        }}
+                      >
+                        {editingThemeId === activeThemeId ? (
+                          <input
+                            value={editingThemeName}
+                            onChange={(e) => setEditingThemeName(e.target.value)}
+                            maxLength={32}
+                            onBlur={() => {
+                              if (editingThemeName.trim() && editingThemeName !== themes.find(t => t.id === activeThemeId)?.name) {
+                                handleRenameTheme(activeThemeId, editingThemeName.trim());
+                              }
+                              setEditingThemeId(null);
+                              setEditingThemeName('');
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                if (editingThemeName.trim() && editingThemeName !== themes.find(t => t.id === activeThemeId)?.name) {
+                                  handleRenameTheme(activeThemeId, editingThemeName.trim());
+                                }
+                                setEditingThemeId(null);
+                                setEditingThemeName('');
+                              } else if (e.key === 'Escape') {
+                                setEditingThemeId(null);
+                                setEditingThemeName('');
+                              }
+                            }}
+                            className="bg-transparent border-none outline-none text-white w-24 p-0 h-auto font-medium"
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span className="truncate">
+                            {themes.find(t => t.id === activeThemeId)?.name || 'Theme'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Dropdown Trigger - Only Icon */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
+                          <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60]">
+                        <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
+                          Themes
+                        </div>
+                        {themes
+                          .filter(t => t.projectId === activeProjectId)
+                          .sort((a, b) => a.createdAt - b.createdAt)
+                          .map((theme, index) => (
+                            <DropdownMenuItem
+                              key={theme.id}
+                              onClick={() => {
+                                if (editingThemeId !== theme.id) {
+                                  handleSwitchTheme(theme.id);
+                                }
+                              }}
+                              className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activeThemeId === theme.id
+                                ? 'bg-[#141820] text-[#ededed]'
+                                : 'text-[#878787]'
+                                } group mb-0.5`}
+                            >
+                              <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                {/* Primary Indicator (default theme is always primary — not switchable) */}
+                                <div
+                                  className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+                                  title={theme.isPrimary ? "Primary Theme" : ""}
+                                >
+                                  {theme.isPrimary ? (
+                                    <Crown className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />
+                                  ) : (
+                                    <SwatchBook className={`h-3.5 w-3.5 flex-shrink-0 ${activeThemeId === theme.id ? 'text-[#888]' : 'text-[#555]'
+                                      }`} />
+                                  )}
+                                </div>
+
+                                {editingThemeId === theme.id ? (
+                                  <input
+                                    value={editingThemeName}
+                                    onChange={(e) => setEditingThemeName(e.target.value)}
+                                    maxLength={32}
+                                    onBlur={() => {
                                       if (editingThemeName.trim() && editingThemeName !== theme.name) {
                                         handleRenameTheme(theme.id, editingThemeName.trim());
                                       }
                                       setEditingThemeId(null);
                                       setEditingThemeName('');
-                                    } else if (e.key === 'Escape') {
-                                      setEditingThemeId(null);
-                                      setEditingThemeName('');
-                                    }
-                                  }}
-                                  className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
-                                  autoFocus
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              ) : (
-                                <span
-                                  className="truncate flex-1"
-                                  onDoubleClick={(e) => {
-                                    if (isSampleMode) return;
-                                    e.stopPropagation();
-                                    setEditingThemeId(theme.id);
-                                    setEditingThemeName(theme.name);
-                                  }}
-                                >
-                                  {theme.name}
-                                </span>
-                              )}
-                            </div>
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        if (editingThemeName.trim() && editingThemeName !== theme.name) {
+                                          handleRenameTheme(theme.id, editingThemeName.trim());
+                                        }
+                                        setEditingThemeId(null);
+                                        setEditingThemeName('');
+                                      } else if (e.key === 'Escape') {
+                                        setEditingThemeId(null);
+                                        setEditingThemeName('');
+                                      }
+                                    }}
+                                    className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
+                                    autoFocus
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                ) : (
+                                  <span
+                                    className="truncate flex-1"
+                                    onDoubleClick={(e) => {
+                                      if (isSampleMode) return;
+                                      e.stopPropagation();
+                                      setEditingThemeId(theme.id);
+                                      setEditingThemeName(theme.name);
+                                    }}
+                                  >
+                                    {theme.name}
+                                  </span>
+                                )}
+                              </div>
 
-                            {editingThemeId !== theme.id && (
-                              <div className="flex items-center gap-1">
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  {themes.filter(t => t.projectId === activeProjectId).length > 1 && !theme.isPrimary && (
-                                    <Tip label="Delete Theme" side="left">
-                                      <div
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (confirm(`Delete theme "${theme.name}"? All theme-specific values will be removed.`)) {
-                                            handleDeleteTheme(theme.id);
-                                          }
-                                        }}
-                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#e5484d] transition-colors"
-                                      >
-                                        <Trash2 className="h-3 w-3" />
-                                      </div>
-                                    </Tip>
+                              {editingThemeId !== theme.id && (
+                                <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {themes.filter(t => t.projectId === activeProjectId).length > 1 && !theme.isPrimary && (
+                                      <Tip label="Delete Theme" side="left">
+                                        <div
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (confirm(`Delete theme "${theme.name}"? All theme-specific values will be removed.`)) {
+                                              handleDeleteTheme(theme.id);
+                                            }
+                                          }}
+                                          className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#e5484d] transition-colors"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </div>
+                                      </Tip>
+                                    )}
+                                  </div>
+                                  {index < 9 && (
+                                    <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-[#555] bg-[#161616] border border-[#262626]" style={{ fontFamily: 'inherit' }}>
+                                      {index + 1}
+                                    </kbd>
                                   )}
                                 </div>
-                                {index < 9 && (
+                              )}
+                              {editingThemeId !== theme.id && index < 9 && (
+                                <div className="flex items-center gap-1">
                                   <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-[#555] bg-[#161616] border border-[#262626]" style={{ fontFamily: 'inherit' }}>
                                     {index + 1}
                                   </kbd>
-                                )}
-                              </div>
-                            )}
-                            {editingThemeId !== theme.id && index < 9 && (
-                              <div className="flex items-center gap-1">
-                                <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-[#555] bg-[#161616] border border-[#262626]" style={{ fontFamily: 'inherit' }}>
-                                  {index + 1}
-                                </kbd>
-                              </div>
-                            )}
-                          </DropdownMenuItem>
-                        ))}
-                      <div className="h-[1px] bg-[#252525] my-1" />
-                      <DropdownMenuItem
-                        onClick={handleCreateTheme}
-                        className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
-                      >
-                        <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
-                          <Plus className="h-3 w-3" />
-                        </div>
-                        <span>Add new theme</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                {/* Sign In / Account Dropdown */}
-                {!authSession ? (
-                  <button
-                    onClick={() => setShowAuthModal(true)}
-                    className="flex items-center gap-1.5 h-8 px-3 ml-2 rounded-full border border-transparent bg-[#bbbbbb] text-[#000] hover:bg-[#fff] transition-all cursor-pointer text-[12px] font-medium"
-                  >
-                    <span>Sign In</span>
-                  </button>
-                ) : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex items-center justify-center h-8 w-8 ml-2 rounded-full bg-[#1e1e1e] border border-[#333] hover:border-[#444] text-[#E5A336] hover:text-[#f0b84a] transition-all outline-none cursor-pointer">
-                        <User className="h-4 w-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={8} className="w-48 bg-[#111] border-[#252525] p-1 shadow-xl z-[60]">
-                      <div className="px-2 py-1.5 text-xs text-[#888] truncate break-all border-b border-[#222] mb-1">
-                        {authSession.email}
-                      </div>
-                      <DropdownMenuItem
-                        onClick={handleSignOut}
-                        className="flex items-center gap-2 px-2 py-2 text-[#666] hover:text-[#e5484d] focus:text-[#e5484d] focus:bg-[#1a1a1a] rounded-md cursor-pointer transition-colors"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        <span>Sign Out</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            )}
-          </>
-        </div>
-
-        {/* Canvas Area - Floating Island */}
-        <div className="flex-1 relative rounded-2xl overflow-hidden bg-[#000] min-h-0">
-
-
-          {isSampleMode && (<div><DropdownMenu><DropdownMenuTrigger asChild><button>
-            <BookOpen className="h-3.5 w-3.5 text-[#22C55E]" />
-            <span className="text-[12px] max-w-[160px] truncate">
-              {sampleTemplates[activeSampleIdx]?.name || 'Template'}
-            </span>
-            {sampleTemplates.length > 1 && (
-              <span className="text-[10px] text-[#555] tabular-nums">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
-            )}
-            <ChevronDown className="h-3 w-3 text-[#666]" />
-          </button>
-          </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100001 }}>
-              <div className="px-2 py-1.5 flex items-center justify-between">
-                <span className="text-xs font-medium text-[#666] uppercase tracking-wider">Sample Templates</span>
-                <span className="text-[10px] text-[#555] tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
-              </div>
-              {sampleTemplates.length >= 5 && (
-                <div className="px-1.5 pb-1.5">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#555]" />
-                    <input
-                      className="w-full h-7 pl-7 pr-2 rounded-md bg-[#0a0a0a] border border-[#252525] text-[12px] text-[#ededed] placeholder:text-[#444] outline-none focus:border-[#333] transition-colors"
-                      placeholder="Search templates…"
-                      value={sampleTemplateSearch}
-                      onChange={(e) => setSampleTemplateSearch(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      onKeyDown={(e) => e.stopPropagation()}
-                      autoFocus
-                    />
+                                </div>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        <div className="h-[1px] bg-[#252525] my-1" />
+                        <DropdownMenuItem
+                          onClick={handleCreateTheme}
+                          className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
+                        >
+                          <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
+                            <Plus className="h-3 w-3" />
+                          </div>
+                          <span>Add new theme</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
+
+                  {/* Publish Button */}
+                  {authSession && activeProjectId !== 'sample-project' && (
+                    <Tip label="Publish to Community" side="bottom">
+                      <button
+                        onClick={() => setShowPublishModal(true)}
+                        className="flex items-center gap-1.5 h-8 px-3 ml-2 rounded-full border border-[#252525] bg-[#1a1a1a] text-[#aaa] hover:text-[#fff] hover:border-[#333] transition-all cursor-pointer text-[12px] font-medium"
+                      >
+                        <Globe className="h-3.5 w-3.5" />
+                        <span>Publish</span>
+                      </button>
+                    </Tip>
+                  )}
+
+                  {/* Publish Button */}
+                  {authSession && activeProjectId !== 'sample-project' && (
+                    <Tip label="Publish to Community" side="bottom">
+                      <button
+                        onClick={() => setShowPublishModal(true)}
+                        className="flex items-center gap-1.5 h-8 px-3 ml-2 rounded-full border border-[#252525] bg-[#1a1a1a] text-[#aaa] hover:text-[#fff] hover:border-[#333] transition-all cursor-pointer text-[12px] font-medium"
+                      >
+                        <Globe className="h-3.5 w-3.5" />
+                        <span>Publish</span>
+                      </button>
+                    </Tip>
+                  )}
+
+                  {/* Sign In / Account Dropdown */}
+                  {!authSession ? (
+                    <button
+                      onClick={() => setShowAuthModal(true)}
+                      className="flex items-center gap-1.5 h-8 px-3 ml-2 rounded-full border border-transparent bg-[#bbbbbb] text-[#000] hover:bg-[#fff] transition-all cursor-pointer text-[12px] font-medium"
+                    >
+                      <span>Sign In</span>
+                    </button>
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="flex items-center justify-center h-8 w-8 ml-2 rounded-full bg-[#1e1e1e] border border-[#333] hover:border-[#444] text-[#E5A336] hover:text-[#f0b84a] transition-all outline-none cursor-pointer">
+                          <User className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" sideOffset={8} className="w-48 bg-[#111] border-[#252525] p-1 shadow-xl z-[60]">
+                        <div className="px-2 py-1.5 text-xs text-[#888] truncate break-all border-b border-[#222] mb-1">
+                          {authSession.email}
+                        </div>
+                        <DropdownMenuItem
+                          onClick={handleSignOut}
+                          className="flex items-center gap-2 px-2 py-2 text-[#666] hover:text-[#e5484d] focus:text-[#e5484d] focus:bg-[#1a1a1a] rounded-md cursor-pointer transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          <span>Sign Out</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               )}
-              <div className="overflow-y-auto" style={{ maxHeight: '280px' }}>
-                {filteredSampleTemplates.length === 0 ? (
-                  <div className="px-3 py-4 text-center text-[11px] text-[#555]">No templates match "{sampleTemplateSearch}"</div>
-                ) : (
-                  filteredSampleTemplates.map((t: any) => (
-                    <DropdownMenuItem
-                      key={t.projectId}
-                      onClick={() => handleSwitchSampleTemplate(t._origIdx)}
-                      className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activeSampleIdx === t._origIdx
-                        ? 'bg-[#141820] text-[#ededed]'
-                        : 'text-[#878787]'
-                        } mb-0.5`}
-                    >
-                      <BookOpen className={`h-3.5 w-3.5 shrink-0 ${activeSampleIdx === t._origIdx ? 'text-[#22C55E]' : ''}`} />
-                      <span className="truncate flex-1">{t.name}</span>
-                      {activeSampleIdx === t._origIdx && (
-                        <span className="ml-auto text-[10px] text-[#22C55E] font-medium shrink-0">Active</span>
-                      )}
-                    </DropdownMenuItem>
-                  ))
-                )}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </>
           </div>
-          )}
 
-          {isSampleMode && (
-            <div className={`absolute ${viewMode === 'canvas' && isViewingPrimaryTheme ? 'bottom-[5rem]' : 'bottom-6'} left-1/2 -translate-x-1/2 pointer-events-auto`} style={{ zIndex: 100000 }}>
-              <div className="flex items-center gap-4 bg-[#111]/95 backdrop-blur-md border border-[#252525] rounded-full px-4 py-2 shadow-xl"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="flex items-center justify-center w-5 h-5 rounded-md bg-[#22C55E]/10">
-                    <Lock className="h-3 w-3 text-[#22C55E]" />
-                  </div>
-                  <span className="text-[12px] text-[#888] whitespace-nowrap">
-                    You are viewing a read-only sample project
-                  </span>
+          {/* Canvas Area - Floating Island */}
+          <div className="flex-1 relative rounded-2xl overflow-hidden bg-[#000] min-h-0">
+
+
+            {isSampleMode && (<div><DropdownMenu><DropdownMenuTrigger asChild><button>
+              <BookOpen className="h-3.5 w-3.5 text-[#22C55E]" />
+              <span className="text-[12px] max-w-[160px] truncate">
+                {sampleTemplates[activeSampleIdx]?.name || 'Template'}
+              </span>
+              {sampleTemplates.length > 1 && (
+                <span className="text-[10px] text-[#555] tabular-nums">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
+              )}
+              <ChevronDown className="h-3 w-3 text-[#666]" />
+            </button>
+            </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100001 }}>
+                <div className="px-2 py-1.5 flex items-center justify-between">
+                  <span className="text-xs font-medium text-[#666] uppercase tracking-wider">Sample Templates</span>
+                  <span className="text-[10px] text-[#555] tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#22C55E]/10 border border-[#22C55E]/20 hover:bg-[#22C55E]/20 text-[#22C55E] transition-all cursor-pointer text-[12px] font-medium">
-                      <Copy className="h-3 w-3" />
-                      <span>Duplicate</span>
-                      <ChevronDown className="h-3 w-3 opacity-60" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100001 }}>
-                    <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
-                      Duplicate as
+                {sampleTemplates.length >= 5 && (
+                  <div className="px-1.5 pb-1.5">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#555]" />
+                      <input
+                        className="w-full h-7 pl-7 pr-2 rounded-md bg-[#0a0a0a] border border-[#252525] text-[12px] text-[#ededed] placeholder:text-[#444] outline-none focus:border-[#333] transition-colors"
+                        placeholder="Search templates…"
+                        value={sampleTemplateSearch}
+                        onChange={(e) => setSampleTemplateSearch(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        autoFocus
+                      />
                     </div>
-                    {!!authSession && (
+                  </div>
+                )}
+                <div className="overflow-y-auto" style={{ maxHeight: '280px' }}>
+                  {filteredSampleTemplates.length === 0 ? (
+                    <div className="px-3 py-4 text-center text-[11px] text-[#555]">No templates match "{sampleTemplateSearch}"</div>
+                  ) : (
+                    filteredSampleTemplates.map((t: any) => (
                       <DropdownMenuItem
-                        onClick={() => handleDuplicateSampleProject('cloud')}
-                        className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
+                        key={t.projectId}
+                        onClick={() => handleSwitchSampleTemplate(t._origIdx)}
+                        className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activeSampleIdx === t._origIdx
+                          ? 'bg-[#141820] text-[#ededed]'
+                          : 'text-[#878787]'
+                          } mb-0.5`}
                       >
-                        <RefreshCw className="h-3.5 w-3.5 text-[#3B82F6]" />
-                        <div className="flex flex-col">
-                          <span className="text-[13px]">Cloud Project</span>
-                          <span className="text-[11px] text-[#666]">Synced to Supabase</span>
-                        </div>
+                        <BookOpen className={`h-3.5 w-3.5 shrink-0 ${activeSampleIdx === t._origIdx ? 'text-[#22C55E]' : ''}`} />
+                        <span className="truncate flex-1">{t.name}</span>
+                        {activeSampleIdx === t._origIdx && (
+                          <span className="ml-auto text-[10px] text-[#22C55E] font-medium shrink-0">Active</span>
+                        )}
                       </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem
-                      onClick={() => handleDuplicateSampleProject('local')}
-                      className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
-                    >
-                      <Download className="h-3.5 w-3.5 text-[#A855F7]" />
-                      <div className="flex flex-col">
-                        <span className="text-[13px]">Local Project</span>
-                        <span className="text-[11px] text-[#666]">Saved to browser storage</span>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                    ))
+                  )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
             </div>
-          )}
+            )}
 
-          {/* "Go back" prompt — shown after navigating to a node via Target icon (color or token node) */}
-          {viewMode === 'canvas' && tokenNavBackState && (() => {
-            const multiBarVisible = isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay;
-            const restoreBarVisible = isViewingPrimaryTheme && !!pendingTokenRestore;
-            let bottomClass = 'bottom-[5.5rem]';
-            if (multiBarVisible && restoreBarVisible) bottomClass = 'bottom-[12rem]';
-            else if (multiBarVisible || restoreBarVisible) bottomClass = 'bottom-[8.75rem]';
-            return (
-              <div
-                className={`absolute ${bottomClass} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
-                style={{
-                  animation: goBackFading
-                    ? `goBackFadeOut ${GO_BACK_FADE_MS}ms ease-in forwards`
-                    : 'fadeSlideUp 0.25s ease-out',
-                }}
-              >
-                <button
-                  className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
-                  onClick={handleTokenNavGoBack}
-                  onMouseEnter={handleGoBackMouseEnter}
-                  onMouseLeave={handleGoBackMouseLeave}
+            {isSampleMode && (
+              <div className={`absolute ${viewMode === 'canvas' && isViewingPrimaryTheme ? 'bottom-[5rem]' : 'bottom-6'} left-1/2 -translate-x-1/2 pointer-events-auto`} style={{ zIndex: 100000 }}>
+                <div className="flex items-center gap-4 bg-[#111]/95 backdrop-blur-md border border-[#252525] rounded-full px-4 py-2 shadow-xl"
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
                 >
-                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#0070f3]/15 shrink-0">
-                    <ArrowLeft size={13} className="text-[#0070f3]" />
-                  </div>
-                  <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
-                    Go back
-                  </span>
-                </button>
-              </div>
-            );
-          })()}
-
-          {/* Restore assigned tokens prompt — above the floating bottom bar (primary theme only) */}
-          {viewMode === 'canvas' && isViewingPrimaryTheme && pendingTokenRestore && (() => {
-            const multiBarVisible = isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay;
-            return (
-              <div className={`absolute ${multiBarVisible ? 'bottom-[8.75rem]' : 'bottom-[5.5rem]'} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
-                style={{ animation: 'fadeSlideUp 0.25s ease-out' }}
-              >
-                <button
-                  className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
-                  onClick={handleRestoreTokens}
-                >
-                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#0070f3]/15 shrink-0">
-                    <RotateCw size={13} className="text-[#0070f3]" />
-                  </div>
-                  <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
-                    Restore assigned tokens
-                  </span>
-                </button>
-              </div>
-            );
-          })()}
-
-          {/* Multi-Selection Floating Toolbar — appears above the bottom bar when ≥2 nodes are multi-selected */}
-          {viewMode === 'canvas' && isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay && (() => {
-            const selectedNodes = allNodes.filter(n => selectedNodeIds.includes(n.id));
-            const hiddenCount = selectedNodes.filter(n => isNodeHiddenInTheme(n, activeThemeId, primaryTheme?.id || '', allNodes)).length;
-            const visibleCount = selectedNodes.length - hiddenCount;
-            const allVisible = hiddenCount === 0;
-            const allHidden = visibleCount === 0;
-            const mixed = !allVisible && !allHidden;
-
-            return (
-              <div
-                className="absolute bottom-[5.5rem] left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
-                style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
-              >
-                <div
-                  className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
-                >
-                  {/* Selection count label */}
-                  <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
-                    {selectedNodeIds.length} selected
-                  </span>
-
-                  {/* Divider */}
-                  <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
-
-                  {/* Visibility toggle */}
-                  <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
-                    <button
-                      className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixed
-                        ? 'text-[#444] cursor-not-allowed'
-                        : allHidden
-                          ? 'text-[#3B82F6] hover:bg-[#3B82F6]/10'
-                          : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
-                        }`}
-                      disabled={mixed}
-                      onClick={() => {
-                        if (mixed) return;
-                        setAllNodes(prev => prev.map(node => {
-                          if (!selectedNodeIds.includes(node.id)) return node;
-                          const vis = { ...(node.themeVisibility || {}) };
-                          if (allVisible) {
-                            vis[activeThemeId] = false;
-                          } else {
-                            delete vis[activeThemeId];
-                          }
-                          return { ...node, themeVisibility: Object.keys(vis).length > 0 ? vis : undefined };
-                        }));
-                      }}
-                    >
-                      {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
-                    </button>
-                  </Tip>
-
-                  {/* Duplicate */}
-                  <Tip label="Duplicate" side="top">
-                    <button
-                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05] transition-all"
-                      onClick={() => {
-                        if (selectedNodeIds.length > 1) {
-                          duplicateNode(selectedNodeIds);
-                        } else if (selectedNodeId) {
-                          duplicateNode(selectedNodeId);
-                        }
-                      }}
-                    >
-                      <Copy className="h-[16px] w-[16px]" />
-                    </button>
-                  </Tip>
-
-                  {/* Delete */}
-                  <Tip label="Delete" side="top">
-                    <button
-                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#EF4444] hover:bg-[#EF4444]/[0.08] transition-all"
-                      onClick={() => {
-                        selectedNodeIds.forEach(nodeId => deleteNode(nodeId));
-                        setSelectedNodeIds([]);
-                        setSelectedNodeId(null);
-                      }}
-                    >
-                      <Trash2 className="h-[16px] w-[16px]" />
-                    </button>
-                  </Tip>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Non-Primary Theme Multi-Selection Floating Toolbar — visibility + inheritance toggles */}
-          {viewMode === 'canvas' && !isViewingPrimaryTheme && selectedNodeIds.length > 1 && (() => {
-            const selectedNodes = allNodes.filter(n => selectedNodeIds.includes(n.id));
-            // Visibility state
-            const hiddenCount = selectedNodes.filter(n => isNodeHiddenInTheme(n, activeThemeId, primaryTheme?.id || '', allNodes)).length;
-            const visibleCount = selectedNodes.length - hiddenCount;
-            const allVisible = hiddenCount === 0;
-            const allHidden = visibleCount === 0;
-            const mixedVisibility = !allVisible && !allHidden;
-
-            // Inheritance state
-            const inheritedCount = selectedNodes.filter(n => !n.themeOverrides || !n.themeOverrides[activeThemeId]).length;
-            const notInheritedCount = selectedNodes.length - inheritedCount;
-            const allInherited = notInheritedCount === 0;
-            const allNotInherited = inheritedCount === 0;
-            const mixedInheritance = !allInherited && !allNotInherited;
-
-            return (
-              <div
-                className="absolute bottom-6 left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
-                style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
-              >
-                <div
-                  className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
-                >
-                  {/* Selection count label */}
-                  <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
-                    {selectedNodeIds.length} selected
-                  </span>
-
-                  {/* Divider */}
-                  <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
-
-                  {/* Inheritance toggle */}
-                  <Tip label={allInherited ? 'Unlink all from primary' : allNotInherited ? 'Link all to primary' : 'Mixed inheritance'} side="top">
-                    <div
-                      className={`flex items-center gap-1.5 h-9 px-2 rounded-xl transition-all ${mixedInheritance ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-[#ffffff]/[0.05]'
-                        }`}
-                    >
-                      <Crown
-                        className={`h-3 w-3 shrink-0 transition-all ${mixedInheritance
-                          ? 'text-[#555] fill-none'
-                          : allInherited
-                            ? 'text-yellow-500 fill-yellow-500'
-                            : allNotInherited
-                              ? 'text-[#3B82F6] fill-[#3B82F6]'
-                              : 'text-[#555] fill-none'
-                          }`}
-                      />
-                      <Switch
-                        checked={allInherited}
-                        disabled={mixedInheritance}
-                        onCheckedChange={(checked) => {
-                          if (mixedInheritance) return;
-                          setAllNodes(prev => prev.map(node => {
-                            if (!selectedNodeIds.includes(node.id)) return node;
-                            if (checked) {
-                              // Re-link: remove theme override for this theme
-                              const newOverrides = { ...node.themeOverrides };
-                              delete newOverrides[activeThemeId];
-                              // Also clear theme-specific advanced logic
-                              revertThemeAdvancedLogic(node.id, activeThemeId);
-                              return {
-                                ...node,
-                                themeOverrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
-                              };
-                            } else {
-                              // Unlink: create theme override with current color values
-                              const currentValues = {
-                                hue: node.hue,
-                                saturation: node.saturation,
-                                lightness: node.lightness,
-                                alpha: node.alpha,
-                                red: node.red,
-                                green: node.green,
-                                blue: node.blue,
-                                oklchL: node.oklchL,
-                                oklchC: node.oklchC,
-                                oklchH: node.oklchH,
-                                hctH: node.hctH,
-                                hctC: node.hctC,
-                                hctT: node.hctT,
-                                hexValue: node.hexValue,
-                              };
-                              return {
-                                ...node,
-                                themeOverrides: {
-                                  ...node.themeOverrides,
-                                  [activeThemeId]: currentValues,
-                                },
-                              };
-                            }
-                          }));
-                        }}
-                        className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-[#333] dark:data-[state=unchecked]:bg-[#333] h-[16px] w-[30px] shrink-0"
-                      />
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex items-center justify-center w-5 h-5 rounded-md bg-[#22C55E]/10">
+                      <Lock className="h-3 w-3 text-[#22C55E]" />
                     </div>
-                  </Tip>
-
-                  {/* Divider */}
-                  <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
-
-                  {/* Visibility toggle */}
-                  <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
-                    <button
-                      className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixedVisibility
-                        ? 'text-[#444] cursor-not-allowed'
-                        : allHidden
-                          ? 'text-[#3B82F6] hover:bg-[#3B82F6]/10'
-                          : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
-                        }`}
-                      disabled={mixedVisibility}
-                      onClick={() => {
-                        if (mixedVisibility) return;
-                        setAllNodes(prev => prev.map(node => {
-                          if (!selectedNodeIds.includes(node.id)) return node;
-                          const vis = { ...(node.themeVisibility || {}) };
-                          if (allVisible) {
-                            vis[activeThemeId] = false;
-                          } else {
-                            delete vis[activeThemeId];
-                          }
-                          return { ...node, themeVisibility: Object.keys(vis).length > 0 ? vis : undefined };
-                        }));
-                      }}
-                    >
-                      {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
-                    </button>
-                  </Tip>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Floating Bottom Toolbar - Figma-style unified bar */}
-          {viewMode === 'canvas' && isViewingPrimaryTheme && (
-            <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 z-[51] pointer-events-none">
-              {/* Ask AI Island (leftmost) */}
-              <div
-                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-              >
-                <Tip label="Ask AI" side="top">
-                  <button
-                    className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                      ? 'text-[#E5A336] bg-[#E5A336]/10'
-                      : 'text-[#a1a1a1] hover:text-[#E5A336] hover:bg-[#252525]'
-                      }`}
-                    onClick={() => {
-                      const activeProject = projects.find(p => p.id === activeProjectId);
-                      const isCloud = !!activeProject?.isCloud;
-                      const isTemplate = !!activeProject?.isTemplate;
-                      if (!isCloud && !isTemplate) {
-                        toast('Ask AI is available for Cloud and Template projects only', {
-                          description: 'Switch to a Cloud project or open a Template to use Ask AI.',
-                        });
-                        return;
-                      }
-                      setShowAIChat(prev => !prev);
-                    }}
-                  >
-                    <Sparkles className="h-[18px] w-[18px]" />
-                    <span className="text-[11px] tracking-wide">AI</span>
-                  </button>
-                </Tip>
-              </div>
-
-              <div className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-              >
-                {/* Node tool with dropdown */}
-                <DropdownMenu>
-                  <Tip label="Add Color Node" side="top">
+                    <span className="text-[12px] text-[#888] whitespace-nowrap">
+                      You are viewing a read-only sample project
+                    </span>
+                  </div>
+                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button
-                        className="flex items-center gap-0.5 h-9 pl-2.5 pr-1.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all group"
-                      >
-                        <Workflow className="h-[18px] w-[18px]" />
-                        <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-80" />
+                      <button className="flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#22C55E]/10 border border-[#22C55E]/20 hover:bg-[#22C55E]/20 text-[#22C55E] transition-all cursor-pointer text-[12px] font-medium">
+                        <Copy className="h-3 w-3" />
+                        <span>Duplicate</span>
+                        <ChevronDown className="h-3 w-3 opacity-60" />
                       </button>
                     </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100001 }}>
+                      <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
+                        Duplicate as
+                      </div>
+                      {!!authSession && (
+                        <DropdownMenuItem
+                          onClick={() => handleDuplicateSampleProject('cloud')}
+                          className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5 text-[#3B82F6]" />
+                          <div className="flex flex-col">
+                            <span className="text-[13px]">Cloud Project</span>
+                            <span className="text-[11px] text-[#666]">Synced to Supabase</span>
+                          </div>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        onClick={() => handleDuplicateSampleProject('local')}
+                        className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
+                      >
+                        <Download className="h-3.5 w-3.5 text-[#A855F7]" />
+                        <div className="flex flex-col">
+                          <span className="text-[13px]">Local Project</span>
+                          <span className="text-[11px] text-[#666]">Saved to browser storage</span>
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            )}
+
+            {/* "Go back" prompt — shown after navigating to a node via Target icon (color or token node) */}
+            {viewMode === 'canvas' && tokenNavBackState && (() => {
+              const multiBarVisible = isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay;
+              const restoreBarVisible = isViewingPrimaryTheme && !!pendingTokenRestore;
+              let bottomClass = 'bottom-[5.5rem]';
+              if (multiBarVisible && restoreBarVisible) bottomClass = 'bottom-[12rem]';
+              else if (multiBarVisible || restoreBarVisible) bottomClass = 'bottom-[8.75rem]';
+              return (
+                <div
+                  className={`absolute ${bottomClass} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
+                  style={{
+                    animation: goBackFading
+                      ? `goBackFadeOut ${GO_BACK_FADE_MS}ms ease-in forwards`
+                      : 'fadeSlideUp 0.25s ease-out',
+                  }}
+                >
+                  <button
+                    className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                    style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+                    onClick={handleTokenNavGoBack}
+                    onMouseEnter={handleGoBackMouseEnter}
+                    onMouseLeave={handleGoBackMouseLeave}
+                  >
+                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#0070f3]/15 shrink-0">
+                      <ArrowLeft size={13} className="text-[#0070f3]" />
+                    </div>
+                    <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
+                      Go back
+                    </span>
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Restore assigned tokens prompt — above the floating bottom bar (primary theme only) */}
+            {viewMode === 'canvas' && isViewingPrimaryTheme && pendingTokenRestore && (() => {
+              const multiBarVisible = isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay;
+              return (
+                <div className={`absolute ${multiBarVisible ? 'bottom-[8.75rem]' : 'bottom-[5.5rem]'} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
+                  style={{ animation: 'fadeSlideUp 0.25s ease-out' }}
+                >
+                  <button
+                    className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                    style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+                    onClick={handleRestoreTokens}
+                  >
+                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#0070f3]/15 shrink-0">
+                      <RotateCw size={13} className="text-[#0070f3]" />
+                    </div>
+                    <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
+                      Restore assigned tokens
+                    </span>
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Multi-Selection Floating Toolbar — appears above the bottom bar when ≥2 nodes are multi-selected */}
+            {viewMode === 'canvas' && isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay && (() => {
+              const selectedNodes = allNodes.filter(n => selectedNodeIds.includes(n.id));
+              const hiddenCount = selectedNodes.filter(n => isNodeHiddenInTheme(n, activeThemeId, primaryTheme?.id || '', allNodes)).length;
+              const visibleCount = selectedNodes.length - hiddenCount;
+              const allVisible = hiddenCount === 0;
+              const allHidden = visibleCount === 0;
+              const mixed = !allVisible && !allHidden;
+
+              return (
+                <div
+                  className="absolute bottom-[5.5rem] left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
+                  style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
+                >
+                  <div
+                    className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
+                    style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+                  >
+                    {/* Selection count label */}
+                    <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
+                      {selectedNodeIds.length} selected
+                    </span>
+
+                    {/* Divider */}
+                    <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+
+                    {/* Visibility toggle */}
+                    <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
+                      <button
+                        className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixed
+                          ? 'text-[#444] cursor-not-allowed'
+                          : allHidden
+                            ? 'text-[#3B82F6] hover:bg-[#3B82F6]/10'
+                            : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
+                          }`}
+                        disabled={mixed}
+                        onClick={() => {
+                          if (mixed) return;
+                          setAllNodes(prev => prev.map(node => {
+                            if (!selectedNodeIds.includes(node.id)) return node;
+                            const vis = { ...(node.themeVisibility || {}) };
+                            if (allVisible) {
+                              vis[activeThemeId] = false;
+                            } else {
+                              delete vis[activeThemeId];
+                            }
+                            return { ...node, themeVisibility: Object.keys(vis).length > 0 ? vis : undefined };
+                          }));
+                        }}
+                      >
+                        {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
+                      </button>
+                    </Tip>
+
+                    {/* Duplicate */}
+                    <Tip label="Duplicate" side="top">
+                      <button
+                        className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05] transition-all"
+                        onClick={() => {
+                          if (selectedNodeIds.length > 1) {
+                            duplicateNode(selectedNodeIds);
+                          } else if (selectedNodeId) {
+                            duplicateNode(selectedNodeId);
+                          }
+                        }}
+                      >
+                        <Copy className="h-[16px] w-[16px]" />
+                      </button>
+                    </Tip>
+
+                    {/* Delete */}
+                    <Tip label="Delete" side="top">
+                      <button
+                        className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#EF4444] hover:bg-[#EF4444]/[0.08] transition-all"
+                        onClick={() => {
+                          selectedNodeIds.forEach(nodeId => deleteNode(nodeId));
+                          setSelectedNodeIds([]);
+                          setSelectedNodeId(null);
+                        }}
+                      >
+                        <Trash2 className="h-[16px] w-[16px]" />
+                      </button>
+                    </Tip>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Non-Primary Theme Multi-Selection Floating Toolbar — visibility + inheritance toggles */}
+            {viewMode === 'canvas' && !isViewingPrimaryTheme && selectedNodeIds.length > 1 && (() => {
+              const selectedNodes = allNodes.filter(n => selectedNodeIds.includes(n.id));
+              // Visibility state
+              const hiddenCount = selectedNodes.filter(n => isNodeHiddenInTheme(n, activeThemeId, primaryTheme?.id || '', allNodes)).length;
+              const visibleCount = selectedNodes.length - hiddenCount;
+              const allVisible = hiddenCount === 0;
+              const allHidden = visibleCount === 0;
+              const mixedVisibility = !allVisible && !allHidden;
+
+              // Inheritance state
+              const inheritedCount = selectedNodes.filter(n => !n.themeOverrides || !n.themeOverrides[activeThemeId]).length;
+              const notInheritedCount = selectedNodes.length - inheritedCount;
+              const allInherited = notInheritedCount === 0;
+              const allNotInherited = inheritedCount === 0;
+              const mixedInheritance = !allInherited && !allNotInherited;
+
+              return (
+                <div
+                  className="absolute bottom-6 left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
+                  style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
+                >
+                  <div
+                    className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
+                    style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+                  >
+                    {/* Selection count label */}
+                    <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
+                      {selectedNodeIds.length} selected
+                    </span>
+
+                    {/* Divider */}
+                    <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+
+                    {/* Inheritance toggle */}
+                    <Tip label={allInherited ? 'Unlink all from primary' : allNotInherited ? 'Link all to primary' : 'Mixed inheritance'} side="top">
+                      <div
+                        className={`flex items-center gap-1.5 h-9 px-2 rounded-xl transition-all ${mixedInheritance ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-[#ffffff]/[0.05]'
+                          }`}
+                      >
+                        <Crown
+                          className={`h-3 w-3 shrink-0 transition-all ${mixedInheritance
+                            ? 'text-[#555] fill-none'
+                            : allInherited
+                              ? 'text-yellow-500 fill-yellow-500'
+                              : allNotInherited
+                                ? 'text-[#3B82F6] fill-[#3B82F6]'
+                                : 'text-[#555] fill-none'
+                            }`}
+                        />
+                        <Switch
+                          checked={allInherited}
+                          disabled={mixedInheritance}
+                          onCheckedChange={(checked) => {
+                            if (mixedInheritance) return;
+                            setAllNodes(prev => prev.map(node => {
+                              if (!selectedNodeIds.includes(node.id)) return node;
+                              if (checked) {
+                                // Re-link: remove theme override for this theme
+                                const newOverrides = { ...node.themeOverrides };
+                                delete newOverrides[activeThemeId];
+                                // Also clear theme-specific advanced logic
+                                revertThemeAdvancedLogic(node.id, activeThemeId);
+                                return {
+                                  ...node,
+                                  themeOverrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
+                                };
+                              } else {
+                                // Unlink: create theme override with current color values
+                                const currentValues = {
+                                  hue: node.hue,
+                                  saturation: node.saturation,
+                                  lightness: node.lightness,
+                                  alpha: node.alpha,
+                                  red: node.red,
+                                  green: node.green,
+                                  blue: node.blue,
+                                  oklchL: node.oklchL,
+                                  oklchC: node.oklchC,
+                                  oklchH: node.oklchH,
+                                  hctH: node.hctH,
+                                  hctC: node.hctC,
+                                  hctT: node.hctT,
+                                  hexValue: node.hexValue,
+                                };
+                                return {
+                                  ...node,
+                                  themeOverrides: {
+                                    ...node.themeOverrides,
+                                    [activeThemeId]: currentValues,
+                                  },
+                                };
+                              }
+                            }));
+                          }}
+                          className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-[#333] dark:data-[state=unchecked]:bg-[#333] h-[16px] w-[30px] shrink-0"
+                        />
+                      </div>
+                    </Tip>
+
+                    {/* Divider */}
+                    <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+
+                    {/* Visibility toggle */}
+                    <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
+                      <button
+                        className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixedVisibility
+                          ? 'text-[#444] cursor-not-allowed'
+                          : allHidden
+                            ? 'text-[#3B82F6] hover:bg-[#3B82F6]/10'
+                            : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
+                          }`}
+                        disabled={mixedVisibility}
+                        onClick={() => {
+                          if (mixedVisibility) return;
+                          setAllNodes(prev => prev.map(node => {
+                            if (!selectedNodeIds.includes(node.id)) return node;
+                            const vis = { ...(node.themeVisibility || {}) };
+                            if (allVisible) {
+                              vis[activeThemeId] = false;
+                            } else {
+                              delete vis[activeThemeId];
+                            }
+                            return { ...node, themeVisibility: Object.keys(vis).length > 0 ? vis : undefined };
+                          }));
+                        }}
+                      >
+                        {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
+                      </button>
+                    </Tip>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Floating Bottom Toolbar - Figma-style unified bar */}
+            {viewMode === 'canvas' && isViewingPrimaryTheme && (
+              <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 z-[51] pointer-events-none">
+                {/* Ask AI Island (leftmost) */}
+                <div
+                  className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                >
+                  <Tip label="Ask AI" side="top">
+                    <button
+                      className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
+                        ? 'text-[#E5A336] bg-[#E5A336]/10'
+                        : 'text-[#a1a1a1] hover:text-[#E5A336] hover:bg-[#252525]'
+                        }`}
+                      onClick={() => {
+                        const activeProject = projects.find(p => p.id === activeProjectId);
+                        const isCloud = !!activeProject?.isCloud;
+                        const isTemplate = !!activeProject?.isTemplate;
+                        if (!isCloud && !isTemplate) {
+                          toast('Ask AI is available for Cloud and Template projects only', {
+                            description: 'Switch to a Cloud project or open a Template to use Ask AI.',
+                          });
+                          return;
+                        }
+                        setShowAIChat(prev => !prev);
+                      }}
+                    >
+                      <Sparkles className="h-[18px] w-[18px]" />
+                      <span className="text-[11px] tracking-wide">AI</span>
+                    </button>
                   </Tip>
-                  <DropdownMenuContent align="center" sideOffset={12} className="w-[140px] bg-[#111] border-[#333]">
-                    <DropdownMenuItem
-                      onClick={() => addRootNode('hsl')}
-                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
-                    >
-                      HSL
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => addRootNode('rgb')}
-                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
-                    >
-                      RGB
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => addRootNode('oklch')}
-                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
-                    >
-                      OKLCH
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => addRootNode('hct')}
-                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
-                    >
-                      HCT
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                </div>
 
-                {/* Palette tool */}
-                <Tip label="Add Palette" side="top">
-                  <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-                    onClick={addPaletteNode}
-                  >
-                    <Palette className="h-[18px] w-[18px]" />
-                  </button>
-                </Tip>
+                <div className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                >
+                  {/* Node tool with dropdown */}
+                  <DropdownMenu>
+                    <Tip label="Add Color Node" side="top">
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className="flex items-center gap-0.5 h-9 pl-2.5 pr-1.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all group"
+                        >
+                          <Workflow className="h-[18px] w-[18px]" />
+                          <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-80" />
+                        </button>
+                      </DropdownMenuTrigger>
+                    </Tip>
+                    <DropdownMenuContent align="center" sideOffset={12} className="w-[140px] bg-[#111] border-[#333]">
+                      <DropdownMenuItem
+                        onClick={() => addRootNode('hsl')}
+                        className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                      >
+                        HSL
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => addRootNode('rgb')}
+                        className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                      >
+                        RGB
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => addRootNode('oklch')}
+                        className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                      >
+                        OKLCH
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => addRootNode('hct')}
+                        className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                      >
+                        HCT
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                {/* Token Node tool */}
-                <Tip label="Add Token Node" side="top">
-                  <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-                    onClick={addTokenNode}
-                  >
-                    <Tag className="h-[18px] w-[18px]" />
-                  </button>
-                </Tip>
+                  {/* Palette tool */}
+                  <Tip label="Add Palette" side="top">
+                    <button
+                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                      onClick={addPaletteNode}
+                    >
+                      <Palette className="h-[18px] w-[18px]" />
+                    </button>
+                  </Tip>
 
-                {/* Spacing tool — hidden for now, will implement later */}
-                {/* <button 
+                  {/* Token Node tool */}
+                  <Tip label="Add Token Node" side="top">
+                    <button
+                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                      onClick={addTokenNode}
+                    >
+                      <Tag className="h-[18px] w-[18px]" />
+                    </button>
+                  </Tip>
+
+                  {/* Spacing tool — hidden for now, will implement later */}
+                  {/* <button 
               className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
               onClick={addSpacingNode}
               title="Add spacing node"
@@ -12054,337 +12040,427 @@ export default function App() {
               <Ruler className="h-[18px] w-[18px]" />
             </button> */}
 
-                {/* Reset tool — hidden for now */}
-                {/* <button 
+                  {/* Reset tool — hidden for now */}
+                  {/* <button 
               className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
               onClick={resetToDefaults}
               title="Reset to default data"
             >
               <RotateCcw className="h-[18px] w-[18px]" />
             </button> */}
-              </div>
+                </div>
 
-              {/* Companion bar — View controls */}
-              <div
-                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-              >
-                {/* Fit all nodes */}
-                <Tip label="Zoom to Fit" side="top">
-                  <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-                    onClick={() => window.dispatchEvent(new Event('canvasFitAll'))}
-                  >
-                    <Maximize className="h-[18px] w-[18px]" />
-                  </button>
-                </Tip>
+                {/* Companion bar — View controls */}
+                <div
+                  className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                >
+                  {/* Fit all nodes */}
+                  <Tip label="Zoom to Fit" side="top">
+                    <button
+                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                      onClick={() => window.dispatchEvent(new Event('canvasFitAll'))}
+                    >
+                      <Maximize className="h-[18px] w-[18px]" />
+                    </button>
+                  </Tip>
 
-                {/* Reset view */}
-                <Tip label="Reset View" side="top">
-                  <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-                    onClick={() => window.dispatchEvent(new Event('canvasResetView'))}
-                  >
-                    <Locate className="h-[18px] w-[18px]" />
-                  </button>
-                </Tip>
-              </div>
+                  {/* Reset view */}
+                  <Tip label="Reset View" side="top">
+                    <button
+                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                      onClick={() => window.dispatchEvent(new Event('canvasResetView'))}
+                    >
+                      <Locate className="h-[18px] w-[18px]" />
+                    </button>
+                  </Tip>
+                </div>
 
-              {/* Dev Mode Island — only for cloud projects */}
-              {(() => {
-                const proj = projects.find(p => p.id === activeProjectId);
-                return proj?.isCloud ? (
-                  <div
-                    className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-                    style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-                  >
-                    <Tip label="Dev Mode — Code Sync & Webhooks" side="top">
-                      <button
-                        className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showDevMode
-                          ? 'text-emerald-400 bg-emerald-400/10'
-                          : 'text-[#a1a1a1] hover:text-emerald-400 hover:bg-[#252525]'
-                          }`}
-                        onClick={() => setShowDevMode(prev => !prev)}
-                      >
-                        <Terminal className="h-[18px] w-[18px]" />
-                        <span className="text-[11px] tracking-wide">Dev</span>
-                      </button>
-                    </Tip>
-                  </div>
-                ) : null;
-              })()}
+                {/* Dev Mode Island — only for cloud projects */}
+                {(() => {
+                  const proj = projects.find(p => p.id === activeProjectId);
+                  return proj?.isCloud ? (
+                    <div
+                      className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                      style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                    >
+                      <Tip label="Dev Mode — Code Sync & Webhooks" side="top">
+                        <button
+                          className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showDevMode
+                            ? 'text-emerald-400 bg-emerald-400/10'
+                            : 'text-[#a1a1a1] hover:text-emerald-400 hover:bg-[#252525]'
+                            }`}
+                          onClick={() => setShowDevMode(prev => !prev)}
+                        >
+                          <Terminal className="h-[18px] w-[18px]" />
+                          <span className="text-[11px] tracking-wide">Dev</span>
+                        </button>
+                      </Tip>
+                    </div>
+                  ) : null;
+                })()}
 
-              {/* Actions (⌘K) Island */}
-              <div
-                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-              >
-                <Tip label="Actions (⌘K)" side="top">
-                  <button
-                    className="flex items-center gap-1.5 h-9 px-2.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-                    onClick={() => setShowCommandPalette(true)}
-                  >
-                    <Command className="h-[18px] w-[18px]" />
-                    <span className="text-[11px] text-[#555] tracking-wide">⌘K</span>
-                  </button>
-                </Tip>
-              </div>
+                {/* Actions (⌘K) Island */}
+                <div
+                  className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                >
+                  <Tip label="Actions (⌘K)" side="top">
+                    <button
+                      className="flex items-center gap-1.5 h-9 px-2.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                      onClick={() => setShowCommandPalette(true)}
+                    >
+                      <Command className="h-[18px] w-[18px]" />
+                      <span className="text-[11px] text-[#555] tracking-wide">⌘K</span>
+                    </button>
+                  </Tip>
+                </div>
 
-              {/* Shortcuts & Tips Island */}
-              <div
-                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-              >
-                <Tip label="Shortcuts & Tips" side="top">
-                  <button
-                    className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${showShortcuts
-                      ? 'text-[#ededed] bg-[#252525]'
-                      : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
-                      }`}
-                    onClick={() => setShowShortcuts(prev => !prev)}
-                  >
-                    <Lightbulb className="h-[18px] w-[18px]" />
-                  </button>
-                </Tip>
-              </div>
-            </div>
-          )}
-
-          {/* Ask AI floating button — for non-primary themes (primary themes have it in the main toolbar) */}
-          {viewMode === 'canvas' && !isViewingPrimaryTheme && (
-            <div className="absolute bottom-6 right-6 z-[51] pointer-events-auto">
-              <div
-                className="flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-              >
-                <Tip label="Ask AI" side="top">
-                  <button
-                    className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                      ? 'text-[#E5A336] bg-[#E5A336]/10'
-                      : 'text-[#a1a1a1] hover:text-[#E5A336] hover:bg-[#252525]'
-                      }`}
-                    onClick={() => {
-                      const activeProject = projects.find(p => p.id === activeProjectId);
-                      const isCloud = !!activeProject?.isCloud;
-                      const isTemplate = !!activeProject?.isTemplate;
-                      if (!isCloud && !isTemplate) {
-                        toast('Ask AI is available for Cloud and Template projects only', {
-                          description: 'Switch to a Cloud project or open a Template to use Ask AI.',
-                        });
-                        return;
-                      }
-                      setShowAIChat(prev => !prev);
-                    }}
-                  >
-                    <Sparkles className="h-[18px] w-[18px]" />
-                    <span className="text-[11px] tracking-wide">AI</span>
-                  </button>
-                </Tip>
-              </div>
-            </div>
-          )}
-
-          {/* Undo / Redo buttons — bottom-left of canvas (canvas view only) */}
-          {viewMode === 'canvas' && (
-            <div className="absolute bottom-5 left-5 z-[51] flex items-center gap-1">
-              <div className="group/undo relative">
-                <Tip label="Undo" side="top" enabled={canUndo}>
-                  <button
-                    className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canUndo
-                      ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
-                      : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
-                      }`}
-                    onClick={undo}
-                    disabled={!canUndo}
-                  >
-                    <Undo2 className="h-[15px] w-[15px]" />
-                  </button>
-                </Tip>
-                {canUndo && (
-                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/undo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
-                    style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
-                  >
-                    {undoCount}
-                  </span>
-                )}
-              </div>
-              <div className="group/redo relative">
-                <Tip label="Redo" side="top" enabled={canRedo}>
-                  <button
-                    className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canRedo
-                      ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
-                      : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
-                      }`}
-                    onClick={redo}
-                    disabled={!canRedo}
-                  >
-                    <Redo2 className="h-[15px] w-[15px]" />
-                  </button>
-                </Tip>
-                {canRedo && (
-                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/redo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
-                    style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
-                  >
-                    {redoCount}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Canvas Content Area */}
-          <div className="absolute inset-0 overflow-hidden">
-            {viewMode === 'canvas' ? (
-              <ColorCanvas
-                nodes={nodes}
-                tokens={tokens}
-                projects={projects}
-                groups={groups}
-                activeProjectId={activeProjectId}
-                onUpdateNode={updateNode}
-                onAddChild={addChildNode}
-                onAddParent={addParentNode}
-                onTogglePrefix={togglePrefixNode}
-                onDeleteNode={deleteNode}
-                onUnlinkNode={unlinkNode}
-                onLinkNode={linkNode}
-                onAssignToken={assignTokenToNode}
-                onAddToken={addToken}
-                onUpdateToken={updateToken}
-                onDeleteToken={deleteToken}
-                onUpdateProjects={setProjects}
-                onUpdateGroups={setGroups}
-                onExportProject={exportProjectJSON}
-                onImportProject={importProjectJSON}
-                selectedNodeId={selectedNodeId}
-                onSelectNode={(id) => {
-                  setSelectedNodeId(id);
-                  if (id !== null) {
-                    setSelectedNodeIds([]);
-                  }
-                }}
-                selectedNodeIds={selectedNodeIds}
-                onSelectNodeWithChildren={selectNodeWithChildren}
-                onMoveSelectedNodes={moveSelectedNodes}
-                onClearMultiSelection={() => setSelectedNodeIds([])}
-                onUpdateMultiSelection={(nodeIds) => {
-                  setSelectedNodeIds(nodeIds);
-                  setSelectedNodeId(null);
-                }}
-                onUpdateNodeFromPanel={updateNode}
-                canvasState={canvasState}
-                onUpdateCanvasState={updateCanvasState}
-                sidebarMode={sidebarMode}
-                onSidebarModeChange={setSidebarMode}
-                onNavigateToProjects={handleBackToProjects}
-                showInheritanceIcon={!isViewingPrimaryTheme}
-                activeThemeId={activeThemeId}
-                isPrimaryTheme={isViewingPrimaryTheme}
-                primaryThemeId={primaryTheme?.id || ''}
-                showAllVisible={showAllVisible}
-                autoAssignTriggerNodeId={autoAssignTriggerNodeId}
-                onAutoAssignTriggered={() => setAutoAssignTriggerNodeId(null)}
-                readOnly={false}
-                pages={pages.filter(p => p.projectId === activeProjectId)}
-                allProjectNodes={allNodes.filter(n => n.projectId === activeProjectId)}
-                advancedLogic={advancedLogic}
-                onUpdateAdvancedLogic={setAdvancedLogic}
-                onRevertThemeAdvancedLogic={revertThemeAdvancedLogic}
-                showDevMode={showDevMode}
-                onToggleWebhookInput={(nodeId: string) => {
-                  const node = allNodes.find(n => n.id === nodeId);
-                  if (node) {
-                    updateNode(nodeId, { isWebhookInput: !node.isWebhookInput });
-                  }
-                }}
-              />
-            ) : viewMode === 'code' ? (
-              <CodePreview
-                tokens={pageTokens}
-                tokenGroups={pageGroups}
-                nodes={nodes}
-                allProjectTokens={allProjectTokens}
-                allProjectNodes={allProjectNodes}
-                activePage={activePage}
-                themes={themes}
-                activeThemeId={activeThemeId}
-                hexOverridesByPage={codePreviewHexByPage}
-                onHexOverridesByPageChange={setCodePreviewHexByPage}
-                advancedLogic={advancedLogic}
-                computedTokens={computedTokensRef.current[activeProjectId]}
-              />
-            ) : (
-              <MultiPageExport
-                pages={pages}
-                tokens={tokens}
-                tokenGroups={groups}
-                nodes={allNodes}
-                activeProjectId={activeProjectId}
-                themes={themes}
-                activeThemeId={activeThemeId}
-                selectedPageIds={multiExportPageIds}
-                onSelectedPageIdsChange={setMultiExportPageIds}
-                selectedThemeIds={multiExportThemeIds}
-                onSelectedThemeIdsChange={setMultiExportThemeIds}
-                hexOverrideSpaces={multiExportHexSpaces}
-                onHexOverrideSpacesChange={setMultiExportHexSpaces}
-                advancedLogic={advancedLogic}
-                computedTokens={computedTokensRef.current[activeProjectId]}
-              />
-            )}
-
-            {/* Bottom-left hint for O key visibility toggle (non-primary themes, canvas mode only) */}
-            {viewMode === 'canvas' && !isViewingPrimaryTheme && (
-              <div className={`absolute top-4 left-4 z-[52] pointer-events-none select-none transition-opacity duration-200 ${showAllVisible ? 'opacity-100' : 'opacity-80'}`}>
-                <div className="flex items-center gap-2 bg-[#161616]/90 backdrop-blur-sm border border-[#333] rounded-lg px-3 py-2">
-                  <kbd className="text-[11px] text-[#a1a1a1] bg-[#252525] border border-[#444] rounded px-1.5 py-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>O</kbd>
-                  <span className="text-[11px] text-[#888]">
-                    {showAllVisible ? 'press O \u2014 restore to default' : 'press O \u2014 make it visible'}
-                  </span>
+                {/* Shortcuts & Tips Island */}
+                <div
+                  className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                >
+                  <Tip label="Shortcuts & Tips" side="top">
+                    <button
+                      className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${showShortcuts
+                        ? 'text-[#ededed] bg-[#252525]'
+                        : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
+                        }`}
+                      onClick={() => setShowShortcuts(prev => !prev)}
+                    >
+                      <Lightbulb className="h-[18px] w-[18px]" />
+                    </button>
+                  </Tip>
                 </div>
               </div>
             )}
+
+            {/* Ask AI floating button — for non-primary themes (primary themes have it in the main toolbar) */}
+            {viewMode === 'canvas' && !isViewingPrimaryTheme && (
+              <div className="absolute bottom-6 right-6 z-[51] pointer-events-auto">
+                <div
+                  className="flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5"
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                >
+                  <Tip label="Ask AI" side="top">
+                    <button
+                      className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
+                        ? 'text-[#E5A336] bg-[#E5A336]/10'
+                        : 'text-[#a1a1a1] hover:text-[#E5A336] hover:bg-[#252525]'
+                        }`}
+                      onClick={() => {
+                        const activeProject = projects.find(p => p.id === activeProjectId);
+                        const isCloud = !!activeProject?.isCloud;
+                        const isTemplate = !!activeProject?.isTemplate;
+                        if (!isCloud && !isTemplate) {
+                          toast('Ask AI is available for Cloud and Template projects only', {
+                            description: 'Switch to a Cloud project or open a Template to use Ask AI.',
+                          });
+                          return;
+                        }
+                        setShowAIChat(prev => !prev);
+                      }}
+                    >
+                      <Sparkles className="h-[18px] w-[18px]" />
+                      <span className="text-[11px] tracking-wide">AI</span>
+                    </button>
+                  </Tip>
+                </div>
+              </div>
+            )}
+
+            {/* Undo / Redo buttons — bottom-left of canvas (canvas view only) */}
+            {viewMode === 'canvas' && (
+              <div className="absolute bottom-5 left-5 z-[51] flex items-center gap-1">
+                <div className="group/undo relative">
+                  <Tip label="Undo" side="top" enabled={canUndo}>
+                    <button
+                      className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canUndo
+                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
+                        : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
+                        }`}
+                      onClick={undo}
+                      disabled={!canUndo}
+                    >
+                      <Undo2 className="h-[15px] w-[15px]" />
+                    </button>
+                  </Tip>
+                  {canUndo && (
+                    <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/undo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
+                      style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
+                    >
+                      {undoCount}
+                    </span>
+                  )}
+                </div>
+                <div className="group/redo relative">
+                  <Tip label="Redo" side="top" enabled={canRedo}>
+                    <button
+                      className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canRedo
+                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
+                        : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
+                        }`}
+                      onClick={redo}
+                      disabled={!canRedo}
+                    >
+                      <Redo2 className="h-[15px] w-[15px]" />
+                    </button>
+                  </Tip>
+                  {canRedo && (
+                    <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/redo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
+                      style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
+                    >
+                      {redoCount}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Canvas Content Area */}
+            <div className="absolute inset-0 overflow-hidden">
+              {viewMode === 'canvas' ? (
+                <ColorCanvas
+                  nodes={nodes}
+                  tokens={tokens}
+                  projects={projects}
+                  groups={groups}
+                  activeProjectId={activeProjectId}
+                  onUpdateNode={updateNode}
+                  onAddChild={addChildNode}
+                  onAddParent={addParentNode}
+                  onTogglePrefix={togglePrefixNode}
+                  onDeleteNode={deleteNode}
+                  onUnlinkNode={unlinkNode}
+                  onLinkNode={linkNode}
+                  onAssignToken={assignTokenToNode}
+                  onAddToken={addToken}
+                  onUpdateToken={updateToken}
+                  onDeleteToken={deleteToken}
+                  onUpdateProjects={setProjects}
+                  onUpdateGroups={setGroups}
+                  onExportProject={exportProjectJSON}
+                  onImportProject={importProjectJSON}
+                  selectedNodeId={selectedNodeId}
+                  onSelectNode={(id) => {
+                    setSelectedNodeId(id);
+                    if (id !== null) {
+                      setSelectedNodeIds([]);
+                    }
+                  }}
+                  selectedNodeIds={selectedNodeIds}
+                  onSelectNodeWithChildren={selectNodeWithChildren}
+                  onMoveSelectedNodes={moveSelectedNodes}
+                  onClearMultiSelection={() => setSelectedNodeIds([])}
+                  onUpdateMultiSelection={(nodeIds) => {
+                    setSelectedNodeIds(nodeIds);
+                    setSelectedNodeId(null);
+                  }}
+                  onUpdateNodeFromPanel={updateNode}
+                  canvasState={canvasState}
+                  onUpdateCanvasState={updateCanvasState}
+                  sidebarMode={sidebarMode}
+                  onSidebarModeChange={setSidebarMode}
+                  onNavigateToProjects={handleBackToProjects}
+                  showInheritanceIcon={!isViewingPrimaryTheme}
+                  activeThemeId={activeThemeId}
+                  isPrimaryTheme={isViewingPrimaryTheme}
+                  primaryThemeId={primaryTheme?.id || ''}
+                  showAllVisible={showAllVisible}
+                  autoAssignTriggerNodeId={autoAssignTriggerNodeId}
+                  onAutoAssignTriggered={() => setAutoAssignTriggerNodeId(null)}
+                  readOnly={isCommunityView}
+                  pages={pages.filter(p => p.projectId === activeProjectId)}
+                  allProjectNodes={allNodes.filter(n => n.projectId === activeProjectId)}
+                  advancedLogic={advancedLogic}
+                  onUpdateAdvancedLogic={setAdvancedLogic}
+                  onRevertThemeAdvancedLogic={revertThemeAdvancedLogic}
+                  showDevMode={showDevMode}
+                  onToggleWebhookInput={(nodeId: string) => {
+                    const node = allNodes.find(n => n.id === nodeId);
+                    if (node) {
+                      updateNode(nodeId, { isWebhookInput: !node.isWebhookInput });
+                    }
+                  }}
+                />
+              ) : viewMode === 'code' ? (
+                <CodePreview
+                  tokens={pageTokens}
+                  tokenGroups={pageGroups}
+                  nodes={nodes}
+                  allProjectTokens={allProjectTokens}
+                  allProjectNodes={allProjectNodes}
+                  activePage={activePage}
+                  themes={themes}
+                  activeThemeId={activeThemeId}
+                  hexOverridesByPage={codePreviewHexByPage}
+                  onHexOverridesByPageChange={setCodePreviewHexByPage}
+                  advancedLogic={advancedLogic}
+                  computedTokens={computedTokensRef.current[activeProjectId]}
+                />
+              ) : (
+                <MultiPageExport
+                  pages={pages}
+                  tokens={tokens}
+                  tokenGroups={groups}
+                  nodes={allNodes}
+                  activeProjectId={activeProjectId}
+                  themes={themes}
+                  activeThemeId={activeThemeId}
+                  selectedPageIds={multiExportPageIds}
+                  onSelectedPageIdsChange={setMultiExportPageIds}
+                  selectedThemeIds={multiExportThemeIds}
+                  onSelectedThemeIdsChange={setMultiExportThemeIds}
+                  hexOverrideSpaces={multiExportHexSpaces}
+                  onHexOverrideSpacesChange={setMultiExportHexSpaces}
+                  advancedLogic={advancedLogic}
+                  computedTokens={computedTokensRef.current[activeProjectId]}
+                />
+              )}
+
+              {/* Bottom-left hint for O key visibility toggle (non-primary themes, canvas mode only) */}
+              {viewMode === 'canvas' && !isViewingPrimaryTheme && (
+                <div className={`absolute top-4 left-4 z-[52] pointer-events-none select-none transition-opacity duration-200 ${showAllVisible ? 'opacity-100' : 'opacity-80'}`}>
+                  <div className="flex items-center gap-2 bg-[#161616]/90 backdrop-blur-sm border border-[#333] rounded-lg px-3 py-2">
+                    <kbd className="text-[11px] text-[#a1a1a1] bg-[#252525] border border-[#444] rounded px-1.5 py-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>O</kbd>
+                    <span className="text-[11px] text-[#888]">
+                      {showAllVisible ? 'press O \u2014 restore to default' : 'press O \u2014 make it visible'}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ── Ask AI Chat (single instance — docked renders inline, floating uses portal) ── */}
-      <AskAIChat
-        isOpen={showAIChat}
-        onClose={() => setShowAIChat(false)}
-        conversations={aiConversations}
-        onConversationsChange={handleAIConversationsChange}
-        isCloudProject={isSampleMode ? !!sampleTemplates[activeSampleIdx]?.isCloud : !!projects.find(p => p.id === activeProjectId)?.isCloud}
-        isTemplate={isSampleMode ? !!sampleTemplates[activeSampleIdx]?.isTemplate : !!projects.find(p => p.id === activeProjectId)?.isTemplate}
-        projectContext={aiProjectContext}
-        isDocked={aiChatDocked}
-        onDockChange={handleAIChatDockChange}
-        onSettingsSaved={handleAISettingsSaved}
-      />
+        {/* ── Ask AI Chat (single instance — docked renders inline, floating uses portal) ── */}
+        <AskAIChat
+          isOpen={showAIChat}
+          onClose={() => setShowAIChat(false)}
+          conversations={aiConversations}
+          onConversationsChange={handleAIConversationsChange}
+          isCloudProject={isSampleMode ? !!sampleTemplates[activeSampleIdx]?.isCloud : !!projects.find(p => p.id === activeProjectId)?.isCloud}
+          isTemplate={isSampleMode ? !!sampleTemplates[activeSampleIdx]?.isTemplate : !!projects.find(p => p.id === activeProjectId)?.isTemplate}
+          projectContext={aiProjectContext}
+          isDocked={aiChatDocked}
+          onDockChange={handleAIChatDockChange}
+          onSettingsSaved={handleAISettingsSaved}
+        />
 
-      {/* Token Table Popup */}
-      {showTokenTable && (
-        <TokenTablePopup
-          tokens={tokens}
+        {/* Token Table Popup */}
+        {showTokenTable && (
+          <TokenTablePopup
+            tokens={tokens}
+            allNodes={allNodes}
+            groups={groups}
+            pages={pages}
+            themes={themes}
+            activeProjectId={activeProjectId}
+            activePageId={activePageId}
+            activeThemeId={activeThemeId}
+            canvasPan={canvasState.pan}
+            canvasZoom={canvasState.zoom}
+            hexOverrideSpaces={tokenTableHexSpaces}
+            onHexOverrideSpacesChange={setTokenTableHexSpaces}
+            onClose={() => setShowTokenTable(false)}
+            onNavigateToNode={(nodeId, pageId, themeId) => {
+              // 1. Switch page if needed (canvas will re-render with new page's nodes)
+              const needsPageSwitch = pageId !== activePageId;
+              if (needsPageSwitch) {
+                setActivePageId(pageId);
+              }
+              // 2. Switch theme if needed — save current selection before switching
+              if (themeId !== activeThemeId) {
+                themeSelectionsRef.current[activeThemeIdRef.current] = {
+                  selectedNodeId: selectedNodeIdRef.current,
+                  selectedNodeIds: [...selectedNodeIdsRef.current],
+                };
+                setActiveThemeId(themeId);
+              }
+              // 3. Select the node immediately (overrides any saved selection for target theme)
+              setSelectedNodeId(nodeId);
+              setSelectedNodeIds([nodeId]);
+              // 4. Dispatch navigation event with a delay if page switched
+              //    (allows React to re-render ColorCanvas with the new page's nodes)
+              const dispatchNav = () => {
+                const event = new CustomEvent('navigateToNode', { detail: { nodeId } });
+                window.dispatchEvent(event);
+              };
+              if (needsPageSwitch) {
+                setTimeout(dispatchNav, 180);
+              } else {
+                requestAnimationFrame(dispatchNav);
+              }
+            }}
+            onRestoreView={(pageId, themeId) => {
+              if (pageId !== activePageId) setActivePageId(pageId);
+              if (themeId !== activeThemeId) {
+                // Save current selection, restore saved selection for the target theme
+                themeSelectionsRef.current[activeThemeIdRef.current] = {
+                  selectedNodeId: selectedNodeIdRef.current,
+                  selectedNodeIds: [...selectedNodeIdsRef.current],
+                };
+                const savedSelection = themeSelectionsRef.current[themeId];
+                if (savedSelection) {
+                  setSelectedNodeId(savedSelection.selectedNodeId);
+                  setSelectedNodeIds(savedSelection.selectedNodeIds);
+                } else {
+                  setSelectedNodeId(null);
+                  setSelectedNodeIds([]);
+                }
+                setActiveThemeId(themeId);
+              }
+            }}
+            advancedLogic={advancedLogic}
+            computedTokens={computedTokensRef.current[activeProjectId]}
+          />
+        )}
+        {/* Dev Mode Panel */}
+        {showDevMode && (
+          <DevModePanel
+            devConfig={activeDevConfig}
+            onUpdateDevConfig={updateDevConfig}
+            nodes={allNodes}
+            themes={themes}
+            activeProjectId={activeProjectId}
+            activeProject={isSampleMode ? sampleTemplates[activeSampleIdx] : projects.find(p => p.id === activeProjectId)}
+            userId={authSession?.userId}
+            onClose={() => setShowDevMode(false)}
+            onRunNow={() => {
+              // Run the computation pipeline and push to destinations
+              handleDevModeRun();
+            }}
+            onTestWebhook={() => {
+              // Send a test webhook to verify the endpoint works
+              handleDevModeTestWebhook();
+            }}
+          />
+        )}
+        {/* Shortcuts Panel Popup */}
+        {showShortcuts && (
+          <ShortcutsPanel onClose={() => setShowShortcuts(false)} />
+        )}
+
+        {/* Command Palette (⌘K) */}
+        <CommandPalette
+          isOpen={showCommandPalette}
+          onClose={() => setShowCommandPalette(false)}
           allNodes={allNodes}
+          tokens={tokens}
           groups={groups}
           pages={pages}
           themes={themes}
           activeProjectId={activeProjectId}
           activePageId={activePageId}
           activeThemeId={activeThemeId}
-          canvasPan={canvasState.pan}
-          canvasZoom={canvasState.zoom}
-          hexOverrideSpaces={tokenTableHexSpaces}
-          onHexOverrideSpacesChange={setTokenTableHexSpaces}
-          onClose={() => setShowTokenTable(false)}
           onNavigateToNode={(nodeId, pageId, themeId) => {
-            // 1. Switch page if needed (canvas will re-render with new page's nodes)
+            // Switch page if needed
             const needsPageSwitch = pageId !== activePageId;
             if (needsPageSwitch) {
               setActivePageId(pageId);
             }
-            // 2. Switch theme if needed — save current selection before switching
+            // Switch theme if needed
             if (themeId !== activeThemeId) {
               themeSelectionsRef.current[activeThemeIdRef.current] = {
                 selectedNodeId: selectedNodeIdRef.current,
@@ -12392,11 +12468,12 @@ export default function App() {
               };
               setActiveThemeId(themeId);
             }
-            // 3. Select the node immediately (overrides any saved selection for target theme)
+            // Select the node
             setSelectedNodeId(nodeId);
             setSelectedNodeIds([nodeId]);
-            // 4. Dispatch navigation event with a delay if page switched
-            //    (allows React to re-render ColorCanvas with the new page's nodes)
+            // Ensure canvas view
+            setViewMode('canvas');
+            // Dispatch navigation event
             const dispatchNav = () => {
               const event = new CustomEvent('navigateToNode', { detail: { nodeId } });
               window.dispatchEvent(event);
@@ -12407,131 +12484,51 @@ export default function App() {
               requestAnimationFrame(dispatchNav);
             }
           }}
-          onRestoreView={(pageId, themeId) => {
-            if (pageId !== activePageId) setActivePageId(pageId);
-            if (themeId !== activeThemeId) {
-              // Save current selection, restore saved selection for the target theme
-              themeSelectionsRef.current[activeThemeIdRef.current] = {
-                selectedNodeId: selectedNodeIdRef.current,
-                selectedNodeIds: [...selectedNodeIdsRef.current],
-              };
-              const savedSelection = themeSelectionsRef.current[themeId];
-              if (savedSelection) {
-                setSelectedNodeId(savedSelection.selectedNodeId);
-                setSelectedNodeIds(savedSelection.selectedNodeIds);
-              } else {
-                setSelectedNodeId(null);
-                setSelectedNodeIds([]);
-              }
-              setActiveThemeId(themeId);
+          onNavigateToToken={(tokenId, pageId) => {
+            // Switch page if needed
+            if (pageId !== activePageId) {
+              setActivePageId(pageId);
             }
+            // Ensure canvas view (token panel is visible in canvas mode)
+            setViewMode('canvas');
+            // Dispatch a custom event for token highlighting
+            setTimeout(() => {
+              const event = new CustomEvent('highlightToken', { detail: { tokenId } });
+              window.dispatchEvent(event);
+            }, pageId !== activePageId ? 200 : 50);
           }}
-          advancedLogic={advancedLogic}
-          computedTokens={computedTokensRef.current[activeProjectId]}
+          onOpenTokenTable={() => {
+            setShowTokenTable(true);
+            setViewMode('canvas');
+          }}
+          onOpenCodeView={() => setViewMode('code')}
+          onAddColorNode={(cs) => addRootNode(cs)}
+          onAddPaletteNode={addPaletteNode}
+          onAddTokenNode={addTokenNode}
+          onAddSpacingNode={addSpacingNode}
+          onCreatePage={handleCreatePage}
+          onCreateTheme={handleCreateTheme}
+          onAddVariable={() => addToken()}
+          onSwitchPage={handleSwitchPage}
+          onSwitchTheme={handleSwitchTheme}
         />
-      )}
-      {/* Dev Mode Panel */}
-      {showDevMode && (
-        <DevModePanel
-          devConfig={activeDevConfig}
-          onUpdateDevConfig={updateDevConfig}
-          nodes={allNodes}
-          themes={themes}
-          activeProjectId={activeProjectId}
-          activeProject={isSampleMode ? sampleTemplates[activeSampleIdx] : projects.find(p => p.id === activeProjectId)}
-          userId={authSession?.userId}
-          onClose={() => setShowDevMode(false)}
-          onRunNow={() => {
-            // Run the computation pipeline and push to destinations
-            handleDevModeRun();
-          }}
-          onTestWebhook={() => {
-            // Send a test webhook to verify the endpoint works
-            handleDevModeTestWebhook();
-          }}
+        {/* Publish Modal */}
+        {showPublishModal && (
+          <PublishModal
+            isOpen={showPublishModal}
+            onClose={() => setShowPublishModal(false)}
+            onPublish={handlePublishProject}
+            initialTitle={projects.find(p => p.id === activeProjectId)?.name || ''}
+            isPublished={!!projects.find(p => p.id === activeProjectId)?.isPublished}
+          />
+        )}
+        {/* Auth Modal */}
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onAuth={handleAuth}
         />
-      )}
-      {/* Shortcuts Panel Popup */}
-      {showShortcuts && (
-        <ShortcutsPanel onClose={() => setShowShortcuts(false)} />
-      )}
-
-      {/* Command Palette (⌘K) */}
-      <CommandPalette
-        isOpen={showCommandPalette}
-        onClose={() => setShowCommandPalette(false)}
-        allNodes={allNodes}
-        tokens={tokens}
-        groups={groups}
-        pages={pages}
-        themes={themes}
-        activeProjectId={activeProjectId}
-        activePageId={activePageId}
-        activeThemeId={activeThemeId}
-        onNavigateToNode={(nodeId, pageId, themeId) => {
-          // Switch page if needed
-          const needsPageSwitch = pageId !== activePageId;
-          if (needsPageSwitch) {
-            setActivePageId(pageId);
-          }
-          // Switch theme if needed
-          if (themeId !== activeThemeId) {
-            themeSelectionsRef.current[activeThemeIdRef.current] = {
-              selectedNodeId: selectedNodeIdRef.current,
-              selectedNodeIds: [...selectedNodeIdsRef.current],
-            };
-            setActiveThemeId(themeId);
-          }
-          // Select the node
-          setSelectedNodeId(nodeId);
-          setSelectedNodeIds([nodeId]);
-          // Ensure canvas view
-          setViewMode('canvas');
-          // Dispatch navigation event
-          const dispatchNav = () => {
-            const event = new CustomEvent('navigateToNode', { detail: { nodeId } });
-            window.dispatchEvent(event);
-          };
-          if (needsPageSwitch) {
-            setTimeout(dispatchNav, 180);
-          } else {
-            requestAnimationFrame(dispatchNav);
-          }
-        }}
-        onNavigateToToken={(tokenId, pageId) => {
-          // Switch page if needed
-          if (pageId !== activePageId) {
-            setActivePageId(pageId);
-          }
-          // Ensure canvas view (token panel is visible in canvas mode)
-          setViewMode('canvas');
-          // Dispatch a custom event for token highlighting
-          setTimeout(() => {
-            const event = new CustomEvent('highlightToken', { detail: { tokenId } });
-            window.dispatchEvent(event);
-          }, pageId !== activePageId ? 200 : 50);
-        }}
-        onOpenTokenTable={() => {
-          setShowTokenTable(true);
-          setViewMode('canvas');
-        }}
-        onOpenCodeView={() => setViewMode('code')}
-        onAddColorNode={(cs) => addRootNode(cs)}
-        onAddPaletteNode={addPaletteNode}
-        onAddTokenNode={addTokenNode}
-        onAddSpacingNode={addSpacingNode}
-        onCreatePage={handleCreatePage}
-        onCreateTheme={handleCreateTheme}
-        onAddVariable={() => addToken()}
-        onSwitchPage={handleSwitchPage}
-        onSwitchTheme={handleSwitchTheme}
-      />
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onAuth={handleAuth}
-      />
-    </div>
-  );
+      </div>
+    );
+  }
 }

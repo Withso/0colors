@@ -250,6 +250,7 @@ export interface TokenProject {
   folderColor?: number; // Random hue (0-360) assigned at creation, used for folder card color
   isCloud?: boolean; // True for projects synced to Supabase cloud (max 2 per user)
   isTemplate?: boolean; // True for template projects (template admin only, cloud-backed, no limit)
+  isPublished?: boolean; // True if published to community
   lastSyncedAt?: number; // Timestamp of last successful cloud sync
 }
 

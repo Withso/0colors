@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 import { getSupabaseClient, SERVER_BASE } from '../utils/supabase/client';
 import { publicAnonKey } from '../utils/supabase/info';
+import { toast } from 'sonner';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -10,13 +11,23 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
-  if (!isOpen) return null;
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   const handleSignUp = useCallback(async () => {
     if (!email.trim() || !password.trim()) {
@@ -250,6 +261,34 @@ export function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
                 style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444' }}
               >
                 {error}
+              </div>
+            )}
+
+            {mode === 'signin' && (
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const emailInput = email.trim();
+                    if (!emailInput) {
+                      setError('Please enter your email first');
+                      return;
+                    }
+                    toast.promise(
+                      getSupabaseClient().auth.resetPasswordForEmail(emailInput, {
+                        redirectTo: `${window.location.origin}/auth/reset-password`,
+                      }),
+                      {
+                        loading: 'Sending reset link...',
+                        success: 'Check your email for reset link!',
+                        error: (err: any) => `Error: ${err.message}`,
+                      }
+                    );
+                  }}
+                  className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
+                >
+                  Forgot password?
+                </button>
               </div>
             )}
 
