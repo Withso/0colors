@@ -10,7 +10,7 @@ import { Zap, GripVertical, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Tip } from './Tip';
 import { motion, AnimatePresence } from 'motion/react';
 import namer from 'color-namer';
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { isNodeNameTaken } from '../utils/nameValidation';
 import { MAX_NODE_NAME } from '../utils/textLimits';
 import { isNodeHiddenInTheme, toggleVisibilityMap } from '../utils/visibility';
@@ -276,9 +276,8 @@ function NodeReferenceLabel({
 
   return (
     <div
-      className={`absolute left-0 z-30 flex items-center justify-between transition-opacity duration-150 ${
-        containerVisible ? 'opacity-100' : 'opacity-0'
-      }`}
+      className={`absolute left-0 z-30 flex items-center justify-between transition-opacity duration-150 ${containerVisible ? 'opacity-100' : 'opacity-0'
+        }`}
       style={{ top: `${topOffset}px`, width: `${nodeWidth}px`, paddingBottom: 8 }}
       onMouseDown={(e) => {
         // Allow drag handle mouseDown to propagate to canvas
@@ -306,35 +305,35 @@ function NodeReferenceLabel({
           </div>
         )}
         <div className="min-w-0">
-        {fullName && (
-          <>
-            {isEditing ? (
-              <div className="flex items-center gap-0 bg-[#1a1a1a] rounded-md border border-[#333] px-1 max-w-full">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onBlur={handleFinishEditing}
-                  onKeyDown={handleKeyDown}
-                  maxLength={MAX_NODE_NAME}
-                  className="bg-transparent text-[16px] text-[#ededed] outline-none py-0.5 min-w-[36px] max-w-[160px]"
-                  style={{ width: `${Math.max(36, editValue.length * 10)}px` }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                />
-                <span className="text-[16px] text-[#666] select-none shrink-0">{fixedSuffix}</span>
-              </div>
-            ) : (
-              <span
-                className={`text-[16px] text-[#888] truncate cursor-default transition-colors px-1 py-0.5 rounded block ${isPrimaryTheme && !readOnly ? 'hover:text-[#bbb]' : ''}`}
-                onDoubleClick={isPrimaryTheme && !readOnly ? handleStartEditing : undefined}
-                title={isPrimaryTheme && !readOnly ? `${fullName} (double-click to rename)` : fullName}
-              >
-                {fullName}
-              </span>
-            )}
-          </>
-        )}
+          {fullName && (
+            <>
+              {isEditing ? (
+                <div className="flex items-center gap-0 bg-[#1a1a1a] rounded-md border border-[#333] px-1 max-w-full">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={handleFinishEditing}
+                    onKeyDown={handleKeyDown}
+                    maxLength={MAX_NODE_NAME}
+                    className="bg-transparent text-[16px] text-[#ededed] outline-none py-0.5 min-w-[36px] max-w-[160px]"
+                    style={{ width: `${Math.max(36, editValue.length * 10)}px` }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  />
+                  <span className="text-[16px] text-[#666] select-none shrink-0">{fixedSuffix}</span>
+                </div>
+              ) : (
+                <span
+                  className={`text-[16px] text-[#888] truncate cursor-default transition-colors px-1 py-0.5 rounded block ${isPrimaryTheme && !readOnly ? 'hover:text-[#bbb]' : ''}`}
+                  onDoubleClick={isPrimaryTheme && !readOnly ? handleStartEditing : undefined}
+                  title={isPrimaryTheme && !readOnly ? `${fullName} (double-click to rename)` : fullName}
+                >
+                  {fullName}
+                </span>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -374,11 +373,10 @@ function NodeReferenceLabel({
         return (
           <Tip label={isPrefix ? 'Convert to token' : 'Convert to prefix'} side="top">
             <button
-              className={`shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-md cursor-pointer transition-all border ${
-                isPrefix
+              className={`shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-md cursor-pointer transition-all border ${isPrefix
                   ? 'bg-[#6b8598]/10 border-[#6b8598]/30 text-[#8ea3b4] hover:bg-[#6b8598]/20 hover:border-[#6b8598]/50'
                   : 'bg-transparent border-[#333] text-[#555] hover:bg-[#1a1a1a] hover:border-[#444] hover:text-[#888]'
-              }`}
+                }`}
               onClick={(e) => {
                 e.stopPropagation();
                 onTogglePrefix(node.id, !isPrefix);
@@ -474,14 +472,14 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [hasDragged, setHasDragged] = useState(false);
   const isDraggingOrJustDraggedRef = useRef(false);
-  
+
   // Wire connection dragging state
   const [isDraggingWire, setIsDraggingWire] = useState(false);
   const [wireStartNodeId, setWireStartNodeId] = useState<string | null>(null);
   const [wireStartButtonType, setWireStartButtonType] = useState<'left' | 'right' | null>(null);
   const [wireMousePosition, setWireMousePosition] = useState({ x: 0, y: 0 });
   const [wireHoverNodeId, setWireHoverNodeId] = useState<string | null>(null);
-  
+
   // Wire hover with cross-type blocking: prevent hover highlight when dragging between token and non-token nodes
   const handleWireHoverStart = useCallback((targetNodeId: string) => {
     if (!wireStartNodeId) {
@@ -499,10 +497,10 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
   // Connection error state
   const [connectionError, setConnectionError] = useState<{ nodeId: string; message: string } | null>(null);
-  
+
   // Hovered node tracking for reference name labels
   const [hoveredCanvasNodeId, setHoveredCanvasNodeId] = useState<string | null>(null);
-  
+
   // Auto-assign token prompt state
   const [autoAssignPromptNodeId, setAutoAssignPromptNodeId] = useState<string | null>(null);
   const autoAssignPromptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -598,23 +596,23 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
   // Ref for nodesWithColorPickerOpen so wheel handler doesn't need to re-register
   const nodesWithColorPickerOpenRef = useRef<Set<string>>(new Set());
-  
+
   // Track last known canvas-relative mouse position (for wire drag initialization)
   const lastCanvasMousePosRef = useRef({ x: 0, y: 0 });
   // RAF-based wire mouse position tracking
   const wireMousePosRef = useRef({ x: 0, y: 0 });
   const wireRafId = useRef<number | null>(null);
-  
+
   // Track which nodes have color pickers open
   const [nodesWithColorPickerOpen, setNodesWithColorPickerOpen] = useState<Set<string>>(new Set());
   nodesWithColorPickerOpenRef.current = nodesWithColorPickerOpen;
 
   // Track which node should auto-open its color picker (for arrow key navigation)
   const [nodeToAutoOpenColorPicker, setNodeToAutoOpenColorPicker] = useState<string | null>(null);
-  
+
   // Ensure pan is always valid (safety check) - defined early for use in callbacks
   const safePan = pan || { x: 0, y: 0 };
-  
+
   // Sync local state with canvasState when project changes
   useEffect(() => {
     if (canvasState) {
@@ -627,7 +625,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       setHasInitializedView(false);
     }
   }, [activeProjectId]);
-  
+
   // Update parent's canvasState when pan or zoom changes.
   // Debounced so rapid animation frames don't trigger 60+ App.tsx re-renders per second.
   const canvasStateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1042,7 +1040,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         animateTo(targetPan, ADVANCED_POPUP_ZOOM, { duration: 450, easing: easeInOutCubic });
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, advancedPopupNodeId]);
 
   // Derived flag: is the advanced popup truly active (node exists in current nodes)?
@@ -1331,8 +1329,8 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       // Don't interfere with input fields
       const target = e.target as HTMLElement;
       const isTyping = target.tagName === 'INPUT' ||
-                       target.tagName === 'TEXTAREA' ||
-                       target.isContentEditable;
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable;
 
       // Cmd/Ctrl + = / +: Zoom in
       if ((e.metaKey || e.ctrlKey) && (e.key === '=' || e.key === '+')) {
@@ -1447,30 +1445,30 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
       // Check if user is typing in an input field
       const target = e.target as HTMLElement;
-      const isTyping = target.tagName === 'INPUT' || 
-                      target.tagName === 'TEXTAREA' || 
-                      target.isContentEditable;
+      const isTyping = target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable;
 
       // NOTE: Zoom shortcuts (Cmd+=/-, Shift+1, Shift+0) are handled in the
       // stable [] deps effect above so they are never torn down / re-registered.
-      
+
       // Arrow key navigation (only when not typing and a node is selected)
       if (!isTyping && selectedNodeId && (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         e.preventDefault();
-        
+
         const currentNode = nodes.find(n => n.id === selectedNodeId);
         if (!currentNode) return;
-        
+
         // Check if the current node has its color picker open
         const wasColorPickerOpen = nodesWithColorPickerOpen.has(selectedNodeId);
-        
+
         let newNodeId: string | null = null;
-        
+
         // ── Detect sibling layout orientation ──
         // Gather all siblings (same parent) including the current node
         const allSiblingsIncludingCurrent = nodes
           .filter(n => n.parentId === currentNode.parentId && n.pageId === currentNode.pageId);
-        
+
         // Determine if siblings are arranged horizontally or vertically
         let isHorizontalLayout = false;
         if (allSiblingsIncludingCurrent.length >= 2) {
@@ -1481,7 +1479,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
           // Horizontal if X spread significantly exceeds Y spread
           isHorizontalLayout = xRange > yRange * 1.5 && xRange > 50;
         }
-        
+
         // ── Map arrow keys based on layout orientation ──
         // Vertical layout (default):  Left=parent, Right=child, Up/Down=siblings
         // Horizontal layout:          Up=parent, Down=child, Left/Right=siblings
@@ -1497,7 +1495,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         const goToNextSibling = isHorizontalLayout
           ? e.key === 'ArrowRight'
           : e.key === 'ArrowDown';
-        
+
         if (goToParent) {
           // Navigate to parent node
           if (currentNode.parentId) {
@@ -1534,7 +1532,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                 : (a.position.y - b.position.y || a.position.x - b.position.x)
             );
             const currentIndex = sorted.findIndex(n => n.id === currentNode.id);
-            
+
             if (goToPrevSibling) {
               if (currentIndex > 0) {
                 newNodeId = sorted[currentIndex - 1].id;
@@ -1546,32 +1544,32 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
             }
           }
         }
-        
+
         // If we're navigating to a new node and the color picker was open, signal the new node to open its picker
         if (newNodeId && wasColorPickerOpen) {
           setNodeToAutoOpenColorPicker(newNodeId);
         }
-        
+
         // Select the new node
         if (newNodeId) {
           onSelectNode(newNodeId);
         }
-        
+
         return;
       }
-      
+
       if (e.code === 'Space') {
         // Don't interfere with typing in input fields
         const target = e.target as HTMLElement;
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
           return;
         }
-        
+
         // Don't allow panning if any color picker is open
         if (nodesWithColorPickerOpen.size > 0) {
           return;
         }
-        
+
         // Prevent default scrolling behavior
         e.preventDefault();
         if (!isSpacePressed) {
@@ -1587,7 +1585,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
           return;
         }
-        
+
         e.preventDefault();
         setIsSpacePressed(false);
         setIsPanning(false);
@@ -1628,18 +1626,18 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
     if (isDraggingOrJustDraggedRef.current) {
       return;
     }
-    
+
     // If shift is pressed, toggle the node in multi-selection
     if (e?.shiftKey) {
       // Get current selection state
-      const currentSelection = selectedNodeIds.length > 0 
-        ? selectedNodeIds 
+      const currentSelection = selectedNodeIds.length > 0
+        ? selectedNodeIds
         : (selectedNodeId ? [selectedNodeId] : []);
-      
+
       if (currentSelection.includes(nodeId)) {
         // Node is already selected, remove it from selection
         const newSelection = currentSelection.filter(id => id !== nodeId);
-        
+
         if (newSelection.length === 0) {
           // If no nodes left in multi-selection, clear everything
           onSelectNode(null);
@@ -1686,14 +1684,14 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
     ) {
       return;
     }
-    
+
     e.stopPropagation();
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
 
     // Don't deselect on shift+mousedown - let shift+drag work normally
     // The shift+click deselection is handled in onClick of the card
-    
+
     setHasDragged(false); // Reset drag flag at start
     isDraggingOrJustDraggedRef.current = true; // Set flag to prevent clicks
     document.body.classList.add('dragging');
@@ -1710,15 +1708,15 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
     const maxX = Math.max(startX, endX);
     const minY = Math.min(startY, endY);
     const maxY = Math.max(startY, endY);
-    
+
     const selectionWidth = maxX - minX;
     const selectionHeight = maxY - minY;
-    
+
     // Only process if there's a meaningful selection area
     if (selectionWidth < 5 || selectionHeight < 5) {
       return [];
     }
-    
+
     const selectedNodes: string[] = [];
     nodes.forEach(node => {
       const nodeWidth = node.width || 240;
@@ -1727,12 +1725,12 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       // whose DOM hasn't been measured yet are harder — not easier — to select
       // by accident).
       const nodeHeight = measuredNodeHeights.current.get(node.id) || 120;
-      
+
       const nodeLeft = node.position.x;
       const nodeRight = node.position.x + nodeWidth;
       const nodeTop = node.position.y;
       const nodeBottom = node.position.y + nodeHeight;
-      
+
       // Check for any intersection between the selection rectangle and the node bounds.
       // A node is selected when the selection rectangle actually touches it.
       const intersects =
@@ -1740,12 +1738,12 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         maxX > nodeLeft &&
         minY < nodeBottom &&
         maxY > nodeTop;
-      
+
       if (intersects) {
         selectedNodes.push(node.id);
       }
     });
-    
+
     return selectedNodes;
   };
 
@@ -1758,7 +1756,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         y: (e.clientY - canvasRect.top - pan.y) / zoom,
       };
     }
-    
+
     // Panning takes priority when active
     if (isPanning) {
       // Don't allow panning if any color picker is open
@@ -1766,10 +1764,10 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         setIsPanning(false);
         return;
       }
-      
+
       // Store current mouse position for requestAnimationFrame
       currentMousePos.current = { x: e.clientX, y: e.clientY };
-      
+
       // Use requestAnimationFrame for smooth panning
       if (!rafId.current) {
         rafId.current = requestAnimationFrame(() => {
@@ -1797,12 +1795,12 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
     } else if (draggedNode && !isSpacePressed) {
       const node = nodes.find((n) => n.id === draggedNode);
       if (!node) return;
-      
+
       setHasDragged(true); // Mark that we've started dragging
-      
+
       const newX = (e.clientX - pan.x) / zoom - dragOffset.x;
       const newY = (e.clientY - pan.y) / zoom - dragOffset.y;
-      
+
       // If this node is part of a multi-selection, move all selected nodes
       if (selectedNodeIds.length > 0 && selectedNodeIds.includes(draggedNode)) {
         const deltaX = newX - node.position.x;
@@ -1820,9 +1818,9 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       if (rect) {
         const endX = (e.clientX - rect.left - pan.x) / zoom;
         const endY = (e.clientY - rect.top - pan.y) / zoom;
-        
+
         setSelectionEnd({ x: endX, y: endY });
-        
+
         // Calculate and update selected nodes in real-time
         const nodesInRectangle = calculateSelectedNodes(
           selectionStart.x,
@@ -1830,16 +1828,16 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
           endX,
           endY
         );
-        
+
         if (selectionStartedWithShift) {
           // Shift+drag: toggle logic based on initial selection
           const initialSet = new Set(initialSelectionOnShiftDrag);
           const rectangleSet = new Set(nodesInRectangle);
           const finalSelection = new Set<string>();
-          
+
           // Start with all initially selected nodes
           initialSelectionOnShiftDrag.forEach(id => finalSelection.add(id));
-          
+
           // Toggle nodes in the rectangle
           nodesInRectangle.forEach(id => {
             if (initialSet.has(id)) {
@@ -1850,24 +1848,24 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
               finalSelection.add(id);
             }
           });
-          
-          const event = new CustomEvent('dragSelectNodes', { 
-            detail: { 
+
+          const event = new CustomEvent('dragSelectNodes', {
+            detail: {
               nodeIds: Array.from(finalSelection),
               addToSelection: false, // Don't use toggle logic in App.tsx, we already calculated final state
               isRealtime: true
-            } 
+            }
           });
           window.dispatchEvent(event);
         } else {
           // Normal drag: just select nodes in rectangle
           if (nodesInRectangle.length > 0) {
-            const event = new CustomEvent('dragSelectNodes', { 
-              detail: { 
+            const event = new CustomEvent('dragSelectNodes', {
+              detail: {
                 nodeIds: nodesInRectangle,
                 addToSelection: false,
                 isRealtime: true
-              } 
+              }
             });
             window.dispatchEvent(event);
           } else {
@@ -1987,7 +1985,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       cancelAnimationFrame(wheelRafId.current);
       wheelRafId.current = null;
     }
-    
+
     // Handle wire connection completion
     if (isDraggingWire && wireStartNodeId && wireStartButtonType) {
       if (wireHoverNodeId) {
@@ -2068,7 +2066,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         onAddChild(wireStartNodeId, wireMousePosition);
       }
     }
-    
+
     // Handle selection rectangle completion
     if (isSelecting) {
       const nodesInRectangle = calculateSelectedNodes(
@@ -2077,15 +2075,15 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         selectionEnd.x,
         selectionEnd.y
       );
-      
+
       if (selectionStartedWithShift) {
         // Shift+drag: toggle logic based on initial selection
         const initialSet = new Set(initialSelectionOnShiftDrag);
         const finalSelection = new Set<string>();
-        
+
         // Start with all initially selected nodes
         initialSelectionOnShiftDrag.forEach(id => finalSelection.add(id));
-        
+
         // Toggle nodes in the rectangle
         nodesInRectangle.forEach(id => {
           if (initialSet.has(id)) {
@@ -2096,14 +2094,14 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
             finalSelection.add(id);
           }
         });
-        
+
         const finalArray = Array.from(finalSelection);
         if (finalArray.length > 0) {
-          const event = new CustomEvent('dragSelectNodes', { 
-            detail: { 
+          const event = new CustomEvent('dragSelectNodes', {
+            detail: {
               nodeIds: finalArray,
               addToSelection: false // We already calculated the final state
-            } 
+            }
           });
           window.dispatchEvent(event);
         } else {
@@ -2114,11 +2112,11 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       } else {
         // Normal drag-to-select - replace selection
         if (nodesInRectangle.length > 0) {
-          const event = new CustomEvent('dragSelectNodes', { 
-            detail: { 
+          const event = new CustomEvent('dragSelectNodes', {
+            detail: {
               nodeIds: nodesInRectangle,
               addToSelection: false
-            } 
+            }
           });
           window.dispatchEvent(event);
         } else {
@@ -2126,16 +2124,16 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
           onClearMultiSelection();
         }
       }
-      
+
       document.body.classList.remove('selecting');
       setIsSelecting(false);
       setSelectionStartedWithShift(false); // Reset the flag
       setInitialSelectionOnShiftDrag([]); // Reset initial selection
     }
-    
+
     document.body.classList.remove('dragging');
     document.body.classList.remove('selecting');
-    
+
     // ── Enforce minimum gap after drag ends ──
     if (draggedNode && hasDragged) {
       // Collect all IDs that were being moved (multi-select or single)
@@ -2163,7 +2161,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
     } else {
       isDraggingOrJustDraggedRef.current = false;
     }
-    
+
     setDraggedNode(null);
     setIsPanning(false);
     setIsDraggingWire(false);
@@ -2177,7 +2175,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       wireRafId.current = null;
     }
   };
-  
+
   // Check if connecting childId to parentId would create a cycle
   const wouldCreateCycle = (childId: string, parentId: string): boolean => {
     let currentId: string | null = parentId;
@@ -2199,7 +2197,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       if (nodesWithColorPickerOpen.size > 0) {
         return;
       }
-      
+
       e.preventDefault();
       e.stopPropagation();
       setIsPanning(true);
@@ -2209,14 +2207,14 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       });
       return;
     }
-    
+
     // Check if clicking on canvas background (not on nodes or SVG)
     const target = e.target as HTMLElement;
-    const isCanvasBackground = 
-      e.target === e.currentTarget || 
+    const isCanvasBackground =
+      e.target === e.currentTarget ||
       target.classList.contains('canvas-background') ||
       (target.tagName === 'DIV' && !target.classList.contains('pointer-events-auto') && !target.closest('[data-node-card]') && !target.closest('.palette-node-card'));
-    
+
     // Only handle left clicks on canvas background for selection
     if (isCanvasBackground && e.button === 0) {
       // Deselect when clicking on canvas background (but NOT when shift is pressed)
@@ -2224,7 +2222,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         onSelectNode(null);
         onClearMultiSelection();
       }
-      
+
       // Start selection rectangle
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect) {
@@ -2520,7 +2518,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
     // Re-measure after a short delay for nodes that may still be rendering
     const timer = setTimeout(measureButtons, 50);
-    
+
     // Measure actual rendered heights of all node card wrappers for
     // accurate drag-selection hit-testing (replaces the old hardcoded 280px).
     const measureNodeHeights = () => {
@@ -2783,7 +2781,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         }
       });
     });
-    
+
     // Observe all node cards
     const currentNodes = nodesRef.current;
     currentNodes.forEach(node => {
@@ -2792,7 +2790,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         resizeObserver.observe(nodeElement);
       }
     });
-    
+
     return () => {
       clearTimeout(timer);
       clearTimeout(heightTimer);
@@ -2818,7 +2816,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
       const parentOff = liveOffsets.get(parent.id);
       const childOff = liveOffsets.get(node.id);
-      
+
       return {
         from: parent.position,
         to: node.position,
@@ -2874,12 +2872,12 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         }}
       >
         {/* SVG for connections */}
-        <svg 
-          className="absolute pointer-events-none" 
+        <svg
+          className="absolute pointer-events-none"
           width="20000"
           height="20000"
           overflow="visible"
-          style={{ 
+          style={{
             zIndex: 5,
             left: '-5000px',
             top: '-5000px',
@@ -2890,7 +2888,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
         >
           {connections.map((conn) => {
             if (!conn) return null;
-            
+
             // Start: parent's right button = parent position + measured offset (or fallback)
             let fromX: number, fromY: number;
             if (conn.parentRightOffset) {
@@ -2902,7 +2900,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
               fromX = conn.from.x + conn.parentWidth;
               fromY = conn.from.y + (conn.parentIsSpacing ? 70 : conn.parentIsPalette ? 28 : 29);
             }
-            
+
             // End: child's left button = child position + measured offset (or fallback)
             let toX: number, toY: number;
             if (conn.childLeftOffset) {
@@ -2923,7 +2921,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
             // Check if this wire connects to any selected node (single or multi-selection)
             const isSelectedWire = (selectedNodeId && (conn.parentId === selectedNodeId || conn.childId === selectedNodeId)) ||
-                                   (selectedNodeIds.length > 0 && (selectedNodeIds.includes(conn.parentId) || selectedNodeIds.includes(conn.childId)));
+              (selectedNodeIds.length > 0 && (selectedNodeIds.includes(conn.parentId) || selectedNodeIds.includes(conn.childId)));
             const wireColor = isSelectedWire ? '#6b8598' : '#444';
 
             const connKey = `${conn.parentId}__${conn.childId}`;
@@ -2940,7 +2938,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
               </g>
             );
           })}
-          
+
           {/* Preview wire(s) while dragging — multi-wire when dragging from left + on a multi-selected node */}
           {isDraggingWire && wireStartNodeId && wireStartButtonType && (() => {
             // Determine which nodes should show preview wires
@@ -3004,14 +3002,14 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
               );
             });
           })()}
-          
+
           {/* Selection rectangle */}
           {isSelecting && (() => {
             const minX = Math.min(selectionStart.x, selectionEnd.x);
             const minY = Math.min(selectionStart.y, selectionEnd.y);
             const width = Math.abs(selectionEnd.x - selectionStart.x);
             const height = Math.abs(selectionEnd.y - selectionStart.y);
-            
+
             return (
               <rect
                 x={minX}
@@ -3045,392 +3043,393 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                   return 0;
                 })
                 .map((node) => {
-                const isPaletteShadeNode = !!(node.parentId && nodes.find(n => n.id === node.parentId)?.isPalette);
-                const hasInheritBar = showInheritanceIcon && !isPrimaryTheme && !isPaletteShadeNode && !node.isSpacing && !node.isTokenNode;
-                const isNodeRefVisible = hoveredCanvasNodeId === node.id || selectedNodeId === node.id || selectedNodeIds.includes(node.id);
-                const nodeHidden = isNodeHiddenInTheme(node, activeThemeId, primaryThemeId, nodes);
-                return (
-                <div
-                  key={node.id}
-                  className="pointer-events-auto"
-                  data-node-wrapper-id={node.id}
-                  style={{
-                    position: 'absolute',
-                    left: node.position.x,
-                    top: node.position.y,
-                    opacity: (advancedPopupNodeExists && !isAdvancedPopupMinimized)
-                      ? (node.id === advancedPopupNodeId ? 1 : 0.12)
-                      : nodeHidden ? 0.35 : undefined,
-                    transition: 'opacity 0.35s ease',
-                    zIndex: autoAssignPopupNodeId === node.id
-                      ? 1000 // Boost z-index when auto-assign popup is open so it stays on top
-                      : node.parentId ? 10 : 20,
-                  }}
-                  onMouseEnter={() => setHoveredCanvasNodeId(node.id)}
-                  onMouseLeave={() => setHoveredCanvasNodeId(prev => prev === node.id ? null : prev)}
-                >
-                  {/* Node Reference Name Label */}
-                  <NodeReferenceLabel
-                    node={node}
-                    allNodes={nodes}
-                    isVisible={isNodeRefVisible}
-                    isPaletteShade={isPaletteShadeNode}
-                    nodeWidth={node.isPalette ? (node.width || 300) : (node.width || 240)}
-                    hasInheritanceBar={hasInheritBar}
-                    onUpdateNode={onUpdateNode}
-                    groups={groups}
-                    tokens={tokens}
-                    activeProjectId={activeProjectId}
-                    onAddToken={onAddToken}
-                    onAssignToken={onAssignToken}
-                    onUpdateToken={onUpdateToken}
-                    onDeleteToken={onDeleteToken}
-                    onUpdateGroups={onUpdateGroups}
-                    isPrompted={autoAssignPromptNodeId === node.id}
-                    isPopupOpen={autoAssignPopupNodeId === node.id}
-                    shouldOpenPopup={autoAssignExpandNodeId === node.id}
-                    onPopupOpened={() => setAutoAssignExpandNodeId(null)}
-                    onPopupOpenChange={(isOpen) => {
-                      if (isOpen) {
-                        setAutoAssignPopupNodeId(node.id);
-                      } else {
-                        // Only clear if THIS node was the active popup — prevents
-                        // other nodes' close callbacks from clearing the boost.
-                        setAutoAssignPopupNodeId(prev => prev === node.id ? null : prev);
-                      }
-                    }}
-                    onSelectNode={() => onSelectNode(node.id)}
-                    isActiveMenu={autoAssignPopupNodeId === node.id}
-                    isPrimaryTheme={isPrimaryTheme}
-                    onDragMouseDown={!isPaletteShadeNode ? (e) => handleMouseDown(e, node.id) : undefined}
-                    onTogglePrefix={onTogglePrefix}
-                    readOnly={readOnly}
-                  />
-
-                  {/* Connection error message */}
-                  {connectionError?.nodeId === node.id && (() => {
-                    // Generate the node's color for background
-                    let bgColor = '';
-                    if (node.colorSpace === 'hsl') {
-                      bgColor = `hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, ${node.alpha / 100})`;
-                    } else if (node.colorSpace === 'rgb') {
-                      bgColor = `rgba(${node.red}, ${node.green}, ${node.blue}, ${node.alpha / 100})`;
-                    } else if (node.colorSpace === 'oklch') {
-                      const l = (node.oklchL || 50) / 100;
-                      const c = ((node.oklchC || 0) / 100) * 0.4;
-                      const h = node.oklchH || 0;
-                      bgColor = `oklch(${l} ${c} ${h} / ${node.alpha / 100})`;
-                    }
-                    
-                    const nodeWidth = node.width || 240;
-                    
-                    return (
-                      <div
-                        className="absolute -top-10 left-0 flex items-center justify-center shadow-lg text-white text-sm z-50 rounded-[20px]"
-                        style={{
-                          backgroundColor: bgColor,
-                          width: `${nodeWidth}px`,
-                          height: '36px',
+                  const isPaletteShadeNode = !!(node.parentId && nodes.find(n => n.id === node.parentId)?.isPalette);
+                  const hasInheritBar = showInheritanceIcon && !isPrimaryTheme && !isPaletteShadeNode && !node.isSpacing && !node.isTokenNode;
+                  const isNodeRefVisible = hoveredCanvasNodeId === node.id || selectedNodeId === node.id || selectedNodeIds.includes(node.id);
+                  const nodeHidden = isNodeHiddenInTheme(node, activeThemeId, primaryThemeId, nodes);
+                  return (
+                    <div
+                      key={node.id}
+                      className="pointer-events-auto"
+                      data-node-wrapper-id={node.id}
+                      style={{
+                        position: 'absolute',
+                        left: node.position.x,
+                        top: node.position.y,
+                        opacity: (advancedPopupNodeExists && !isAdvancedPopupMinimized)
+                          ? (node.id === advancedPopupNodeId ? 1 : 0.12)
+                          : nodeHidden ? 0.35 : undefined,
+                        transition: 'opacity 0.35s ease',
+                        zIndex: autoAssignPopupNodeId === node.id
+                          ? 1000 // Boost z-index when auto-assign popup is open so it stays on top
+                          : node.parentId ? 10 : 20,
+                      }}
+                      onMouseEnter={() => setHoveredCanvasNodeId(node.id)}
+                      onMouseLeave={() => setHoveredCanvasNodeId(prev => prev === node.id ? null : prev)}
+                    >
+                      {/* Node Reference Name Label */}
+                      <NodeReferenceLabel
+                        node={node}
+                        allNodes={nodes}
+                        isVisible={isNodeRefVisible}
+                        isPaletteShade={isPaletteShadeNode}
+                        nodeWidth={node.isPalette ? (node.width || 300) : (node.width || 240)}
+                        hasInheritanceBar={hasInheritBar}
+                        onUpdateNode={onUpdateNode}
+                        groups={groups}
+                        tokens={tokens}
+                        activeProjectId={activeProjectId}
+                        onAddToken={onAddToken}
+                        onAssignToken={onAssignToken}
+                        onUpdateToken={onUpdateToken}
+                        onDeleteToken={onDeleteToken}
+                        onUpdateGroups={onUpdateGroups}
+                        isPrompted={autoAssignPromptNodeId === node.id}
+                        isPopupOpen={autoAssignPopupNodeId === node.id}
+                        shouldOpenPopup={autoAssignExpandNodeId === node.id}
+                        onPopupOpened={() => setAutoAssignExpandNodeId(null)}
+                        onPopupOpenChange={(isOpen) => {
+                          if (isOpen) {
+                            setAutoAssignPopupNodeId(node.id);
+                          } else {
+                            // Only clear if THIS node was the active popup — prevents
+                            // other nodes' close callbacks from clearing the boost.
+                            setAutoAssignPopupNodeId(prev => prev === node.id ? null : prev);
+                          }
                         }}
-                      >
-                        {connectionError.message}
-                      </div>
-                    );
-                  })()}
-                  
-                  {node.isSpacing ? (
-                    <SpacingNodeCard
-                      node={node}
-                      nodes={nodes}
-                      tokens={tokens.filter(t => t.projectId === activeProjectId)}
-                      groups={groups.filter(g => g.projectId === activeProjectId)}
-                      activeProjectId={activeProjectId}
-                      onMouseDown={(e) => handleMouseDown(e, node.id)}
-                      onUpdateNode={onUpdateNode}
-                      onAddChild={onAddChild}
-                      onAddParent={onAddParent}
-                      onDeleteNode={onDeleteNode}
-                      onUnlinkNode={onUnlinkNode}
-                      onAssignToken={onAssignToken}
-                      onAddToken={onAddToken}
-                      onUpdateToken={onUpdateToken}
-                      isSelected={selectedNodeId === node.id}
-                      onSelect={(e) => handleNodeSelect(node.id, e)}
-                      onDoubleClick={() => onSelectNodeWithChildren(node.id)}
-                      onColorPickerOpenChange={handleColorPickerOpenChange}
-                      onWireStartDrag={(nodeId, buttonType, event) => {
-                        if (readOnly) return;
-                        setIsDraggingWire(true);
-                        setWireStartNodeId(nodeId);
-                        setWireStartButtonType(buttonType);
-                        setWireMousePosition({ ...lastCanvasMousePosRef.current });
-                      }}
-                      onWireEndDrag={() => {
-                        setIsDraggingWire(false);
-                        setWireStartNodeId(null);
-                        setWireStartButtonType(null);
-                      }}
-                      onWireHover={(nodeId, isHovering) => {
-                        if (isHovering) {
-                          handleWireHoverStart(nodeId);
-                        } else {
-                          setWireHoverNodeId(null);
-                        }
-                      }}
-                      isWireHovered={wireHoverNodeId === node.id}
-                    />
-                  ) : node.isPalette ? (
-                    <PaletteNodeCard
-                      node={node}
-                      nodes={nodes}
-                      tokens={tokens.filter(t => t.projectId === activeProjectId)}
-                      groups={groups.filter(g => g.projectId === activeProjectId)}
-                      activeProjectId={activeProjectId}
-                      onMouseDown={(e) => handleMouseDown(e, node.id)}
-                      onUpdateNode={onUpdateNode}
-                      onAddChild={onAddChild}
-                      onDeleteNode={onDeleteNode}
-                      onUpdateToken={onUpdateToken}
-                      onWireDragStart={(nodeId, buttonType) => {
-                        if (readOnly) return;
-                        setIsDraggingWire(true);
-                        setWireStartNodeId(nodeId);
-                        setWireStartButtonType(buttonType);
-                        setWireMousePosition({ ...lastCanvasMousePosRef.current });
-                      }}
-                      onWireHoverStart={handleWireHoverStart}
-                      onWireHoverEnd={() => setWireHoverNodeId(null)}
-                      isWireHovered={wireHoverNodeId === node.id}
-                      wireStartButtonType={wireStartButtonType}
-                      isDraggingWire={isDraggingWire}
-                      isSelected={selectedNodeId === node.id}
-                      isMultiSelected={selectedNodeIds.includes(node.id)}
-                      onSelect={(e) => handleNodeSelect(node.id, e)}
-                      onDoubleClick={() => onSelectNodeWithChildren(node.id)}
-                      onColorPickerOpenChange={handleColorPickerOpenChange}
-                      showInheritanceIcon={showInheritanceIcon}
-                      activeThemeId={activeThemeId}
-                      isPrimaryTheme={isPrimaryTheme}
-                      primaryThemeId={primaryThemeId}
-                      showAllVisible={showAllVisible}
-                      isNodeHidden={nodeHidden}
-                      onToggleVisibility={() => {
-                        const newVis = toggleVisibilityMap(node.themeVisibility, activeThemeId, primaryThemeId, isPrimaryTheme);
-                        onUpdateNode(node.id, { themeVisibility: newVis });
-                      }}
-                    />
-                  ) : node.isTokenNode ? (
-                    <TokenNodeCard
-                      node={node}
-                      nodes={nodes}
-                      tokens={tokens.filter(t => t.projectId === activeProjectId)}
-                      groups={groups.filter(g => g.projectId === activeProjectId)}
-                      pages={pages}
-                      allProjectNodes={allProjectNodes}
-                      activeProjectId={activeProjectId}
-                      onMouseDown={(e) => handleMouseDown(e, node.id)}
-                      onUpdateNode={onUpdateNode}
-                      onAddChild={onAddChild}
-                      onAddParent={onAddParent}
-                      onTogglePrefix={onTogglePrefix}
-                      onDeleteNode={onDeleteNode}
-                      onUnlinkNode={onUnlinkNode}
-                      onLinkNode={onLinkNode}
-                      onAssignToken={onAssignToken}
-                      onUpdateToken={onUpdateToken}
-                      onDeleteToken={onDeleteToken}
-                      onNavigateToNode={navigateToNode}
-                      onUpdateGroups={onUpdateGroups as (updater: (prev: TokenGroup[]) => TokenGroup[]) => void}
-                      onWireDragStart={(nodeId, buttonType) => {
-                        if (readOnly) return;
-                        setIsDraggingWire(true);
-                        setWireStartNodeId(nodeId);
-                        setWireStartButtonType(buttonType);
-                        setWireMousePosition({ ...lastCanvasMousePosRef.current });
-                      }}
-                      onWireHoverStart={handleWireHoverStart}
-                      onWireHoverEnd={() => setWireHoverNodeId(null)}
-                      isWireHovered={wireHoverNodeId === node.id}
-                      wireStartButtonType={wireStartButtonType}
-                      isDraggingWire={isDraggingWire}
-                      isSelected={selectedNodeId === node.id}
-                      isMultiSelected={selectedNodeIds.includes(node.id)}
-                      selectedNodeIds={selectedNodeIds}
-                      onSelect={(e) => handleNodeSelect(node.id, e)}
-                      onDoubleClick={() => onSelectNodeWithChildren(node.id)}
-                      showInheritanceIcon={showInheritanceIcon}
-                      activeThemeId={activeThemeId}
-                      isPrimaryTheme={isPrimaryTheme}
-                      primaryThemeId={primaryThemeId}
-                      showAllVisible={showAllVisible}
-                      isNodeHidden={nodeHidden}
-                      onToggleVisibility={() => {
-                        const newVis = toggleVisibilityMap(node.themeVisibility, activeThemeId, primaryThemeId, isPrimaryTheme);
-                        onUpdateNode(node.id, { themeVisibility: newVis });
-                      }}
-                      activeAdvancedChannels={(() => {
-                        const entry = advancedLogic.find(l => l.nodeId === node.id);
-                        if (!entry) return [];
-                        const nodeHasOverride = !isPrimaryTheme && !!(node.themeOverrides?.[activeThemeId]);
-                        const channels = (!isPrimaryTheme && nodeHasOverride && entry.themeChannels?.[activeThemeId])
-                          ? entry.themeChannels[activeThemeId]
-                          : entry.channels || {};
-                        return Object.entries(channels)
-                          .filter(([, ch]) => ch.rows.some(r => r.enabled && r.tokens.length > 0))
-                          .map(([key]) => key);
-                      })()}
-                      hasAdvancedTokenAssignment={(() => {
-                        const entry = advancedLogic.find(l => l.nodeId === node.id);
-                        if (!entry) return false;
-                        const nodeHasOverride = !isPrimaryTheme && !!(node.themeOverrides?.[activeThemeId]);
-                        const tokenUnlinked = nodeHasOverride || (!isPrimaryTheme && !!(node.valueTokenAssignments?.[activeThemeId]));
-                        const ta = (!isPrimaryTheme && tokenUnlinked && entry.themeTokenAssignment?.[activeThemeId])
-                          ? entry.themeTokenAssignment[activeThemeId]
-                          : entry.tokenAssignment;
-                        return !!(ta?.rows?.some(r => r.enabled && r.tokens.length > 0));
-                      })()}
-                      anyTokenNodeHasAdvancedLogic={anyTokenNodeHasAdvancedLogic}
-                      advancedTokenOutput={node.ownTokenId ? tokenAssignOutputs.get(node.ownTokenId) : undefined}
-                      onRevertThemeAdvancedLogic={onRevertThemeAdvancedLogic}
-                    />
-                  ) : (
-                    <ColorNodeCard
-                    node={node}
-                    nodes={nodes}
-                    tokens={tokens.filter(t => t.projectId === activeProjectId)}
-                    groups={groups.filter(g => g.projectId === activeProjectId)}
-                    pages={pages}
-                    activeProjectId={activeProjectId}
-                    onMouseDown={(e) => handleMouseDown(e, node.id)}
-                    onUpdateNode={onUpdateNode}
-                    onAddChild={onAddChild}
-                    onAddParent={onAddParent}
-                    onDelete={onDeleteNode}
-                    onUnlink={onUnlinkNode}
-                    onLink={onLinkNode}
-                    onAssignToken={onAssignToken}
-                    onUpdateToken={onUpdateToken}
-                    onDeleteToken={onDeleteToken}
-                    onNavigateToNode={navigateToNode}
-                    onWireDragStart={(nodeId, buttonType) => {
-                      if (readOnly) return;
-                      setIsDraggingWire(true);
-                      setWireStartNodeId(nodeId);
-                      setWireStartButtonType(buttonType);
-                      setWireMousePosition({ ...lastCanvasMousePosRef.current });
-                    }}
-                    onWireHoverStart={handleWireHoverStart}
-                    onWireHoverEnd={() => setWireHoverNodeId(null)}
-                    isWireHovered={wireHoverNodeId === node.id}
-                    wireStartButtonType={wireStartButtonType}
-                    isDraggingWire={isDraggingWire}
-                    isSelected={selectedNodeId === node.id}
-                    isMultiSelected={selectedNodeIds.includes(node.id)}
-                    selectedNodeIds={selectedNodeIds}
-                    onSelect={(e) => handleNodeSelect(node.id, e)}
-                    onDoubleClick={() => onSelectNodeWithChildren(node.id)}
-                    onColorPickerOpenChange={handleColorPickerOpenChange}
-                    shouldAutoOpenColorPicker={nodeToAutoOpenColorPicker === node.id}
-                    onColorPickerAutoOpened={() => setNodeToAutoOpenColorPicker(null)}
-                    isPaletteShade={!!(node.parentId && nodes.find(n => n.id === node.parentId)?.isPalette)}
-                    showInheritanceIcon={showInheritanceIcon}
-                    activeThemeId={activeThemeId}
-                    isPrimaryTheme={isPrimaryTheme}
-                    primaryThemeId={primaryThemeId}
-                    showAllVisible={showAllVisible}
-                    isNodeHidden={nodeHidden}
-                    onToggleVisibility={() => {
-                      const newVis = toggleVisibilityMap(node.themeVisibility, activeThemeId, primaryThemeId, isPrimaryTheme);
-                      onUpdateNode(node.id, { themeVisibility: newVis });
-                    }}
-                    activeAdvancedChannels={(() => {
-                      const entry = advancedLogic.find(l => l.nodeId === node.id);
-                      if (!entry) return [];
-                      const nodeHasOverride = !isPrimaryTheme && !!(node.themeOverrides?.[activeThemeId]);
-                      const channels = (!isPrimaryTheme && nodeHasOverride && entry.themeChannels?.[activeThemeId])
-                        ? entry.themeChannels[activeThemeId]
-                        : entry.channels;
-                      return Object.entries(channels)
-                        .filter(([, ch]) => ch.rows.some(r => r.enabled && r.tokens.length > 0))
-                        .map(([key]) => key);
-                    })()}
-                    nodeViewConfig={(() => {
-                      const entry = advancedLogic.find(l => l.nodeId === node.id);
-                      if (!entry) return {};
-                      const nodeHasOverride = !isPrimaryTheme && !!(node.themeOverrides?.[activeThemeId]);
-                      if (!isPrimaryTheme && nodeHasOverride && entry.themeNodeViewConfig?.[activeThemeId]) {
-                        return entry.themeNodeViewConfig[activeThemeId];
-                      }
-                      return entry.nodeViewConfig || {};
-                    })()}
-                    onRevertThemeAdvancedLogic={onRevertThemeAdvancedLogic}
-                    readOnly={readOnly}
-                    showDevMode={showDevMode}
-                    onToggleWebhookInput={onToggleWebhookInput}
-                  />
-                  )}
+                        onSelectNode={() => onSelectNode(node.id)}
+                        isActiveMenu={autoAssignPopupNodeId === node.id}
+                        isPrimaryTheme={isPrimaryTheme}
+                        onDragMouseDown={!isPaletteShadeNode ? (e) => handleMouseDown(e, node.id) : undefined}
+                        onTogglePrefix={onTogglePrefix}
+                        readOnly={readOnly}
+                      />
 
-                  {/* Auto-assign prompt bubble — floats below node card without
+                      {/* Connection error message */}
+                      {connectionError?.nodeId === node.id && (() => {
+                        // Generate the node's color for background
+                        let bgColor = '';
+                        if (node.colorSpace === 'hsl') {
+                          bgColor = `hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, ${node.alpha / 100})`;
+                        } else if (node.colorSpace === 'rgb') {
+                          bgColor = `rgba(${node.red}, ${node.green}, ${node.blue}, ${node.alpha / 100})`;
+                        } else if (node.colorSpace === 'oklch') {
+                          const l = (node.oklchL || 50) / 100;
+                          const c = ((node.oklchC || 0) / 100) * 0.4;
+                          const h = node.oklchH || 0;
+                          bgColor = `oklch(${l} ${c} ${h} / ${node.alpha / 100})`;
+                        }
+
+                        const nodeWidth = node.width || 240;
+
+                        return (
+                          <div
+                            className="absolute -top-10 left-0 flex items-center justify-center shadow-lg text-white text-sm z-50 rounded-[20px]"
+                            style={{
+                              backgroundColor: bgColor,
+                              width: `${nodeWidth}px`,
+                              height: '36px',
+                            }}
+                          >
+                            {connectionError.message}
+                          </div>
+                        );
+                      })()}
+
+                      {node.isSpacing ? (
+                        <SpacingNodeCard
+                          node={node}
+                          nodes={nodes}
+                          tokens={tokens.filter(t => t.projectId === activeProjectId)}
+                          groups={groups.filter(g => g.projectId === activeProjectId)}
+                          activeProjectId={activeProjectId}
+                          onMouseDown={(e) => handleMouseDown(e, node.id)}
+                          onUpdateNode={onUpdateNode}
+                          onAddChild={onAddChild}
+                          onAddParent={onAddParent}
+                          onDeleteNode={onDeleteNode}
+                          onUnlinkNode={onUnlinkNode}
+                          onAssignToken={onAssignToken}
+                          onAddToken={onAddToken}
+                          onUpdateToken={onUpdateToken}
+                          isSelected={selectedNodeId === node.id}
+                          onSelect={(e) => handleNodeSelect(node.id, e)}
+                          onDoubleClick={() => onSelectNodeWithChildren(node.id)}
+                          onColorPickerOpenChange={handleColorPickerOpenChange}
+                          onWireStartDrag={(nodeId, buttonType, event) => {
+                            if (readOnly) return;
+                            setIsDraggingWire(true);
+                            setWireStartNodeId(nodeId);
+                            setWireStartButtonType(buttonType);
+                            setWireMousePosition({ ...lastCanvasMousePosRef.current });
+                          }}
+                          onWireEndDrag={() => {
+                            setIsDraggingWire(false);
+                            setWireStartNodeId(null);
+                            setWireStartButtonType(null);
+                          }}
+                          onWireHover={(nodeId, isHovering) => {
+                            if (isHovering) {
+                              handleWireHoverStart(nodeId);
+                            } else {
+                              setWireHoverNodeId(null);
+                            }
+                          }}
+                          isWireHovered={wireHoverNodeId === node.id}
+                        />
+                      ) : node.isPalette ? (
+                        <PaletteNodeCard
+                          node={node}
+                          nodes={nodes}
+                          tokens={tokens.filter(t => t.projectId === activeProjectId)}
+                          groups={groups.filter(g => g.projectId === activeProjectId)}
+                          activeProjectId={activeProjectId}
+                          onMouseDown={(e) => handleMouseDown(e, node.id)}
+                          onUpdateNode={onUpdateNode}
+                          onAddChild={onAddChild}
+                          onDeleteNode={onDeleteNode}
+                          onUpdateToken={onUpdateToken}
+                          onWireDragStart={(nodeId, buttonType) => {
+                            if (readOnly) return;
+                            setIsDraggingWire(true);
+                            setWireStartNodeId(nodeId);
+                            setWireStartButtonType(buttonType);
+                            setWireMousePosition({ ...lastCanvasMousePosRef.current });
+                          }}
+                          onWireHoverStart={handleWireHoverStart}
+                          onWireHoverEnd={() => setWireHoverNodeId(null)}
+                          isWireHovered={wireHoverNodeId === node.id}
+                          wireStartButtonType={wireStartButtonType}
+                          isDraggingWire={isDraggingWire}
+                          isSelected={selectedNodeId === node.id}
+                          isMultiSelected={selectedNodeIds.includes(node.id)}
+                          onSelect={(e) => handleNodeSelect(node.id, e)}
+                          onDoubleClick={() => onSelectNodeWithChildren(node.id)}
+                          onColorPickerOpenChange={handleColorPickerOpenChange}
+                          showInheritanceIcon={showInheritanceIcon}
+                          activeThemeId={activeThemeId}
+                          isPrimaryTheme={isPrimaryTheme}
+                          primaryThemeId={primaryThemeId}
+                          showAllVisible={showAllVisible}
+                          isNodeHidden={nodeHidden}
+                          onToggleVisibility={() => {
+                            const newVis = toggleVisibilityMap(node.themeVisibility, activeThemeId, primaryThemeId, isPrimaryTheme);
+                            onUpdateNode(node.id, { themeVisibility: newVis });
+                          }}
+                        />
+                      ) : node.isTokenNode ? (
+                        <TokenNodeCard
+                          node={node}
+                          nodes={nodes}
+                          tokens={tokens.filter(t => t.projectId === activeProjectId)}
+                          groups={groups.filter(g => g.projectId === activeProjectId)}
+                          pages={pages}
+                          allProjectNodes={allProjectNodes}
+                          activeProjectId={activeProjectId}
+                          onMouseDown={(e) => handleMouseDown(e, node.id)}
+                          onUpdateNode={onUpdateNode}
+                          onAddChild={onAddChild}
+                          onAddParent={onAddParent}
+                          onTogglePrefix={onTogglePrefix}
+                          onDeleteNode={onDeleteNode}
+                          onUnlinkNode={onUnlinkNode}
+                          onLinkNode={onLinkNode}
+                          onAssignToken={onAssignToken}
+                          onUpdateToken={onUpdateToken}
+                          onDeleteToken={onDeleteToken}
+                          onNavigateToNode={navigateToNode}
+                          onUpdateGroups={onUpdateGroups as (updater: (prev: TokenGroup[]) => TokenGroup[]) => void}
+                          onWireDragStart={(nodeId, buttonType) => {
+                            if (readOnly) return;
+                            setIsDraggingWire(true);
+                            setWireStartNodeId(nodeId);
+                            setWireStartButtonType(buttonType);
+                            setWireMousePosition({ ...lastCanvasMousePosRef.current });
+                          }}
+                          onWireHoverStart={handleWireHoverStart}
+                          onWireHoverEnd={() => setWireHoverNodeId(null)}
+                          isWireHovered={wireHoverNodeId === node.id}
+                          wireStartButtonType={wireStartButtonType}
+                          isDraggingWire={isDraggingWire}
+                          isSelected={selectedNodeId === node.id}
+                          isMultiSelected={selectedNodeIds.includes(node.id)}
+                          selectedNodeIds={selectedNodeIds}
+                          onSelect={(e) => handleNodeSelect(node.id, e)}
+                          onDoubleClick={() => onSelectNodeWithChildren(node.id)}
+                          showInheritanceIcon={showInheritanceIcon}
+                          activeThemeId={activeThemeId}
+                          isPrimaryTheme={isPrimaryTheme}
+                          primaryThemeId={primaryThemeId}
+                          showAllVisible={showAllVisible}
+                          isNodeHidden={nodeHidden}
+                          onToggleVisibility={() => {
+                            const newVis = toggleVisibilityMap(node.themeVisibility, activeThemeId, primaryThemeId, isPrimaryTheme);
+                            onUpdateNode(node.id, { themeVisibility: newVis });
+                          }}
+                          activeAdvancedChannels={(() => {
+                            const entry = advancedLogic.find(l => l.nodeId === node.id);
+                            if (!entry) return [];
+                            const nodeHasOverride = !isPrimaryTheme && !!(node.themeOverrides?.[activeThemeId]);
+                            const channels = (!isPrimaryTheme && nodeHasOverride && entry.themeChannels?.[activeThemeId])
+                              ? entry.themeChannels[activeThemeId]
+                              : entry.channels || {};
+                            return Object.entries(channels)
+                              .filter(([, ch]) => ch.rows.some(r => r.enabled && r.tokens.length > 0))
+                              .map(([key]) => key);
+                          })()}
+                          hasAdvancedTokenAssignment={(() => {
+                            const entry = advancedLogic.find(l => l.nodeId === node.id);
+                            if (!entry) return false;
+                            const nodeHasOverride = !isPrimaryTheme && !!(node.themeOverrides?.[activeThemeId]);
+                            const tokenUnlinked = nodeHasOverride || (!isPrimaryTheme && !!(node.valueTokenAssignments?.[activeThemeId]));
+                            const ta = (!isPrimaryTheme && tokenUnlinked && entry.themeTokenAssignment?.[activeThemeId])
+                              ? entry.themeTokenAssignment[activeThemeId]
+                              : entry.tokenAssignment;
+                            return !!(ta?.rows?.some(r => r.enabled && r.tokens.length > 0));
+                          })()}
+                          anyTokenNodeHasAdvancedLogic={anyTokenNodeHasAdvancedLogic}
+                          advancedTokenOutput={node.ownTokenId ? tokenAssignOutputs.get(node.ownTokenId) : undefined}
+                          onRevertThemeAdvancedLogic={onRevertThemeAdvancedLogic}
+                        />
+                      ) : (
+                        <ColorNodeCard
+                          node={node}
+                          nodes={nodes}
+                          tokens={tokens.filter(t => t.projectId === activeProjectId)}
+                          groups={groups.filter(g => g.projectId === activeProjectId)}
+                          pages={pages}
+                          activeProjectId={activeProjectId}
+                          onMouseDown={(e) => handleMouseDown(e, node.id)}
+                          onUpdateNode={onUpdateNode}
+                          onAddChild={onAddChild}
+                          onAddParent={onAddParent}
+                          onDelete={onDeleteNode}
+                          onUnlink={onUnlinkNode}
+                          onLink={onLinkNode}
+                          onAssignToken={onAssignToken}
+                          onUpdateToken={onUpdateToken}
+                          onDeleteToken={onDeleteToken}
+                          onNavigateToNode={navigateToNode}
+                          onWireDragStart={(nodeId, buttonType) => {
+                            if (readOnly) return;
+                            setIsDraggingWire(true);
+                            setWireStartNodeId(nodeId);
+                            setWireStartButtonType(buttonType);
+                            setWireMousePosition({ ...lastCanvasMousePosRef.current });
+                          }}
+                          onWireHoverStart={handleWireHoverStart}
+                          onWireHoverEnd={() => setWireHoverNodeId(null)}
+                          isWireHovered={wireHoverNodeId === node.id}
+                          wireStartButtonType={wireStartButtonType}
+                          isDraggingWire={isDraggingWire}
+                          isSelected={selectedNodeId === node.id}
+                          isMultiSelected={selectedNodeIds.includes(node.id)}
+                          selectedNodeIds={selectedNodeIds}
+                          onSelect={(e) => handleNodeSelect(node.id, e)}
+                          onDoubleClick={() => onSelectNodeWithChildren(node.id)}
+                          onColorPickerOpenChange={handleColorPickerOpenChange}
+                          shouldAutoOpenColorPicker={nodeToAutoOpenColorPicker === node.id}
+                          onColorPickerAutoOpened={() => setNodeToAutoOpenColorPicker(null)}
+                          isPaletteShade={!!(node.parentId && nodes.find(n => n.id === node.parentId)?.isPalette)}
+                          showInheritanceIcon={showInheritanceIcon}
+                          activeThemeId={activeThemeId}
+                          isPrimaryTheme={isPrimaryTheme}
+                          primaryThemeId={primaryThemeId}
+                          showAllVisible={showAllVisible}
+                          isNodeHidden={nodeHidden}
+                          onToggleVisibility={() => {
+                            const newVis = toggleVisibilityMap(node.themeVisibility, activeThemeId, primaryThemeId, isPrimaryTheme);
+                            onUpdateNode(node.id, { themeVisibility: newVis });
+                          }}
+                          activeAdvancedChannels={(() => {
+                            const entry = advancedLogic.find(l => l.nodeId === node.id);
+                            if (!entry) return [];
+                            const nodeHasOverride = !isPrimaryTheme && !!(node.themeOverrides?.[activeThemeId]);
+                            const channels = (!isPrimaryTheme && nodeHasOverride && entry.themeChannels?.[activeThemeId])
+                              ? entry.themeChannels[activeThemeId]
+                              : entry.channels;
+                            return Object.entries(channels)
+                              .filter(([, ch]) => ch.rows.some(r => r.enabled && r.tokens.length > 0))
+                              .map(([key]) => key);
+                          })()}
+                          nodeViewConfig={(() => {
+                            const entry = advancedLogic.find(l => l.nodeId === node.id);
+                            if (!entry) return {};
+                            const nodeHasOverride = !isPrimaryTheme && !!(node.themeOverrides?.[activeThemeId]);
+                            if (!isPrimaryTheme && nodeHasOverride && entry.themeNodeViewConfig?.[activeThemeId]) {
+                              return entry.themeNodeViewConfig[activeThemeId];
+                            }
+                            return entry.nodeViewConfig || {};
+                          })()}
+                          onRevertThemeAdvancedLogic={onRevertThemeAdvancedLogic}
+                          readOnly={readOnly}
+                          showDevMode={showDevMode}
+                          onToggleWebhookInput={onToggleWebhookInput}
+                        />
+                      )}
+
+                      {/* Auto-assign prompt bubble — floats below node card without
                       affecting wrapper height (zero-height container + position:absolute)
                       so it doesn't trigger ResizeObserver shifts */}
-                  <div className="relative" style={{ height: 0, overflow: 'visible' }}>
-                  <AnimatePresence>
-                    {isPrimaryTheme &&
-                     !readOnly &&
-                     autoAssignPromptNodeId === node.id &&
-                     !node.autoAssignEnabled &&
-                     !node.isPalette &&
-                     !node.isSpacing &&
-                     !node.isTokenNode &&
-                     !isPaletteShadeNode && (
-                      <motion.div
-                        key="auto-assign-prompt"
-                        initial={{ opacity: 0, y: -6, scale: 0.96 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                        className="flex justify-center pt-2.5 relative z-40"
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {/* Upward caret connecting to the node */}
-                        <div className="absolute top-[4px] left-1/2 -translate-x-1/2">
-                          <div
-                            className="w-0 h-0"
-                            style={{
-                              borderLeft: '6px solid transparent',
-                              borderRight: '6px solid transparent',
-                              borderBottom: '6px solid #2a2a2a',
-                            }}
-                          />
-                        </div>
-                        <button
-                          className="group flex items-center gap-2.5 bg-[#1a1a1a]/95 backdrop-blur-sm border border-[#2a2a2a] rounded-lg px-3.5 py-2 shadow-lg shadow-black/30 hover:border-[#6b8598]/40 hover:shadow-[0_0_12px_rgba(107,133,152,0.08)] transition-all duration-200 cursor-pointer whitespace-nowrap"
-                          onClick={() => {
-                            // Select the node so the label row stays visible
-                            onSelectNode(node.id);
-                            // Force-open the auto-assign popup
-                            setAutoAssignExpandNodeId(node.id);
-                            // Dismiss the prompt timer/bubble
-                            dismissAutoAssignPrompt();
-                          }}
-                        >
-                          <div className="flex items-center justify-center w-5 h-5 rounded bg-[#6b8598]/15 shrink-0">
-                            <Zap size={11} className="text-[#6b8598]" />
-                          </div>
-                          <span className="text-[13px] text-[#ccc] group-hover:text-[#ededed] transition-colors">
-                            Auto-assign tokens
-                          </span>
-                          <svg width="5" height="8" viewBox="0 0 5 8" fill="none" className="text-[#555] group-hover:text-[#888] transition-colors ml-0.5">
-                            <path d="M1 1L4 4L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  </div>
-                </div>
-              );})}{/* end node map */}
+                      <div className="relative" style={{ height: 0, overflow: 'visible' }}>
+                        <AnimatePresence>
+                          {isPrimaryTheme &&
+                            !readOnly &&
+                            autoAssignPromptNodeId === node.id &&
+                            !node.autoAssignEnabled &&
+                            !node.isPalette &&
+                            !node.isSpacing &&
+                            !node.isTokenNode &&
+                            !isPaletteShadeNode && (
+                              <motion.div
+                                key="auto-assign-prompt"
+                                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                                className="flex justify-center pt-2.5 relative z-40"
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {/* Upward caret connecting to the node */}
+                                <div className="absolute top-[4px] left-1/2 -translate-x-1/2">
+                                  <div
+                                    className="w-0 h-0"
+                                    style={{
+                                      borderLeft: '6px solid transparent',
+                                      borderRight: '6px solid transparent',
+                                      borderBottom: '6px solid #2a2a2a',
+                                    }}
+                                  />
+                                </div>
+                                <button
+                                  className="group flex items-center gap-2.5 bg-[#1a1a1a]/95 backdrop-blur-sm border border-[#2a2a2a] rounded-lg px-3.5 py-2 shadow-lg shadow-black/30 hover:border-[#6b8598]/40 hover:shadow-[0_0_12px_rgba(107,133,152,0.08)] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                                  onClick={() => {
+                                    // Select the node so the label row stays visible
+                                    onSelectNode(node.id);
+                                    // Force-open the auto-assign popup
+                                    setAutoAssignExpandNodeId(node.id);
+                                    // Dismiss the prompt timer/bubble
+                                    dismissAutoAssignPrompt();
+                                  }}
+                                >
+                                  <div className="flex items-center justify-center w-5 h-5 rounded bg-[#6b8598]/15 shrink-0">
+                                    <Zap size={11} className="text-[#6b8598]" />
+                                  </div>
+                                  <span className="text-[13px] text-[#ccc] group-hover:text-[#ededed] transition-colors">
+                                    Auto-assign tokens
+                                  </span>
+                                  <svg width="5" height="8" viewBox="0 0 5 8" fill="none" className="text-[#555] group-hover:text-[#888] transition-colors ml-0.5">
+                                    <path d="M1 1L4 4L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                </button>
+                              </motion.div>
+                            )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  );
+                })}{/* end node map */}
 
             </>
           );
@@ -3475,7 +3474,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
               isPrimaryTheme={isPrimaryTheme}
               primaryThemeId={primaryThemeId}
               advancedLogic={advancedLogic}
-              onUpdateAdvancedLogic={onUpdateAdvancedLogic || (() => {})}
+              onUpdateAdvancedLogic={onUpdateAdvancedLogic || (() => { })}
               onClose={handleCloseAdvancedPopup}
               isMinimized={isAdvancedPopupMinimized}
               onMinimize={handleMinimizeAdvancedPopup}

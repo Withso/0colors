@@ -17,7 +17,7 @@ import {
   ChevronDown,
   ExternalLink,
 } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { fetchCommunityProjects, type CommunityProjectMeta } from '../utils/community-api';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { copyTextToClipboard } from '../utils/clipboard';

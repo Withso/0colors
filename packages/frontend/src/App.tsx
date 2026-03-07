@@ -49,7 +49,7 @@ import { hctToRgb, rgbToHct, hctToHex } from './utils/hct-utils';
 import { copyTextToClipboard } from './utils/clipboard';
 import { hslToRgb, rgbToHex, rgbToHsl, hslToOklch as hslToOklchBase, oklchToHsl } from './utils/color-conversions';
 import { getUniqueTokenName, getUniqueNodeName } from './utils/nameValidation';
-import { toast, Toaster } from "sonner@2.0.3";
+import { toast, Toaster } from "sonner";
 import { Tip } from './components/Tip';
 import {
   evaluateChannelLogic,
@@ -177,7 +177,7 @@ const GO_BACK_FADE_MS = 400;      // fade-out animation duration
 
 
 
-  
+
 
 
 
@@ -339,9 +339,9 @@ export function AppShell() {
     // Apply node patches
     const patchedNodes = nodePatches.size > 0
       ? nodes.map((n: any) => {
-          const patch = nodePatches.get(n.id);
-          return patch ? { ...n, ...patch } : n;
-        })
+        const patch = nodePatches.get(n.id);
+        return patch ? { ...n, ...patch } : n;
+      })
       : nodes;
 
     if (newTokens.length > 0) {
@@ -692,7 +692,7 @@ export function AppShell() {
   // Project editing state
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingProjectName, setEditingProjectName] = useState('');
-  
+
   // Theme editing state
   const [editingThemeId, setEditingThemeId] = useState<string | null>(null);
   const [editingThemeName, setEditingThemeName] = useState('');
@@ -700,13 +700,13 @@ export function AppShell() {
   // Page editing state
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
   const [editingPageName, setEditingPageName] = useState('');
-  
+
   // Highlighted project state (for newly imported/duplicated projects)
   const [highlightedProjectId, setHighlightedProjectId] = useState<string | null>(null);
-  
+
   // Sidebar mode state
   const [sidebarMode, setSidebarMode] = useState<'color' | 'variables' | 'text' | 'components' | 'animation' | 'layout'>('color');
-  
+
   // View mode state (canvas, code, or export) — initialised from URL
   const [viewMode, _setViewMode] = useState<'canvas' | 'code' | 'export'>(() => {
     const parts = window.location.pathname.split('/').filter(Boolean);
@@ -726,7 +726,7 @@ export function AppShell() {
     if (mode === 'canvas') navigate(`/project/${slug}`, { replace: true });
     else navigate(`/project/${slug}/${mode}`, { replace: true });
   }, [navigate]);
-  
+
   // Persistent state for CodePreview "Show as Hex" (per-page)
   const [codePreviewHexByPage, setCodePreviewHexByPage] = useState<Record<string, Set<string>>>({});
 
@@ -745,7 +745,7 @@ export function AppShell() {
     try {
       const saved = localStorage.getItem('tokenTableHexSpaces');
       if (saved) return new Set(JSON.parse(saved));
-    } catch {}
+    } catch { }
     return new Set();
   });
 
@@ -763,7 +763,7 @@ export function AppShell() {
     try {
       const saved = localStorage.getItem('0colors-dev-configs');
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return {};
   });
 
@@ -878,7 +878,7 @@ export function AppShell() {
           const { value, format, targetNodeId } = data.pending;
           const nodeId = targetNodeId || activeDevConfig.webhookTargetNodeId;
           const targetNode = allNodesRef.current.find(n => n.id === nodeId);
-          
+
           if (targetNode) {
             // Parse incoming value and apply to node — supports all 5 webhook formats
             let parsedHsl: { h: number; s: number; l: number } | null = null;
@@ -1518,7 +1518,7 @@ export function AppShell() {
           return [] as any[];
         });
         if (loadCancelled) return; // bail if token changed mid-flight
-        
+
         // ── Enhanced diagnostic logging ──
         const localCloudProjects = projectsRef.current.filter(p => p.isCloud || p.isTemplate);
         console.log(`☁️ ═══ CLOUD LOAD DIAGNOSTIC ═══`);
@@ -1537,7 +1537,7 @@ export function AppShell() {
         console.log(`☁️ Local cloud/template projects: ${localCloudProjects.map(p => `${p.id}("${p.name}")`).join(', ') || '(none)'}`);
         console.log(`☁️ lastSyncedAtMapRef:`, JSON.stringify(lastSyncedAtMapRef.current));
         console.log(`☁️ cloudMeta.cloudProjectIds: ${JSON.stringify(cloudMeta?.cloudProjectIds || [])}`);
-        
+
         if (cloudData.length > 0) {
           // Suppress markDirty during merge — prevents wasteful re-upload cycle
           isLoadingCloudDataRef.current = true;
@@ -1549,14 +1549,14 @@ export function AppShell() {
             }
             const projectId = cloudEntry.projectId;
             let snapshot = cloudEntry.snapshot;
-            
+
             // ── Run schema migrations on cloud snapshot ──
             const migResult = migrateSnapshot(snapshot);
             if (migResult.migrated) {
               console.log(`🔄 Cloud migration for ${projectId}: ${migResult.appliedMigrations.join(', ')}`);
               snapshot = migResult.snapshot as ProjectSnapshot;
             }
-            
+
             // Check if we already have this project locally.
             // IMPORTANT: read from projectsRef (always latest) instead of the
             // closure's `projects` to avoid a stale-timestamp race condition.
@@ -1564,7 +1564,7 @@ export function AppShell() {
             const localSyncedAt = lastSyncedAtMapRef.current[projectId]
               || existingProject?.lastSyncedAt || 0;
             const remoteSyncedAt = (snapshot as any)._syncedAt || 0;
-            
+
             // ── KEY FIX: Always merge if project doesn't exist locally ──
             // Previously: `remoteSyncedAt > localSyncedAt` — failed when both
             // were 0 (missing _syncedAt) and silently skipped new projects.
@@ -1572,14 +1572,14 @@ export function AppShell() {
             // ── CRITICAL GUARD: Never overwrite dirty local data with stale cloud data ──
             const projectIsDirty = existingProject && isDirty(projectId);
             const shouldMerge = !existingProject || (remoteSyncedAt > localSyncedAt && !projectIsDirty);
-            
+
             if (projectIsDirty && remoteSyncedAt > localSyncedAt) {
               console.log(`☁️ SKIPPING cloud overwrite for dirty project ${projectId} — local has unsaved changes (remote=${remoteSyncedAt}, local=${localSyncedAt})`);
             }
-            
+
             if (shouldMerge) {
               console.log(`☁️ ${existingProject ? 'Updating' : 'Adding NEW'} cloud project "${snapshot.project?.name}" (${projectId}) — remote=${remoteSyncedAt}, local=${localSyncedAt}`);
-              
+
               // Keep synchronous ref in sync with the new timestamp
               lastSyncedAtMapRef.current[projectId] = remoteSyncedAt || Date.now();
 
@@ -1979,7 +1979,7 @@ export function AppShell() {
   const handleSignOut = useCallback(async () => {
     // Flush any pending sync before signing out (best-effort)
     try { await forceSyncNow(); } catch { /* ignore sync errors on signout */ }
-    
+
     try {
       const supabase = getSupabaseClient();
       await supabase.auth.signOut();
@@ -2058,9 +2058,9 @@ export function AppShell() {
               },
               body: payload,
               keepalive: true,
-            }).catch(() => {});
+            }).catch(() => { });
           }
-        } catch {}
+        } catch { }
         aiConvPendingRef.current = null;
       }
       // Flush any pending debounced settings save
@@ -2079,9 +2079,9 @@ export function AppShell() {
               },
               body: JSON.stringify({ settings: JSON.parse(aiSettingsPendingRef.current) }),
               keepalive: true,
-            }).catch(() => {});
+            }).catch(() => { });
           }
-        } catch {}
+        } catch { }
         aiSettingsPendingRef.current = null;
       }
     };
@@ -2607,7 +2607,7 @@ export function AppShell() {
   });
   const handleAIChatDockChange = useCallback((docked: boolean) => {
     setAIChatDocked(docked);
-    try { localStorage.setItem('0colors-ai-chat-docked', String(docked)); } catch {}
+    try { localStorage.setItem('0colors-ai-chat-docked', String(docked)); } catch { }
   }, []);
   const aiConvSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const aiConvLoadedRef = useRef(false);
@@ -2621,32 +2621,32 @@ export function AppShell() {
 
   // Get nodes for the active project and page (nodes are NOT filtered by theme - they're shared)
   const nodes = allNodes.filter(node => node.projectId === activeProjectId && node.pageId === activePageId);
-  
+
   // Get tokens for the active project and page
   // Tokens are now theme-agnostic - they're shared across all themes
   // Only their values (stored in themeValues) differ per theme
-  const pageTokens = tokens.filter(token => 
+  const pageTokens = tokens.filter(token =>
     token.projectId === activeProjectId && token.pageId === activePageId
   );
-  
+
   // All tokens across all pages for the active project (for cross-page reference resolution)
   const allProjectTokens = tokens.filter(token => token.projectId === activeProjectId);
-  
+
   // All nodes across all pages for the active project (for cross-page lookups)
   const allProjectNodes = allNodes.filter(node => node.projectId === activeProjectId);
-  
+
   // Get groups for the active project and page
   const pageGroups = groups.filter(group => group.projectId === activeProjectId && group.pageId === activePageId);
-  
+
   // Get active page
   const activePage = pages.find(p => p.id === activePageId);
-  
+
   // Get active theme
   const activeTheme = themes.find(t => t.id === activeThemeId);
-  
+
   // Get primary theme for this project
   const primaryTheme = themes.find(t => t.projectId === activeProjectId && t.isPrimary);
-  
+
   // Check if current theme is primary
   const isViewingPrimaryTheme = activeTheme?.isPrimary === true;
 
@@ -2717,7 +2717,7 @@ export function AppShell() {
   const getCanvasState = (): CanvasState => {
     const existing = canvasStates.find(s => s.projectId === activeProjectId && s.pageId === activePageId);
     if (existing) return existing;
-    
+
     return {
       projectId: activeProjectId,
       pageId: activePageId,
@@ -2725,16 +2725,16 @@ export function AppShell() {
       zoom: 1,
     };
   };
-  
+
   const canvasState = getCanvasState();
-  
+
   // Update canvas state for active project
   const updateCanvasState = useCallback((updates: Partial<Omit<CanvasState, 'projectId'>>) => {
     setCanvasStates(prev => {
       const existing = prev.find(s => s.projectId === activeProjectId);
       if (existing) {
-        return prev.map(s => 
-          s.projectId === activeProjectId 
+        return prev.map(s =>
+          s.projectId === activeProjectId
             ? { ...s, ...updates }
             : s
         );
@@ -2781,7 +2781,7 @@ export function AppShell() {
       // Migration: convert old tokenId to tokenIds array and add colorSpace
       const migratedNodes = (storedData.nodes || []).map((node: any) => {
         let migrated = { ...node };
-        
+
         // Migration 1: tokenId -> tokenIds
         if (node.tokenId !== undefined && node.tokenIds === undefined) {
           const { tokenId, ...rest } = migrated;
@@ -2790,17 +2790,17 @@ export function AppShell() {
             tokenIds: tokenId ? [tokenId] : [],
           };
         }
-        
+
         // Migration 2: add colorSpace (default to 'hsl' for old nodes)
         if (!migrated.colorSpace) {
           migrated.colorSpace = 'hsl';
         }
-        
+
         // Migration 3: add pageId (assign to page-1 for old nodes)
         if (!migrated.pageId) {
           migrated.pageId = 'page-1';
         }
-        
+
         return migrated;
       });
 
@@ -2821,15 +2821,15 @@ export function AppShell() {
       });
 
       setAllNodes(migratedNodes);
-      
+
       // DATA INTEGRITY CHECK (non-destructive — log warnings but preserve all data)
       // Data is never auto-deleted; only explicit user actions (delete node, reset to defaults) remove data.
       const loadedGroups = migratedGroups;
       const loadedTokens = migratedTokens || defaultData.tokens;
-      
+
       console.log('📋 Running data integrity check on load...');
       console.log(`Loaded data: ${migratedNodes.length} nodes, ${loadedGroups.length} groups, ${loadedTokens.length} tokens`);
-      
+
       // Check for orphaned palette groups (palette entries without corresponding nodes)
       const paletteEntryGroups = loadedGroups.filter(g => g.isPaletteEntry);
       paletteEntryGroups.forEach(group => {
@@ -2838,7 +2838,7 @@ export function AppShell() {
           console.warn(`⚠️ Palette group "${group.name}" (${group.id}) has no matching palette node — data preserved`);
         }
       });
-      
+
       // Check for tokens referencing non-existent groups
       const validGroupIds = new Set(loadedGroups.map(g => g.id));
       loadedTokens.forEach(t => {
@@ -2846,9 +2846,9 @@ export function AppShell() {
           console.warn(`⚠️ Token "${t.name}" (${t.id}) references non-existent group ${t.groupId} — data preserved`);
         }
       });
-      
+
       console.log('✅ Data integrity check complete — all data preserved');
-      
+
       setTokens(loadedTokens);
       // Merge immediately-saved expand states on top of loaded groups
       setGroups(mergeGroupExpandStates(loadedGroups));
@@ -2881,7 +2881,7 @@ export function AppShell() {
         } catch { /* ignore */ }
       }
     }
-    
+
     // Set timeout after state updates have settled
     setTimeout(() => {
       console.log('📋 Post-load state settled');
@@ -2902,10 +2902,10 @@ export function AppShell() {
   // Sync token values with assigned nodes when theme changes
   useEffect(() => {
     if (isInitialLoad || !activeThemeId) return;
-    
+
     const currentThemeSync = themes.find(t => t.id === activeThemeId);
     const isPrimarySync = currentThemeSync?.isPrimary ?? true;
-    
+
     // Sync all token values with their assigned nodes for the current theme
     setTokens(prevTokens => {
       let anyChanged = false;
@@ -2918,21 +2918,21 @@ export function AppShell() {
           }
           return (node.tokenIds || []).includes(token.id);
         });
-        
+
         if (!assignedNode) return token;
-        
+
         // Get the effective color using color-space-aware conversion (handles RGB, OKLCH, HCT, HEX → HSL)
         const hasThemeOverride = assignedNode.themeOverrides?.[activeThemeId];
         const themeOverride = hasThemeOverride ? assignedNode.themeOverrides![activeThemeId] : undefined;
         const effective = getNodeEffectiveHSL(assignedNode, themeOverride);
-        
+
         // Only update if token doesn't have the correct value already
         const currentThemeValue = token.themeValues?.[activeThemeId];
-        
+
         if (assignedNode.isSpacing || assignedNode.type === 'spacing') {
           const newValue = assignedNode.spacingValue ?? 16;
           const newUnit = assignedNode.spacingUnit ?? 'px';
-          
+
           if (currentThemeValue?.value !== newValue || currentThemeValue?.unit !== newUnit) {
             anyChanged = true;
             const updatedThemeValues = { ...token.themeValues };
@@ -2946,10 +2946,10 @@ export function AppShell() {
             };
           }
         } else {
-          if (currentThemeValue?.hue !== effective.hue || 
-              currentThemeValue?.saturation !== effective.saturation ||
-              currentThemeValue?.lightness !== effective.lightness ||
-              currentThemeValue?.alpha !== effective.alpha) {
+          if (currentThemeValue?.hue !== effective.hue ||
+            currentThemeValue?.saturation !== effective.saturation ||
+            currentThemeValue?.lightness !== effective.lightness ||
+            currentThemeValue?.alpha !== effective.alpha) {
             anyChanged = true;
             const updatedThemeValues = { ...token.themeValues };
             updatedThemeValues[activeThemeId] = {
@@ -2977,7 +2977,7 @@ export function AppShell() {
             }
           }
         }
-        
+
         return token;
       });
       // Return the same reference if nothing changed — avoids spurious
@@ -3016,7 +3016,7 @@ export function AppShell() {
         computedTokens: computedTokensRef.current, // Derived per-theme token snapshots
         schemaVersion: CURRENT_SCHEMA_VERSION, // Stamp version for migration system
       };
-      
+
       saveToLocalStorage(dataToSave);
     }, 1000); // Debounce by 1s
 
@@ -3100,7 +3100,7 @@ export function AppShell() {
       alert('Nodes can only be pasted in the primary theme. Please switch to the primary theme to paste nodes.');
       return;
     }
-    
+
     if (copiedNodes.length === 0) return;
 
     const timestamp = Date.now();
@@ -3298,11 +3298,11 @@ export function AppShell() {
         tokenThemeValues[theme.id] = origThemeVal
           ? { ...origThemeVal }
           : {
-              hue: childNode.hue ?? 0,
-              saturation: childNode.saturation ?? 0,
-              lightness: childNode.lightness ?? 0,
-              alpha: childNode.alpha ?? 100,
-            };
+            hue: childNode.hue ?? 0,
+            saturation: childNode.saturation ?? 0,
+            lightness: childNode.lightness ?? 0,
+            alpha: childNode.alpha ?? 100,
+          };
       });
 
       const newTokenId = `${childNode.id}-token`;
@@ -3338,7 +3338,7 @@ export function AppShell() {
     }
 
     setAllNodes((prev) => [...prev, ...newNodes]);
-    
+
     const newNodeIds = newNodes.map(n => n.id);
     setSelectedNodeId(oldToNewIdMap.get(copiedNodes[0].id)!);
     setSelectedNodeIds(newNodeIds);
@@ -3365,7 +3365,7 @@ export function AppShell() {
       alert('Nodes can only be duplicated in the primary theme. Please switch to the primary theme to duplicate nodes.');
       return;
     }
-    
+
     const ids = Array.isArray(id) ? id : [id];
     const nodesToDuplicate: ColorNode[] = [];
     const addedIds = new Set<string>();
@@ -3598,11 +3598,11 @@ export function AppShell() {
         tokenThemeValues[theme.id] = origThemeVal
           ? { ...origThemeVal }
           : {
-              hue: childNode.hue ?? 0,
-              saturation: childNode.saturation ?? 0,
-              lightness: childNode.lightness ?? 0,
-              alpha: childNode.alpha ?? 100,
-            };
+            hue: childNode.hue ?? 0,
+            saturation: childNode.saturation ?? 0,
+            lightness: childNode.lightness ?? 0,
+            alpha: childNode.alpha ?? 100,
+          };
       });
 
       const newTokenId = `${childNode.id}-token`;
@@ -3637,7 +3637,7 @@ export function AppShell() {
     }
 
     setAllNodes((prev) => [...prev, ...newNodes]);
-    
+
     const newNodeIds = newNodes.map(n => n.id);
     setSelectedNodeId(oldToNewIdMap.get(nodesToDuplicate[0].id)!);
     setSelectedNodeIds(newNodeIds);
@@ -3977,7 +3977,7 @@ export function AppShell() {
     const handleDragSelect = (e: Event) => {
       const customEvent = e as CustomEvent<{ nodeIds: string[], addToSelection: boolean, isRealtime?: boolean }>;
       const { nodeIds } = customEvent.detail;
-      
+
       if (nodeIds && nodeIds.length > 0) {
         // The ColorCanvas already calculated the final selection state
         // Just apply it directly
@@ -4016,12 +4016,12 @@ export function AppShell() {
       alert('Nodes can only be created in the primary theme. Please switch to the primary theme to add nodes.');
       return;
     }
-    
+
     const projectNodes = allNodes.filter(n => n.projectId === activeProjectId);
     const hue = Math.floor(Math.random() * 360);
     const saturation = 70;
     const lightness = 50;
-    
+
     // Convert HSL to RGB for RGB nodes
     const hslToRgb = (h: number, s: number, l: number): [number, number, number] => {
       s = s / 100;
@@ -4036,20 +4036,20 @@ export function AppShell() {
         Math.round(255 * f(4))
       ];
     };
-    
+
     const [r, g, b] = hslToRgb(hue, saturation, lightness);
-    
+
     // Get current canvas state for viewport position
     const currentCanvasState = canvasStates.find(s => s.projectId === activeProjectId) || {
       projectId: activeProjectId,
       pan: { x: 0, y: 0 },
       zoom: 1,
     };
-    
+
     // Ensure pan and zoom are always valid (defensive check)
     const safePan = currentCanvasState.pan || { x: 0, y: 0 };
     const safeZoom = currentCanvasState.zoom || 1;
-    
+
     // Calculate viewport center in canvas coordinates
     // Account for the 320px tokens panel + 52px sidebar on the left
     const tokensPanelWidth = 372;
@@ -4057,20 +4057,20 @@ export function AppShell() {
     const canvasHeight = window.innerHeight;
     const screenCenterX = tokensPanelWidth + canvasWidth / 2;
     const screenCenterY = canvasHeight / 2;
-    
+
     const viewportCenterX = (screenCenterX - safePan.x) / safeZoom;
     const viewportCenterY = (screenCenterY - safePan.y) / safeZoom;
-    
+
     // Find free space at viewport center with collision detection
     const findFreeSpace = (baseX: number, baseY: number): { x: number; y: number } => {
       const nodeWidth = 240;
       const nodeHeight = 280;
       const spacing = 50;
-      
+
       // First, try exact center position
       let x = baseX - nodeWidth / 2; // Center horizontally
       let y = baseY - nodeHeight / 2; // Center vertically
-      
+
       const checkCollision = (posX: number, posY: number): boolean => {
         return projectNodes.some(node => {
           const nodeW = node.width || 240;
@@ -4079,35 +4079,35 @@ export function AppShell() {
           return dx < (nodeW + nodeWidth) / 2 + spacing && dy < nodeHeight + spacing;
         });
       };
-      
+
       // If no collision at center, place it there
       if (!checkCollision(x, y)) {
         return { x, y };
       }
-      
+
       // Otherwise, spiral outward from center to find free space
       let attempts = 1;
       const maxAttempts = 50;
-      
+
       while (attempts < maxAttempts) {
         const angle = attempts * 0.5;
         const radius = attempts * 20;
         x = baseX - nodeWidth / 2 + Math.cos(angle) * radius;
         y = baseY - nodeHeight / 2 + Math.sin(angle) * radius;
-        
+
         if (!checkCollision(x, y)) {
           return { x, y };
         }
-        
+
         attempts++;
       }
-      
+
       // Fallback to original position even if there's collision
       return { x: baseX - nodeWidth / 2, y: baseY - nodeHeight / 2 };
     };
-    
+
     const position = findFreeSpace(viewportCenterX, viewportCenterY);
-    
+
     const newNode: ColorNode = {
       id: Date.now().toString(),
       colorSpace,
@@ -4185,7 +4185,7 @@ export function AppShell() {
       isExpanded: false, // Default to collapsed
     };
     setAllNodes((prev) => [...prev, newNode]);
-    
+
     // Select the newly created node
     setSelectedNodeId(newNode.id);
     setSelectedNodeIds([newNode.id]);
@@ -4199,14 +4199,14 @@ export function AppShell() {
       alert('Nodes can only be created in the primary theme. Please switch to the primary theme to add nodes.');
       return;
     }
-    
+
     const parent = allNodes.find((n) => n.id === parentId);
     if (!parent) return;
 
     const siblings = allNodes.filter((n) => n.parentId === parentId);
-    
+
     let position: { x: number; y: number };
-    
+
     // If manual position is provided, use it directly and skip auto-positioning
     if (manualPosition) {
       position = manualPosition;
@@ -4215,20 +4215,20 @@ export function AppShell() {
       // Calculate initial position based on the bottommost sibling (by Y position)
       let initialX = parent.position.x + 350; // Default X offset from parent
       let initialY = parent.position.y; // Default Y starts at parent's Y
-      
+
       if (siblings.length > 0) {
         // ── Detect sibling arrangement pattern ──
         // If ALL existing siblings are arranged horizontally (same Y row),
         // place the new child to the right of the rightmost sibling.
         // This requires 2+ siblings to establish a clear pattern.
         let isHorizontalArrangement = false;
-        
+
         if (siblings.length >= 2) {
           const siblingYs = siblings.map(s => s.position.y);
           const minY = Math.min(...siblingYs);
           const maxY = Math.max(...siblingYs);
           const yRange = maxY - minY;
-          
+
           // Siblings are "horizontal" if ALL their Y positions fall within
           // half a typical node height of each other. This is generous enough
           // for slight misalignment from manual dragging, but clearly
@@ -4236,7 +4236,7 @@ export function AppShell() {
           const referenceHeight = getNodeHeight(siblings[0], tokens, allNodes, activeThemeId);
           isHorizontalArrangement = yRange < referenceHeight * 0.5;
         }
-        
+
         if (isHorizontalArrangement) {
           // ── Horizontal placement ──
           // Find the rightmost sibling and place new node to its right
@@ -4245,32 +4245,32 @@ export function AppShell() {
             const siblingEdge = sibling.position.x + (sibling.width || 240);
             return siblingEdge > rightEdge ? sibling : right;
           });
-          
+
           // Use the leftmost sibling's Y as the canonical row Y for alignment
           const leftmostSibling = siblings.reduce((left, sibling) =>
             sibling.position.x < left.position.x ? sibling : left
           );
-          
+
           initialX = rightmostSibling.position.x + (rightmostSibling.width || 240) + MIN_GAP * 2;
           initialY = leftmostSibling.position.y;
         } else {
           // ── Vertical placement (default) ──
           // Use the X position of the first sibling to maintain consistent stack alignment
           initialX = siblings[0].position.x;
-          
+
           // Find the bottommost sibling (highest Y + height value)
           const bottomMostSibling = siblings.reduce((bottom, sibling) => {
             const bottomY = bottom.position.y + getNodeHeight(bottom, tokens, allNodes, activeThemeId);
             const siblingY = sibling.position.y + getNodeHeight(sibling, tokens, allNodes, activeThemeId);
             return siblingY > bottomY ? sibling : bottom;
           });
-          
+
           // Calculate actual height based on expanded state and token count
           const bottomSiblingHeight = getNodeHeight(bottomMostSibling, tokens, allNodes, activeThemeId);
           initialY = bottomMostSibling.position.y + bottomSiblingHeight + MIN_GAP; // Below with MIN_GAP
         }
       }
-      
+
       // Collision detection - find free space if initial position overlaps
       const nodeWidth = 240;
       // Calculate the actual height of a new collapsed node with no tokens
@@ -4321,33 +4321,33 @@ export function AppShell() {
         ...(parent.isTokenNode && { isTokenNode: true }),
       };
       const nodeHeight = getNodeHeight(newNodeTemplate, tokens, allNodes, activeThemeId);
-      
+
       const checkCollision = (x: number, y: number) => {
         return allNodes.some(node => {
           if (node.projectId !== parent.projectId) return false;
           if (node.pageId !== parent.pageId) return false;
-          
+
           const existingWidth = node.width || 240;
           const existingHeight = getNodeHeight(node, tokens, allNodes, activeThemeId);
-          
-          const horizontalOverlap = !(x + nodeWidth + MIN_GAP <= node.position.x || 
-                                      node.position.x + existingWidth + MIN_GAP <= x);
-          const verticalOverlap = !(y + nodeHeight + MIN_GAP <= node.position.y || 
-                                    node.position.y + existingHeight + MIN_GAP <= y);
-          
+
+          const horizontalOverlap = !(x + nodeWidth + MIN_GAP <= node.position.x ||
+            node.position.x + existingWidth + MIN_GAP <= x);
+          const verticalOverlap = !(y + nodeHeight + MIN_GAP <= node.position.y ||
+            node.position.y + existingHeight + MIN_GAP <= y);
+
           return horizontalOverlap && verticalOverlap;
         });
       };
-      
+
       const findFreeSpace = (baseX: number, baseY: number) => {
         let x = baseX;
         let y = baseY;
-        
+
         // If initial position is free, use it
         if (!checkCollision(x, y)) {
           return { x, y };
         }
-        
+
         // Search downward first (most natural placement), then try columns to the right
         const maxAttempts = 50;
         for (let attempt = 1; attempt < maxAttempts; attempt++) {
@@ -4357,7 +4357,7 @@ export function AppShell() {
             return { x, y };
           }
         }
-        
+
         // If downward is fully blocked, try one column to the right
         x = baseX + nodeWidth + MIN_GAP;
         y = baseY;
@@ -4367,26 +4367,26 @@ export function AppShell() {
           }
           y = baseY + (attempt + 1) * (nodeHeight + MIN_GAP);
         }
-        
+
         // Fallback to original position even if there's collision
         return { x: baseX, y: baseY };
       };
-      
+
       position = findFreeSpace(initialX, initialY);
     }
-    
+
     // Auto-adjust siblings if the new child would overlap with them
     const adjustSiblings = (newChildPos: { x: number; y: number }, siblingNodes: ColorNode[], newChild: ColorNode) => {
       if (siblingNodes.length === 0) return siblingNodes;
-      
+
       const newChildHeight = getNodeHeight(newChild, tokens, allNodes, activeThemeId); // Calculate height for new child
       const newChildBottom = newChildPos.y + newChildHeight;
-      
+
       // Check if any siblings need to be pushed down
       return siblingNodes.map(sibling => {
         const siblingHeight = getNodeHeight(sibling, tokens, allNodes, activeThemeId);
         const siblingBottom = sibling.position.y + siblingHeight;
-        
+
         // Check if there's vertical overlap (assuming same X position for siblings)
         if (Math.abs(sibling.position.x - newChildPos.x) < 100) { // Same column
           if (sibling.position.y < newChildBottom && siblingBottom > newChildPos.y) {
@@ -4400,7 +4400,7 @@ export function AppShell() {
             };
           }
         }
-        
+
         return sibling;
       });
     };
@@ -4600,7 +4600,7 @@ export function AppShell() {
         }
       }
     }
-    
+
     setAllNodes((prev) => {
       // Only adjust siblings if NOT using manual position
       if (manualPosition) {
@@ -4609,18 +4609,18 @@ export function AppShell() {
       } else {
         // Auto-position - adjust siblings if needed
         const adjustedSiblings = adjustSiblings(position, siblings, newNode);
-        
+
         // Update positions of adjusted siblings
         const updatedNodes = prev.map(node => {
           const adjustedSibling = adjustedSiblings.find(s => s.id === node.id);
           return adjustedSibling || node;
         });
-        
+
         // Add the new child node
         return [...updatedNodes, newNode];
       }
     });
-    
+
     // Select the newly created child node
     setSelectedNodeId(newNode.id);
     setSelectedNodeIds([newNode.id]);
@@ -4634,7 +4634,7 @@ export function AppShell() {
       alert('Nodes can only be created in the primary theme. Please switch to the primary theme to add nodes.');
       return;
     }
-    
+
     const node = allNodes.find((n) => n.id === nodeId);
     if (!node) return;
 
@@ -4650,10 +4650,10 @@ export function AppShell() {
       const nodeWidth = 240;
       const nodeHeight = 280;
       const spacing = 50;
-      
+
       let x = baseX;
       let y = baseY;
-      
+
       const checkCollision = (posX: number, posY: number): boolean => {
         return projectNodes.some(pNode => {
           const nodeW = pNode.width || 240;
@@ -4662,33 +4662,33 @@ export function AppShell() {
           return dx < (nodeW + nodeWidth) / 2 + spacing && dy < nodeHeight + spacing;
         });
       };
-      
+
       // If no collision at left position, place it there
       if (!checkCollision(x, y)) {
         return { x, y };
       }
-      
+
       // Otherwise, spiral outward to find free space
       let attempts = 1;
       const maxAttempts = 50;
-      
+
       while (attempts < maxAttempts) {
         const angle = attempts * 0.5;
         const radius = attempts * 20;
         x = baseX + Math.cos(angle) * radius;
         y = baseY + Math.sin(angle) * radius;
-        
+
         if (!checkCollision(x, y)) {
           return { x, y };
         }
-        
+
         attempts++;
       }
-      
+
       // Fallback to original position even if there's collision
       return { x: baseX, y: baseY };
     };
-    
+
     const position = findFreeSpace(baseX, baseY);
 
     // Create new parent with same color values as current node
@@ -4811,7 +4811,7 @@ export function AppShell() {
         return n;
       }).concat(newNode);
     });
-    
+
     // Select the newly created parent node
     setSelectedNodeId(newNode.id);
     setSelectedNodeIds([newNode.id]);
@@ -4825,38 +4825,38 @@ export function AppShell() {
       alert('Palettes can only be created in the primary theme. Please switch to the primary theme to add palettes.');
       return;
     }
-    
+
     const projectNodes = allNodes.filter(n => n.projectId === activeProjectId);
     const hue = 214; // Default blue hue
     const saturation = 100;
     const lightness = 50;
-    
+
     // Get current canvas state for viewport position
     const currentCanvasState = canvasStates.find(s => s.projectId === activeProjectId) || {
       projectId: activeProjectId,
       pan: { x: 0, y: 0 },
       zoom: 1,
     };
-    
+
     // Calculate viewport center in canvas coordinates
     const tokensPanelWidth = 372; // 320px panel + 52px sidebar
     const canvasWidth = window.innerWidth - tokensPanelWidth;
     const canvasHeight = window.innerHeight;
     const screenCenterX = tokensPanelWidth + canvasWidth / 2;
     const screenCenterY = canvasHeight / 2;
-    
+
     const viewportCenterX = (screenCenterX - currentCanvasState.pan.x) / currentCanvasState.zoom;
     const viewportCenterY = (screenCenterY - currentCanvasState.pan.y) / currentCanvasState.zoom;
-    
+
     // Find free space for palette node
     const findFreeSpace = (baseX: number, baseY: number): { x: number; y: number } => {
       const nodeWidth = 240; // Same as regular nodes
       const nodeHeight = 600; // Approximate palette node height
       const spacing = 50;
-      
+
       let x = baseX - nodeWidth / 2;
       let y = baseY - nodeHeight / 2;
-      
+
       const checkCollision = (posX: number, posY: number): boolean => {
         return projectNodes.some(node => {
           const nodeW = node.width || 240;
@@ -4865,33 +4865,33 @@ export function AppShell() {
           return dx < (nodeW + nodeWidth) / 2 + spacing && dy < nodeHeight + spacing;
         });
       };
-      
+
       if (!checkCollision(x, y)) {
         return { x, y };
       }
-      
+
       // Spiral outward to find free space
       let attempts = 1;
       const maxAttempts = 50;
-      
+
       while (attempts < maxAttempts) {
         const angle = attempts * 0.5;
         const radius = attempts * 20;
         x = baseX - nodeWidth / 2 + Math.cos(angle) * radius;
         y = baseY - nodeHeight / 2 + Math.sin(angle) * radius;
-        
+
         if (!checkCollision(x, y)) {
           return { x, y };
         }
-        
+
         attempts++;
       }
-      
+
       return { x: baseX - nodeWidth / 2, y: baseY - nodeHeight / 2 };
     };
-    
+
     const position = findFreeSpace(viewportCenterX, viewportCenterY);
-    
+
     const paletteNode: ColorNode = {
       id: Date.now().toString(),
       colorSpace: 'hsl',
@@ -4941,50 +4941,50 @@ export function AppShell() {
         preview: true,
       },
     };
-    
+
     // Create shade nodes
     const shadeCount = 10;
     const lightnessStart = 95;
     const lightnessEnd = 15;
     const shadeNodes: ColorNode[] = [];
-    
+
     // Calculate shade node height for proper spacing
     // Palette shade nodes use compact 44px cards
     const shadeNodeHeight = 48; // 44px card + 4px padding
     const SHADE_GAP = 2; // Minimal gap between shade nodes
     const shadeStride = shadeNodeHeight + SHADE_GAP;
-    
+
     // Calculate shade column base position
     let shadeBaseX = position.x + 450;
     let shadeBaseY = position.y;
-    
+
     // Collision detection for the entire shade column against existing nodes
     const shadeColumnWidth = 240;
     const shadeColumnTotalHeight = shadeCount * shadeStride;
-    
+
     const checkShadeColumnCollision = (baseX: number, baseY: number): boolean => {
       return projectNodes.some(node => {
         const nodeW = node.width || 240;
         const nodeH = getNodeHeight(node, tokens, allNodes, activeThemeId);
-        
+
         // Check if the shade column rectangle overlaps with this node
         const colLeft = baseX;
         const colRight = baseX + shadeColumnWidth;
         const colTop = baseY;
         const colBottom = baseY + shadeColumnTotalHeight;
-        
+
         const nodeLeft = node.position.x;
         const nodeRight = node.position.x + nodeW;
         const nodeTop = node.position.y;
         const nodeBottom = node.position.y + nodeH;
-        
+
         const horizontalOverlap = !(colRight + MIN_GAP <= nodeLeft || nodeRight + MIN_GAP <= colLeft);
         const verticalOverlap = !(colBottom + MIN_GAP <= nodeTop || nodeBottom + MIN_GAP <= colTop);
-        
+
         return horizontalOverlap && verticalOverlap;
       });
     };
-    
+
     // Find free space for shade column if initial position collides
     if (checkShadeColumnCollision(shadeBaseX, shadeBaseY)) {
       // Try shifting down first
@@ -5008,11 +5008,11 @@ export function AppShell() {
         }
       }
     }
-    
+
     for (let i = 0; i < shadeCount; i++) {
       const t = i / (shadeCount - 1);
       const shadeLightness = lightnessStart + (lightnessEnd - lightnessStart) * t;
-      
+
       const shadeNode: ColorNode = {
         id: `${Date.now()}-shade-${i}`,
         colorSpace: 'hsl',
@@ -5044,16 +5044,16 @@ export function AppShell() {
         diffAlpha: false,
         isExpanded: false,
       };
-      
+
       shadeNodes.push(shadeNode);
     }
-    
+
     setAllNodes((prev) => [...prev, paletteNode, ...shadeNodes]);
-    
+
     // Ensure "Color Palette" group exists
     const colorPaletteGroupId = `color-palette-${activeProjectId}`;
     const colorPaletteGroup = groups.find(g => g.id === colorPaletteGroupId);
-    
+
     if (!colorPaletteGroup) {
       const newGroup: TokenGroup = {
         id: colorPaletteGroupId,
@@ -5065,13 +5065,13 @@ export function AppShell() {
       };
       setGroups(prev => [...prev, newGroup]);
     }
-    
+
     // Create tokens for each shade
     const paletteTokens: DesignToken[] = [];
     const paletteName = paletteNode.paletteName || 'palette';
     const namingPattern = paletteNode.paletteNamingPattern || '1-9';
     const paletteEntryId = `palette-entry-${paletteNode.id}`;
-    
+
     shadeNodes.forEach((shadeNode, index) => {
       // Generate token name based on naming pattern
       let shadeName = '';
@@ -5091,7 +5091,7 @@ export function AppShell() {
         default:
           shadeName = (index + 1).toString();
       }
-      
+
       const tokenName = `${paletteName}/${shadeName}`;
       const token: DesignToken = {
         id: `${Date.now()}-token-${index}`,
@@ -5120,17 +5120,17 @@ export function AppShell() {
           return tv;
         })(),
       };
-      
+
       paletteTokens.push(token);
-      
+
       // Assign token to shade node
       shadeNode.tokenIds = [token.id];
     });
-    
+
     // Assign ascending sortOrder to palette tokens (shade index order)
     const sortedPaletteTokens = paletteTokens.map((t, i) => ({ ...t, sortOrder: i }));
     setTokens(prev => [...prev, ...sortedPaletteTokens]);
-    
+
     // Create a palette entry in the Color Palette group
     const paletteEntry: TokenGroup = {
       id: paletteEntryId,
@@ -5147,7 +5147,7 @@ export function AppShell() {
       const maxSortOrder = existingPalettes.reduce((max, g) => Math.max(max, g.sortOrder ?? -1), -1);
       return [...prev, { ...paletteEntry, sortOrder: maxSortOrder + 1 }];
     });
-    
+
     // Select the palette node
     setSelectedNodeId(paletteNode.id);
     setSelectedNodeIds([paletteNode.id]);
@@ -5161,35 +5161,35 @@ export function AppShell() {
       alert('Spacing nodes can only be created in the primary theme. Please switch to the primary theme to add spacing nodes.');
       return;
     }
-    
+
     const projectNodes = allNodes.filter(n => n.projectId === activeProjectId);
-    
+
     // Get current canvas state for viewport position
     const currentCanvasState = canvasStates.find(s => s.projectId === activeProjectId) || {
       projectId: activeProjectId,
       pan: { x: 0, y: 0 },
       zoom: 1,
     };
-    
+
     // Calculate viewport center in canvas coordinates
     const tokensPanelWidth = 372;
     const canvasWidth = window.innerWidth - tokensPanelWidth;
     const canvasHeight = window.innerHeight;
     const screenCenterX = tokensPanelWidth + canvasWidth / 2;
     const screenCenterY = canvasHeight / 2;
-    
+
     const viewportCenterX = (screenCenterX - currentCanvasState.pan.x) / currentCanvasState.zoom;
     const viewportCenterY = (screenCenterY - currentCanvasState.pan.y) / currentCanvasState.zoom;
-    
+
     // Find free space for spacing node
     const findFreeSpace = (baseX: number, baseY: number): { x: number; y: number } => {
       const nodeWidth = 240;
       const nodeHeight = 400;
       const spacing = 50;
-      
+
       let x = baseX - nodeWidth / 2;
       let y = baseY - nodeHeight / 2;
-      
+
       const checkCollision = (posX: number, posY: number): boolean => {
         return projectNodes.some(node => {
           const nodeW = node.width || 240;
@@ -5198,33 +5198,33 @@ export function AppShell() {
           return dx < (nodeW + nodeWidth) / 2 + spacing && dy < nodeHeight + spacing;
         });
       };
-      
+
       if (!checkCollision(x, y)) {
         return { x, y };
       }
-      
+
       // Spiral outward to find free space
       let attempts = 1;
       const maxAttempts = 50;
-      
+
       while (attempts < maxAttempts) {
         const angle = attempts * 0.5;
         const radius = attempts * 20;
         x = baseX - nodeWidth / 2 + Math.cos(angle) * radius;
         y = baseY - nodeHeight / 2 + Math.sin(angle) * radius;
-        
+
         if (!checkCollision(x, y)) {
           return { x, y };
         }
-        
+
         attempts++;
       }
-      
+
       return { x: baseX - nodeWidth / 2, y: baseY - nodeHeight / 2 };
     };
-    
+
     const position = findFreeSpace(viewportCenterX, viewportCenterY);
-    
+
     const spacingNode: ColorNode = {
       id: Date.now().toString(),
       colorSpace: 'hsl',
@@ -5257,9 +5257,9 @@ export function AppShell() {
       spacingUnit: 'px',
       spacingName: 'spacing',
     };
-    
+
     setAllNodes((prev) => [...prev, spacingNode]);
-    
+
     setSelectedNodeId(spacingNode.id);
     setSelectedNodeIds([spacingNode.id]);
   }, [allNodes, activeProjectId, activePageId, canvasStates, activeThemeId, themes]);
@@ -5705,13 +5705,13 @@ export function AppShell() {
         if (isSampleModeRef.current) return prev;
         const oldShadeCount = nodeBeingUpdated.paletteShadeCount ?? 10;
         const newShadeCount = updates.paletteShadeCount;
-        
+
         // Find the palette entry group for this palette node
         const paletteEntryId = `palette-entry-${id}`;
-        
+
         console.log(`🔄 Updating palette shade count from ${oldShadeCount} to ${newShadeCount}`);
         console.log(`🗑️ Deleting all tokens for palette group: ${paletteEntryId}`);
-        
+
         // Remove ALL tokens that belong to this palette's group (relational cleanup)
         setTokens(prevTokens => {
           const filtered = prevTokens.filter(t => t.groupId !== paletteEntryId);
@@ -5719,10 +5719,10 @@ export function AppShell() {
           console.log(`Removed ${removedTokens.length} palette tokens:`, removedTokens.map(t => t.name));
           return filtered;
         });
-        
+
         // Remove old shade nodes
         const filteredNodes = prev.filter(n => n.parentId !== id);
-        
+
         // Create new shade nodes
         const lightnessStart = nodeBeingUpdated.paletteLightnessStart ?? 95;
         const lightnessEnd = nodeBeingUpdated.paletteLightnessEnd ?? 15;
@@ -5732,42 +5732,42 @@ export function AppShell() {
         const satEnd = nodeBeingUpdated.paletteSaturationEnd ?? nodeBeingUpdated.saturation;
         const hueShift = nodeBeingUpdated.paletteHueShift ?? 0;
         const shadeNodes: ColorNode[] = [];
-        
+
         // Calculate shade node height for proper spacing (must match initial creation)
         const shadeNodeHeight = 48; // 44px compact card + 4px padding
         const SHADE_GAP_LOCAL = 2;
         const shadeStride = shadeNodeHeight + SHADE_GAP_LOCAL;
-        
+
         // Calculate shade column base position with collision detection
         const shadeColumnWidth = 240;
         const shadeColumnTotalHeight = newShadeCount * shadeStride;
         let shadeBaseX = nodeBeingUpdated.position.x + 450;
         let shadeBaseY = nodeBeingUpdated.position.y;
-        
+
         // Collision detection for the entire shade column against remaining nodes
         const checkShadeColCollision = (baseX: number, baseY: number): boolean => {
           return filteredNodes.some(existingNode => {
             if (existingNode.projectId !== nodeBeingUpdated.projectId || existingNode.pageId !== nodeBeingUpdated.pageId) return false;
             const nodeW = existingNode.width || 240;
             const nodeH = getNodeHeight(existingNode, tokens, filteredNodes, activeThemeId);
-            
+
             const colLeft = baseX;
             const colRight = baseX + shadeColumnWidth;
             const colTop = baseY;
             const colBottom = baseY + shadeColumnTotalHeight;
-            
+
             const nodeLeft = existingNode.position.x;
             const nodeRight = existingNode.position.x + nodeW;
             const nodeTop = existingNode.position.y;
             const nodeBottom = existingNode.position.y + nodeH;
-            
+
             const horizontalOverlap = !(colRight + MIN_GAP <= nodeLeft || nodeRight + MIN_GAP <= colLeft);
             const verticalOverlap = !(colBottom + MIN_GAP <= nodeTop || nodeBottom + MIN_GAP <= colTop);
-            
+
             return horizontalOverlap && verticalOverlap;
           });
         };
-        
+
         // Find free space for shade column if initial position collides
         if (checkShadeColCollision(shadeBaseX, shadeBaseY)) {
           let found = false;
@@ -5791,7 +5791,7 @@ export function AppShell() {
             }
           }
         }
-        
+
         // Curve function for shade creation
         const applyCurveForShade = (t: number): number => {
           if (curveType === 'custom') {
@@ -5819,18 +5819,18 @@ export function AppShell() {
             default: return t;
           }
         };
-        
+
         // Prepare for token creation
         const paletteName = nodeBeingUpdated.paletteName || 'palette';
         const namingPattern = nodeBeingUpdated.paletteNamingPattern || '1-9';
         const paletteEntryGroupId = `palette-entry-${id}`;
         const newTokens: DesignToken[] = [];
-        
+
         for (let i = 0; i < newShadeCount; i++) {
           const t = newShadeCount > 1 ? i / (newShadeCount - 1) : 0;
           const curved = applyCurveForShade(t);
           const shadeLightness = lightnessStart + (lightnessEnd - lightnessStart) * curved;
-          
+
           // Compute saturation
           let shadeSaturation = nodeBeingUpdated.saturation;
           if (satMode === 'manual') {
@@ -5839,10 +5839,10 @@ export function AppShell() {
             const dev = Math.abs(shadeLightness - 50) / 50;
             shadeSaturation = Math.max(0, Math.min(100, nodeBeingUpdated.saturation * (1 - dev * 0.6)));
           }
-          
+
           // Compute hue
           const shadeHue = (nodeBeingUpdated.hue + hueShift * t + 360) % 360;
-          
+
           // Generate token name
           let shadeName = '';
           switch (namingPattern) {
@@ -5861,10 +5861,10 @@ export function AppShell() {
             default:
               shadeName = (i + 1).toString();
           }
-          
+
           const tokenName = `${paletteName}/${shadeName}`;
           const tokenId = `${Date.now()}-token-${i}-${Math.random()}`;
-          
+
           const token: DesignToken = {
             id: tokenId,
             name: tokenName,
@@ -5891,9 +5891,9 @@ export function AppShell() {
               return tv;
             })(),
           };
-          
+
           newTokens.push(token);
-          
+
           // Compute native color space properties for the shade
           // Derive shade colorSpace from the palette's paletteColorFormat
           const shadeNativeProps: Partial<ColorNode> = {};
@@ -5916,7 +5916,7 @@ export function AppShell() {
             shadeNativeProps.hctC = hct.chroma;
             shadeNativeProps.hctT = hct.tone;
           }
-          
+
           const shadeNode: ColorNode = {
             id: `${Date.now()}-shade-${i}-${Math.random()}`,
             colorSpace: parentColorSpace,
@@ -5949,10 +5949,10 @@ export function AppShell() {
             isExpanded: false,
             ...shadeNativeProps,
           };
-          
+
           shadeNodes.push(shadeNode);
         }
-        
+
         // Add new tokens with ascending sortOrder within the palette group
         setTokens(prevTokens => {
           const existingGroupTokens = prevTokens.filter(t => t.groupId === paletteEntryGroupId);
@@ -5960,14 +5960,14 @@ export function AppShell() {
           const withSortOrder = newTokens.map((t, i) => ({ ...t, sortOrder: maxSortOrder + 1 + i }));
           return [...prevTokens, ...withSortOrder];
         });
-        
+
         // Update the palette node and add new shade nodes
         return [
           ...filteredNodes.map(n => n.id === id ? { ...n, ...updates } : n),
           ...shadeNodes
         ];
       }
-      
+
       // Handle palette lightness/mode/curve/saturation/hueShift/base color changes - regenerate shades
       const isPalettePropertyChange = nodeBeingUpdated.isPalette && (
         updates.paletteLightnessStart !== undefined ||
@@ -5999,7 +5999,7 @@ export function AppShell() {
         const lightnessEnd = updates.paletteLightnessEnd ?? nodeBeingUpdated.paletteLightnessEnd ?? 15;
         const curveType = updates.paletteCurveType ?? nodeBeingUpdated.paletteCurveType ?? 'linear';
         const satMode = updates.paletteSaturationMode ?? nodeBeingUpdated.paletteSaturationMode ?? 'constant';
-        
+
         // Resolve base color: for theme override changes, extract from the override
         let baseHue: number;
         let baseSaturation: number;
@@ -6014,11 +6014,11 @@ export function AppShell() {
           baseSaturation = updates.saturation ?? nodeBeingUpdated.saturation;
           baseAlpha = updates.alpha ?? nodeBeingUpdated.alpha ?? 100;
         }
-        
+
         const satStart = updates.paletteSaturationStart ?? nodeBeingUpdated.paletteSaturationStart ?? baseSaturation;
         const satEnd = updates.paletteSaturationEnd ?? nodeBeingUpdated.paletteSaturationEnd ?? baseSaturation;
         const hueShift = updates.paletteHueShift ?? nodeBeingUpdated.paletteHueShift ?? 0;
-        
+
         // Curve function
         const applyCurve = (t: number): number => {
           if (curveType === 'custom') {
@@ -6046,7 +6046,7 @@ export function AppShell() {
             default: return t; // linear
           }
         };
-        
+
         // Saturation function
         const computeSat = (bSat: number, t: number, lightness: number): number => {
           if (satMode === 'constant') return bSat;
@@ -6055,14 +6055,14 @@ export function AppShell() {
           const dev = Math.abs(lightness - 50) / 50;
           return Math.max(0, Math.min(100, bSat * (1 - dev * 0.6)));
         };
-        
+
         // Determine if this is a theme-override-only change (non-primary theme)
         const isThemeOverrideChange = isPaletteThemeOverrideColorChange && !isPaletteBaseColorChange && !isPalettePropertyChange;
-        
+
         // Check if we also need to update shade theme overrides when palette properties change
         const paletteHasActiveThemeOverride = nodeBeingUpdated.themeOverrides?.[activeThemeId];
         const shouldAlsoUpdateShadeThemeOverrides = !isThemeOverrideChange && isPalettePropertyChange && paletteHasActiveThemeOverride;
-        
+
         // Theme-specific base color for recalculating shade overrides
         let themeBaseHue = baseHue;
         let themeBaseSaturation = baseSaturation;
@@ -6072,10 +6072,10 @@ export function AppShell() {
           themeBaseSaturation = paletteHasActiveThemeOverride.saturation ?? nodeBeingUpdated.saturation;
           themeBaseAlpha = paletteHasActiveThemeOverride.alpha ?? nodeBeingUpdated.alpha ?? 100;
         }
-        
+
         // Collect shade updates for token sync (base values + optional theme-specific values)
         const shadeUpdates: Array<{ nodeId: string; hue: number; saturation: number; lightness: number; alpha: number; themeHue?: number; themeSaturation?: number; themeLightness?: number; themeAlpha?: number }> = [];
-        
+
         // Update existing shade nodes
         // Determine shade colorSpace from the palette's paletteColorFormat
         const palFormat = updates.paletteColorFormat ?? nodeBeingUpdated.paletteColorFormat ?? 'HEX';
@@ -6085,14 +6085,14 @@ export function AppShell() {
           if (n.parentId === id) {
             const children = prev.filter(child => child.parentId === id).sort((a, b) => a.position.y - b.position.y);
             const index = children.findIndex(child => child.id === n.id);
-            
+
             if (index !== -1) {
               const t = shadeCount > 1 ? index / (shadeCount - 1) : 0;
               const curved = applyCurve(t);
               const shadeLightness = lightnessStart + (lightnessEnd - lightnessStart) * curved;
               const shadeSaturation = computeSat(baseSaturation, t, shadeLightness);
               const shadeHue = (baseHue + hueShift * t + 360) % 360;
-              
+
               // Compute native color space properties for the shade
               const nativeProps: Partial<ColorNode> = { colorSpace: paletteColorSpace as ColorNode['colorSpace'] };
               if (paletteColorSpace === 'oklch') {
@@ -6112,7 +6112,7 @@ export function AppShell() {
                 nativeProps.hctC = hct.chroma;
                 nativeProps.hctT = hct.tone;
               }
-              
+
               if (isThemeOverrideChange) {
                 // Non-primary theme color change: shade values ARE the theme values
                 shadeUpdates.push({ nodeId: n.id, hue: shadeHue, saturation: shadeSaturation, lightness: shadeLightness, alpha: n.alpha ?? 100, themeHue: shadeHue, themeSaturation: shadeSaturation, themeLightness: shadeLightness, themeAlpha: baseAlpha });
@@ -6143,7 +6143,7 @@ export function AppShell() {
                   lightnessOffset: shadeLightness - nodeBeingUpdated.lightness,
                   hexValue: hslToHex(shadeHue, shadeSaturation, shadeLightness),
                 };
-                
+
                 if (shouldAlsoUpdateShadeThemeOverrides) {
                   // Also recalculate shade theme overrides using palette's theme colors
                   const themeShadeSat = computeSat(themeBaseSaturation, t, shadeLightness);
@@ -6165,17 +6165,17 @@ export function AppShell() {
                     },
                   };
                 }
-                
+
                 // No theme overrides to update — only base values
                 shadeUpdates.push({ nodeId: n.id, hue: shadeHue, saturation: shadeSaturation, lightness: shadeLightness, alpha: baseAlpha });
                 return { ...baseUpdate, alpha: baseAlpha };
               }
             }
           }
-          
+
           return n.id === id ? { ...n, ...updates } : n;
         });
-        
+
         // Sync tokens with updated shade values
         if (shadeUpdates.length > 0) {
           setTokens(prevTokens => prevTokens.map(token => {
@@ -6194,7 +6194,7 @@ export function AppShell() {
               const themeS = shadeUpdate.themeSaturation ?? shadeUpdate.saturation;
               const themeL = shadeUpdate.themeLightness ?? shadeUpdate.lightness;
               const themeA = shadeUpdate.themeAlpha ?? shadeUpdate.alpha;
-              
+
               const updatedThemeValues = { ...token.themeValues };
               updatedThemeValues[activeThemeId] = {
                 hue: themeH,
@@ -6223,10 +6223,10 @@ export function AppShell() {
             return token;
           }));
         }
-        
+
         return updatedNodes;
       }
-      
+
       // Handle palette re-link to primary: clean up shade nodes' theme overrides
       const isPaletteRelinkToPrimary = nodeBeingUpdated.isPalette && updates.themeOverrides !== undefined && (() => {
         const hadOverride = nodeBeingUpdated.themeOverrides?.[activeThemeId];
@@ -6242,10 +6242,10 @@ export function AppShell() {
           }
           return n.id === id ? { ...n, ...updates } : n;
         });
-        
+
         // Token values are NOT synced here — node and token inheritance are independent.
         // The user can revert tokens separately via the token inheritance toggle.
-        
+
         return updatedNodes;
       }
 
@@ -6267,11 +6267,11 @@ export function AppShell() {
         shadeNodes.forEach((shade, index) => {
           let shadeName = '';
           switch (newNamingPattern) {
-            case '1-9':     shadeName = (index + 1).toString(); break;
-            case '10-90':   shadeName = ((index + 1) * 10).toString(); break;
+            case '1-9': shadeName = (index + 1).toString(); break;
+            case '10-90': shadeName = ((index + 1) * 10).toString(); break;
             case '100-900': shadeName = ((index + 1) * 100).toString(); break;
-            case 'a-z':     shadeName = String.fromCharCode(97 + index); break;
-            default:        shadeName = (index + 1).toString();
+            case 'a-z': shadeName = String.fromCharCode(97 + index); break;
+            default: shadeName = (index + 1).toString();
           }
           const tokenName = `${newPaletteName}/${shadeName}`;
 
@@ -6728,45 +6728,45 @@ export function AppShell() {
       let hctHOffsetDelta = 0;
       let hctCOffsetDelta = 0;
       let hctTOffsetDelta = 0;
-      
+
       // Check if we're in a non-primary theme and the node has a theme override
       const currentTheme = themes.find(t => t.id === activeThemeId);
       const isInNonPrimaryTheme = currentTheme && !currentTheme.isPrimary;
       const hasThemeOverride = isInNonPrimaryTheme && nodeBeingUpdated.themeOverrides?.[activeThemeId];
-      
+
       // Get the current values (from theme override if exists, otherwise from base node)
       const currentHue = hasThemeOverride ? nodeBeingUpdated.themeOverrides![activeThemeId].hue : nodeBeingUpdated.hue;
       const currentSat = hasThemeOverride ? nodeBeingUpdated.themeOverrides![activeThemeId].saturation : nodeBeingUpdated.saturation;
       const currentLight = hasThemeOverride ? nodeBeingUpdated.themeOverrides![activeThemeId].lightness : nodeBeingUpdated.lightness;
       const currentAlpha = hasThemeOverride ? nodeBeingUpdated.themeOverrides![activeThemeId].alpha : nodeBeingUpdated.alpha;
-      const currentRed = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].red !== undefined 
-        ? nodeBeingUpdated.themeOverrides![activeThemeId].red 
+      const currentRed = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].red !== undefined
+        ? nodeBeingUpdated.themeOverrides![activeThemeId].red
         : nodeBeingUpdated.red;
-      const currentGreen = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].green !== undefined 
-        ? nodeBeingUpdated.themeOverrides![activeThemeId].green 
+      const currentGreen = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].green !== undefined
+        ? nodeBeingUpdated.themeOverrides![activeThemeId].green
         : nodeBeingUpdated.green;
-      const currentBlue = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].blue !== undefined 
-        ? nodeBeingUpdated.themeOverrides![activeThemeId].blue 
+      const currentBlue = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].blue !== undefined
+        ? nodeBeingUpdated.themeOverrides![activeThemeId].blue
         : nodeBeingUpdated.blue;
-      const currentOklchL = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].oklchL !== undefined 
-        ? nodeBeingUpdated.themeOverrides![activeThemeId].oklchL 
+      const currentOklchL = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].oklchL !== undefined
+        ? nodeBeingUpdated.themeOverrides![activeThemeId].oklchL
         : nodeBeingUpdated.oklchL;
-      const currentOklchC = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].oklchC !== undefined 
-        ? nodeBeingUpdated.themeOverrides![activeThemeId].oklchC 
+      const currentOklchC = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].oklchC !== undefined
+        ? nodeBeingUpdated.themeOverrides![activeThemeId].oklchC
         : nodeBeingUpdated.oklchC;
-      const currentOklchH = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].oklchH !== undefined 
-        ? nodeBeingUpdated.themeOverrides![activeThemeId].oklchH 
+      const currentOklchH = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].oklchH !== undefined
+        ? nodeBeingUpdated.themeOverrides![activeThemeId].oklchH
         : nodeBeingUpdated.oklchH;
-      const currentHctH = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].hctH !== undefined 
-        ? nodeBeingUpdated.themeOverrides![activeThemeId].hctH 
+      const currentHctH = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].hctH !== undefined
+        ? nodeBeingUpdated.themeOverrides![activeThemeId].hctH
         : nodeBeingUpdated.hctH;
-      const currentHctC = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].hctC !== undefined 
-        ? nodeBeingUpdated.themeOverrides![activeThemeId].hctC 
+      const currentHctC = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].hctC !== undefined
+        ? nodeBeingUpdated.themeOverrides![activeThemeId].hctC
         : nodeBeingUpdated.hctC;
-      const currentHctT = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].hctT !== undefined 
-        ? nodeBeingUpdated.themeOverrides![activeThemeId].hctT 
+      const currentHctT = hasThemeOverride && nodeBeingUpdated.themeOverrides![activeThemeId].hctT !== undefined
+        ? nodeBeingUpdated.themeOverrides![activeThemeId].hctT
         : nodeBeingUpdated.hctT;
-      
+
       // HSL deltas - calculate from theme-aware current values
       if (updates.hue !== undefined) {
         hueOffsetDelta = updates.hue - currentHue;
@@ -6780,7 +6780,7 @@ export function AppShell() {
       if (updates.alpha !== undefined) {
         alphaOffsetDelta = updates.alpha - currentAlpha;
       }
-      
+
       // RGB deltas
       if (updates.red !== undefined && currentRed !== undefined) {
         redOffsetDelta = updates.red - currentRed;
@@ -6791,7 +6791,7 @@ export function AppShell() {
       if (updates.blue !== undefined && currentBlue !== undefined) {
         blueOffsetDelta = updates.blue - currentBlue;
       }
-      
+
       // OKLCH deltas
       if (updates.oklchL !== undefined && currentOklchL !== undefined) {
         oklchLOffsetDelta = updates.oklchL - currentOklchL;
@@ -6802,7 +6802,7 @@ export function AppShell() {
       if (updates.oklchH !== undefined && currentOklchH !== undefined) {
         oklchHOffsetDelta = updates.oklchH - currentOklchH;
       }
-      
+
       // HCT deltas
       if (updates.hctH !== undefined && currentHctH !== undefined) {
         hctHOffsetDelta = updates.hctH - currentHctH;
@@ -6817,43 +6817,43 @@ export function AppShell() {
       // Apply updates - if in non-primary theme with override, update the override instead of base properties
       const updatedNodes = prev.map((node) => {
         if (node.id !== id) return node;
-        
+
         // Create a copy of updates that we can augment with derived values
         let augmentedUpdates = { ...updates };
-        
+
         // Auto-calculate HSL values for non-HSL color spaces to ensure consistency
         // This is critical for the TokensPanel which relies on HSL values
         if (node.colorSpace === 'rgb' && (updates.red !== undefined || updates.green !== undefined || updates.blue !== undefined)) {
           // Get effective RGB values (mix of updates and existing state)
           // If in override mode, read from override, otherwise from node
           const source = (hasThemeOverride && activeThemeId) ? node.themeOverrides?.[activeThemeId] || node : node;
-          
+
           const r = updates.red !== undefined ? updates.red : (source.red ?? 0);
           const g = updates.green !== undefined ? updates.green : (source.green ?? 0);
           const b = updates.blue !== undefined ? updates.blue : (source.blue ?? 0);
-          
+
           const hsl = rgbToHsl(r, g, b);
           augmentedUpdates.hue = hsl.h;
           augmentedUpdates.saturation = hsl.s;
           augmentedUpdates.lightness = hsl.l;
         } else if (node.colorSpace === 'oklch' && (updates.oklchL !== undefined || updates.oklchC !== undefined || updates.oklchH !== undefined)) {
           const source = (hasThemeOverride && activeThemeId) ? node.themeOverrides?.[activeThemeId] || node : node;
-          
+
           const l = updates.oklchL !== undefined ? updates.oklchL : (source.oklchL ?? 0);
           const c = updates.oklchC !== undefined ? updates.oklchC : (source.oklchC ?? 0);
           const h = updates.oklchH !== undefined ? updates.oklchH : (source.oklchH ?? 0);
-          
+
           const hsl = oklchToHsl(l, c, h);
           augmentedUpdates.hue = hsl.h;
           augmentedUpdates.saturation = hsl.s;
           augmentedUpdates.lightness = hsl.l;
         } else if (node.colorSpace === 'hct' && (updates.hctH !== undefined || updates.hctC !== undefined || updates.hctT !== undefined)) {
           const source = (hasThemeOverride && activeThemeId) ? node.themeOverrides?.[activeThemeId] || node : node;
-          
+
           const h = updates.hctH !== undefined ? updates.hctH : (source.hctH ?? 0);
           const c = updates.hctC !== undefined ? updates.hctC : (source.hctC ?? 0);
           const t = updates.hctT !== undefined ? updates.hctT : (source.hctT ?? 0);
-          
+
           const rgb = hctToRgb(h, c, t);
           const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
           augmentedUpdates.hue = hsl.h;
@@ -6865,12 +6865,12 @@ export function AppShell() {
         if (augmentedUpdates.themeOverrides !== undefined) {
           return { ...node, ...augmentedUpdates };
         }
-        
+
         // If we're in a non-primary theme and the node has a theme override,
         // apply color/spacing updates to the theme override instead of base properties
         if (hasThemeOverride && activeThemeId) {
           const themeOverride = { ...node.themeOverrides![activeThemeId] };
-          
+
           // Update theme override with color properties if they exist in augmentedUpdates
           if (augmentedUpdates.hue !== undefined) themeOverride.hue = augmentedUpdates.hue;
           if (augmentedUpdates.saturation !== undefined) themeOverride.saturation = augmentedUpdates.saturation;
@@ -6886,7 +6886,7 @@ export function AppShell() {
           if (augmentedUpdates.hctC !== undefined) themeOverride.hctC = augmentedUpdates.hctC;
           if (augmentedUpdates.hctT !== undefined) themeOverride.hctT = augmentedUpdates.hctT;
           if (augmentedUpdates.hexValue !== undefined) themeOverride.hexValue = augmentedUpdates.hexValue;
-          
+
           // Recompute hexValue for theme override when color properties change
           // (same logic as the reactive loop's hex sync, but applied here for immediate consistency)
           const hasColorChange = augmentedUpdates.hue !== undefined || augmentedUpdates.saturation !== undefined ||
@@ -6921,7 +6921,7 @@ export function AppShell() {
               themeOverride.hexValue = hctToHex(hH, hC, hT);
             }
           }
-          
+
           // Create a copy of augmentedUpdates without the color properties (they go in theme override)
           const nonColorUpdates = { ...augmentedUpdates };
           delete nonColorUpdates.hue;
@@ -6938,7 +6938,7 @@ export function AppShell() {
           delete nonColorUpdates.hctC;
           delete nonColorUpdates.hctT;
           delete nonColorUpdates.hexValue;
-          
+
           return {
             ...node,
             ...nonColorUpdates, // Apply non-color updates to base node
@@ -6948,14 +6948,14 @@ export function AppShell() {
             },
           };
         }
-        
+
         // For primary theme or nodes without overrides, apply updates normally
         return { ...node, ...augmentedUpdates };
       });
 
       // Propagate changes to descendants
-      const hasChanges = 
-        updates.hue !== undefined || updates.saturation !== undefined || 
+      const hasChanges =
+        updates.hue !== undefined || updates.saturation !== undefined ||
         updates.lightness !== undefined || updates.alpha !== undefined ||
         updates.red !== undefined || updates.green !== undefined || updates.blue !== undefined ||
         updates.oklchL !== undefined || updates.oklchC !== undefined || updates.oklchH !== undefined ||
@@ -6965,7 +6965,7 @@ export function AppShell() {
       // This mutates updatedNodes in place so that setTokens sees the correct child values
       if (hasChanges) {
         const propagateToDescendants = (
-          parentId: string, 
+          parentId: string,
           hueChange: number, satChange: number, lightChange: number, alphaChange: number,
           redChange: number, greenChange: number, blueChange: number,
           oklchLChange: number, oklchCChange: number, oklchHChange: number,
@@ -6985,534 +6985,534 @@ export function AppShell() {
               childIndices.push(index);
             }
           });
-          
+
           // Process each child by index
           childIndices.forEach((childIndex) => {
             const node = updatedNodes[childIndex];
             const parentNode = updatedNodes.find(n => n.id === parentId);
             if (!parentNode) return;
 
-              // ─── Palette child handling ───
-              // If this child is a palette node, update its base color and regenerate shades
-              if (node.isPalette) {
-                const paletteUpdates: Partial<ColorNode> = {};
-                
-                if (parentNode.colorSpace === 'hsl' || !parentNode.colorSpace) {
-                  if (!node.lockHue && hueChange !== 0) {
-                    paletteUpdates.hue = node.diffHue === false ? parentNode.hue : (node.hue + hueChange + 360) % 360;
-                  }
-                  if (!node.lockSaturation && satChange !== 0) {
-                    paletteUpdates.saturation = node.diffSaturation === false ? parentNode.saturation : Math.max(0, Math.min(100, node.saturation + satChange));
-                  }
-                  if (!node.lockLightness && lightChange !== 0) {
-                    paletteUpdates.lightness = node.diffLightness === false ? parentNode.lightness : Math.max(0, Math.min(100, node.lightness + lightChange));
-                  }
-                  if (!node.lockAlpha && alphaChange !== 0) {
-                    paletteUpdates.alpha = node.diffAlpha === false ? parentNode.alpha : Math.max(0, Math.min(100, node.alpha + alphaChange));
-                  }
-                } else {
-                  // Cross-color-space: convert parent color to HSL for palette base
-                  let pH = parentNode.hue, pS = parentNode.saturation, pL = parentNode.lightness;
-                  if (parentNode.colorSpace === 'rgb') {
-                    const hsl = rgbToHsl(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
-                    pH = hsl.h; pS = hsl.s; pL = hsl.l;
-                  } else if (parentNode.colorSpace === 'oklch') {
-                    const hsl = oklchToHsl(parentNode.oklchL || 0, parentNode.oklchC || 0, parentNode.oklchH || 0);
-                    pH = hsl.h; pS = hsl.s; pL = hsl.l;
-                  } else if (parentNode.colorSpace === 'hex' && parentNode.hexValue) {
-                    const hsl = hexToHsl(parentNode.hexValue);
-                    pH = hsl.h; pS = hsl.s; pL = hsl.l;
-                  } else if (parentNode.colorSpace === 'hct') {
-                    const rgb = hctToRgb(parentNode.hctH || 0, parentNode.hctC || 0, parentNode.hctT || 0);
-                    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-                    pH = hsl.h; pS = hsl.s; pL = hsl.l;
-                  }
-                  paletteUpdates.hue = pH;
-                  paletteUpdates.saturation = pS;
-                  paletteUpdates.lightness = pL;
-                }
+            // ─── Palette child handling ───
+            // If this child is a palette node, update its base color and regenerate shades
+            if (node.isPalette) {
+              const paletteUpdates: Partial<ColorNode> = {};
 
-                const updatedPalette = { ...node, ...paletteUpdates };
-                updatedNodes[childIndex] = updatedPalette;
-                regeneratePaletteShades(updatedPalette, updatedNodes);
-                return;
-              }
-              
-              // Check if we're in a non-primary theme with both parent and child unlinked
-              const currentTheme = themes.find(t => t.id === activeThemeId);
-              const isInNonPrimaryTheme = currentTheme && !currentTheme.isPrimary;
-              const parentHasOverride = isInNonPrimaryTheme && parentNode.themeOverrides?.[activeThemeId];
-              const childHasOverride = isInNonPrimaryTheme && node.themeOverrides?.[activeThemeId];
-              
-              // If both are unlinked in a non-primary theme, use theme-specific values
-              if (parentHasOverride && childHasOverride) {
-                const parentOverride = parentNode.themeOverrides![activeThemeId];
-                const childOverride = { ...node.themeOverrides![activeThemeId] }; // Create a mutable copy
-                
-                // Handle HSL propagation with theme overrides
-                if (parentNode.colorSpace === 'hsl' || !parentNode.colorSpace) {
-                  if (hueChange !== 0 && !node.lockHue) {
-                    // Update child's theme override hue
-                    if (node.diffHue === false) {
-                      childOverride.hue = parentOverride.hue;
-                    } else {
-                      childOverride.hue = (childOverride.hue + hueChange + 360) % 360;
-                    }
-                  }
-                  
-                  if (satChange !== 0 && !node.lockSaturation) {
-                    if (node.diffSaturation === false) {
-                      childOverride.saturation = parentOverride.saturation;
-                    } else {
-                      childOverride.saturation = Math.max(0, Math.min(100, childOverride.saturation + satChange));
-                    }
-                  }
-                  
-                  if (lightChange !== 0 && !node.lockLightness) {
-                    if (node.diffLightness === false) {
-                      childOverride.lightness = parentOverride.lightness;
-                    } else {
-                      childOverride.lightness = Math.max(0, Math.min(100, childOverride.lightness + lightChange));
-                    }
-                  }
-                  
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    if (node.diffAlpha === false) {
-                      childOverride.alpha = parentOverride.alpha;
-                    } else {
-                      childOverride.alpha = Math.max(0, Math.min(100, childOverride.alpha + alphaChange));
-                    }
-                  }
-                }
-                
-                // Handle RGB propagation with theme overrides
-                if (parentNode.colorSpace === 'rgb' && childOverride.red !== undefined) {
-                  if (redChange !== 0 && !node.lockRed && parentOverride.red !== undefined) {
-                    if (node.diffRed === false) {
-                      childOverride.red = parentOverride.red;
-                    } else {
-                      childOverride.red = Math.max(0, Math.min(255, childOverride.red + redChange));
-                    }
-                  }
-                  
-                  if (greenChange !== 0 && !node.lockGreen && parentOverride.green !== undefined) {
-                    if (node.diffGreen === false) {
-                      childOverride.green = parentOverride.green;
-                    } else {
-                      childOverride.green = Math.max(0, Math.min(255, childOverride.green + greenChange));
-                    }
-                  }
-                  
-                  if (blueChange !== 0 && !node.lockBlue && parentOverride.blue !== undefined) {
-                    if (node.diffBlue === false) {
-                      childOverride.blue = parentOverride.blue;
-                    } else {
-                      childOverride.blue = Math.max(0, Math.min(255, childOverride.blue + blueChange));
-                    }
-                  }
-                  
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    if (node.diffAlpha === false) {
-                      childOverride.alpha = parentOverride.alpha;
-                    } else {
-                      childOverride.alpha = Math.max(0, Math.min(100, childOverride.alpha + alphaChange));
-                    }
-                  }
-                }
-                
-                // Handle OKLCH propagation with theme overrides
-                if (parentNode.colorSpace === 'oklch' && childOverride.oklchL !== undefined) {
-                  if (oklchLChange !== 0 && !node.lockOklchL && parentOverride.oklchL !== undefined) {
-                    if (node.diffOklchL === false) {
-                      childOverride.oklchL = parentOverride.oklchL;
-                    } else {
-                      childOverride.oklchL = Math.max(0, Math.min(100, childOverride.oklchL + oklchLChange));
-                    }
-                  }
-                  
-                  if (oklchCChange !== 0 && !node.lockOklchC && parentOverride.oklchC !== undefined) {
-                    if (node.diffOklchC === false) {
-                      childOverride.oklchC = parentOverride.oklchC;
-                    } else {
-                      childOverride.oklchC = Math.max(0, Math.min(100, childOverride.oklchC + oklchCChange));
-                    }
-                  }
-                  
-                  if (oklchHChange !== 0 && !node.lockOklchH && parentOverride.oklchH !== undefined) {
-                    if (node.diffOklchH === false) {
-                      childOverride.oklchH = parentOverride.oklchH;
-                    } else {
-                      childOverride.oklchH = (childOverride.oklchH + oklchHChange + 360) % 360;
-                    }
-                  }
-                  
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    if (node.diffAlpha === false) {
-                      childOverride.alpha = parentOverride.alpha;
-                    } else {
-                      childOverride.alpha = Math.max(0, Math.min(100, childOverride.alpha + alphaChange));
-                    }
-                  }
-                }
-                
-                // Handle HCT propagation with theme overrides
-                if (parentNode.colorSpace === 'hct' && childOverride.hctH !== undefined) {
-                  if (hctHChange !== 0 && !node.lockHctH && parentOverride.hctH !== undefined) {
-                    if (node.diffHctH === false) {
-                      childOverride.hctH = parentOverride.hctH;
-                    } else {
-                      childOverride.hctH = (childOverride.hctH + hctHChange + 360) % 360;
-                    }
-                  }
-                  
-                  if (hctCChange !== 0 && !node.lockHctC && parentOverride.hctC !== undefined) {
-                    if (node.diffHctC === false) {
-                      childOverride.hctC = parentOverride.hctC;
-                    } else {
-                      childOverride.hctC = Math.max(0, Math.min(100, childOverride.hctC + hctCChange));
-                    }
-                  }
-                  
-                  if (hctTChange !== 0 && !node.lockHctT && parentOverride.hctT !== undefined) {
-                    if (node.diffHctT === false) {
-                      childOverride.hctT = parentOverride.hctT;
-                    } else {
-                      childOverride.hctT = Math.max(0, Math.min(100, childOverride.hctT + hctTChange));
-                    }
-                  }
-                  
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    if (node.diffAlpha === false) {
-                      childOverride.alpha = parentOverride.alpha;
-                    } else {
-                      childOverride.alpha = Math.max(0, Math.min(100, childOverride.alpha + alphaChange));
-                    }
-                  }
-                }
-                
-                // Update the node in the array with the modified theme override
-                updatedNodes[childIndex] = {
-                  ...node,
-                  themeOverrides: {
-                    ...node.themeOverrides,
-                    [activeThemeId]: childOverride
-                  }
-                };
-                
-                // Recursively propagate to grandchildren
-                propagateToDescendants(
-                  node.id,
-                  hueChange, satChange, lightChange, alphaChange,
-                  redChange, greenChange, blueChange,
-                  oklchLChange, oklchCChange, oklchHChange,
-                  hctHChange, hctCChange, hctTChange
-                );
-                
-                return; // Skip the regular propagation logic below
-              }
-              
-              // Check if parent and child have different color spaces
-              const differentColorSpace = parentNode.colorSpace !== node.colorSpace;
-              
-              // Skip propagation for locked hex nodes
-              if (node.colorSpace === 'hex' && node.hexLocked) {
-                // Locked hex nodes don't inherit from parent
-                return;
-              }
-              
-              if (differentColorSpace) {
-                // Cross-color-space conversion - convert parent's color to child's color space
-                // ... (Logic continues in next block) ...
-                // BUT we need to update the node in updatedNodes array immediately
-                // The previous code block was doing it, but let's ensure we capture the changes
-                
-                // Temporary variable to hold changes
-                const updates: Partial<ColorNode> = {};
-
-                if (parentNode.colorSpace === 'hsl' && node.colorSpace === 'rgb') {
-                  // HSL parent -> RGB child
-                  const rgb = hslToRgb(parentNode.hue, parentNode.saturation, parentNode.lightness);
-                  if (!node.lockRed) updates.red = rgb.r;
-                  if (!node.lockGreen) updates.green = rgb.g;
-                  if (!node.lockBlue) updates.blue = rgb.b;
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                } else if (parentNode.colorSpace === 'hsl' && node.colorSpace === 'hex') {
-                  // HSL parent -> HEX child
-                  if (!node.hexLocked) {
-                    updates.hexValue = hslToHex(parentNode.hue, parentNode.saturation, parentNode.lightness);
-                    // Also update HSL values for internal consistency
-                    updates.hue = parentNode.hue;
-                    updates.saturation = parentNode.saturation;
-                    updates.lightness = parentNode.lightness;
-                  }
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                } else if (parentNode.colorSpace === 'hsl' && node.colorSpace === 'oklch') {
-                  // HSL parent -> OKLCH child
-                  const oklch = hslToOklchUpper(parentNode.hue, parentNode.saturation, parentNode.lightness);
-                  if (!node.lockOklchL) updates.oklchL = oklch.L;
-                  if (!node.lockOklchC) updates.oklchC = oklch.C;
-                  if (!node.lockOklchH) updates.oklchH = oklch.H;
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                } else if (parentNode.colorSpace === 'rgb' && node.colorSpace === 'hsl') {
-                  // RGB parent -> HSL child
-                  const hsl = rgbToHsl(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
-                  if (!node.lockHue) updates.hue = hsl.h;
-                  if (!node.lockSaturation) updates.saturation = hsl.s;
-                  if (!node.lockLightness) updates.lightness = hsl.l;
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                } else if (parentNode.colorSpace === 'rgb' && node.colorSpace === 'hex') {
-                  // RGB parent -> HEX child
-                  if (!node.hexLocked) {
-                    updates.hexValue = rgbToHex(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
-                    // Also update HSL values for internal consistency
-                    const hsl = rgbToHsl(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
-                    updates.hue = hsl.h;
-                    updates.saturation = hsl.s;
-                    updates.lightness = hsl.l;
-                  }
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                } else if (parentNode.colorSpace === 'rgb' && node.colorSpace === 'oklch') {
-                  // RGB parent -> OKLCH child
-                  const oklch = rgbToOklch(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
-                  if (!node.lockOklchL) updates.oklchL = oklch.L;
-                  if (!node.lockOklchC) updates.oklchC = oklch.C;
-                  if (!node.lockOklchH) updates.oklchH = oklch.H;
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                } else if (parentNode.colorSpace === 'hex' && node.colorSpace === 'hsl') {
-                  // HEX parent -> HSL child
-                  // Get the hex value from parent
-                  let hexValue = parentNode.hexValue;
-                  if (!hexValue && parentNode.hue !== undefined) {
-                    // Fallback: calculate from HSL if hexValue not set
-                    hexValue = hslToHex(parentNode.hue, parentNode.saturation, parentNode.lightness);
-                  }
-                  if (hexValue) {
-                    const hsl = hexToHsl(hexValue);
-                    if (!node.lockHue) updates.hue = hsl.h;
-                    if (!node.lockSaturation) updates.saturation = hsl.s;
-                    if (!node.lockLightness) updates.lightness = hsl.l;
-                  }
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                } else if (parentNode.colorSpace === 'hex' && node.colorSpace === 'rgb') {
-                  // HEX parent -> RGB child
-                  // Get the hex value from parent
-                  let hexValue = parentNode.hexValue;
-                  if (!hexValue && parentNode.hue !== undefined) {
-                    // Fallback: calculate from HSL if hexValue not set
-                    hexValue = hslToHex(parentNode.hue, parentNode.saturation, parentNode.lightness);
-                  }
-                  if (hexValue) {
-                    const rgb = hexToRgb(hexValue);
-                    if (!node.lockRed) updates.red = rgb.r;
-                    if (!node.lockGreen) updates.green = rgb.g;
-                    if (!node.lockBlue) updates.blue = rgb.b;
-                  }
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                } else if (parentNode.colorSpace === 'oklch' && node.colorSpace === 'hsl') {
-                  // OKLCH parent -> HSL child
-                  const hsl = oklchToHsl(parentNode.oklchL || 0, parentNode.oklchC || 0, parentNode.oklchH || 0);
-                  if (!node.lockHue) updates.hue = hsl.h;
-                  if (!node.lockSaturation) updates.saturation = hsl.s;
-                  if (!node.lockLightness) updates.lightness = hsl.l;
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                } else if (parentNode.colorSpace === 'oklch' && node.colorSpace === 'rgb') {
-                  // OKLCH parent -> RGB child
-                  const rgb = oklchToRgb(parentNode.oklchL || 0, parentNode.oklchC || 0, parentNode.oklchH || 0);
-                  if (!node.lockRed) updates.red = rgb.r;
-                  if (!node.lockGreen) updates.green = rgb.g;
-                  if (!node.lockBlue) updates.blue = rgb.b;
-                  if (alphaChange !== 0 && !node.lockAlpha) {
-                    updates.alpha = parentNode.alpha ?? 100;
-                  }
-                }
-                
-                // ... (Other conversions similar pattern) ...
-                
-                // Apply updates to node
-                updatedNodes[childIndex] = { ...node, ...updates };
-
-                // Recurse for grandchildren
-                propagateToDescendants(
-                  node.id, 
-                  hueChange, satChange, lightChange, alphaChange,
-                  redChange, greenChange, blueChange,
-                  oklchLChange, oklchCChange, oklchHChange,
-                  hctHChange, hctCChange, hctTChange
-                );
-                
-                return;
-              }
-
-              // Standard propagation (same color space)
-              const updates: Partial<ColorNode> = {};
-              
-              if (node.colorSpace === 'hsl' || !node.colorSpace) {
+              if (parentNode.colorSpace === 'hsl' || !parentNode.colorSpace) {
                 if (!node.lockHue && hueChange !== 0) {
-                  if (node.diffHue === false) updates.hue = parentNode.hue;
-                  else updates.hue = (node.hue + hueChange + 360) % 360;
+                  paletteUpdates.hue = node.diffHue === false ? parentNode.hue : (node.hue + hueChange + 360) % 360;
                 }
                 if (!node.lockSaturation && satChange !== 0) {
-                  if (node.diffSaturation === false) updates.saturation = parentNode.saturation;
-                  else updates.saturation = Math.max(0, Math.min(100, node.saturation + satChange));
+                  paletteUpdates.saturation = node.diffSaturation === false ? parentNode.saturation : Math.max(0, Math.min(100, node.saturation + satChange));
                 }
                 if (!node.lockLightness && lightChange !== 0) {
-                  if (node.diffLightness === false) updates.lightness = parentNode.lightness;
-                  else updates.lightness = Math.max(0, Math.min(100, node.lightness + lightChange));
+                  paletteUpdates.lightness = node.diffLightness === false ? parentNode.lightness : Math.max(0, Math.min(100, node.lightness + lightChange));
                 }
                 if (!node.lockAlpha && alphaChange !== 0) {
-                  if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
-                  else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
+                  paletteUpdates.alpha = node.diffAlpha === false ? parentNode.alpha : Math.max(0, Math.min(100, node.alpha + alphaChange));
                 }
-                // HSL is the source of truth, so derived hexValue should be updated if needed
-                if (!node.hexLocked) {
-                  const h = updates.hue !== undefined ? updates.hue : node.hue;
-                  const s = updates.saturation !== undefined ? updates.saturation : node.saturation;
-                  const l = updates.lightness !== undefined ? updates.lightness : node.lightness;
-                  updates.hexValue = hslToHex(h, s, l);
-                }
-              } else if (node.colorSpace === 'rgb') {
-                if (!node.lockRed && redChange !== 0) {
-                  if (node.diffRed === false) updates.red = parentNode.red;
-                  else updates.red = Math.max(0, Math.min(255, (node.red || 0) + redChange));
-                }
-                if (!node.lockGreen && greenChange !== 0) {
-                  if (node.diffGreen === false) updates.green = parentNode.green;
-                  else updates.green = Math.max(0, Math.min(255, (node.green || 0) + greenChange));
-                }
-                if (!node.lockBlue && blueChange !== 0) {
-                  if (node.diffBlue === false) updates.blue = parentNode.blue;
-                  else updates.blue = Math.max(0, Math.min(255, (node.blue || 0) + blueChange));
-                }
-                if (!node.lockAlpha && alphaChange !== 0) {
-                  if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
-                  else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
-                }
-                
-                // Keep HSL and Hex in sync for RGB nodes
-                const r = updates.red !== undefined ? updates.red : (node.red || 0);
-                const g = updates.green !== undefined ? updates.green : (node.green || 0);
-                const b = updates.blue !== undefined ? updates.blue : (node.blue || 0);
-                
-                const hsl = rgbToHsl(r, g, b);
-                updates.hue = hsl.h;
-                updates.saturation = hsl.s;
-                updates.lightness = hsl.l;
-                if (!node.hexLocked) {
-                  updates.hexValue = rgbToHex(r, g, b);
-                }
-              } else if (node.colorSpace === 'oklch') {
-                if (!node.lockOklchL && oklchLChange !== 0) {
-                  if (node.diffOklchL === false) updates.oklchL = parentNode.oklchL;
-                  else updates.oklchL = Math.max(0, Math.min(100, (node.oklchL || 0) + oklchLChange));
-                }
-                if (!node.lockOklchC && oklchCChange !== 0) {
-                  if (node.diffOklchC === false) updates.oklchC = parentNode.oklchC;
-                  else updates.oklchC = Math.max(0, Math.min(100, (node.oklchC || 0) + oklchCChange));
-                }
-                if (!node.lockOklchH && oklchHChange !== 0) {
-                  if (node.diffOklchH === false) updates.oklchH = parentNode.oklchH;
-                  else updates.oklchH = ((node.oklchH || 0) + oklchHChange + 360) % 360;
-                }
-                if (!node.lockAlpha && alphaChange !== 0) {
-                  if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
-                  else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
-                }
-
-                // Keep HSL and Hex in sync for OKLCH nodes - CRITICAL for Token Panel updates
-                const l = updates.oklchL !== undefined ? updates.oklchL : (node.oklchL || 0);
-                const c = updates.oklchC !== undefined ? updates.oklchC : (node.oklchC || 0);
-                const h = updates.oklchH !== undefined ? updates.oklchH : (node.oklchH || 0);
-                
-                const hsl = oklchToHsl(l, c, h);
-                updates.hue = hsl.h;
-                updates.saturation = hsl.s;
-                updates.lightness = hsl.l;
-                if (!node.hexLocked) {
-                  updates.hexValue = oklchToHex(l, c, h);
-                }
-              } else if (node.colorSpace === 'hct') {
-                if (!node.lockHctH && hctHChange !== 0) {
-                  if (node.diffHctH === false) updates.hctH = parentNode.hctH;
-                  else updates.hctH = ((node.hctH || 0) + hctHChange + 360) % 360;
-                }
-                if (!node.lockHctC && hctCChange !== 0) {
-                  if (node.diffHctC === false) updates.hctC = parentNode.hctC;
-                  else updates.hctC = Math.max(0, Math.min(100, (node.hctC || 0) + hctCChange));
-                }
-                if (!node.lockHctT && hctTChange !== 0) {
-                  if (node.diffHctT === false) updates.hctT = parentNode.hctT;
-                  else updates.hctT = Math.max(0, Math.min(100, (node.hctT || 0) + hctTChange));
-                }
-                if (!node.lockAlpha && alphaChange !== 0) {
-                  if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
-                  else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
-                }
-
-                // Keep HSL and Hex in sync for HCT nodes
-                const h = updates.hctH !== undefined ? updates.hctH : (node.hctH || 0);
-                const c = updates.hctC !== undefined ? updates.hctC : (node.hctC || 0);
-                const t = updates.hctT !== undefined ? updates.hctT : (node.hctT || 0);
-                
-                const rgb = hctToRgb(h, c, t);
-                const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-                
-                updates.hue = hsl.h;
-                updates.saturation = hsl.s;
-                updates.lightness = hsl.l;
-                if (!node.hexLocked) {
-                  updates.hexValue = hctToHex(h, c, t);
-                }
-              } else if (node.colorSpace === 'hex') {
-                // Hex same-color-space: inherit parent's hex value directly
-                if (!node.hexLocked && parentNode.hexValue) {
-                  updates.hexValue = parentNode.hexValue;
-                  // Keep HSL in sync for internal consistency
+              } else {
+                // Cross-color-space: convert parent color to HSL for palette base
+                let pH = parentNode.hue, pS = parentNode.saturation, pL = parentNode.lightness;
+                if (parentNode.colorSpace === 'rgb') {
+                  const hsl = rgbToHsl(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
+                  pH = hsl.h; pS = hsl.s; pL = hsl.l;
+                } else if (parentNode.colorSpace === 'oklch') {
+                  const hsl = oklchToHsl(parentNode.oklchL || 0, parentNode.oklchC || 0, parentNode.oklchH || 0);
+                  pH = hsl.h; pS = hsl.s; pL = hsl.l;
+                } else if (parentNode.colorSpace === 'hex' && parentNode.hexValue) {
                   const hsl = hexToHsl(parentNode.hexValue);
-                  updates.hue = hsl.h;
-                  updates.saturation = hsl.s;
-                  updates.lightness = hsl.l;
+                  pH = hsl.h; pS = hsl.s; pL = hsl.l;
+                } else if (parentNode.colorSpace === 'hct') {
+                  const rgb = hctToRgb(parentNode.hctH || 0, parentNode.hctC || 0, parentNode.hctT || 0);
+                  const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+                  pH = hsl.h; pS = hsl.s; pL = hsl.l;
                 }
-                if (!node.lockAlpha && alphaChange !== 0) {
-                  if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
-                  else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
+                paletteUpdates.hue = pH;
+                paletteUpdates.saturation = pS;
+                paletteUpdates.lightness = pL;
+              }
+
+              const updatedPalette = { ...node, ...paletteUpdates };
+              updatedNodes[childIndex] = updatedPalette;
+              regeneratePaletteShades(updatedPalette, updatedNodes);
+              return;
+            }
+
+            // Check if we're in a non-primary theme with both parent and child unlinked
+            const currentTheme = themes.find(t => t.id === activeThemeId);
+            const isInNonPrimaryTheme = currentTheme && !currentTheme.isPrimary;
+            const parentHasOverride = isInNonPrimaryTheme && parentNode.themeOverrides?.[activeThemeId];
+            const childHasOverride = isInNonPrimaryTheme && node.themeOverrides?.[activeThemeId];
+
+            // If both are unlinked in a non-primary theme, use theme-specific values
+            if (parentHasOverride && childHasOverride) {
+              const parentOverride = parentNode.themeOverrides![activeThemeId];
+              const childOverride = { ...node.themeOverrides![activeThemeId] }; // Create a mutable copy
+
+              // Handle HSL propagation with theme overrides
+              if (parentNode.colorSpace === 'hsl' || !parentNode.colorSpace) {
+                if (hueChange !== 0 && !node.lockHue) {
+                  // Update child's theme override hue
+                  if (node.diffHue === false) {
+                    childOverride.hue = parentOverride.hue;
+                  } else {
+                    childOverride.hue = (childOverride.hue + hueChange + 360) % 360;
+                  }
+                }
+
+                if (satChange !== 0 && !node.lockSaturation) {
+                  if (node.diffSaturation === false) {
+                    childOverride.saturation = parentOverride.saturation;
+                  } else {
+                    childOverride.saturation = Math.max(0, Math.min(100, childOverride.saturation + satChange));
+                  }
+                }
+
+                if (lightChange !== 0 && !node.lockLightness) {
+                  if (node.diffLightness === false) {
+                    childOverride.lightness = parentOverride.lightness;
+                  } else {
+                    childOverride.lightness = Math.max(0, Math.min(100, childOverride.lightness + lightChange));
+                  }
+                }
+
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  if (node.diffAlpha === false) {
+                    childOverride.alpha = parentOverride.alpha;
+                  } else {
+                    childOverride.alpha = Math.max(0, Math.min(100, childOverride.alpha + alphaChange));
+                  }
                 }
               }
 
-              // Apply updates
-              updatedNodes[childIndex] = { ...node, ...updates };
+              // Handle RGB propagation with theme overrides
+              if (parentNode.colorSpace === 'rgb' && childOverride.red !== undefined) {
+                if (redChange !== 0 && !node.lockRed && parentOverride.red !== undefined) {
+                  if (node.diffRed === false) {
+                    childOverride.red = parentOverride.red;
+                  } else {
+                    childOverride.red = Math.max(0, Math.min(255, childOverride.red + redChange));
+                  }
+                }
 
-              // Recurse
+                if (greenChange !== 0 && !node.lockGreen && parentOverride.green !== undefined) {
+                  if (node.diffGreen === false) {
+                    childOverride.green = parentOverride.green;
+                  } else {
+                    childOverride.green = Math.max(0, Math.min(255, childOverride.green + greenChange));
+                  }
+                }
+
+                if (blueChange !== 0 && !node.lockBlue && parentOverride.blue !== undefined) {
+                  if (node.diffBlue === false) {
+                    childOverride.blue = parentOverride.blue;
+                  } else {
+                    childOverride.blue = Math.max(0, Math.min(255, childOverride.blue + blueChange));
+                  }
+                }
+
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  if (node.diffAlpha === false) {
+                    childOverride.alpha = parentOverride.alpha;
+                  } else {
+                    childOverride.alpha = Math.max(0, Math.min(100, childOverride.alpha + alphaChange));
+                  }
+                }
+              }
+
+              // Handle OKLCH propagation with theme overrides
+              if (parentNode.colorSpace === 'oklch' && childOverride.oklchL !== undefined) {
+                if (oklchLChange !== 0 && !node.lockOklchL && parentOverride.oklchL !== undefined) {
+                  if (node.diffOklchL === false) {
+                    childOverride.oklchL = parentOverride.oklchL;
+                  } else {
+                    childOverride.oklchL = Math.max(0, Math.min(100, childOverride.oklchL + oklchLChange));
+                  }
+                }
+
+                if (oklchCChange !== 0 && !node.lockOklchC && parentOverride.oklchC !== undefined) {
+                  if (node.diffOklchC === false) {
+                    childOverride.oklchC = parentOverride.oklchC;
+                  } else {
+                    childOverride.oklchC = Math.max(0, Math.min(100, childOverride.oklchC + oklchCChange));
+                  }
+                }
+
+                if (oklchHChange !== 0 && !node.lockOklchH && parentOverride.oklchH !== undefined) {
+                  if (node.diffOklchH === false) {
+                    childOverride.oklchH = parentOverride.oklchH;
+                  } else {
+                    childOverride.oklchH = (childOverride.oklchH + oklchHChange + 360) % 360;
+                  }
+                }
+
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  if (node.diffAlpha === false) {
+                    childOverride.alpha = parentOverride.alpha;
+                  } else {
+                    childOverride.alpha = Math.max(0, Math.min(100, childOverride.alpha + alphaChange));
+                  }
+                }
+              }
+
+              // Handle HCT propagation with theme overrides
+              if (parentNode.colorSpace === 'hct' && childOverride.hctH !== undefined) {
+                if (hctHChange !== 0 && !node.lockHctH && parentOverride.hctH !== undefined) {
+                  if (node.diffHctH === false) {
+                    childOverride.hctH = parentOverride.hctH;
+                  } else {
+                    childOverride.hctH = (childOverride.hctH + hctHChange + 360) % 360;
+                  }
+                }
+
+                if (hctCChange !== 0 && !node.lockHctC && parentOverride.hctC !== undefined) {
+                  if (node.diffHctC === false) {
+                    childOverride.hctC = parentOverride.hctC;
+                  } else {
+                    childOverride.hctC = Math.max(0, Math.min(100, childOverride.hctC + hctCChange));
+                  }
+                }
+
+                if (hctTChange !== 0 && !node.lockHctT && parentOverride.hctT !== undefined) {
+                  if (node.diffHctT === false) {
+                    childOverride.hctT = parentOverride.hctT;
+                  } else {
+                    childOverride.hctT = Math.max(0, Math.min(100, childOverride.hctT + hctTChange));
+                  }
+                }
+
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  if (node.diffAlpha === false) {
+                    childOverride.alpha = parentOverride.alpha;
+                  } else {
+                    childOverride.alpha = Math.max(0, Math.min(100, childOverride.alpha + alphaChange));
+                  }
+                }
+              }
+
+              // Update the node in the array with the modified theme override
+              updatedNodes[childIndex] = {
+                ...node,
+                themeOverrides: {
+                  ...node.themeOverrides,
+                  [activeThemeId]: childOverride
+                }
+              };
+
+              // Recursively propagate to grandchildren
               propagateToDescendants(
-                node.id, 
+                node.id,
                 hueChange, satChange, lightChange, alphaChange,
                 redChange, greenChange, blueChange,
                 oklchLChange, oklchCChange, oklchHChange,
                 hctHChange, hctCChange, hctTChange
               );
+
+              return; // Skip the regular propagation logic below
+            }
+
+            // Check if parent and child have different color spaces
+            const differentColorSpace = parentNode.colorSpace !== node.colorSpace;
+
+            // Skip propagation for locked hex nodes
+            if (node.colorSpace === 'hex' && node.hexLocked) {
+              // Locked hex nodes don't inherit from parent
+              return;
+            }
+
+            if (differentColorSpace) {
+              // Cross-color-space conversion - convert parent's color to child's color space
+              // ... (Logic continues in next block) ...
+              // BUT we need to update the node in updatedNodes array immediately
+              // The previous code block was doing it, but let's ensure we capture the changes
+
+              // Temporary variable to hold changes
+              const updates: Partial<ColorNode> = {};
+
+              if (parentNode.colorSpace === 'hsl' && node.colorSpace === 'rgb') {
+                // HSL parent -> RGB child
+                const rgb = hslToRgb(parentNode.hue, parentNode.saturation, parentNode.lightness);
+                if (!node.lockRed) updates.red = rgb.r;
+                if (!node.lockGreen) updates.green = rgb.g;
+                if (!node.lockBlue) updates.blue = rgb.b;
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              } else if (parentNode.colorSpace === 'hsl' && node.colorSpace === 'hex') {
+                // HSL parent -> HEX child
+                if (!node.hexLocked) {
+                  updates.hexValue = hslToHex(parentNode.hue, parentNode.saturation, parentNode.lightness);
+                  // Also update HSL values for internal consistency
+                  updates.hue = parentNode.hue;
+                  updates.saturation = parentNode.saturation;
+                  updates.lightness = parentNode.lightness;
+                }
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              } else if (parentNode.colorSpace === 'hsl' && node.colorSpace === 'oklch') {
+                // HSL parent -> OKLCH child
+                const oklch = hslToOklchUpper(parentNode.hue, parentNode.saturation, parentNode.lightness);
+                if (!node.lockOklchL) updates.oklchL = oklch.L;
+                if (!node.lockOklchC) updates.oklchC = oklch.C;
+                if (!node.lockOklchH) updates.oklchH = oklch.H;
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              } else if (parentNode.colorSpace === 'rgb' && node.colorSpace === 'hsl') {
+                // RGB parent -> HSL child
+                const hsl = rgbToHsl(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
+                if (!node.lockHue) updates.hue = hsl.h;
+                if (!node.lockSaturation) updates.saturation = hsl.s;
+                if (!node.lockLightness) updates.lightness = hsl.l;
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              } else if (parentNode.colorSpace === 'rgb' && node.colorSpace === 'hex') {
+                // RGB parent -> HEX child
+                if (!node.hexLocked) {
+                  updates.hexValue = rgbToHex(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
+                  // Also update HSL values for internal consistency
+                  const hsl = rgbToHsl(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
+                  updates.hue = hsl.h;
+                  updates.saturation = hsl.s;
+                  updates.lightness = hsl.l;
+                }
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              } else if (parentNode.colorSpace === 'rgb' && node.colorSpace === 'oklch') {
+                // RGB parent -> OKLCH child
+                const oklch = rgbToOklch(parentNode.red || 0, parentNode.green || 0, parentNode.blue || 0);
+                if (!node.lockOklchL) updates.oklchL = oklch.L;
+                if (!node.lockOklchC) updates.oklchC = oklch.C;
+                if (!node.lockOklchH) updates.oklchH = oklch.H;
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              } else if (parentNode.colorSpace === 'hex' && node.colorSpace === 'hsl') {
+                // HEX parent -> HSL child
+                // Get the hex value from parent
+                let hexValue = parentNode.hexValue;
+                if (!hexValue && parentNode.hue !== undefined) {
+                  // Fallback: calculate from HSL if hexValue not set
+                  hexValue = hslToHex(parentNode.hue, parentNode.saturation, parentNode.lightness);
+                }
+                if (hexValue) {
+                  const hsl = hexToHsl(hexValue);
+                  if (!node.lockHue) updates.hue = hsl.h;
+                  if (!node.lockSaturation) updates.saturation = hsl.s;
+                  if (!node.lockLightness) updates.lightness = hsl.l;
+                }
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              } else if (parentNode.colorSpace === 'hex' && node.colorSpace === 'rgb') {
+                // HEX parent -> RGB child
+                // Get the hex value from parent
+                let hexValue = parentNode.hexValue;
+                if (!hexValue && parentNode.hue !== undefined) {
+                  // Fallback: calculate from HSL if hexValue not set
+                  hexValue = hslToHex(parentNode.hue, parentNode.saturation, parentNode.lightness);
+                }
+                if (hexValue) {
+                  const rgb = hexToRgb(hexValue);
+                  if (!node.lockRed) updates.red = rgb.r;
+                  if (!node.lockGreen) updates.green = rgb.g;
+                  if (!node.lockBlue) updates.blue = rgb.b;
+                }
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              } else if (parentNode.colorSpace === 'oklch' && node.colorSpace === 'hsl') {
+                // OKLCH parent -> HSL child
+                const hsl = oklchToHsl(parentNode.oklchL || 0, parentNode.oklchC || 0, parentNode.oklchH || 0);
+                if (!node.lockHue) updates.hue = hsl.h;
+                if (!node.lockSaturation) updates.saturation = hsl.s;
+                if (!node.lockLightness) updates.lightness = hsl.l;
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              } else if (parentNode.colorSpace === 'oklch' && node.colorSpace === 'rgb') {
+                // OKLCH parent -> RGB child
+                const rgb = oklchToRgb(parentNode.oklchL || 0, parentNode.oklchC || 0, parentNode.oklchH || 0);
+                if (!node.lockRed) updates.red = rgb.r;
+                if (!node.lockGreen) updates.green = rgb.g;
+                if (!node.lockBlue) updates.blue = rgb.b;
+                if (alphaChange !== 0 && !node.lockAlpha) {
+                  updates.alpha = parentNode.alpha ?? 100;
+                }
+              }
+
+              // ... (Other conversions similar pattern) ...
+
+              // Apply updates to node
+              updatedNodes[childIndex] = { ...node, ...updates };
+
+              // Recurse for grandchildren
+              propagateToDescendants(
+                node.id,
+                hueChange, satChange, lightChange, alphaChange,
+                redChange, greenChange, blueChange,
+                oklchLChange, oklchCChange, oklchHChange,
+                hctHChange, hctCChange, hctTChange
+              );
+
+              return;
+            }
+
+            // Standard propagation (same color space)
+            const updates: Partial<ColorNode> = {};
+
+            if (node.colorSpace === 'hsl' || !node.colorSpace) {
+              if (!node.lockHue && hueChange !== 0) {
+                if (node.diffHue === false) updates.hue = parentNode.hue;
+                else updates.hue = (node.hue + hueChange + 360) % 360;
+              }
+              if (!node.lockSaturation && satChange !== 0) {
+                if (node.diffSaturation === false) updates.saturation = parentNode.saturation;
+                else updates.saturation = Math.max(0, Math.min(100, node.saturation + satChange));
+              }
+              if (!node.lockLightness && lightChange !== 0) {
+                if (node.diffLightness === false) updates.lightness = parentNode.lightness;
+                else updates.lightness = Math.max(0, Math.min(100, node.lightness + lightChange));
+              }
+              if (!node.lockAlpha && alphaChange !== 0) {
+                if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
+                else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
+              }
+              // HSL is the source of truth, so derived hexValue should be updated if needed
+              if (!node.hexLocked) {
+                const h = updates.hue !== undefined ? updates.hue : node.hue;
+                const s = updates.saturation !== undefined ? updates.saturation : node.saturation;
+                const l = updates.lightness !== undefined ? updates.lightness : node.lightness;
+                updates.hexValue = hslToHex(h, s, l);
+              }
+            } else if (node.colorSpace === 'rgb') {
+              if (!node.lockRed && redChange !== 0) {
+                if (node.diffRed === false) updates.red = parentNode.red;
+                else updates.red = Math.max(0, Math.min(255, (node.red || 0) + redChange));
+              }
+              if (!node.lockGreen && greenChange !== 0) {
+                if (node.diffGreen === false) updates.green = parentNode.green;
+                else updates.green = Math.max(0, Math.min(255, (node.green || 0) + greenChange));
+              }
+              if (!node.lockBlue && blueChange !== 0) {
+                if (node.diffBlue === false) updates.blue = parentNode.blue;
+                else updates.blue = Math.max(0, Math.min(255, (node.blue || 0) + blueChange));
+              }
+              if (!node.lockAlpha && alphaChange !== 0) {
+                if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
+                else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
+              }
+
+              // Keep HSL and Hex in sync for RGB nodes
+              const r = updates.red !== undefined ? updates.red : (node.red || 0);
+              const g = updates.green !== undefined ? updates.green : (node.green || 0);
+              const b = updates.blue !== undefined ? updates.blue : (node.blue || 0);
+
+              const hsl = rgbToHsl(r, g, b);
+              updates.hue = hsl.h;
+              updates.saturation = hsl.s;
+              updates.lightness = hsl.l;
+              if (!node.hexLocked) {
+                updates.hexValue = rgbToHex(r, g, b);
+              }
+            } else if (node.colorSpace === 'oklch') {
+              if (!node.lockOklchL && oklchLChange !== 0) {
+                if (node.diffOklchL === false) updates.oklchL = parentNode.oklchL;
+                else updates.oklchL = Math.max(0, Math.min(100, (node.oklchL || 0) + oklchLChange));
+              }
+              if (!node.lockOklchC && oklchCChange !== 0) {
+                if (node.diffOklchC === false) updates.oklchC = parentNode.oklchC;
+                else updates.oklchC = Math.max(0, Math.min(100, (node.oklchC || 0) + oklchCChange));
+              }
+              if (!node.lockOklchH && oklchHChange !== 0) {
+                if (node.diffOklchH === false) updates.oklchH = parentNode.oklchH;
+                else updates.oklchH = ((node.oklchH || 0) + oklchHChange + 360) % 360;
+              }
+              if (!node.lockAlpha && alphaChange !== 0) {
+                if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
+                else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
+              }
+
+              // Keep HSL and Hex in sync for OKLCH nodes - CRITICAL for Token Panel updates
+              const l = updates.oklchL !== undefined ? updates.oklchL : (node.oklchL || 0);
+              const c = updates.oklchC !== undefined ? updates.oklchC : (node.oklchC || 0);
+              const h = updates.oklchH !== undefined ? updates.oklchH : (node.oklchH || 0);
+
+              const hsl = oklchToHsl(l, c, h);
+              updates.hue = hsl.h;
+              updates.saturation = hsl.s;
+              updates.lightness = hsl.l;
+              if (!node.hexLocked) {
+                updates.hexValue = oklchToHex(l, c, h);
+              }
+            } else if (node.colorSpace === 'hct') {
+              if (!node.lockHctH && hctHChange !== 0) {
+                if (node.diffHctH === false) updates.hctH = parentNode.hctH;
+                else updates.hctH = ((node.hctH || 0) + hctHChange + 360) % 360;
+              }
+              if (!node.lockHctC && hctCChange !== 0) {
+                if (node.diffHctC === false) updates.hctC = parentNode.hctC;
+                else updates.hctC = Math.max(0, Math.min(100, (node.hctC || 0) + hctCChange));
+              }
+              if (!node.lockHctT && hctTChange !== 0) {
+                if (node.diffHctT === false) updates.hctT = parentNode.hctT;
+                else updates.hctT = Math.max(0, Math.min(100, (node.hctT || 0) + hctTChange));
+              }
+              if (!node.lockAlpha && alphaChange !== 0) {
+                if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
+                else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
+              }
+
+              // Keep HSL and Hex in sync for HCT nodes
+              const h = updates.hctH !== undefined ? updates.hctH : (node.hctH || 0);
+              const c = updates.hctC !== undefined ? updates.hctC : (node.hctC || 0);
+              const t = updates.hctT !== undefined ? updates.hctT : (node.hctT || 0);
+
+              const rgb = hctToRgb(h, c, t);
+              const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+              updates.hue = hsl.h;
+              updates.saturation = hsl.s;
+              updates.lightness = hsl.l;
+              if (!node.hexLocked) {
+                updates.hexValue = hctToHex(h, c, t);
+              }
+            } else if (node.colorSpace === 'hex') {
+              // Hex same-color-space: inherit parent's hex value directly
+              if (!node.hexLocked && parentNode.hexValue) {
+                updates.hexValue = parentNode.hexValue;
+                // Keep HSL in sync for internal consistency
+                const hsl = hexToHsl(parentNode.hexValue);
+                updates.hue = hsl.h;
+                updates.saturation = hsl.s;
+                updates.lightness = hsl.l;
+              }
+              if (!node.lockAlpha && alphaChange !== 0) {
+                if (node.diffAlpha === false) updates.alpha = parentNode.alpha;
+                else updates.alpha = Math.max(0, Math.min(100, node.alpha + alphaChange));
+              }
+            }
+
+            // Apply updates
+            updatedNodes[childIndex] = { ...node, ...updates };
+
+            // Recurse
+            propagateToDescendants(
+              node.id,
+              hueChange, satChange, lightChange, alphaChange,
+              redChange, greenChange, blueChange,
+              oklchLChange, oklchCChange, oklchHChange,
+              hctHChange, hctCChange, hctTChange
+            );
           });
         };
-        
+
         // Execute propagation immediately to update descendants in updatedNodes array
         propagateToDescendants(
-          id, 
+          id,
           hueOffsetDelta, satOffsetDelta, lightOffsetDelta, alphaOffsetDelta,
           redOffsetDelta, greenOffsetDelta, blueOffsetDelta,
           oklchLOffsetDelta, oklchCOffsetDelta, oklchHOffsetDelta,
@@ -7669,7 +7669,7 @@ export function AppShell() {
       // This ensures tokens are updated when values propagate or when re-assigned
       const nodesToUpdate = new Set<string>();
       nodesToUpdate.add(id); // Always update the target node
-      
+
       // If we propagated changes, we need to find all descendants that were affected
       if (hasChanges) {
         const findDescendants = (parentId: string) => {
@@ -7710,22 +7710,22 @@ export function AppShell() {
               finalTokens = finalTokens.map(token => {
                 if (currentThemeTokenIds.has(token.id)) {
                   tokensUpdated = true;
-                  
+
                   // Get the effective color for the current theme
                   const currentTheme = themes.find(t => t.id === activeThemeId);
                   const isPrimaryTheme = currentTheme?.isPrimary ?? true;
                   const hasThemeOverride = !isPrimaryTheme && node.themeOverrides?.[activeThemeId];
                   const themeOverride = hasThemeOverride ? node.themeOverrides![activeThemeId] : undefined;
-                  
+
                   // Only update if token doesn't have the correct value already or needs refresh
                   const updatedThemeValues = { ...token.themeValues };
-                  
+
                   if (node.isSpacing || node.type === 'spacing') {
                     updatedThemeValues[activeThemeId] = {
                       value: node.spacingValue ?? 16,
                       unit: node.spacingUnit ?? 'px',
                     };
-                    
+
                     if (isPrimaryTheme) {
                       return {
                         ...token,
@@ -7778,7 +7778,7 @@ export function AppShell() {
               });
             }
           });
-          
+
           return tokensUpdated ? finalTokens : prevTokens;
         });
       }
@@ -7786,38 +7786,38 @@ export function AppShell() {
 
       // Auto-adjust siblings if this is a child node and its height changed
       // (from expanding/collapsing or token assignment changes)
-      const heightAffectingChanges = updates.isExpanded !== undefined || 
-                                      updates.tokenIds !== undefined ||
-                                      updates.tokenAssignments !== undefined;
-      
+      const heightAffectingChanges = updates.isExpanded !== undefined ||
+        updates.tokenIds !== undefined ||
+        updates.tokenAssignments !== undefined;
+
       if (heightAffectingChanges && nodeBeingUpdated.parentId) {
         const updatedNode = updatedNodes.find(n => n.id === id);
         if (updatedNode) {
           const MIN_GAP = 40; // Unified with canvas-level gap enforcement
-          
+
           // Get all siblings (including the updated node)
           const allSiblings = updatedNodes.filter(
             n => n.parentId === nodeBeingUpdated.parentId
           );
-          
+
           // Sort siblings by Y position
           const sortedSiblings = [...allSiblings].sort((a, b) => a.position.y - b.position.y);
-          
+
           // Find the index of the changed node in the sorted list
           const changedIdx = sortedSiblings.findIndex(s => s.id === id);
           if (changedIdx < 0) return updatedNodes;
-          
+
           // Calculate height delta (old → new) for pull-back capping
           const oldHeight = getNodeHeight(nodeBeingUpdated, tokens, updatedNodes, activeThemeId);
           const changedHeight = getNodeHeight(updatedNode, tokens, updatedNodes, activeThemeId);
           const heightDelta = changedHeight - oldHeight; // positive = expanded, negative = collapsed
           const changedBottom = updatedNode.position.y + changedHeight;
-          
+
           // Find the first sibling BELOW the changed node that horizontally overlaps
           const NODE_WIDTH = 240;
           const changedLeft = updatedNode.position.x;
           const changedRight = updatedNode.position.x + (updatedNode.width || NODE_WIDTH);
-          
+
           let firstBelowIdx = -1;
           for (let i = changedIdx + 1; i < sortedSiblings.length; i++) {
             const s = sortedSiblings[i];
@@ -7829,9 +7829,9 @@ export function AppShell() {
               break;
             }
           }
-          
+
           if (firstBelowIdx < 0) return updatedNodes;
-          
+
           // Calculate uniform shift: how much the first below sibling needs to move
           const firstBelow = sortedSiblings[firstBelowIdx];
           const currentGap = firstBelow.position.y - changedBottom;
@@ -7839,9 +7839,9 @@ export function AppShell() {
           // Also allow pulling back if gap is much larger (collapse case)
           // but only if the gap is larger than MIN_GAP
           const uniformPull = currentGap > MIN_GAP ? Math.min(currentGap - MIN_GAP, Math.abs(heightDelta)) : 0;
-          
+
           const adjustedPositions = new Map<string, { x: number; y: number }>();
-          
+
           if (uniformShift > 0) {
             // Push all siblings at and below firstBelowIdx by the same amount
             for (let i = firstBelowIdx; i < sortedSiblings.length; i++) {
@@ -7871,9 +7871,9 @@ export function AppShell() {
               }
             }
           }
-          
+
           if (adjustedPositions.size === 0) return updatedNodes;
-          
+
           // Apply adjusted positions
           return updatedNodes.map(node => {
             const adjustedPos = adjustedPositions.get(node.id);
@@ -7952,16 +7952,16 @@ export function AppShell() {
 
     // First check if we need to delete palette groups and tokens
     const nodeToDelete = allNodes.find(n => n.id === id);
-    
+
     if (nodeToDelete?.isPalette) {
       console.log(`🗑️ Deleting palette node: ${id}`);
-      
+
       // Find the palette group
       const paletteGroup = groups.find(g => g.paletteNodeId === id);
-      
+
       if (paletteGroup) {
         console.log(`Found palette group: ${paletteGroup.name} (${paletteGroup.id})`);
-        
+
         // Remove tokens and groups (React will batch these updates)
         setTokens(prevTokens => {
           const filtered = prevTokens.filter(t => t.groupId !== paletteGroup.id);
@@ -7970,7 +7970,7 @@ export function AppShell() {
           console.log(`Tokens: ${prevTokens.length} -> ${filtered.length}`);
           return filtered;
         });
-        
+
         setGroups(prevGroups => {
           const filtered = prevGroups.filter(g => g.id !== paletteGroup.id);
           console.log(`Groups: ${prevGroups.length} -> ${filtered.length}`);
@@ -7983,14 +7983,14 @@ export function AppShell() {
           const orphanedGroup = prevGroups.find(g => g.isPaletteEntry && g.paletteNodeId === id);
           if (orphanedGroup) {
             console.log(`Found orphaned palette group: ${orphanedGroup.name} (${orphanedGroup.id})`);
-            
+
             // Delete tokens associated with this group
             setTokens(prevTokens => {
               const filtered = prevTokens.filter(t => t.groupId !== orphanedGroup.id);
               console.log(`🗑️ Removing orphaned tokens for group ${orphanedGroup.id}`);
               return filtered;
             });
-            
+
             // Remove the group
             return prevGroups.filter(g => g.id !== orphanedGroup.id);
           }
@@ -8103,7 +8103,7 @@ export function AppShell() {
       const filtered = prev.filter(l => !nodesToDelete.has(l.nodeId));
       return filtered.length === prev.length ? prev : filtered;
     });
-    
+
     setSelectedNodeId(null);
     setSelectedNodeIds([]);
   }, [allNodes, groups, themes, activeThemeId]);
@@ -8136,12 +8136,12 @@ export function AppShell() {
       const updated = prev.map((node) =>
         selectedNodeIds.includes(node.id)
           ? {
-              ...node,
-              position: {
-                x: node.position.x + deltaX,
-                y: node.position.y + deltaY,
-              },
-            }
+            ...node,
+            position: {
+              x: node.position.x + deltaX,
+              y: node.position.y + deltaY,
+            },
+          }
           : node
       );
       return updated;
@@ -8214,7 +8214,7 @@ export function AppShell() {
           const paletteHue = newParent.hue;
           const paletteSaturation = newParent.saturation;
           const paletteLightness = newParent.lightness;
-          
+
           // Regenerate shade nodes with new base color
           const shadeCount = nodeToUpdate.paletteShadeCount ?? 10;
           const lightnessStart = nodeToUpdate.paletteLightnessStart ?? 95;
@@ -8224,7 +8224,7 @@ export function AppShell() {
           const satStartVal = nodeToUpdate.paletteSaturationStart ?? paletteSaturation;
           const satEndVal = nodeToUpdate.paletteSaturationEnd ?? paletteSaturation;
           const hueShiftVal = nodeToUpdate.paletteHueShift ?? 0;
-          
+
           const applyCurveFn = (t: number): number => {
             if (curveType === 'custom') {
               const pts = nodeToUpdate.paletteCustomCurvePoints;
@@ -8251,17 +8251,17 @@ export function AppShell() {
               default: return t;
             }
           };
-          
+
           const computeSatFn = (bSat: number, t: number, lightness: number): number => {
             if (satMode === 'constant') return bSat;
             if (satMode === 'manual') return Math.max(0, Math.min(100, satStartVal + (satEndVal - satStartVal) * t));
             const dev = Math.abs(lightness - 50) / 50;
             return Math.max(0, Math.min(100, bSat * (1 - dev * 0.6)));
           };
-          
+
           // Get shade children sorted by position
           const shadeChildren = prev.filter(n => n.parentId === nodeToUpdate.id).sort((a, b) => a.position.y - b.position.y);
-          
+
           return prev.map((node) => {
             if (node.id === nodeId) {
               // Update palette to inherit parent's color
@@ -8294,7 +8294,7 @@ export function AppShell() {
                 const shadeLightness = lightnessStart + (lightnessEnd - lightnessStart) * curved;
                 const shadeSaturation = computeSatFn(paletteSaturation, t, shadeLightness);
                 const shadeHue = (paletteHue + hueShiftVal * t + 360) % 360;
-                
+
                 return {
                   ...node,
                   hue: shadeHue,
@@ -8325,7 +8325,7 @@ export function AppShell() {
               updatedNode.saturationOffset = nodeToUpdate.saturation - newParent.saturation;
               updatedNode.lightnessOffset = nodeToUpdate.lightness - newParent.lightness;
               updatedNode.alphaOffset = nodeToUpdate.alpha - newParent.alpha;
-              
+
               // RGB offsets
               if (nodeToUpdate.red !== undefined && newParent.red !== undefined) {
                 updatedNode.redOffset = nodeToUpdate.red - newParent.red;
@@ -8336,7 +8336,7 @@ export function AppShell() {
               if (nodeToUpdate.blue !== undefined && newParent.blue !== undefined) {
                 updatedNode.blueOffset = nodeToUpdate.blue - newParent.blue;
               }
-              
+
               // OKLCH offsets
               if (nodeToUpdate.oklchL !== undefined && newParent.oklchL !== undefined) {
                 updatedNode.oklchLOffset = nodeToUpdate.oklchL - newParent.oklchL;
@@ -8350,7 +8350,7 @@ export function AppShell() {
                   updatedNode.oklchHOffset -= 360;
                 }
               }
-              
+
               // Lock states
               updatedNode.lockHue = updatedNode.lockHue ?? false;
               updatedNode.lockSaturation = updatedNode.lockSaturation ?? false;
@@ -8362,7 +8362,7 @@ export function AppShell() {
               updatedNode.lockOklchL = updatedNode.lockOklchL ?? false;
               updatedNode.lockOklchC = updatedNode.lockOklchC ?? false;
               updatedNode.lockOklchH = updatedNode.lockOklchH ?? false;
-              
+
               // Diff states
               updatedNode.diffHue = updatedNode.diffHue ?? false;
               updatedNode.diffSaturation = updatedNode.diffSaturation ?? false;
@@ -8399,9 +8399,9 @@ export function AppShell() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check if user is typing in an input field - if so, ignore keyboard shortcuts
       const target = e.target as HTMLElement;
-      const isTyping = target.tagName === 'INPUT' || 
-                      target.tagName === 'TEXTAREA' || 
-                      target.isContentEditable;
+      const isTyping = target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable;
 
       // Actions with Cmd/Ctrl+K (works globally)
       if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
@@ -8445,14 +8445,14 @@ export function AppShell() {
         }
         return;
       }
-      
+
       // Paste with Cmd/Ctrl+V
       if ((e.metaKey || e.ctrlKey) && e.key === 'v' && copiedNodes.length > 0 && !isTyping) {
         e.preventDefault();
         pasteNodes();
         return;
       }
-      
+
       // Duplicate with Cmd/Ctrl+D
       if ((e.metaKey || e.ctrlKey) && e.key === 'd' && selectedNodeId && !isTyping) {
         e.preventDefault();
@@ -8463,14 +8463,14 @@ export function AppShell() {
         }
         return;
       }
-      
+
       // Delete with Delete or Backspace - only if NOT typing in an input field
       // Also block when advanced popup is open (node shouldn't be deleted while editing logic)
       if ((e.key === 'Delete' || e.key === 'Backspace') && !isTyping) {
         if (document.body.hasAttribute('data-advanced-popup-open')) return;
         if (isSampleModeRef.current) { e.preventDefault(); sampleModeToast('Deleting'); return; }
         e.preventDefault();
-        
+
         // Delete multi-selected nodes
         if (selectedNodeIds.length > 0) {
           selectedNodeIds.forEach(nodeId => deleteNode(nodeId));
@@ -8483,7 +8483,7 @@ export function AppShell() {
           setSelectedNodeId(null);
         }
       }
-      
+
       // Deselect with Escape
       if (e.key === 'Escape') {
         setSelectedNodeId(null);
@@ -8560,7 +8560,7 @@ export function AppShell() {
       const json = JSON.stringify(exportData);
       const encoded = btoa(json);
       const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
-      
+
       setShareLink(url);
       setShareDialogOpen(true);
     } catch (error) {
@@ -8620,7 +8620,7 @@ export function AppShell() {
       canvasStates,
       activeProjectId,
     };
-    
+
     const json = JSON.stringify(exportData, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -8643,22 +8643,22 @@ export function AppShell() {
         reader.onload = (event) => {
           try {
             const imported = JSON.parse(event.target?.result as string);
-            
+
             if (imported.nodes && (imported.projects || imported.collections)) {
               flushUndo(); // commit any pending undo batch so the import becomes its own entry
               setIsImporting(true);
-              
+
               const nodesToImport = imported.nodes || [];
               const tokensToImport = imported.tokens || [];
               const groupsToImport = imported.groups || [];
               const projectsToImport = imported.projects || imported.collections || [];
               const canvasStatesToImport = imported.canvasStates || [];
               const activeProjectToImport = imported.activeProjectId || imported.activeCollectionId || projectsToImport[0]?.id || 'sample-project';
-              
+
               // Migration: convert old tokenId to tokenIds array and add colorSpace
               const migratedNodes = nodesToImport.map((node: any) => {
                 let migrated = { ...node };
-                
+
                 // Migration 1: tokenId -> tokenIds
                 if (node.tokenId !== undefined && node.tokenIds === undefined) {
                   const { tokenId, ...rest } = migrated;
@@ -8667,22 +8667,22 @@ export function AppShell() {
                     tokenIds: tokenId ? [tokenId] : [],
                   };
                 }
-                
+
                 // Migration 2: add colorSpace
                 if (!migrated.colorSpace) {
                   migrated.colorSpace = 'hsl';
                 }
-                
+
                 return migrated;
               });
-              
+
               setAllNodes(migratedNodes);
               setTokens(tokensToImport);
               setGroups(groupsToImport);
               setProjects(projectsToImport);
               setCanvasStates(canvasStatesToImport);
               setActiveProjectId(activeProjectToImport);
-              
+
               setTimeout(() => {
                 setIsImporting(false);
               }, 500);
@@ -8708,11 +8708,11 @@ export function AppShell() {
   // Manual cleanup function to remove orphaned palette groups and tokens
   const cleanupOrphanedData = useCallback(() => {
     console.log('🧹 Manual cleanup triggered...');
-    
+
     // Find orphaned palette groups (no corresponding palette node)
     const paletteEntryGroups = groups.filter(g => g.isPaletteEntry);
     const orphanedGroupIds: string[] = [];
-    
+
     paletteEntryGroups.forEach(group => {
       if (!group.paletteNodeId) {
         orphanedGroupIds.push(group.id);
@@ -8723,17 +8723,17 @@ export function AppShell() {
         orphanedGroupIds.push(group.id);
       }
     });
-    
+
     // Find orphaned tokens (tokens whose groupId doesn't exist)
     const validGroupIds = new Set(groups.filter(g => !orphanedGroupIds.includes(g.id)).map(g => g.id));
     const orphanedTokenIds = tokens.filter(t => t.groupId && !validGroupIds.has(t.groupId)).map(t => t.id);
-    
+
     if (orphanedGroupIds.length > 0 || orphanedTokenIds.length > 0) {
       console.log(`🗑️ Removing ${orphanedGroupIds.length} groups and ${orphanedTokenIds.length} tokens`);
-      
+
       setGroups(prev => prev.filter(g => !orphanedGroupIds.includes(g.id)));
       setTokens(prev => prev.filter(t => !orphanedGroupIds.includes(t.groupId || '') && !orphanedTokenIds.includes(t.id)));
-      
+
       console.log('✅ Cleanup complete');
     } else {
       console.log('✅ No orphaned data found');
@@ -8790,7 +8790,7 @@ export function AppShell() {
           try {
             const fileContent = event.target?.result as string;
             console.log('📦 File loaded, size:', fileContent?.length, 'characters');
-            
+
             if (!fileContent || fileContent.trim() === '') {
               alert('Error: The file is empty.');
               return;
@@ -8820,9 +8820,9 @@ export function AppShell() {
             const hasNodes = Array.isArray(imported?.nodes);
             const hasTokens = Array.isArray(imported?.tokens);
             const hasRequiredArrays = hasNodes && hasTokens;
-            
+
             console.log('🔍 Validation:', { hasProject, hasNodes, hasTokens, hasRequiredArrays });
-            
+
             if (hasProject && hasRequiredArrays) {
               // ── Run schema migrations on imported data ──
               const importMigration = migrateToLatest({
@@ -9099,9 +9099,9 @@ export function AppShell() {
               if (newLogicEntries.length > 0) {
                 setAdvancedLogic(prev => [...prev, ...newLogicEntries]);
               }
-              
+
               console.log('✅ Project imported successfully:', newProject.name);
-              
+
               // Highlight the imported project without switching to it
               setHighlightedProjectId(newProjectId);
               setTimeout(() => setHighlightedProjectId(null), 3000);
@@ -9113,12 +9113,12 @@ export function AppShell() {
               console.log('  - Has project/collection?', hasProject);
               console.log('  - Has nodes array?', hasNodes);
               console.log('  - Has tokens array?', hasTokens);
-              
+
               let errorMsg = 'Invalid project file format.\n\n';
               if (!hasProject) errorMsg += '• Missing "project" object\n';
               if (!Array.isArray(imported.nodes)) errorMsg += '• Missing or invalid "nodes" array\n';
               if (!Array.isArray(imported.tokens)) errorMsg += '• Missing or invalid "tokens" array\n';
-              
+
               alert(errorMsg + '\nPlease make sure you\'re importing a valid project export.');
             }
           } catch (error) {
@@ -9140,12 +9140,12 @@ export function AppShell() {
       alert('Tokens can only be created in the primary theme. Please switch to the primary theme to add tokens.');
       return;
     }
-    
+
     const type = tokenType || 'color';
-    
+
     // Get all themes for the current project to initialize themeValues
     const projectThemes = themes.filter(t => t.projectId === (projectId || activeProjectId));
-    
+
     // Initialize theme values for all themes
     const themeValues: { [themeId: string]: any } = {};
     projectThemes.forEach(theme => {
@@ -9185,7 +9185,7 @@ export function AppShell() {
         };
       }
     });
-    
+
     const newToken: DesignToken = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
       name: getUniqueTokenName(
@@ -9231,7 +9231,7 @@ export function AppShell() {
         opacity: themeValues[projectThemes[0].id]?.opacity,
       }),
     };
-    
+
     setTokens((prev) => {
       // Compute sortOrder: append to end of the target group (ascending order)
       const targetGroupId = newToken.groupId;
@@ -9260,7 +9260,7 @@ export function AppShell() {
       alert('Tokens can only be deleted in the primary theme. Please switch to the primary theme to delete tokens.');
       return;
     }
-    
+
     setAllNodes((prev) =>
       prev.map((node) => {
         // Clean up theme-specific assignments
@@ -9268,10 +9268,10 @@ export function AppShell() {
         Object.keys(updatedAssignments).forEach(themeId => {
           updatedAssignments[themeId] = updatedAssignments[themeId].filter(tid => tid !== id);
         });
-        
+
         // Clear autoAssignedTokenId if it points to the deleted token
         const clearAutoAssign = node.autoAssignedTokenId === id;
-        
+
         return {
           ...node,
           tokenIds: (node.tokenIds || []).filter(tid => tid !== id),
@@ -9284,7 +9284,7 @@ export function AppShell() {
       // Find the token being deleted from current state (not stale closure)
       const deletedToken = prev.find(t => t.id === id);
       const updated = prev.filter((token) => token.id !== id);
-      
+
       // Auto-cleanup: if the deleted token was in an auto-assign-created group,
       // check if that group is now empty and remove it
       if (deletedToken?.groupId) {
@@ -9301,7 +9301,7 @@ export function AppShell() {
           });
         }
       }
-      
+
       return updated;
     });
   }, [themes, activeThemeId]);
@@ -9312,15 +9312,15 @@ export function AppShell() {
     // Check if we're in the primary theme
     const currentTheme = themes.find(t => t.id === activeThemeId);
     const isPrimaryTheme = currentTheme?.isPrimary === true;
-    
+
     // Get all themes for this project to assign in primary theme
     const projectThemes = themes.filter(t => t.projectId === activeProjectId);
     const primaryThemeId = projectThemes.find(t => t.isPrimary)?.id || '';
-    
+
     setAllNodes((prev) => {
       const targetNode = prev.find(n => n.id === nodeId);
       if (!targetNode) return prev;
-      
+
       const updatedNodes = prev.map((node) => {
         // Get theme-specific token assignments
         const currentAssignments = node.tokenAssignments?.[activeThemeId] || [];
@@ -9328,15 +9328,15 @@ export function AppShell() {
         const legacyTokenIds = node.tokenIds || [];
         // Use theme-specific assignments if they exist (even if empty), otherwise fall back to legacy
         const currentTokenIds = (node.tokenAssignments?.[activeThemeId] !== undefined) ? currentAssignments : legacyTokenIds;
-        
+
         if (isAssigned) {
           // First, remove the token from all nodes in this theme (to ensure one token = one node per theme)
           const withoutToken = currentTokenIds.filter(tid => tid !== tokenId);
-          
+
           // Then add it only to the target node
           if (node.id === nodeId) {
             const newTokenIds = [...withoutToken, tokenId];
-            
+
             // Update token with node's theme-specific values for ALL themes
             setTokens((prevTokens) =>
               prevTokens.map((token) => {
@@ -9344,12 +9344,12 @@ export function AppShell() {
                   // Initialize themeValues if it doesn't exist
                   const themeValues = token.themeValues || {};
                   const updatedThemeValues = { ...themeValues };
-                  
+
                   // When in primary theme, update ALL themes using this node
                   // When in non-primary theme, only update the current theme's value
                   // (other themes retain their existing values from their own assigned nodes)
                   const allThemesToUpdate = isPrimaryTheme ? projectThemes : [{ id: activeThemeId } as Theme];
-                  
+
                   // Update based on node type
                   if (node.isSpacing || node.type === 'spacing') {
                     // For spacing nodes, update spacing properties in themeValues
@@ -9359,7 +9359,7 @@ export function AppShell() {
                         unit: node.spacingUnit ?? 'px',
                       };
                     });
-                    
+
                     return {
                       ...token,
                       type: 'spacing',
@@ -9375,7 +9375,7 @@ export function AppShell() {
                       const hasThemeOverride = node.themeOverrides?.[theme.id];
                       const themeOverrideData = hasThemeOverride ? node.themeOverrides![theme.id] : undefined;
                       const effective = getNodeEffectiveHSL(node, themeOverrideData);
-                      
+
                       updatedThemeValues[theme.id] = {
                         hue: effective.hue,
                         saturation: effective.saturation,
@@ -9383,7 +9383,7 @@ export function AppShell() {
                         alpha: effective.alpha,
                       };
                     });
-                    
+
                     if (isPrimaryTheme) {
                       return {
                         ...token,
@@ -9408,11 +9408,11 @@ export function AppShell() {
                 return token;
               })
             );
-            
+
             // If we're in the primary theme, assign to ALL themes
             // Otherwise, only assign to the current theme
             const updatedAssignments = { ...node.tokenAssignments };
-            
+
             if (isPrimaryTheme) {
               // Assign to all themes in the project
               projectThemes.forEach(theme => {
@@ -9423,9 +9423,9 @@ export function AppShell() {
               // Only assign to current theme
               updatedAssignments[activeThemeId] = newTokenIds;
             }
-            
-            return { 
-              ...node, 
+
+            return {
+              ...node,
               tokenAssignments: updatedAssignments
             };
           } else {
@@ -9434,15 +9434,15 @@ export function AppShell() {
             // that would override legacy tokenIds on shade nodes
             const hasTokenInCurrentScope = isPrimaryTheme
               ? (node.tokenAssignments
-                  ? Object.values(node.tokenAssignments).some((ids: string[]) => ids.includes(tokenId))
-                  : (node.tokenIds || []).includes(tokenId))
+                ? Object.values(node.tokenAssignments).some((ids: string[]) => ids.includes(tokenId))
+                : (node.tokenIds || []).includes(tokenId))
               : currentTokenIds.includes(tokenId);
-            
+
             if (!hasTokenInCurrentScope) return node;
-            
+
             // Remove from all other nodes in this theme (or all themes if primary)
             const updatedAssignments = { ...node.tokenAssignments };
-            
+
             if (isPrimaryTheme) {
               // Remove from all themes
               projectThemes.forEach(theme => {
@@ -9453,9 +9453,9 @@ export function AppShell() {
               // Only remove from current theme
               updatedAssignments[activeThemeId] = withoutToken;
             }
-            
-            return { 
-              ...node, 
+
+            return {
+              ...node,
               tokenAssignments: updatedAssignments
             };
           }
@@ -9463,14 +9463,14 @@ export function AppShell() {
           // Remove token from the specified node
           if (node.id === nodeId) {
             const updatedAssignments = { ...node.tokenAssignments };
-            
+
             if (isPrimaryTheme) {
               // Remove from all themes
               projectThemes.forEach(theme => {
                 const currentThemeTokens = updatedAssignments[theme.id] || [];
                 updatedAssignments[theme.id] = currentThemeTokens.filter(tid => tid !== tokenId);
               });
-              
+
               // Clear the token's color values back to empty since it's no longer assigned to any node
               setTokens(prevTokens => prevTokens.map(t => {
                 if (t.id === tokenId && t.type === 'color') {
@@ -9494,7 +9494,7 @@ export function AppShell() {
               // Only remove from current theme
               const newCurrentTokens = currentTokenIds.filter(tid => tid !== tokenId);
               updatedAssignments[activeThemeId] = newCurrentTokens;
-              
+
               // Check if the resulting assignment matches the primary theme's assignment
               // If so, remove the theme-specific override entirely (inherit from primary)
               const primaryThemeTokens = updatedAssignments[primaryThemeId] !== undefined
@@ -9507,7 +9507,7 @@ export function AppShell() {
               if (assignmentMatchesPrimary) {
                 delete updatedAssignments[activeThemeId];
               }
-              
+
               // Reset the token's themeValues for this theme to match primary values
               setTokens(prevTokens => prevTokens.map(t => {
                 if (t.id === tokenId) {
@@ -9523,46 +9523,46 @@ export function AppShell() {
                 return t;
               }));
             }
-            
-            return { 
-              ...node, 
+
+            return {
+              ...node,
               tokenAssignments: updatedAssignments
             };
           }
         }
-        
+
         return node;
       });
-      
+
       // Auto-adjust siblings if token count changed for a child node
       if (targetNode.parentId) {
         const updatedTargetNode = updatedNodes.find(n => n.id === nodeId);
         if (updatedTargetNode) {
           const MIN_GAP = 40; // Unified with canvas-level gap enforcement
-          
+
           // Get all siblings (including the updated node)
           const allSiblings = updatedNodes.filter(
             n => n.parentId === targetNode.parentId
           );
-          
+
           // Sort siblings by Y position
           const sortedSiblings = [...allSiblings].sort((a, b) => a.position.y - b.position.y);
-          
+
           // Find the index of the changed node in the sorted list
           const changedIdx = sortedSiblings.findIndex(s => s.id === nodeId);
           if (changedIdx < 0) return updatedNodes;
-          
+
           // Calculate height delta for pull-back capping
           const oldHeight = getNodeHeight(targetNode, tokens, updatedNodes, activeThemeId);
           const changedHeight = getNodeHeight(updatedTargetNode, tokens, updatedNodes, activeThemeId);
           const heightDelta = changedHeight - oldHeight;
           const changedBottom = updatedTargetNode.position.y + changedHeight;
-          
+
           // Find the first sibling BELOW the changed node that horizontally overlaps
           const NODE_WIDTH = 240;
           const changedLeft = updatedTargetNode.position.x;
           const changedRight = updatedTargetNode.position.x + (updatedTargetNode.width || NODE_WIDTH);
-          
+
           let firstBelowIdx = -1;
           for (let i = changedIdx + 1; i < sortedSiblings.length; i++) {
             const s = sortedSiblings[i];
@@ -9574,17 +9574,17 @@ export function AppShell() {
               break;
             }
           }
-          
+
           if (firstBelowIdx < 0) return updatedNodes;
-          
+
           // Calculate uniform shift for the first below sibling
           const firstBelow = sortedSiblings[firstBelowIdx];
           const currentGap = firstBelow.position.y - changedBottom;
           const uniformShift = currentGap < MIN_GAP ? (MIN_GAP - currentGap) : 0;
           const uniformPull = currentGap > MIN_GAP ? Math.min(currentGap - MIN_GAP, Math.abs(heightDelta)) : 0;
-          
+
           const adjustedPositions = new Map<string, { x: number; y: number }>();
-          
+
           if (uniformShift > 0) {
             for (let i = firstBelowIdx; i < sortedSiblings.length; i++) {
               const s = sortedSiblings[i];
@@ -9612,9 +9612,9 @@ export function AppShell() {
               }
             }
           }
-          
+
           if (adjustedPositions.size === 0) return updatedNodes;
-          
+
           // Apply adjusted positions
           return updatedNodes.map(node => {
             const adjustedPos = adjustedPositions.get(node.id);
@@ -9628,7 +9628,7 @@ export function AppShell() {
           });
         }
       }
-      
+
       return updatedNodes;
     });
   }, [activeThemeId, themes, activeProjectId, tokens]);
@@ -9637,7 +9637,7 @@ export function AppShell() {
     if (isSampleModeRef.current) { sampleModeToast('Creating projects'); return; }
     const isCloud = type === 'cloud' || type === 'template';
     const isTemplate = type === 'template';
-    
+
     // Enforce 20-cloud-project limit for regular cloud projects (admins are exempt)
     const isAdmin = authSessionRef.current?.isAdmin;
     if (type === 'cloud' && !isAdmin && projects.filter(p => p.isCloud && !p.isTemplate && !p.isSample).length >= 20) {
@@ -9647,16 +9647,16 @@ export function AppShell() {
 
     let counter = 1;
     let newName = isTemplate ? `Template ${counter}` : `Project ${counter}`;
-    
+
     while (projects.some(p => p.name.toLowerCase() === newName.toLowerCase())) {
       counter++;
       newName = isTemplate ? `Template ${counter}` : `Project ${counter}`;
     }
-    
+
     const timestamp = Date.now();
     const newProjectId = `project-${timestamp}`;
     const newPageId = `page-${timestamp}`;
-    
+
     const newProject: TokenProject = {
       id: newProjectId,
       name: newName,
@@ -9680,7 +9680,7 @@ export function AppShell() {
         }
       });
     }
-    
+
     // Create default page for the new project
     const newPage: Page = {
       id: newPageId,
@@ -9689,7 +9689,7 @@ export function AppShell() {
       createdAt: timestamp,
     };
     setPages(prev => [...prev, newPage]);
-    
+
     // Create canvas state for the new page
     const newCanvasState: CanvasState = {
       projectId: newProjectId,
@@ -9698,7 +9698,7 @@ export function AppShell() {
       zoom: 1,
     };
     setCanvasStates(prev => [...prev, newCanvasState]);
-    
+
     // Create default primary theme for the new project
     const newThemeId = `theme-${timestamp}`;
     const newTheme: Theme = {
@@ -9709,7 +9709,7 @@ export function AppShell() {
       isPrimary: true, // First theme is always primary
     };
     setThemes(prev => [...prev, newTheme]);
-    
+
     const newNode: ColorNode = {
       id: `node-${timestamp + 1}`,
       colorSpace: 'hsl',
@@ -9745,7 +9745,7 @@ export function AppShell() {
       isExpanded: false,
     };
     setAllNodes(prev => [...prev, newNode]);
-    
+
     // Save current theme's selection before switching to new project
     themeSelectionsRef.current[activeThemeIdRef.current] = {
       selectedNodeId: selectedNodeIdRef.current,
@@ -9826,7 +9826,7 @@ export function AppShell() {
 
     const timestamp = Date.now();
     const newProjectId = `project-${timestamp}`;
-    
+
     // ── Determine if duplicate should be cloud ──
     // Cloud projects duplicate as cloud by default; fall back to local only when limit is reached.
     let duplicateAsCloud = false;
@@ -9992,10 +9992,10 @@ export function AppShell() {
     const projectCanvasStatesAll = canvasStates.filter(cs => cs.projectId === projectId);
     const newCanvasStates: CanvasState[] = projectCanvasStatesAll.length > 0
       ? projectCanvasStatesAll.map(cs => ({
-          ...cs,
-          projectId: newProjectId,
-          pageId: pageIdMap.get(cs.pageId) || cs.pageId,
-        }))
+        ...cs,
+        projectId: newProjectId,
+        pageId: pageIdMap.get(cs.pageId) || cs.pageId,
+      }))
       : [{ projectId: newProjectId, pageId: newPages[0]?.id || 'page-1', pan: { x: 0, y: 0 }, zoom: 1 }];
 
     // ── Duplicate advancedLogic entries (remap nodeId and token refs in expressions) ──
@@ -10046,7 +10046,7 @@ export function AppShell() {
     if (newLogicEntries.length > 0) {
       setAdvancedLogic(prev => [...prev, ...newLogicEntries]);
     }
-    
+
     // Highlight the duplicated project without switching to it
     setHighlightedProjectId(newProjectId);
     setTimeout(() => setHighlightedProjectId(null), 3000);
@@ -10182,13 +10182,13 @@ export function AppShell() {
     }
 
     setActiveProjectId(projectId);
-    
+
     // Switch to the first page of the selected project
     const projectPages = pages.filter(p => p.projectId === projectId).sort((a, b) => a.createdAt - b.createdAt);
     if (projectPages.length > 0) {
       setActivePageId(projectPages[0].id);
     }
-    
+
     // Switch to the primary theme of the selected project
     const projectThemes = themes.filter(t => t.projectId === projectId).sort((a, b) => a.createdAt - b.createdAt);
     const primaryTheme = projectThemes.find(t => t.isPrimary) || projectThemes[0];
@@ -10207,10 +10207,10 @@ export function AppShell() {
       setSelectedNodeId(null);
       setSelectedNodeIds([]);
     }
-    
+
     _setViewingProjects(false);
     viewingProjectsRef.current = false;
-    
+
     // If opening a sample project, center the canvas on its nodes after render
     const project = projects.find(p => p.id === projectId);
     if (project?.isSample) {
@@ -10273,7 +10273,7 @@ export function AppShell() {
       const primaryThemeId = primaryTheme?.id || activeThemeId;
 
       // Generate output for each target theme
-      const themesToExport = config.outputTheme 
+      const themesToExport = config.outputTheme
         ? projectThemes.filter(t => t.id === config.outputTheme)
         : projectThemes;
 
@@ -10346,24 +10346,24 @@ export function AppShell() {
             console.error('[DevMode] Failed to decrypt GitHub PAT — re-enter your token');
             toast.error('Failed to decrypt GitHub PAT. Please re-enter your token.');
           } else {
-          const res = await fetch(`${SERVER_BASE}/dev/github-push`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              owner: config.githubRepo.includes('/') ? config.githubRepo.split('/')[0] : '',
-              repo: config.githubRepo.includes('/') ? config.githubRepo.split('/')[1] : config.githubRepo,
-              path: config.githubPath,
-              branch: config.githubBranch || 'main',
-              content: btoa(unescape(encodeURIComponent(combinedOutput))),
-              message: `Update tokens via 0colors [${config.outputFormat}]`,
-              pat: plainPAT,
-            }),
-          });
-          const result = await res.json();
-          if (!result.success) {
-            hasError = true;
-            console.error('[DevMode] GitHub push failed:', result);
-          }
+            const res = await fetch(`${SERVER_BASE}/dev/github-push`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({
+                owner: config.githubRepo.includes('/') ? config.githubRepo.split('/')[0] : '',
+                repo: config.githubRepo.includes('/') ? config.githubRepo.split('/')[1] : config.githubRepo,
+                path: config.githubPath,
+                branch: config.githubBranch || 'main',
+                content: btoa(unescape(encodeURIComponent(combinedOutput))),
+                message: `Update tokens via 0colors [${config.outputFormat}]`,
+                pat: plainPAT,
+              }),
+            });
+            const result = await res.json();
+            if (!result.success) {
+              hasError = true;
+              console.error('[DevMode] GitHub push failed:', result);
+            }
           } // close else (plainPAT ok)
         } catch (e: any) {
           hasError = true;
@@ -10503,16 +10503,16 @@ export function AppShell() {
     const newPageId = `page-${timestamp}`;
     const projectPages = pages.filter(p => p.projectId === activeProjectId);
     const newPageName = `Page ${projectPages.length + 1}`;
-    
+
     const newPage: Page = {
       id: newPageId,
       name: newPageName,
       projectId: activeProjectId,
       createdAt: timestamp,
     };
-    
+
     setPages(prev => [...prev, newPage]);
-    
+
     // Create canvas state for the new page
     const newCanvasState: CanvasState = {
       projectId: activeProjectId,
@@ -10521,7 +10521,7 @@ export function AppShell() {
       zoom: 1,
     };
     setCanvasStates(prev => [...prev, newCanvasState]);
-    
+
     // Switch to the new page
     setActivePageId(newPageId);
     setSelectedNodeId(null);
@@ -10536,7 +10536,7 @@ export function AppShell() {
 
   const handleRenamePage = useCallback((pageId: string, newName: string) => {
     if (isSampleModeRef.current) { sampleModeToast('Renaming pages'); return; }
-    setPages(prev => prev.map(p => 
+    setPages(prev => prev.map(p =>
       p.id === pageId ? { ...p, name: newName } : p
     ));
   }, []);
@@ -10544,13 +10544,13 @@ export function AppShell() {
   const handleDeletePage = useCallback((pageId: string) => {
     if (isSampleModeRef.current) { sampleModeToast('Deleting pages'); return; }
     const projectPages = pages.filter(p => p.projectId === activeProjectId);
-    
+
     // Don't allow deleting the last page
     if (projectPages.length <= 1) {
       alert('Cannot delete the last page');
       return;
     }
-    
+
     // Collect node IDs belonging to this page for advancedLogic cleanup
     const pageNodeIds = new Set(allNodes.filter(n => n.pageId === pageId).map(n => n.id));
 
@@ -10568,7 +10568,7 @@ export function AppShell() {
         return filtered.length === prev.length ? prev : filtered;
       });
     }
-    
+
     // Switch to another page if we're deleting the active page
     if (pageId === activePageId) {
       const remainingPages = projectPages.filter(p => p.id !== pageId);
@@ -10585,32 +10585,32 @@ export function AppShell() {
     const newThemeId = `theme-${timestamp}`;
     const projectThemes = themes.filter(t => t.projectId === activeProjectId);
     const newThemeName = `Theme ${projectThemes.length + 1}`;
-    
+
     // Find the primary theme to duplicate from
     const primaryTheme = themes.find(t => t.projectId === activeProjectId && t.isPrimary);
     const primaryThemeId = primaryTheme?.id;
-    
+
     const newTheme: Theme = {
       id: newThemeId,
       name: newThemeName,
       projectId: activeProjectId,
       createdAt: timestamp,
     };
-    
+
     setThemes(prev => [...prev, newTheme]);
-    
+
     // Initialize themeValues for existing tokens based on assigned nodes
     setTokens(prev => prev.map(token => {
       if (token.projectId === activeProjectId && token.pageId === activePageId) {
         // Initialize themeValues if it doesn't exist
         const themeValues = token.themeValues || {};
-        
+
         // Find the node that has this token assigned in the primary theme
         const assignedNode = allNodes.find(node => {
           const primaryAssignments = node.tokenAssignments?.[primaryThemeId || ''] || node.tokenIds || [];
           return primaryAssignments.includes(token.id);
         });
-        
+
         let newThemeValue;
         if (assignedNode) {
           // Get the node's color using color-space-aware conversion
@@ -10640,7 +10640,7 @@ export function AppShell() {
             unit: token.unit,
           };
         }
-        
+
         // Also ensure primary theme has a themeValues entry (migrates legacy tokens)
         const updatedThemeValues = { ...themeValues, [newThemeId]: { ...newThemeValue } };
         if (primaryThemeId && !updatedThemeValues[primaryThemeId]) {
@@ -10653,7 +10653,7 @@ export function AppShell() {
             unit: token.unit,
           };
         }
-        
+
         return {
           ...token,
           themeValues: updatedThemeValues,
@@ -10661,7 +10661,7 @@ export function AppShell() {
       }
       return token;
     }));
-    
+
     // Copy token assignments from primary theme to new theme for all nodes.
     // Also falls back to legacy tokenIds if no theme-specific assignments exist,
     // and migrates the primary theme's legacy tokenIds into tokenAssignments.
@@ -10671,14 +10671,14 @@ export function AppShell() {
           const primaryTokenAssignments = node.tokenAssignments?.[primaryThemeId] !== undefined
             ? node.tokenAssignments[primaryThemeId]
             : (node.tokenIds || []);
-          
+
           // Also ensure the primary theme has an explicit entry (migrates legacy tokenIds)
           const updatedAssignments = { ...node.tokenAssignments };
           if (updatedAssignments[primaryThemeId] === undefined && (node.tokenIds || []).length > 0) {
             updatedAssignments[primaryThemeId] = [...(node.tokenIds || [])];
           }
           updatedAssignments[newThemeId] = [...primaryTokenAssignments];
-          
+
           return {
             ...node,
             tokenAssignments: updatedAssignments
@@ -10687,7 +10687,7 @@ export function AppShell() {
         return node;
       }));
     }
-    
+
     // Switch to the new theme — save current selection and clear for the new theme
     themeSelectionsRef.current[activeThemeIdRef.current] = {
       selectedNodeId: selectedNodeIdRef.current,
@@ -10717,7 +10717,7 @@ export function AppShell() {
     }
 
     setActiveThemeId(themeId);
-    
+
     // Sync all token values with their assigned nodes for the new theme
     const targetTheme = themes.find(t => t.id === themeId);
     const isTargetPrimary = targetTheme?.isPrimary ?? true;
@@ -10731,17 +10731,17 @@ export function AppShell() {
           }
           return (node.tokenIds || []).includes(token.id);
         });
-        
+
         if (!assignedNode) return token;
-        
+
         // Get the effective color using color-space-aware conversion (handles RGB, OKLCH, HCT, HEX → HSL)
         const hasThemeOverride = assignedNode.themeOverrides?.[themeId];
         const themeOverride = hasThemeOverride ? assignedNode.themeOverrides![themeId] : undefined;
         const effective = getNodeEffectiveHSL(assignedNode, themeOverride);
-        
+
         // Update token's themeValues for this theme
         const updatedThemeValues = { ...token.themeValues };
-        
+
         if (assignedNode.isSpacing || assignedNode.type === 'spacing') {
           updatedThemeValues[themeId] = {
             value: assignedNode.spacingValue ?? 16,
@@ -10755,7 +10755,7 @@ export function AppShell() {
             alpha: effective.alpha,
           };
         }
-        
+
         if (isTargetPrimary) {
           // Primary theme: update both base properties and themeValues
           return {
@@ -10782,7 +10782,7 @@ export function AppShell() {
 
   const handleRenameTheme = useCallback((themeId: string, newName: string) => {
     if (isSampleModeRef.current) { sampleModeToast('Renaming themes'); return; }
-    setThemes(prev => prev.map(t => 
+    setThemes(prev => prev.map(t =>
       t.id === themeId ? { ...t, name: newName } : t
     ));
   }, []);
@@ -10791,19 +10791,19 @@ export function AppShell() {
     if (isSampleModeRef.current) { sampleModeToast('Deleting themes'); return; }
     const projectThemes = themes.filter(t => t.projectId === activeProjectId);
     const themeToDelete = themes.find(t => t.id === themeId);
-    
+
     // Don't allow deleting the last theme
     if (projectThemes.length <= 1) {
       alert('Cannot delete the last theme');
       return;
     }
-    
+
     // Don't allow deleting the primary theme
     if (themeToDelete?.isPrimary) {
       alert('Cannot delete the primary (default) theme.');
       return;
     }
-    
+
     // Clean up theme-specific data from tokens (remove themeValues and themeVisibility for this theme)
     setTokens(prev => prev.map(token => {
       let updated = token;
@@ -10817,16 +10817,16 @@ export function AppShell() {
       }
       return updated;
     }));
-    
+
     // Clean up theme-specific data from nodes (remove themeOverrides, tokenAssignments, valueTokenAssignments, themeVisibility for this theme)
     setAllNodes(prev => prev.map(node => {
       let updatedNode = { ...node };
-      
+
       if (updatedNode.themeOverrides && updatedNode.themeOverrides[themeId]) {
         const { [themeId]: _, ...remainingOverrides } = updatedNode.themeOverrides;
         updatedNode.themeOverrides = remainingOverrides;
       }
-      
+
       if (updatedNode.tokenAssignments && updatedNode.tokenAssignments[themeId]) {
         const { [themeId]: _, ...remainingAssignments } = updatedNode.tokenAssignments;
         updatedNode.tokenAssignments = remainingAssignments;
@@ -10841,10 +10841,10 @@ export function AppShell() {
         const { [themeId]: _, ...remainingVis } = updatedNode.themeVisibility;
         updatedNode.themeVisibility = remainingVis;
       }
-      
+
       return updatedNode;
     }));
-    
+
     // Clean up theme-specific advanced logic entries
     setAdvancedLogic(prev => prev.map(entry => {
       let updated = { ...entry };
@@ -10864,10 +10864,10 @@ export function AppShell() {
     }));
 
     setThemes(prev => prev.filter(t => t.id !== themeId));
-    
+
     // Clean up per-theme selection state for the deleted theme
     delete themeSelectionsRef.current[themeId];
-    
+
     // Switch to another theme if we're deleting the active theme
     if (themeId === activeThemeId) {
       const remainingThemes = projectThemes.filter(t => t.id !== themeId);
@@ -11053,8 +11053,8 @@ export function AppShell() {
         }}
       />
       {/* TokensPanel - Floating Island */}
-      <TokensPanel 
-        tokens={pageTokens} 
+      <TokensPanel
+        tokens={pageTokens}
         nodes={nodes}
         allProjectTokens={allProjectTokens}
         allProjectNodes={allProjectNodes}
@@ -11099,99 +11099,96 @@ export function AppShell() {
         {/* Top Bar - Floating Island */}
         <div className="shrink-0 relative bg-[#111] rounded-2xl px-4 h-14 flex items-center justify-between select-none">
           <>
-          {/* Left: View Mode Switcher + Search */}
-          <div className="flex items-center gap-3">
-            {viewMode === 'export' ? (
-              <button 
-                onClick={() => setViewMode('canvas')}
-                className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md text-[11px] text-[#555] hover:text-[#aaa] transition-colors cursor-pointer"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                <span>Back</span>
-              </button>
-            ) : (
-              <>
-                {/* View Switcher */}
-                <div className="flex p-1 bg-[#111] border border-[#333] rounded-lg">
-                  <Tip label="Canvas View" side="bottom">
-                  <button 
-                    onClick={() => setViewMode('canvas')}
-                    className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
-                      viewMode === 'canvas' 
-                        ? 'bg-[#333] text-[#ededed] shadow-sm' 
-                        : 'text-[#666] hover:text-[#a1a1a1]'
-                    }`}
-                  >
-                    <Workflow className="h-4 w-4" />
-                  </button>
-                  </Tip>
-                  <Tip label="Code Preview" side="bottom">
-                  <button 
-                    onClick={() => setViewMode('code')}
-                    className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
-                      viewMode === 'code' 
-                        ? 'bg-[#333] text-[#ededed] shadow-sm' 
-                        : 'text-[#666] hover:text-[#a1a1a1]'
-                    }`}
-                  >
-                    <Code className="h-4 w-4" />
-                  </button>
-                  </Tip>
-                </div>
-
-                {/* Export button */}
-                <Tip label="Export Tokens" side="bottom">
-                  <button
-                    onClick={() => setViewMode('export')}
-                    className="w-8 h-8 rounded-md flex items-center justify-center text-[#666] hover:text-[#a1a1a1] transition-all"
-                  >
-                    <Download className="h-4 w-4" />
-                  </button>
-                </Tip>
-
-                {/* Publish to Community button — only for cloud projects */}
-                {(() => {
-                  const activeProj = projects.find(p => p.id === activeProjectId);
-                  if (!activeProj?.isCloud || activeProj?.isSample || !authSession) return null;
-                  const isPublished = !!publishedProjectsMap[activeProjectId];
-                  return (
-                    <Tip label={isPublished ? 'Edit Community Listing' : 'Publish to Community'} side="bottom">
+            {/* Left: View Mode Switcher + Search */}
+            <div className="flex items-center gap-3">
+              {viewMode === 'export' ? (
+                <button
+                  onClick={() => setViewMode('canvas')}
+                  className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md text-[11px] text-[#555] hover:text-[#aaa] transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <span>Back</span>
+                </button>
+              ) : (
+                <>
+                  {/* View Switcher */}
+                  <div className="flex p-1 bg-[#111] border border-[#333] rounded-lg">
+                    <Tip label="Canvas View" side="bottom">
                       <button
-                        onClick={() => setShowPublishPopup(activeProjectId)}
-                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
-                          isPublished
-                            ? 'text-[#6b8598] hover:text-[#8ea3b4]'
-                            : 'text-[#666] hover:text-[#6b8598]'
-                        }`}
+                        onClick={() => setViewMode('canvas')}
+                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'canvas'
+                            ? 'bg-[#333] text-[#ededed] shadow-sm'
+                            : 'text-[#666] hover:text-[#a1a1a1]'
+                          }`}
                       >
-                        <Globe className="h-4 w-4" />
+                        <Workflow className="h-4 w-4" />
                       </button>
                     </Tip>
-                  );
-                })()}
-              </>
-            )}
-          </div>
+                    <Tip label="Code Preview" side="bottom">
+                      <button
+                        onClick={() => setViewMode('code')}
+                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'code'
+                            ? 'bg-[#333] text-[#ededed] shadow-sm'
+                            : 'text-[#666] hover:text-[#a1a1a1]'
+                          }`}
+                      >
+                        <Code className="h-4 w-4" />
+                      </button>
+                    </Tip>
+                  </div>
 
-          {/* Center: Page Selector */}
-          {viewMode !== 'export' && (
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-               <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
-                {/* Text Area - Handles Double Click for Rename */}
-                <div 
-                   className="px-2 h-full flex items-center cursor-default select-none max-w-[200px]"
-                   onDoubleClick={(e) => {
-                     if (isSampleMode) return;
-                     e.stopPropagation();
-                     const currentPage = pages.find(p => p.id === activePageId);
-                     if (currentPage) {
-                       setEditingPageId(activePageId);
-                       setEditingPageName(currentPage.name);
-                     }
-                   }}
-                >
+                  {/* Export button */}
+                  <Tip label="Export Tokens" side="bottom">
+                    <button
+                      onClick={() => setViewMode('export')}
+                      className="w-8 h-8 rounded-md flex items-center justify-center text-[#666] hover:text-[#a1a1a1] transition-all"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                  </Tip>
+
+                  {/* Publish to Community button — only for cloud projects */}
+                  {(() => {
+                    const activeProj = projects.find(p => p.id === activeProjectId);
+                    if (!activeProj?.isCloud || activeProj?.isSample || !authSession) return null;
+                    const isPublished = !!publishedProjectsMap[activeProjectId];
+                    return (
+                      <Tip label={isPublished ? 'Edit Community Listing' : 'Publish to Community'} side="bottom">
+                        <button
+                          onClick={() => setShowPublishPopup(activeProjectId)}
+                          className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${isPublished
+                              ? 'text-[#6b8598] hover:text-[#8ea3b4]'
+                              : 'text-[#666] hover:text-[#6b8598]'
+                            }`}
+                        >
+                          <Globe className="h-4 w-4" />
+                        </button>
+                      </Tip>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+
+            {/* Center: Page Selector */}
+            {viewMode !== 'export' && (
+              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
+                  {/* Text Area - Handles Double Click for Rename */}
+                  <div
+                    className="px-2 h-full flex items-center cursor-default select-none max-w-[200px]"
+                    onDoubleClick={(e) => {
+                      if (isSampleMode) return;
+                      e.stopPropagation();
+                      const currentPage = pages.find(p => p.id === activePageId);
+                      if (currentPage) {
+                        setEditingPageId(activePageId);
+                        setEditingPageName(currentPage.name);
+                      }
+                    }}
+                  >
                     {editingPageId === activePageId ? (
-                       <input
+                      <input
                         value={editingPageName}
                         onChange={(e) => setEditingPageName(e.target.value)}
                         maxLength={32}
@@ -11223,166 +11220,165 @@ export function AppShell() {
                         {pages.find(p => p.id === activePageId)?.name || 'Page'}
                       </span>
                     )}
-                </div>
+                  </div>
 
-                {/* Dropdown Trigger - Only Icon */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
-                      <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60] ml-[-60px]">
-                    <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
-                      Pages
-                    </div>
-                    {pages
-                      .filter(p => p.projectId === activeProjectId)
-                      .sort((a, b) => a.createdAt - b.createdAt)
-                      .map(page => (
-                        <DropdownMenuItem
-                          key={page.id}
-                          onClick={() => {
-                            if (editingPageId !== page.id) {
-                              handleSwitchPage(page.id);
-                            }
-                          }}
-                          className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${
-                            activePageId === page.id 
-                              ? 'bg-[#141820] text-[#ededed]' 
-                              : 'text-[#878787]'
-                          } group mb-0.5`}
-                        >
-                          <div className="flex items-center gap-2 overflow-hidden flex-1">
-                            {editingPageId === page.id ? (
-                               <input
-                                value={editingPageName}
-                                onChange={(e) => setEditingPageName(e.target.value)}
-                                maxLength={32}
-                                onBlur={() => {
-                                  if (editingPageName.trim() && editingPageName !== page.name) {
-                                    handleRenamePage(page.id, editingPageName.trim());
-                                  }
-                                  setEditingPageId(null);
-                                  setEditingPageName('');
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
+                  {/* Dropdown Trigger - Only Icon */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
+                        <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60] ml-[-60px]">
+                      <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
+                        Pages
+                      </div>
+                      {pages
+                        .filter(p => p.projectId === activeProjectId)
+                        .sort((a, b) => a.createdAt - b.createdAt)
+                        .map(page => (
+                          <DropdownMenuItem
+                            key={page.id}
+                            onClick={() => {
+                              if (editingPageId !== page.id) {
+                                handleSwitchPage(page.id);
+                              }
+                            }}
+                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activePageId === page.id
+                                ? 'bg-[#141820] text-[#ededed]'
+                                : 'text-[#878787]'
+                              } group mb-0.5`}
+                          >
+                            <div className="flex items-center gap-2 overflow-hidden flex-1">
+                              {editingPageId === page.id ? (
+                                <input
+                                  value={editingPageName}
+                                  onChange={(e) => setEditingPageName(e.target.value)}
+                                  maxLength={32}
+                                  onBlur={() => {
                                     if (editingPageName.trim() && editingPageName !== page.name) {
                                       handleRenamePage(page.id, editingPageName.trim());
                                     }
                                     setEditingPageId(null);
                                     setEditingPageName('');
-                                  } else if (e.key === 'Escape') {
-                                    setEditingPageId(null);
-                                    setEditingPageName('');
-                                  }
-                                }}
-                                className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
-                                autoFocus
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            ) : (
-                              <span 
-                                className="truncate flex-1"
-                                onDoubleClick={(e) => {
-                                  if (isSampleMode) return;
-                                  e.stopPropagation();
-                                  setEditingPageId(page.id);
-                                  setEditingPageName(page.name);
-                                }}
-                              >
-                                {page.name}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {editingPageId !== page.id && (
-                            <div className="flex items-center gap-1">
-                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                 {!isSampleMode && pages.filter(p => p.projectId === activeProjectId).length > 1 && (
-                                  <Tip label="Delete Page" side="right">
-                                  <div
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (confirm(`Delete page "${page.name}"? All nodes and tokens on this page will be deleted.`)) {
-                                        handleDeletePage(page.id);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      if (editingPageName.trim() && editingPageName !== page.name) {
+                                        handleRenamePage(page.id, editingPageName.trim());
                                       }
-                                    }}
-                                    className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#d47272] transition-colors"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </div>
-                                  </Tip>
-                                 )}
-                               </div>
+                                      setEditingPageId(null);
+                                      setEditingPageName('');
+                                    } else if (e.key === 'Escape') {
+                                      setEditingPageId(null);
+                                      setEditingPageName('');
+                                    }
+                                  }}
+                                  className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
+                                  autoFocus
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              ) : (
+                                <span
+                                  className="truncate flex-1"
+                                  onDoubleClick={(e) => {
+                                    if (isSampleMode) return;
+                                    e.stopPropagation();
+                                    setEditingPageId(page.id);
+                                    setEditingPageName(page.name);
+                                  }}
+                                >
+                                  {page.name}
+                                </span>
+                              )}
                             </div>
-                          )}
-                        </DropdownMenuItem>
-                      ))}
-                                            {!isSampleMode && (
-                                            <>
-                                            <div className="h-[1px] bg-[#252525] my-1" />
-                      <DropdownMenuItem
-                        onClick={handleCreatePage}
-                        className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
-                      >
-                        <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
-                          <Plus className="h-3 w-3" />
-                        </div>
-                        <span>Add new page</span>
-                      </DropdownMenuItem>
-                                            </>
-                                            )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          )}
 
-          {viewMode === 'export' && (
-             <div className="absolute left-1/2 transform -translate-x-1/2">
+                            {editingPageId !== page.id && (
+                              <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  {!isSampleMode && pages.filter(p => p.projectId === activeProjectId).length > 1 && (
+                                    <Tip label="Delete Page" side="right">
+                                      <div
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (confirm(`Delete page "${page.name}"? All nodes and tokens on this page will be deleted.`)) {
+                                            handleDeletePage(page.id);
+                                          }
+                                        }}
+                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#d47272] transition-colors"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </div>
+                                    </Tip>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      {!isSampleMode && (
+                        <>
+                          <div className="h-[1px] bg-[#252525] my-1" />
+                          <DropdownMenuItem
+                            onClick={handleCreatePage}
+                            className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
+                          >
+                            <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
+                              <Plus className="h-3 w-3" />
+                            </div>
+                            <span>Add new page</span>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            )}
+
+            {viewMode === 'export' && (
+              <div className="absolute left-1/2 transform -translate-x-1/2">
                 <span className="text-[13px] text-[#777] tracking-wide">Multi-Page Token Export</span>
               </div>
-          )}
+            )}
 
-          {/* Right: Theme Selector */}
-          {viewMode !== 'export' && (
-            <div className="flex items-center gap-1.5">
-               {/* Table icon — independent from theme dropdown */}
-               <Tip label="Token Overview Table" side="bottom">
-               <button
-                 onClick={() => setShowTokenTable(prev => !prev)}
-                 className={`flex items-center gap-2 h-9 px-3 rounded-lg border transition-all cursor-pointer ${showTokenTable ? 'border-[#333] bg-[#1a1a1a] text-[#ededed]' : 'border-transparent hover:border-[#333] hover:bg-[#1a1a1a] text-[#999] hover:text-[#ededed]'}`}
-               >
-                 <Table className="h-4 w-4" />
-                 <span className="text-[13px]">Token Table</span>
-               </button>
-               </Tip>
-               {/* Dev Mode toggle — moved to bottom toolbar */}
-               <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
-                {/* Theme Name Area - Handles Double Click */}
-                <div className="flex items-center px-2 h-full gap-2 cursor-default select-none max-w-[200px]">
+            {/* Right: Theme Selector */}
+            {viewMode !== 'export' && (
+              <div className="flex items-center gap-1.5">
+                {/* Table icon — independent from theme dropdown */}
+                <Tip label="Token Overview Table" side="bottom">
+                  <button
+                    onClick={() => setShowTokenTable(prev => !prev)}
+                    className={`flex items-center gap-2 h-9 px-3 rounded-lg border transition-all cursor-pointer ${showTokenTable ? 'border-[#333] bg-[#1a1a1a] text-[#ededed]' : 'border-transparent hover:border-[#333] hover:bg-[#1a1a1a] text-[#999] hover:text-[#ededed]'}`}
+                  >
+                    <Table className="h-4 w-4" />
+                    <span className="text-[13px]">Token Table</span>
+                  </button>
+                </Tip>
+                {/* Dev Mode toggle — moved to bottom toolbar */}
+                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
+                  {/* Theme Name Area - Handles Double Click */}
+                  <div className="flex items-center px-2 h-full gap-2 cursor-default select-none max-w-[200px]">
                     {themes.find(t => t.id === activeThemeId)?.isPrimary ? (
                       <Crown className="h-3.5 w-3.5 text-yellow-500/80 fill-yellow-500/80 shrink-0" />
                     ) : (
                       <SwatchBook className="h-3.5 w-3.5 text-[#777] shrink-0" />
                     )}
-                    
+
                     <div
                       className="flex items-center h-full overflow-hidden"
                       onDoubleClick={(e) => {
-                          if (isSampleMode) return;
-                          e.stopPropagation();
-                          const currentTheme = themes.find(t => t.id === activeThemeId);
-                          if (currentTheme) {
-                            setEditingThemeId(activeThemeId);
-                            setEditingThemeName(currentTheme.name);
-                          }
-                        }}
+                        if (isSampleMode) return;
+                        e.stopPropagation();
+                        const currentTheme = themes.find(t => t.id === activeThemeId);
+                        if (currentTheme) {
+                          setEditingThemeId(activeThemeId);
+                          setEditingThemeName(currentTheme.name);
+                        }
+                      }}
                     >
                       {editingThemeId === activeThemeId ? (
-                         <input
+                        <input
                           value={editingThemeName}
                           onChange={(e) => setEditingThemeName(e.target.value)}
                           maxLength={32}
@@ -11415,686 +11411,678 @@ export function AppShell() {
                         </span>
                       )}
                     </div>
-                </div>
+                  </div>
 
-                {/* Dropdown Trigger - Only Icon */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
-                      <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60]">
-                    <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
-                      Themes
-                    </div>
-                    {themes
-                      .filter(t => t.projectId === activeProjectId)
-                      .sort((a, b) => a.createdAt - b.createdAt)
-                      .map((theme, index) => (
-                        <DropdownMenuItem
-                          key={theme.id}
-                          onClick={() => {
-                            if (editingThemeId !== theme.id) {
-                              handleSwitchTheme(theme.id);
-                            }
-                          }}
-                          className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${
-                            activeThemeId === theme.id 
-                              ? 'bg-[#141820] text-[#ededed]' 
-                              : 'text-[#878787]'
-                          } group mb-0.5`}
-                        >
-                          <div className="flex items-center gap-2 overflow-hidden flex-1">
-                            {/* Primary Indicator (default theme is always primary — not switchable) */}
-                            <div 
-                              className="w-5 h-5 flex items-center justify-center flex-shrink-0"
-                              title={theme.isPrimary ? "Primary Theme" : ""}
-                            >
-                              {theme.isPrimary ? (
-                                <Crown className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />
-                              ) : (
-                                <SwatchBook className={`h-3.5 w-3.5 flex-shrink-0 ${
-                                  activeThemeId === theme.id ? 'text-[#888]' : 'text-[#555]'
-                                }`} />
-                              )}
-                            </div>
-                            
-                            {editingThemeId === theme.id ? (
-                              <input
-                                value={editingThemeName}
-                                onChange={(e) => setEditingThemeName(e.target.value)}
-                                maxLength={32}
-                                onBlur={() => {
-                                  if (editingThemeName.trim() && editingThemeName !== theme.name) {
-                                    handleRenameTheme(theme.id, editingThemeName.trim());
-                                  }
-                                  setEditingThemeId(null);
-                                  setEditingThemeName('');
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
+                  {/* Dropdown Trigger - Only Icon */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
+                        <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60]">
+                      <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
+                        Themes
+                      </div>
+                      {themes
+                        .filter(t => t.projectId === activeProjectId)
+                        .sort((a, b) => a.createdAt - b.createdAt)
+                        .map((theme, index) => (
+                          <DropdownMenuItem
+                            key={theme.id}
+                            onClick={() => {
+                              if (editingThemeId !== theme.id) {
+                                handleSwitchTheme(theme.id);
+                              }
+                            }}
+                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activeThemeId === theme.id
+                                ? 'bg-[#141820] text-[#ededed]'
+                                : 'text-[#878787]'
+                              } group mb-0.5`}
+                          >
+                            <div className="flex items-center gap-2 overflow-hidden flex-1">
+                              {/* Primary Indicator (default theme is always primary — not switchable) */}
+                              <div
+                                className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+                                title={theme.isPrimary ? "Primary Theme" : ""}
+                              >
+                                {theme.isPrimary ? (
+                                  <Crown className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />
+                                ) : (
+                                  <SwatchBook className={`h-3.5 w-3.5 flex-shrink-0 ${activeThemeId === theme.id ? 'text-[#888]' : 'text-[#555]'
+                                    }`} />
+                                )}
+                              </div>
+
+                              {editingThemeId === theme.id ? (
+                                <input
+                                  value={editingThemeName}
+                                  onChange={(e) => setEditingThemeName(e.target.value)}
+                                  maxLength={32}
+                                  onBlur={() => {
                                     if (editingThemeName.trim() && editingThemeName !== theme.name) {
                                       handleRenameTheme(theme.id, editingThemeName.trim());
                                     }
                                     setEditingThemeId(null);
                                     setEditingThemeName('');
-                                  } else if (e.key === 'Escape') {
-                                    setEditingThemeId(null);
-                                    setEditingThemeName('');
-                                  }
-                                }}
-                                className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
-                                autoFocus
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            ) : (
-                              <span 
-                                className="truncate flex-1"
-                                onDoubleClick={(e) => {
-                                  if (isSampleMode) return;
-                                  e.stopPropagation();
-                                  setEditingThemeId(theme.id);
-                                  setEditingThemeName(theme.name);
-                                }}
-                              >
-                                {theme.name}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {editingThemeId !== theme.id && (
-                            <div className="flex items-center gap-1">
-                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      if (editingThemeName.trim() && editingThemeName !== theme.name) {
+                                        handleRenameTheme(theme.id, editingThemeName.trim());
+                                      }
+                                      setEditingThemeId(null);
+                                      setEditingThemeName('');
+                                    } else if (e.key === 'Escape') {
+                                      setEditingThemeId(null);
+                                      setEditingThemeName('');
+                                    }
+                                  }}
+                                  className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
+                                  autoFocus
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              ) : (
+                                <span
+                                  className="truncate flex-1"
+                                  onDoubleClick={(e) => {
+                                    if (isSampleMode) return;
+                                    e.stopPropagation();
+                                    setEditingThemeId(theme.id);
+                                    setEditingThemeName(theme.name);
+                                  }}
+                                >
+                                  {theme.name}
+                                </span>
+                              )}
+                            </div>
+
+                            {editingThemeId !== theme.id && (
+                              <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   {!isSampleMode && themes.filter(t => t.projectId === activeProjectId).length > 1 && !theme.isPrimary && (
                                     <Tip label="Delete Theme" side="left">
-                                    <div
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (confirm(`Delete theme "${theme.name}"? All theme-specific values will be removed.`)) {
-                                          handleDeleteTheme(theme.id);
-                                        }
-                                      }}
-                                      className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#d47272] transition-colors"
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </div>
+                                      <div
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (confirm(`Delete theme "${theme.name}"? All theme-specific values will be removed.`)) {
+                                            handleDeleteTheme(theme.id);
+                                          }
+                                        }}
+                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#d47272] transition-colors"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </div>
                                     </Tip>
                                   )}
-                               </div>
-                               {index < 9 && (
-                                 <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-[#555] bg-[#161616] border border-[#262626]" style={{ fontFamily: 'inherit' }}>
-                                   {index + 1}
-                                 </kbd>
-                               )}
+                                </div>
+                                {index < 9 && (
+                                  <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-[#555] bg-[#161616] border border-[#262626]" style={{ fontFamily: 'inherit' }}>
+                                    {index + 1}
+                                  </kbd>
+                                )}
+                              </div>
+                            )}
+                            {editingThemeId !== theme.id && index < 9 && (
+                              <div className="flex items-center gap-1">
+                                <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-[#555] bg-[#161616] border border-[#262626]" style={{ fontFamily: 'inherit' }}>
+                                  {index + 1}
+                                </kbd>
+                              </div>
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      {!isSampleMode && (
+                        <>
+                          <div className="h-[1px] bg-[#252525] my-1" />
+                          <DropdownMenuItem
+                            onClick={handleCreateTheme}
+                            className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
+                          >
+                            <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
+                              <Plus className="h-3 w-3" />
                             </div>
-                          )}
-                          {editingThemeId !== theme.id && index < 9 && (
-                            <div className="flex items-center gap-1">
-                               <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-[#555] bg-[#161616] border border-[#262626]" style={{ fontFamily: 'inherit' }}>
-                                   {index + 1}
-                               </kbd>
-                            </div>
-                          )}
-                        </DropdownMenuItem>
-                      ))}
-                                            {!isSampleMode && (
-                                            <>
-                                            <div className="h-[1px] bg-[#252525] my-1" />
-                       <DropdownMenuItem
-                        onClick={handleCreateTheme}
-                        className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
-                      >
-                        <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
-                          <Plus className="h-3 w-3" />
-                        </div>
-                        <span>Add new theme</span>
-                      </DropdownMenuItem>
-                                            </>
-                                            )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                            <span>Add new theme</span>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-            </div>
-          )}
+            )}
           </>
         </div>
 
         {/* Canvas Area - Floating Island */}
         <div className="flex-1 relative rounded-2xl overflow-hidden bg-[#000] min-h-0">
 
-        
-        {/* Top-right canvas area: Sign In button + Template Switcher */}
-        {(isSampleMode || !authSession) && (
-          <div className="absolute top-3 right-3 pointer-events-auto flex items-center gap-2" style={{ zIndex: 100001 }}>
-            {/* Sign In / Sign Up — shown for non-authenticated users on ANY project type */}
-            {!authSession && (
-              <button
-                className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md border border-[#1e2b33] hover:border-[#283841] text-[#6b8598] hover:text-[#8ea3b4] transition-all cursor-pointer shadow-lg"
-                onClick={() => setShowAuthModal(true)}
-              >
-                <LogIn className="h-3.5 w-3.5" />
-                <span className="text-[12px] font-medium">Sign In</span>
-              </button>
-            )}
-            {/* Template Switcher Dropdown — only in sample mode, NOT for community projects */}
-            {isSampleMode && !isCommunityMode && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md border border-[#252525] hover:border-[#333] text-[#ededed] transition-all cursor-pointer shadow-lg">
-                  <BookOpen className="h-3.5 w-3.5 text-[#6b8598]" />
-                  <span className="text-[12px] max-w-[160px] truncate">
-                    {sampleTemplates[activeSampleIdx]?.name || 'Template'}
-                  </span>
-                  {sampleTemplates.length > 1 && (
-                    <span className="text-[10px] text-[#555] tabular-nums">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
-                  )}
-                  <ChevronDown className="h-3 w-3 text-[#666]" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100002 }}>
-                <div className="px-2 py-1.5 flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#666] uppercase tracking-wider">Templates</span>
-                  <span className="text-[10px] text-[#555] tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
-                </div>
-                {sampleTemplates.length >= 5 && (
-                  <div className="px-1.5 pb-1.5">
-                    <div className="relative">
-                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#555]" />
-                      <input
-                        className="w-full h-7 pl-7 pr-2 rounded-md bg-[#0a0a0a] border border-[#252525] text-[12px] text-[#ededed] placeholder:text-[#444] outline-none focus:border-[#333] transition-colors"
-                        placeholder="Search templates…"
-                        value={sampleTemplateSearch}
-                        onChange={(e) => setSampleTemplateSearch(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => e.stopPropagation()}
-                        autoFocus
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="overflow-y-auto" style={{ maxHeight: '280px' }}>
-                  {filteredSampleTemplates.length === 0 ? (
-                    <div className="px-3 py-4 text-center text-[11px] text-[#555]">No templates match "{sampleTemplateSearch}"</div>
-                  ) : (
-                    filteredSampleTemplates.map((t) => (
-                      <DropdownMenuItem
-                        key={`${t.projectId}-${t._origIdx}`}
-                        onClick={() => handleSwitchSampleTemplate(t._origIdx)}
-                        className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${
-                          activeSampleIdx === t._origIdx
-                            ? 'bg-[#141820] text-[#ededed]'
-                            : 'text-[#878787]'
-                        } mb-0.5`}
-                      >
-                        <div
-                          className="w-3.5 h-3.5 rounded-full shrink-0 border"
-                          style={{
-                            background: `hsl(${t.folderColor}, 60%, 45%)`,
-                            borderColor: activeSampleIdx === t._origIdx ? '#6b8598' : 'transparent',
-                          }}
-                        />
-                        <div className="flex flex-col flex-1 min-w-0">
-                          <span className="truncate text-[12px]">{t.name}</span>
-                          <span className="truncate text-[10px] text-[#555]">{t.description}</span>
-                        </div>
-                        {activeSampleIdx === t._origIdx && (
-                          <span className="ml-auto text-[10px] text-[#6b8598] font-medium shrink-0">Active</span>
-                        )}
-                      </DropdownMenuItem>
-                    ))
-                  )}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            )}
-          </div>
-        )}
 
-        {isSampleMode && (
-          <div className={`absolute ${viewMode === 'canvas' && isViewingPrimaryTheme ? 'bottom-[5rem]' : 'bottom-6'} left-1/2 -translate-x-1/2 pointer-events-auto`} style={{ zIndex: 100000 }}>
-            <div className="flex items-center gap-4 bg-[#111]/95 backdrop-blur-md border border-[#252525] rounded-full px-4 py-2 shadow-xl"
-              style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-            >
-              <div className="flex items-center gap-2.5">
-                <div className={`flex items-center justify-center w-5 h-5 rounded-md ${isCommunityMode ? 'bg-[#6b8598]/10' : 'bg-[#6b8598]/10'}`}>
-                  {isCommunityMode ? <Globe className="h-3 w-3 text-[#6b8598]" /> : <Lock className="h-3 w-3 text-[#6b8598]" />}
-                </div>
-                <span className="text-[12px] text-[#888] whitespace-nowrap">
-                  {isCommunityMode
-                    ? `Community project${(window as any).__communityProjectMeta?.userName ? ` by ${(window as any).__communityProjectMeta.userName}` : ''}`
-                    : 'You are viewing a read-only sample project'
-                  }
-                </span>
-              </div>
-              {/* Show Duplicate/Remix button: always for sample, conditionally for community (allowRemix) */}
-              {(!isCommunityMode || (window as any).__communityProjectMeta?.allowRemix) && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#6b8598]/10 border border-[#6b8598]/20 hover:bg-[#6b8598]/20 text-[#6b8598] transition-all cursor-pointer text-[12px] font-medium">
-                    {isCommunityMode ? <Shuffle className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                    <span>{isCommunityMode ? 'Remix' : 'Duplicate'}</span>
-                    <ChevronDown className="h-3 w-3 opacity-60" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100001 }}>
-                  <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
-                    {isCommunityMode ? 'Remix as' : 'Duplicate as'}
-                  </div>
-                  {!!authSession && (
-                    <DropdownMenuItem
-                      onClick={() => handleDuplicateSampleProject('cloud')}
-                      className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
-                    >
-                      <RefreshCw className="h-3.5 w-3.5 text-[#b29256]" />
-                      <div className="flex flex-col">
-                        <span className="text-[13px]">Cloud Project</span>
-                        <span className="text-[11px] text-[#666]">Synced to Supabase</span>
-                      </div>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem
-                    onClick={() => handleDuplicateSampleProject('local')}
-                    className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
-                  >
-                    <Download className="h-3.5 w-3.5 text-[#8a9b77]" />
-                    <div className="flex flex-col">
-                      <span className="text-[13px]">Local Project</span>
-                      <span className="text-[11px] text-[#666]">Saved to browser storage</span>
+          {/* Top-right canvas area: Sign In button + Template Switcher */}
+          {(isSampleMode || !authSession) && (
+            <div className="absolute top-3 right-3 pointer-events-auto flex items-center gap-2" style={{ zIndex: 100001 }}>
+              {/* Sign In / Sign Up — shown for non-authenticated users on ANY project type */}
+              {!authSession && (
+                <button
+                  className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md border border-[#1e2b33] hover:border-[#283841] text-[#6b8598] hover:text-[#8ea3b4] transition-all cursor-pointer shadow-lg"
+                  onClick={() => setShowAuthModal(true)}
+                >
+                  <LogIn className="h-3.5 w-3.5" />
+                  <span className="text-[12px] font-medium">Sign In</span>
+                </button>
+              )}
+              {/* Template Switcher Dropdown — only in sample mode, NOT for community projects */}
+              {isSampleMode && !isCommunityMode && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md border border-[#252525] hover:border-[#333] text-[#ededed] transition-all cursor-pointer shadow-lg">
+                      <BookOpen className="h-3.5 w-3.5 text-[#6b8598]" />
+                      <span className="text-[12px] max-w-[160px] truncate">
+                        {sampleTemplates[activeSampleIdx]?.name || 'Template'}
+                      </span>
+                      {sampleTemplates.length > 1 && (
+                        <span className="text-[10px] text-[#555] tabular-nums">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
+                      )}
+                      <ChevronDown className="h-3 w-3 text-[#666]" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100002 }}>
+                    <div className="px-2 py-1.5 flex items-center justify-between">
+                      <span className="text-xs font-medium text-[#666] uppercase tracking-wider">Templates</span>
+                      <span className="text-[10px] text-[#555] tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
                     </div>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    {sampleTemplates.length >= 5 && (
+                      <div className="px-1.5 pb-1.5">
+                        <div className="relative">
+                          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#555]" />
+                          <input
+                            className="w-full h-7 pl-7 pr-2 rounded-md bg-[#0a0a0a] border border-[#252525] text-[12px] text-[#ededed] placeholder:text-[#444] outline-none focus:border-[#333] transition-colors"
+                            placeholder="Search templates…"
+                            value={sampleTemplateSearch}
+                            onChange={(e) => setSampleTemplateSearch(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <div className="overflow-y-auto" style={{ maxHeight: '280px' }}>
+                      {filteredSampleTemplates.length === 0 ? (
+                        <div className="px-3 py-4 text-center text-[11px] text-[#555]">No templates match "{sampleTemplateSearch}"</div>
+                      ) : (
+                        filteredSampleTemplates.map((t) => (
+                          <DropdownMenuItem
+                            key={`${t.projectId}-${t._origIdx}`}
+                            onClick={() => handleSwitchSampleTemplate(t._origIdx)}
+                            className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activeSampleIdx === t._origIdx
+                                ? 'bg-[#141820] text-[#ededed]'
+                                : 'text-[#878787]'
+                              } mb-0.5`}
+                          >
+                            <div
+                              className="w-3.5 h-3.5 rounded-full shrink-0 border"
+                              style={{
+                                background: `hsl(${t.folderColor}, 60%, 45%)`,
+                                borderColor: activeSampleIdx === t._origIdx ? '#6b8598' : 'transparent',
+                              }}
+                            />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <span className="truncate text-[12px]">{t.name}</span>
+                              <span className="truncate text-[10px] text-[#555]">{t.description}</span>
+                            </div>
+                            {activeSampleIdx === t._origIdx && (
+                              <span className="ml-auto text-[10px] text-[#6b8598] font-medium shrink-0">Active</span>
+                            )}
+                          </DropdownMenuItem>
+                        ))
+                      )}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* "Go back" prompt — shown after navigating to a node via Target icon (color or token node) */}
-        {viewMode === 'canvas' && tokenNavBackState && (() => {
-          const multiBarVisible = isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay;
-          const restoreBarVisible = isViewingPrimaryTheme && !!pendingTokenRestore;
-          let bottomClass = 'bottom-[5.5rem]';
-          if (multiBarVisible && restoreBarVisible) bottomClass = 'bottom-[12rem]';
-          else if (multiBarVisible || restoreBarVisible) bottomClass = 'bottom-[8.75rem]';
-          return (
-          <div
-            className={`absolute ${bottomClass} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
-            style={{
-              animation: goBackFading
-                ? `goBackFadeOut ${GO_BACK_FADE_MS}ms ease-in forwards`
-                : 'fadeSlideUp 0.25s ease-out',
-            }}
-          >
-            <button
-              className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
-              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
-              onClick={handleTokenNavGoBack}
-              onMouseEnter={handleGoBackMouseEnter}
-              onMouseLeave={handleGoBackMouseLeave}
-            >
-              <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#6b8598]/15 shrink-0">
-                <ArrowLeft size={13} className="text-[#6b8598]" />
-              </div>
-              <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
-                Go back
-              </span>
-            </button>
-          </div>
-          );
-        })()}
-
-        {/* Restore assigned tokens prompt — above the floating bottom bar (primary theme only) */}
-        {viewMode === 'canvas' && isViewingPrimaryTheme && pendingTokenRestore && (() => {
-          const multiBarVisible = isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay;
-          return (
-          <div className={`absolute ${multiBarVisible ? 'bottom-[8.75rem]' : 'bottom-[5.5rem]'} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
-            style={{ animation: 'fadeSlideUp 0.25s ease-out' }}
-          >
-            <button
-              className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
-              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
-              onClick={handleRestoreTokens}
-            >
-              <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#6b8598]/15 shrink-0">
-                <RotateCw size={13} className="text-[#6b8598]" />
-              </div>
-              <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
-                Restore assigned tokens
-              </span>
-            </button>
-          </div>
-          );
-        })()}
-
-        {/* Multi-Selection Floating Toolbar — appears above the bottom bar when ≥2 nodes are multi-selected */}
-        {viewMode === 'canvas' && isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay && (() => {
-          const selectedNodes = allNodes.filter(n => selectedNodeIds.includes(n.id));
-          const hiddenCount = selectedNodes.filter(n => isNodeHiddenInTheme(n, activeThemeId, primaryTheme?.id || '', allNodes)).length;
-          const visibleCount = selectedNodes.length - hiddenCount;
-          const allVisible = hiddenCount === 0;
-          const allHidden = visibleCount === 0;
-          const mixed = !allVisible && !allHidden;
-
-          return (
-            <div
-              className="absolute bottom-[5.5rem] left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
-              style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
-            >
-              <div
-                className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
-                style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+          {isSampleMode && (
+            <div className={`absolute ${viewMode === 'canvas' && isViewingPrimaryTheme ? 'bottom-[5rem]' : 'bottom-6'} left-1/2 -translate-x-1/2 pointer-events-auto`} style={{ zIndex: 100000 }}>
+              <div className="flex items-center gap-4 bg-[#111]/95 backdrop-blur-md border border-[#252525] rounded-full px-4 py-2 shadow-xl"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
-                {/* Selection count label */}
-                <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
-                  {selectedNodeIds.length} selected
-                </span>
-
-                {/* Divider */}
-                <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
-
-                {/* Visibility toggle */}
-                <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
-                  <button
-                    className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${
-                      mixed
-                        ? 'text-[#444] cursor-not-allowed'
-                        : allHidden
-                          ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
-                          : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
-                    }`}
-                    disabled={mixed}
-                    onClick={() => {
-                      if (mixed) return;
-                      setAllNodes(prev => prev.map(node => {
-                        if (!selectedNodeIds.includes(node.id)) return node;
-                        const vis = { ...(node.themeVisibility || {}) };
-                        if (allVisible) {
-                          vis[activeThemeId] = false;
-                        } else {
-                          delete vis[activeThemeId];
-                        }
-                        return { ...node, themeVisibility: Object.keys(vis).length > 0 ? vis : undefined };
-                      }));
-                    }}
-                  >
-                    {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
-                  </button>
-                </Tip>
-
-                {/* Duplicate */}
-                <Tip label="Duplicate" side="top">
-                  <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05] transition-all"
-                    onClick={() => {
-                      if (selectedNodeIds.length > 1) {
-                        duplicateNode(selectedNodeIds);
-                      } else if (selectedNodeId) {
-                        duplicateNode(selectedNodeId);
-                      }
-                    }}
-                  >
-                    <Copy className="h-[16px] w-[16px]" />
-                  </button>
-                </Tip>
-
-                {/* Delete */}
-                <Tip label="Delete" side="top">
-                  <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#d47272] hover:bg-[#d47272]/[0.08] transition-all"
-                    onClick={() => {
-                      selectedNodeIds.forEach(nodeId => deleteNode(nodeId));
-                      setSelectedNodeIds([]);
-                      setSelectedNodeId(null);
-                    }}
-                  >
-                    <Trash2 className="h-[16px] w-[16px]" />
-                  </button>
-                </Tip>
+                <div className="flex items-center gap-2.5">
+                  <div className={`flex items-center justify-center w-5 h-5 rounded-md ${isCommunityMode ? 'bg-[#6b8598]/10' : 'bg-[#6b8598]/10'}`}>
+                    {isCommunityMode ? <Globe className="h-3 w-3 text-[#6b8598]" /> : <Lock className="h-3 w-3 text-[#6b8598]" />}
+                  </div>
+                  <span className="text-[12px] text-[#888] whitespace-nowrap">
+                    {isCommunityMode
+                      ? `Community project${(window as any).__communityProjectMeta?.userName ? ` by ${(window as any).__communityProjectMeta.userName}` : ''}`
+                      : 'You are viewing a read-only sample project'
+                    }
+                  </span>
+                </div>
+                {/* Show Duplicate/Remix button: always for sample, conditionally for community (allowRemix) */}
+                {(!isCommunityMode || (window as any).__communityProjectMeta?.allowRemix) && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#6b8598]/10 border border-[#6b8598]/20 hover:bg-[#6b8598]/20 text-[#6b8598] transition-all cursor-pointer text-[12px] font-medium">
+                        {isCommunityMode ? <Shuffle className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        <span>{isCommunityMode ? 'Remix' : 'Duplicate'}</span>
+                        <ChevronDown className="h-3 w-3 opacity-60" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100001 }}>
+                      <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
+                        {isCommunityMode ? 'Remix as' : 'Duplicate as'}
+                      </div>
+                      {!!authSession && (
+                        <DropdownMenuItem
+                          onClick={() => handleDuplicateSampleProject('cloud')}
+                          className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5 text-[#b29256]" />
+                          <div className="flex flex-col">
+                            <span className="text-[13px]">Cloud Project</span>
+                            <span className="text-[11px] text-[#666]">Synced to Supabase</span>
+                          </div>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        onClick={() => handleDuplicateSampleProject('local')}
+                        className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
+                      >
+                        <Download className="h-3.5 w-3.5 text-[#8a9b77]" />
+                        <div className="flex flex-col">
+                          <span className="text-[13px]">Local Project</span>
+                          <span className="text-[11px] text-[#666]">Saved to browser storage</span>
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
-          );
-        })()}
+          )}
 
-        {/* Non-Primary Theme Multi-Selection Floating Toolbar — visibility + inheritance toggles */}
-        {viewMode === 'canvas' && !isViewingPrimaryTheme && selectedNodeIds.length > 1 && (() => {
-          const selectedNodes = allNodes.filter(n => selectedNodeIds.includes(n.id));
-          // Visibility state
-          const hiddenCount = selectedNodes.filter(n => isNodeHiddenInTheme(n, activeThemeId, primaryTheme?.id || '', allNodes)).length;
-          const visibleCount = selectedNodes.length - hiddenCount;
-          const allVisible = hiddenCount === 0;
-          const allHidden = visibleCount === 0;
-          const mixedVisibility = !allVisible && !allHidden;
-
-          // Inheritance state
-          const inheritedCount = selectedNodes.filter(n => !n.themeOverrides || !n.themeOverrides[activeThemeId]).length;
-          const notInheritedCount = selectedNodes.length - inheritedCount;
-          const allInherited = notInheritedCount === 0;
-          const allNotInherited = inheritedCount === 0;
-          const mixedInheritance = !allInherited && !allNotInherited;
-
-          return (
-            <div
-              className="absolute bottom-6 left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
-              style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
-            >
+          {/* "Go back" prompt — shown after navigating to a node via Target icon (color or token node) */}
+          {viewMode === 'canvas' && tokenNavBackState && (() => {
+            const multiBarVisible = isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay;
+            const restoreBarVisible = isViewingPrimaryTheme && !!pendingTokenRestore;
+            let bottomClass = 'bottom-[5.5rem]';
+            if (multiBarVisible && restoreBarVisible) bottomClass = 'bottom-[12rem]';
+            else if (multiBarVisible || restoreBarVisible) bottomClass = 'bottom-[8.75rem]';
+            return (
               <div
-                className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
-                style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+                className={`absolute ${bottomClass} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
+                style={{
+                  animation: goBackFading
+                    ? `goBackFadeOut ${GO_BACK_FADE_MS}ms ease-in forwards`
+                    : 'fadeSlideUp 0.25s ease-out',
+                }}
               >
-                {/* Selection count label */}
-                <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
-                  {selectedNodeIds.length} selected
-                </span>
+                <button
+                  className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+                  onClick={handleTokenNavGoBack}
+                  onMouseEnter={handleGoBackMouseEnter}
+                  onMouseLeave={handleGoBackMouseLeave}
+                >
+                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#6b8598]/15 shrink-0">
+                    <ArrowLeft size={13} className="text-[#6b8598]" />
+                  </div>
+                  <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
+                    Go back
+                  </span>
+                </button>
+              </div>
+            );
+          })()}
 
-                {/* Divider */}
-                <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+          {/* Restore assigned tokens prompt — above the floating bottom bar (primary theme only) */}
+          {viewMode === 'canvas' && isViewingPrimaryTheme && pendingTokenRestore && (() => {
+            const multiBarVisible = isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay;
+            return (
+              <div className={`absolute ${multiBarVisible ? 'bottom-[8.75rem]' : 'bottom-[5.5rem]'} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
+                style={{ animation: 'fadeSlideUp 0.25s ease-out' }}
+              >
+                <button
+                  className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+                  onClick={handleRestoreTokens}
+                >
+                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#6b8598]/15 shrink-0">
+                    <RotateCw size={13} className="text-[#6b8598]" />
+                  </div>
+                  <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
+                    Restore assigned tokens
+                  </span>
+                </button>
+              </div>
+            );
+          })()}
 
-                {/* Inheritance toggle */}
-                <Tip label={allInherited ? 'Unlink all from primary' : allNotInherited ? 'Link all to primary' : 'Mixed inheritance'} side="top">
-                  <div
-                    className={`flex items-center gap-1.5 h-9 px-2 rounded-xl transition-all ${
-                      mixedInheritance ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-[#ffffff]/[0.05]'
-                    }`}
-                  >
-                    <Crown
-                      className={`h-3 w-3 shrink-0 transition-all ${
-                        mixedInheritance
-                          ? 'text-[#555] fill-none'
-                          : allInherited
-                            ? 'text-yellow-500 fill-yellow-500'
-                            : allNotInherited
-                              ? 'text-[#6b8598] fill-[#6b8598]'
-                              : 'text-[#555] fill-none'
-                      }`}
-                    />
-                    <Switch
-                      checked={allInherited}
-                      disabled={mixedInheritance}
-                      onCheckedChange={(checked) => {
-                        if (mixedInheritance) return;
+          {/* Multi-Selection Floating Toolbar — appears above the bottom bar when ≥2 nodes are multi-selected */}
+          {viewMode === 'canvas' && isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay && (() => {
+            const selectedNodes = allNodes.filter(n => selectedNodeIds.includes(n.id));
+            const hiddenCount = selectedNodes.filter(n => isNodeHiddenInTheme(n, activeThemeId, primaryTheme?.id || '', allNodes)).length;
+            const visibleCount = selectedNodes.length - hiddenCount;
+            const allVisible = hiddenCount === 0;
+            const allHidden = visibleCount === 0;
+            const mixed = !allVisible && !allHidden;
+
+            return (
+              <div
+                className="absolute bottom-[5.5rem] left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
+                style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
+              >
+                <div
+                  className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
+                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+                >
+                  {/* Selection count label */}
+                  <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
+                    {selectedNodeIds.length} selected
+                  </span>
+
+                  {/* Divider */}
+                  <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+
+                  {/* Visibility toggle */}
+                  <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
+                    <button
+                      className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixed
+                          ? 'text-[#444] cursor-not-allowed'
+                          : allHidden
+                            ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
+                            : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
+                        }`}
+                      disabled={mixed}
+                      onClick={() => {
+                        if (mixed) return;
                         setAllNodes(prev => prev.map(node => {
                           if (!selectedNodeIds.includes(node.id)) return node;
-                          if (checked) {
-                            // Re-link: remove theme override for this theme
-                            const newOverrides = { ...node.themeOverrides };
-                            delete newOverrides[activeThemeId];
-                            // Also clear theme-specific advanced logic
-                            revertThemeAdvancedLogic(node.id, activeThemeId);
-                            return {
-                              ...node,
-                              themeOverrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
-                            };
+                          const vis = { ...(node.themeVisibility || {}) };
+                          if (allVisible) {
+                            vis[activeThemeId] = false;
                           } else {
-                            // Unlink: create theme override with current color values
-                            const currentValues = {
-                              hue: node.hue,
-                              saturation: node.saturation,
-                              lightness: node.lightness,
-                              alpha: node.alpha,
-                              red: node.red,
-                              green: node.green,
-                              blue: node.blue,
-                              oklchL: node.oklchL,
-                              oklchC: node.oklchC,
-                              oklchH: node.oklchH,
-                              hctH: node.hctH,
-                              hctC: node.hctC,
-                              hctT: node.hctT,
-                              hexValue: node.hexValue,
-                            };
-                            return {
-                              ...node,
-                              themeOverrides: {
-                                ...node.themeOverrides,
-                                [activeThemeId]: currentValues,
-                              },
-                            };
+                            delete vis[activeThemeId];
                           }
+                          return { ...node, themeVisibility: Object.keys(vis).length > 0 ? vis : undefined };
                         }));
                       }}
-                      className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-[#333] dark:data-[state=unchecked]:bg-[#333] h-[16px] w-[30px] shrink-0"
-                    />
-                  </div>
-                </Tip>
+                    >
+                      {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
+                    </button>
+                  </Tip>
 
-                {/* Divider */}
-                <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
-
-                {/* Visibility toggle */}
-                <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
-                  <button
-                    className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${
-                      mixedVisibility
-                        ? 'text-[#444] cursor-not-allowed'
-                        : allHidden
-                          ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
-                          : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
-                    }`}
-                    disabled={mixedVisibility}
-                    onClick={() => {
-                      if (mixedVisibility) return;
-                      setAllNodes(prev => prev.map(node => {
-                        if (!selectedNodeIds.includes(node.id)) return node;
-                        const vis = { ...(node.themeVisibility || {}) };
-                        if (allVisible) {
-                          vis[activeThemeId] = false;
-                        } else {
-                          delete vis[activeThemeId];
+                  {/* Duplicate */}
+                  <Tip label="Duplicate" side="top">
+                    <button
+                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05] transition-all"
+                      onClick={() => {
+                        if (selectedNodeIds.length > 1) {
+                          duplicateNode(selectedNodeIds);
+                        } else if (selectedNodeId) {
+                          duplicateNode(selectedNodeId);
                         }
-                        return { ...node, themeVisibility: Object.keys(vis).length > 0 ? vis : undefined };
-                      }));
+                      }}
+                    >
+                      <Copy className="h-[16px] w-[16px]" />
+                    </button>
+                  </Tip>
+
+                  {/* Delete */}
+                  <Tip label="Delete" side="top">
+                    <button
+                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#d47272] hover:bg-[#d47272]/[0.08] transition-all"
+                      onClick={() => {
+                        selectedNodeIds.forEach(nodeId => deleteNode(nodeId));
+                        setSelectedNodeIds([]);
+                        setSelectedNodeId(null);
+                      }}
+                    >
+                      <Trash2 className="h-[16px] w-[16px]" />
+                    </button>
+                  </Tip>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Non-Primary Theme Multi-Selection Floating Toolbar — visibility + inheritance toggles */}
+          {viewMode === 'canvas' && !isViewingPrimaryTheme && selectedNodeIds.length > 1 && (() => {
+            const selectedNodes = allNodes.filter(n => selectedNodeIds.includes(n.id));
+            // Visibility state
+            const hiddenCount = selectedNodes.filter(n => isNodeHiddenInTheme(n, activeThemeId, primaryTheme?.id || '', allNodes)).length;
+            const visibleCount = selectedNodes.length - hiddenCount;
+            const allVisible = hiddenCount === 0;
+            const allHidden = visibleCount === 0;
+            const mixedVisibility = !allVisible && !allHidden;
+
+            // Inheritance state
+            const inheritedCount = selectedNodes.filter(n => !n.themeOverrides || !n.themeOverrides[activeThemeId]).length;
+            const notInheritedCount = selectedNodes.length - inheritedCount;
+            const allInherited = notInheritedCount === 0;
+            const allNotInherited = inheritedCount === 0;
+            const mixedInheritance = !allInherited && !allNotInherited;
+
+            return (
+              <div
+                className="absolute bottom-6 left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
+                style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
+              >
+                <div
+                  className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
+                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
+                >
+                  {/* Selection count label */}
+                  <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
+                    {selectedNodeIds.length} selected
+                  </span>
+
+                  {/* Divider */}
+                  <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+
+                  {/* Inheritance toggle */}
+                  <Tip label={allInherited ? 'Unlink all from primary' : allNotInherited ? 'Link all to primary' : 'Mixed inheritance'} side="top">
+                    <div
+                      className={`flex items-center gap-1.5 h-9 px-2 rounded-xl transition-all ${mixedInheritance ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-[#ffffff]/[0.05]'
+                        }`}
+                    >
+                      <Crown
+                        className={`h-3 w-3 shrink-0 transition-all ${mixedInheritance
+                            ? 'text-[#555] fill-none'
+                            : allInherited
+                              ? 'text-yellow-500 fill-yellow-500'
+                              : allNotInherited
+                                ? 'text-[#6b8598] fill-[#6b8598]'
+                                : 'text-[#555] fill-none'
+                          }`}
+                      />
+                      <Switch
+                        checked={allInherited}
+                        disabled={mixedInheritance}
+                        onCheckedChange={(checked) => {
+                          if (mixedInheritance) return;
+                          setAllNodes(prev => prev.map(node => {
+                            if (!selectedNodeIds.includes(node.id)) return node;
+                            if (checked) {
+                              // Re-link: remove theme override for this theme
+                              const newOverrides = { ...node.themeOverrides };
+                              delete newOverrides[activeThemeId];
+                              // Also clear theme-specific advanced logic
+                              revertThemeAdvancedLogic(node.id, activeThemeId);
+                              return {
+                                ...node,
+                                themeOverrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
+                              };
+                            } else {
+                              // Unlink: create theme override with current color values
+                              const currentValues = {
+                                hue: node.hue,
+                                saturation: node.saturation,
+                                lightness: node.lightness,
+                                alpha: node.alpha,
+                                red: node.red,
+                                green: node.green,
+                                blue: node.blue,
+                                oklchL: node.oklchL,
+                                oklchC: node.oklchC,
+                                oklchH: node.oklchH,
+                                hctH: node.hctH,
+                                hctC: node.hctC,
+                                hctT: node.hctT,
+                                hexValue: node.hexValue,
+                              };
+                              return {
+                                ...node,
+                                themeOverrides: {
+                                  ...node.themeOverrides,
+                                  [activeThemeId]: currentValues,
+                                },
+                              };
+                            }
+                          }));
+                        }}
+                        className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-[#333] dark:data-[state=unchecked]:bg-[#333] h-[16px] w-[30px] shrink-0"
+                      />
+                    </div>
+                  </Tip>
+
+                  {/* Divider */}
+                  <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+
+                  {/* Visibility toggle */}
+                  <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
+                    <button
+                      className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixedVisibility
+                          ? 'text-[#444] cursor-not-allowed'
+                          : allHidden
+                            ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
+                            : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
+                        }`}
+                      disabled={mixedVisibility}
+                      onClick={() => {
+                        if (mixedVisibility) return;
+                        setAllNodes(prev => prev.map(node => {
+                          if (!selectedNodeIds.includes(node.id)) return node;
+                          const vis = { ...(node.themeVisibility || {}) };
+                          if (allVisible) {
+                            vis[activeThemeId] = false;
+                          } else {
+                            delete vis[activeThemeId];
+                          }
+                          return { ...node, themeVisibility: Object.keys(vis).length > 0 ? vis : undefined };
+                        }));
+                      }}
+                    >
+                      {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
+                    </button>
+                  </Tip>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Floating Bottom Toolbar - Figma-style unified bar */}
+          {viewMode === 'canvas' && isViewingPrimaryTheme && (
+            <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 z-[51] pointer-events-none">
+              {/* Ask AI Island (leftmost) */}
+              <div
+                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+              >
+                <Tip label="Ask AI" side="top">
+                  <button
+                    className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
+                        ? 'text-[#b29256] bg-[#b29256]/10'
+                        : 'text-[#a1a1a1] hover:text-[#b29256] hover:bg-[#252525]'
+                      }`}
+                    onClick={() => {
+                      const activeProject = projects.find(p => p.id === activeProjectId);
+                      const isCloud = !!activeProject?.isCloud;
+                      const isTemplate = !!activeProject?.isTemplate;
+                      if (!isCloud && !isTemplate) {
+                        toast('Ask AI is available for Cloud and Template projects only', {
+                          description: 'Switch to a Cloud project or open a Template to use Ask AI.',
+                        });
+                        return;
+                      }
+                      setShowAIChat(prev => !prev);
                     }}
                   >
-                    {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
+                    <Sparkles className="h-[18px] w-[18px]" />
+                    <span className="text-[11px] tracking-wide">AI</span>
                   </button>
                 </Tip>
               </div>
-            </div>
-          );
-        })()}
 
-        {/* Floating Bottom Toolbar - Figma-style unified bar */}
-        {viewMode === 'canvas' && isViewingPrimaryTheme && (
-        <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 z-[51] pointer-events-none">
-          {/* Ask AI Island (leftmost) */}
-          <div
-            className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-            style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-          >
-            <Tip label="Ask AI" side="top">
-            <button
-              className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${
-                showAIChat
-                  ? 'text-[#b29256] bg-[#b29256]/10'
-                  : 'text-[#a1a1a1] hover:text-[#b29256] hover:bg-[#252525]'
-              }`}
-              onClick={() => {
-                const activeProject = projects.find(p => p.id === activeProjectId);
-                const isCloud = !!activeProject?.isCloud;
-                const isTemplate = !!activeProject?.isTemplate;
-                if (!isCloud && !isTemplate) {
-                  toast('Ask AI is available for Cloud and Template projects only', {
-                    description: 'Switch to a Cloud project or open a Template to use Ask AI.',
-                  });
-                  return;
-                }
-                setShowAIChat(prev => !prev);
-              }}
-            >
-              <Sparkles className="h-[18px] w-[18px]" />
-              <span className="text-[11px] tracking-wide">AI</span>
-            </button>
-            </Tip>
-          </div>
+              {/* Sign In button moved to top-right of canvas (near template switcher) */}
 
-          {/* Sign In button moved to top-right of canvas (near template switcher) */}
+              <div className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+              >
+                {/* Node tool with dropdown */}
+                <DropdownMenu>
+                  <Tip label="Add Color Node" side="top">
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="flex items-center gap-0.5 h-9 pl-2.5 pr-1.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all group"
+                      >
+                        <Workflow className="h-[18px] w-[18px]" />
+                        <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-80" />
+                      </button>
+                    </DropdownMenuTrigger>
+                  </Tip>
+                  <DropdownMenuContent align="center" sideOffset={12} className="w-[140px] bg-[#111] border-[#333]">
+                    <DropdownMenuItem
+                      onClick={() => addRootNode('hsl')}
+                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                    >
+                      HSL
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => addRootNode('rgb')}
+                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                    >
+                      RGB
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => addRootNode('oklch')}
+                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                    >
+                      OKLCH
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => addRootNode('hct')}
+                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                    >
+                      HCT
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-          <div className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-            style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-          >
-            {/* Node tool with dropdown */}
-            <DropdownMenu>
-              <Tip label="Add Color Node" side="top">
-              <DropdownMenuTrigger asChild>
-                <button 
-                  className="flex items-center gap-0.5 h-9 pl-2.5 pr-1.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all group"
-                >
-                  <Workflow className="h-[18px] w-[18px]" />
-                  <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-80" />
-                </button>
-              </DropdownMenuTrigger>
-              </Tip>
-              <DropdownMenuContent align="center" sideOffset={12} className="w-[140px] bg-[#111] border-[#333]">
-                <DropdownMenuItem
-                  onClick={() => addRootNode('hsl')}
-                  className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
-                >
-                  HSL
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => addRootNode('rgb')}
-                  className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
-                >
-                  RGB
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => addRootNode('oklch')}
-                  className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
-                >
-                  OKLCH
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => addRootNode('hct')}
-                  className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
-                >
-                  HCT
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                {/* Palette tool */}
+                <Tip label="Add Palette" side="top">
+                  <button
+                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    onClick={addPaletteNode}
+                  >
+                    <Palette className="h-[18px] w-[18px]" />
+                  </button>
+                </Tip>
 
-            {/* Palette tool */}
-            <Tip label="Add Palette" side="top">
-            <button 
-              className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-              onClick={addPaletteNode}
-            >
-              <Palette className="h-[18px] w-[18px]" />
-            </button>
-            </Tip>
+                {/* Token Node tool */}
+                <Tip label="Add Token Node" side="top">
+                  <button
+                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    onClick={addTokenNode}
+                  >
+                    <Tag className="h-[18px] w-[18px]" />
+                  </button>
+                </Tip>
 
-            {/* Token Node tool */}
-            <Tip label="Add Token Node" side="top">
-            <button 
-              className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-              onClick={addTokenNode}
-            >
-              <Tag className="h-[18px] w-[18px]" />
-            </button>
-            </Tip>
-
-            {/* Spacing tool — hidden for now, will implement later */}
-            {/* <button 
+                {/* Spacing tool — hidden for now, will implement later */}
+                {/* <button 
               className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
               onClick={addSpacingNode}
               title="Add spacing node"
@@ -12102,302 +12090,297 @@ export function AppShell() {
               <Ruler className="h-[18px] w-[18px]" />
             </button> */}
 
-            {/* Reset tool — hidden for now */}
-            {/* <button 
+                {/* Reset tool — hidden for now */}
+                {/* <button 
               className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
               onClick={resetToDefaults}
               title="Reset to default data"
             >
               <RotateCcw className="h-[18px] w-[18px]" />
             </button> */}
-          </div>
+              </div>
 
-          {/* Companion bar — View controls */}
-          <div
-            className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-            style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-          >
-            {/* Fit all nodes */}
-            <Tip label="Zoom to Fit" side="top">
-            <button
-              className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-              onClick={() => window.dispatchEvent(new Event('canvasFitAll'))}
-            >
-              <Maximize className="h-[18px] w-[18px]" />
-            </button>
-            </Tip>
-
-            {/* Reset view */}
-            <Tip label="Reset View" side="top">
-            <button
-              className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-              onClick={() => window.dispatchEvent(new Event('canvasResetView'))}
-            >
-              <Locate className="h-[18px] w-[18px]" />
-            </button>
-            </Tip>
-          </div>
-
-          {/* Dev Mode Island — only for cloud projects */}
-          {(() => {
-            const proj = projects.find(p => p.id === activeProjectId);
-            return proj?.isCloud ? (
+              {/* Companion bar — View controls */}
               <div
                 className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
-                <Tip label="Dev Mode — Code Sync & Webhooks" side="top">
-                <button
-                  className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${
-                    showDevMode
-                      ? 'text-emerald-400 bg-emerald-400/10'
-                      : 'text-[#a1a1a1] hover:text-emerald-400 hover:bg-[#252525]'
-                  }`}
-                  onClick={() => setShowDevMode(prev => !prev)}
-                >
-                  <Terminal className="h-[18px] w-[18px]" />
-                  <span className="text-[11px] tracking-wide">Dev</span>
-                </button>
+                {/* Fit all nodes */}
+                <Tip label="Zoom to Fit" side="top">
+                  <button
+                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    onClick={() => window.dispatchEvent(new Event('canvasFitAll'))}
+                  >
+                    <Maximize className="h-[18px] w-[18px]" />
+                  </button>
+                </Tip>
+
+                {/* Reset view */}
+                <Tip label="Reset View" side="top">
+                  <button
+                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    onClick={() => window.dispatchEvent(new Event('canvasResetView'))}
+                  >
+                    <Locate className="h-[18px] w-[18px]" />
+                  </button>
                 </Tip>
               </div>
-            ) : null;
-          })()}
 
-          {/* Actions (⌘K) Island */}
-          <div
-            className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-            style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-          >
-            <Tip label="Actions (⌘K)" side="top">
-            <button
-              className="flex items-center gap-1.5 h-9 px-2.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
-              onClick={() => setShowCommandPalette(true)}
-            >
-              <Command className="h-[18px] w-[18px]" />
-              <span className="text-[11px] text-[#555] tracking-wide">⌘K</span>
-            </button>
-            </Tip>
-          </div>
+              {/* Dev Mode Island — only for cloud projects */}
+              {(() => {
+                const proj = projects.find(p => p.id === activeProjectId);
+                return proj?.isCloud ? (
+                  <div
+                    className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                    style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                  >
+                    <Tip label="Dev Mode — Code Sync & Webhooks" side="top">
+                      <button
+                        className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showDevMode
+                            ? 'text-emerald-400 bg-emerald-400/10'
+                            : 'text-[#a1a1a1] hover:text-emerald-400 hover:bg-[#252525]'
+                          }`}
+                        onClick={() => setShowDevMode(prev => !prev)}
+                      >
+                        <Terminal className="h-[18px] w-[18px]" />
+                        <span className="text-[11px] tracking-wide">Dev</span>
+                      </button>
+                    </Tip>
+                  </div>
+                ) : null;
+              })()}
 
-          {/* Shortcuts & Tips Island */}
-          <div
-            className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
-            style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-          >
-            <Tip label="Shortcuts & Tips" side="top">
-            <button
-              className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${
-                showShortcuts
-                  ? 'text-[#ededed] bg-[#252525]'
-                  : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
-              }`}
-              onClick={() => setShowShortcuts(prev => !prev)}
-            >
-              <Lightbulb className="h-[18px] w-[18px]" />
-            </button>
-            </Tip>
-          </div>
-        </div>
-        )}
-
-        {/* Ask AI floating button — for non-primary themes (primary themes have it in the main toolbar) */}
-        {viewMode === 'canvas' && !isViewingPrimaryTheme && (
-          <div className="absolute bottom-6 right-6 z-[51] pointer-events-auto">
-            <div
-              className="flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5"
-              style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-            >
-              <Tip label="Ask AI" side="top">
-              <button
-                className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${
-                  showAIChat
-                    ? 'text-[#b29256] bg-[#b29256]/10'
-                    : 'text-[#a1a1a1] hover:text-[#b29256] hover:bg-[#252525]'
-                }`}
-                onClick={() => {
-                  const activeProject = projects.find(p => p.id === activeProjectId);
-                  const isCloud = !!activeProject?.isCloud;
-                  const isTemplate = !!activeProject?.isTemplate;
-                  if (!isCloud && !isTemplate) {
-                    toast('Ask AI is available for Cloud and Template projects only', {
-                      description: 'Switch to a Cloud project or open a Template to use Ask AI.',
-                    });
-                    return;
-                  }
-                  setShowAIChat(prev => !prev);
-                }}
+              {/* Actions (⌘K) Island */}
+              <div
+                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
-                <Sparkles className="h-[18px] w-[18px]" />
-                <span className="text-[11px] tracking-wide">AI</span>
-              </button>
-              </Tip>
-            </div>
-          </div>
-        )}
+                <Tip label="Actions (⌘K)" side="top">
+                  <button
+                    className="flex items-center gap-1.5 h-9 px-2.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    onClick={() => setShowCommandPalette(true)}
+                  >
+                    <Command className="h-[18px] w-[18px]" />
+                    <span className="text-[11px] text-[#555] tracking-wide">⌘K</span>
+                  </button>
+                </Tip>
+              </div>
 
-        {/* Undo / Redo buttons — bottom-left of canvas (canvas view only) */}
-        {viewMode === 'canvas' && (
-          <div className="absolute bottom-5 left-5 z-[51] flex items-center gap-1">
-            <div className="group/undo relative">
-              <Tip label="Undo" side="top" enabled={canUndo}>
-              <button
-                className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${
-                  canUndo
-                    ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
-                    : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
-                }`}
-                onClick={undo}
-                disabled={!canUndo}
+              {/* Shortcuts & Tips Island */}
+              <div
+                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
-                <Undo2 className="h-[15px] w-[15px]" />
-              </button>
-              </Tip>
-              {canUndo && (
-                <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/undo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
-                  style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
-                >
-                  {undoCount}
-                </span>
-              )}
-            </div>
-            <div className="group/redo relative">
-              <Tip label="Redo" side="top" enabled={canRedo}>
-              <button
-                className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${
-                  canRedo
-                    ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
-                    : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
-                }`}
-                onClick={redo}
-                disabled={!canRedo}
-              >
-                <Redo2 className="h-[15px] w-[15px]" />
-              </button>
-              </Tip>
-              {canRedo && (
-                <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/redo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
-                  style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
-                >
-                  {redoCount}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Canvas Content Area */}
-        <div className="absolute inset-0 overflow-hidden">
-{viewMode === 'canvas' ? (
-            <ColorCanvas
-              nodes={nodes}
-              tokens={tokens}
-              projects={projects}
-              groups={groups}
-              activeProjectId={activeProjectId}
-              onUpdateNode={updateNode}
-              onAddChild={addChildNode}
-              onAddParent={addParentNode}
-              onTogglePrefix={togglePrefixNode}
-              onDeleteNode={deleteNode}
-              onUnlinkNode={unlinkNode}
-              onLinkNode={linkNode}
-              onAssignToken={assignTokenToNode}
-              onAddToken={addToken}
-              onUpdateToken={updateToken}
-              onDeleteToken={deleteToken}
-              onUpdateProjects={setProjects}
-              onUpdateGroups={setGroups}
-              onExportProject={exportProjectJSON}
-              onImportProject={importProjectJSON}
-              selectedNodeId={selectedNodeId}
-              onSelectNode={(id) => {
-                setSelectedNodeId(id);
-                if (id !== null) {
-                  setSelectedNodeIds([]);
-                }
-              }}
-              selectedNodeIds={selectedNodeIds}
-              onSelectNodeWithChildren={selectNodeWithChildren}
-              onMoveSelectedNodes={moveSelectedNodes}
-              onClearMultiSelection={() => setSelectedNodeIds([])}
-              onUpdateMultiSelection={(nodeIds) => {
-                setSelectedNodeIds(nodeIds);
-                setSelectedNodeId(null);
-              }}
-              onUpdateNodeFromPanel={updateNode}
-              canvasState={canvasState}
-              onUpdateCanvasState={updateCanvasState}
-              sidebarMode={sidebarMode}
-              onSidebarModeChange={setSidebarMode}
-              onNavigateToProjects={handleBackToProjects}
-              showInheritanceIcon={!isViewingPrimaryTheme}
-              activeThemeId={activeThemeId}
-              isPrimaryTheme={isViewingPrimaryTheme}
-              primaryThemeId={primaryTheme?.id || ''}
-              showAllVisible={showAllVisible}
-              autoAssignTriggerNodeId={autoAssignTriggerNodeId}
-              onAutoAssignTriggered={() => setAutoAssignTriggerNodeId(null)}
-              readOnly={isSampleMode}
-              pages={pages.filter(p => p.projectId === activeProjectId)}
-              allProjectNodes={allNodes.filter(n => n.projectId === activeProjectId)}
-              advancedLogic={advancedLogic}
-              onUpdateAdvancedLogic={setAdvancedLogic}
-              onRevertThemeAdvancedLogic={revertThemeAdvancedLogic}
-              showDevMode={showDevMode}
-              onToggleWebhookInput={(nodeId: string) => {
-                const node = allNodes.find(n => n.id === nodeId);
-                if (node) {
-                  updateNode(nodeId, { isWebhookInput: !node.isWebhookInput });
-                }
-              }}
-            />
-          ) : viewMode === 'code' ? (
-            <CodePreview
-              tokens={pageTokens}
-              tokenGroups={pageGroups}
-              nodes={nodes}
-              allProjectTokens={allProjectTokens}
-              allProjectNodes={allProjectNodes}
-              activePage={activePage}
-              themes={themes}
-              activeThemeId={activeThemeId}
-              hexOverridesByPage={codePreviewHexByPage}
-              onHexOverridesByPageChange={setCodePreviewHexByPage}
-              advancedLogic={advancedLogic}
-              computedTokens={computedTokensRef.current[activeProjectId]}
-            />
-          ) : (
-            <MultiPageExport
-              pages={pages}
-              tokens={tokens}
-              tokenGroups={groups}
-              nodes={allNodes}
-              activeProjectId={activeProjectId}
-              themes={themes}
-              activeThemeId={activeThemeId}
-              selectedPageIds={multiExportPageIds}
-              onSelectedPageIdsChange={setMultiExportPageIds}
-              selectedThemeIds={multiExportThemeIds}
-              onSelectedThemeIdsChange={setMultiExportThemeIds}
-              hexOverrideSpaces={multiExportHexSpaces}
-              onHexOverrideSpacesChange={setMultiExportHexSpaces}
-              advancedLogic={advancedLogic}
-              computedTokens={computedTokensRef.current[activeProjectId]}
-            />
-          )}
-
-          {/* Bottom-left hint for O key visibility toggle (non-primary themes, canvas mode only) */}
-          {viewMode === 'canvas' && !isViewingPrimaryTheme && (
-            <div className={`absolute top-4 left-4 z-[52] pointer-events-none select-none transition-opacity duration-200 ${showAllVisible ? 'opacity-100' : 'opacity-80'}`}>
-              <div className="flex items-center gap-2 bg-[#161616]/90 backdrop-blur-sm border border-[#333] rounded-lg px-3 py-2">
-                <kbd className="text-[11px] text-[#a1a1a1] bg-[#252525] border border-[#444] rounded px-1.5 py-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>O</kbd>
-                <span className="text-[11px] text-[#888]">
-                  {showAllVisible ? 'press O \u2014 restore to default' : 'press O \u2014 make it visible'}
-                </span>
+                <Tip label="Shortcuts & Tips" side="top">
+                  <button
+                    className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${showShortcuts
+                        ? 'text-[#ededed] bg-[#252525]'
+                        : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
+                      }`}
+                    onClick={() => setShowShortcuts(prev => !prev)}
+                  >
+                    <Lightbulb className="h-[18px] w-[18px]" />
+                  </button>
+                </Tip>
               </div>
             </div>
           )}
-        </div>
+
+          {/* Ask AI floating button — for non-primary themes (primary themes have it in the main toolbar) */}
+          {viewMode === 'canvas' && !isViewingPrimaryTheme && (
+            <div className="absolute bottom-6 right-6 z-[51] pointer-events-auto">
+              <div
+                className="flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+              >
+                <Tip label="Ask AI" side="top">
+                  <button
+                    className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
+                        ? 'text-[#b29256] bg-[#b29256]/10'
+                        : 'text-[#a1a1a1] hover:text-[#b29256] hover:bg-[#252525]'
+                      }`}
+                    onClick={() => {
+                      const activeProject = projects.find(p => p.id === activeProjectId);
+                      const isCloud = !!activeProject?.isCloud;
+                      const isTemplate = !!activeProject?.isTemplate;
+                      if (!isCloud && !isTemplate) {
+                        toast('Ask AI is available for Cloud and Template projects only', {
+                          description: 'Switch to a Cloud project or open a Template to use Ask AI.',
+                        });
+                        return;
+                      }
+                      setShowAIChat(prev => !prev);
+                    }}
+                  >
+                    <Sparkles className="h-[18px] w-[18px]" />
+                    <span className="text-[11px] tracking-wide">AI</span>
+                  </button>
+                </Tip>
+              </div>
+            </div>
+          )}
+
+          {/* Undo / Redo buttons — bottom-left of canvas (canvas view only) */}
+          {viewMode === 'canvas' && (
+            <div className="absolute bottom-5 left-5 z-[51] flex items-center gap-1">
+              <div className="group/undo relative">
+                <Tip label="Undo" side="top" enabled={canUndo}>
+                  <button
+                    className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canUndo
+                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
+                        : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
+                      }`}
+                    onClick={undo}
+                    disabled={!canUndo}
+                  >
+                    <Undo2 className="h-[15px] w-[15px]" />
+                  </button>
+                </Tip>
+                {canUndo && (
+                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/undo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
+                    style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
+                  >
+                    {undoCount}
+                  </span>
+                )}
+              </div>
+              <div className="group/redo relative">
+                <Tip label="Redo" side="top" enabled={canRedo}>
+                  <button
+                    className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canRedo
+                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
+                        : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
+                      }`}
+                    onClick={redo}
+                    disabled={!canRedo}
+                  >
+                    <Redo2 className="h-[15px] w-[15px]" />
+                  </button>
+                </Tip>
+                {canRedo && (
+                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/redo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
+                    style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
+                  >
+                    {redoCount}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Canvas Content Area */}
+          <div className="absolute inset-0 overflow-hidden">
+            {viewMode === 'canvas' ? (
+              <ColorCanvas
+                nodes={nodes}
+                tokens={tokens}
+                projects={projects}
+                groups={groups}
+                activeProjectId={activeProjectId}
+                onUpdateNode={updateNode}
+                onAddChild={addChildNode}
+                onAddParent={addParentNode}
+                onTogglePrefix={togglePrefixNode}
+                onDeleteNode={deleteNode}
+                onUnlinkNode={unlinkNode}
+                onLinkNode={linkNode}
+                onAssignToken={assignTokenToNode}
+                onAddToken={addToken}
+                onUpdateToken={updateToken}
+                onDeleteToken={deleteToken}
+                onUpdateProjects={setProjects}
+                onUpdateGroups={setGroups}
+                onExportProject={exportProjectJSON}
+                onImportProject={importProjectJSON}
+                selectedNodeId={selectedNodeId}
+                onSelectNode={(id) => {
+                  setSelectedNodeId(id);
+                  if (id !== null) {
+                    setSelectedNodeIds([]);
+                  }
+                }}
+                selectedNodeIds={selectedNodeIds}
+                onSelectNodeWithChildren={selectNodeWithChildren}
+                onMoveSelectedNodes={moveSelectedNodes}
+                onClearMultiSelection={() => setSelectedNodeIds([])}
+                onUpdateMultiSelection={(nodeIds) => {
+                  setSelectedNodeIds(nodeIds);
+                  setSelectedNodeId(null);
+                }}
+                onUpdateNodeFromPanel={updateNode}
+                canvasState={canvasState}
+                onUpdateCanvasState={updateCanvasState}
+                sidebarMode={sidebarMode}
+                onSidebarModeChange={setSidebarMode}
+                onNavigateToProjects={handleBackToProjects}
+                showInheritanceIcon={!isViewingPrimaryTheme}
+                activeThemeId={activeThemeId}
+                isPrimaryTheme={isViewingPrimaryTheme}
+                primaryThemeId={primaryTheme?.id || ''}
+                showAllVisible={showAllVisible}
+                autoAssignTriggerNodeId={autoAssignTriggerNodeId}
+                onAutoAssignTriggered={() => setAutoAssignTriggerNodeId(null)}
+                readOnly={isSampleMode}
+                pages={pages.filter(p => p.projectId === activeProjectId)}
+                allProjectNodes={allNodes.filter(n => n.projectId === activeProjectId)}
+                advancedLogic={advancedLogic}
+                onUpdateAdvancedLogic={setAdvancedLogic}
+                onRevertThemeAdvancedLogic={revertThemeAdvancedLogic}
+                showDevMode={showDevMode}
+                onToggleWebhookInput={(nodeId: string) => {
+                  const node = allNodes.find(n => n.id === nodeId);
+                  if (node) {
+                    updateNode(nodeId, { isWebhookInput: !node.isWebhookInput });
+                  }
+                }}
+              />
+            ) : viewMode === 'code' ? (
+              <CodePreview
+                tokens={pageTokens}
+                tokenGroups={pageGroups}
+                nodes={nodes}
+                allProjectTokens={allProjectTokens}
+                allProjectNodes={allProjectNodes}
+                activePage={activePage}
+                themes={themes}
+                activeThemeId={activeThemeId}
+                hexOverridesByPage={codePreviewHexByPage}
+                onHexOverridesByPageChange={setCodePreviewHexByPage}
+                advancedLogic={advancedLogic}
+                computedTokens={computedTokensRef.current[activeProjectId]}
+              />
+            ) : (
+              <MultiPageExport
+                pages={pages}
+                tokens={tokens}
+                tokenGroups={groups}
+                nodes={allNodes}
+                activeProjectId={activeProjectId}
+                themes={themes}
+                activeThemeId={activeThemeId}
+                selectedPageIds={multiExportPageIds}
+                onSelectedPageIdsChange={setMultiExportPageIds}
+                selectedThemeIds={multiExportThemeIds}
+                onSelectedThemeIdsChange={setMultiExportThemeIds}
+                hexOverrideSpaces={multiExportHexSpaces}
+                onHexOverrideSpacesChange={setMultiExportHexSpaces}
+                advancedLogic={advancedLogic}
+                computedTokens={computedTokensRef.current[activeProjectId]}
+              />
+            )}
+
+            {/* Bottom-left hint for O key visibility toggle (non-primary themes, canvas mode only) */}
+            {viewMode === 'canvas' && !isViewingPrimaryTheme && (
+              <div className={`absolute top-4 left-4 z-[52] pointer-events-none select-none transition-opacity duration-200 ${showAllVisible ? 'opacity-100' : 'opacity-80'}`}>
+                <div className="flex items-center gap-2 bg-[#161616]/90 backdrop-blur-sm border border-[#333] rounded-lg px-3 py-2">
+                  <kbd className="text-[11px] text-[#a1a1a1] bg-[#252525] border border-[#444] rounded px-1.5 py-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>O</kbd>
+                  <span className="text-[11px] text-[#888]">
+                    {showAllVisible ? 'press O \u2014 restore to default' : 'press O \u2014 make it visible'}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

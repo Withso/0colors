@@ -5,7 +5,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { X, Globe, Loader2, Trash2, Check, Shuffle, Link2 } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import {
   publishProject,
   updatePublishSettings,
@@ -254,11 +254,10 @@ export function PublishPopup({
             <div className="mb-6">
               <label className="flex items-start gap-3 cursor-pointer group">
                 <div
-                  className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                    allowRemix
+                  className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${allowRemix
                       ? 'bg-[#6b8598] border-[#6b8598]'
                       : 'bg-transparent border-[#444] group-hover:border-[#666]'
-                  }`}
+                    }`}
                   onClick={() => setAllowRemix(!allowRemix)}
                 >
                   {allowRemix && <Check className="h-3 w-3 text-white" strokeWidth={3} />}

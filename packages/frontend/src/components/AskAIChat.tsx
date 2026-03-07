@@ -12,7 +12,7 @@ import type { ContextTier } from '../utils/ai-context-manager';
 import { AISettingsPopup } from './AISettingsPopup';
 import { copyTextToClipboard } from '../utils/clipboard';
 import { prepareAPIMessages } from '../utils/ai-context-manager';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 // ── Constants ───────────────────────────────────────────────────
 const CHAT_WIDTH = 380;
@@ -32,27 +32,27 @@ export function loadDocked(): boolean {
   try { return localStorage.getItem(DOCK_KEY) === 'true'; } catch { return false; }
 }
 export function saveDocked(v: boolean) {
-  try { localStorage.setItem(DOCK_KEY, String(v)); } catch {}
+  try { localStorage.setItem(DOCK_KEY, String(v)); } catch { }
 }
 function loadPosition(): { x: number; y: number } | null {
   try {
     const raw = localStorage.getItem(POSITION_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch { }
   return null;
 }
 function savePosition(pos: { x: number; y: number }) {
-  try { localStorage.setItem(POSITION_KEY, JSON.stringify(pos)); } catch {}
+  try { localStorage.setItem(POSITION_KEY, JSON.stringify(pos)); } catch { }
 }
 function loadHeight(): number {
   try {
     const saved = localStorage.getItem(HEIGHT_KEY);
     if (saved) return Math.max(MIN_HEIGHT, Math.min(parseInt(saved), window.innerHeight * MAX_HEIGHT_RATIO));
-  } catch {}
+  } catch { }
   return 520;
 }
 function saveHeight(h: number) {
-  try { localStorage.setItem(HEIGHT_KEY, String(h)); } catch {}
+  try { localStorage.setItem(HEIGHT_KEY, String(h)); } catch { }
 }
 
 /** Clamp a position so the chat popup stays fully inside the viewport */
@@ -905,34 +905,34 @@ export function AskAIChat({
                     {activeConversation.messages.map(msg => {
                       const structuredErr = msg.role === 'assistant' ? parseStructuredError(msg.content) : null;
                       return (
-                      <div key={msg.id} className={`group/msg flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        {structuredErr ? (
-                          /* ── Structured error bubble ── */
-                          <div className="max-w-[92%]">
-                            <ErrorBubble error={structuredErr} />
-                          </div>
-                        ) : (
-                        <div
-                          className="max-w-[92%] relative"
-                          style={{
-                            background: msg.role === 'user' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)',
-                            border: `1px solid ${msg.role === 'user' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'}`,
-                            borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
-                            padding: '8px 12px',
-                          }}
-                        >
-                          <div className="text-[12px] leading-[1.6] text-[#bbb] whitespace-pre-wrap break-words"
-                            style={{ color: msg.role === 'user' ? '#ddd' : '#aaa' }}
-                          >
-                            {msg.role === 'assistant' ? renderContent(msg.content) : msg.content}
-                          </div>
-                          {/* Copy button */}
-                          <div className="absolute -top-2 right-1">
-                            <CopyButton text={msg.content} />
-                          </div>
+                        <div key={msg.id} className={`group/msg flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          {structuredErr ? (
+                            /* ── Structured error bubble ── */
+                            <div className="max-w-[92%]">
+                              <ErrorBubble error={structuredErr} />
+                            </div>
+                          ) : (
+                            <div
+                              className="max-w-[92%] relative"
+                              style={{
+                                background: msg.role === 'user' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)',
+                                border: `1px solid ${msg.role === 'user' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'}`,
+                                borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
+                                padding: '8px 12px',
+                              }}
+                            >
+                              <div className="text-[12px] leading-[1.6] text-[#bbb] whitespace-pre-wrap break-words"
+                                style={{ color: msg.role === 'user' ? '#ddd' : '#aaa' }}
+                              >
+                                {msg.role === 'assistant' ? renderContent(msg.content) : msg.content}
+                              </div>
+                              {/* Copy button */}
+                              <div className="absolute -top-2 right-1">
+                                <CopyButton text={msg.content} />
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        )}
-                      </div>
                       );
                     })}
                     {/* Streaming message */}
