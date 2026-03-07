@@ -3,12 +3,14 @@ import { Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 import { getSupabaseClient, SERVER_BASE } from '../utils/supabase/client';
 import { publicAnonKey } from '../utils/supabase/info';
 
-interface AuthPageProps {
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   onAuth: (session: { accessToken: string; userId: string; email: string; name: string }) => void;
-  onSkip: () => void; // Continue without auth (local-only mode)
 }
 
-export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
+export function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
+  if (!isOpen) return null;
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -121,10 +123,22 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
   };
 
   return (
-    <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
-      <div className="w-full max-w-[380px] px-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      {/* Click outside to close */}
+      <div className="absolute inset-0" onClick={onClose} />
+
+      {/* Modal Container */}
+      <div className="relative w-full max-w-[380px] " style={{ animation: 'slideUp 0.2s ease-out' }}>
+        <style dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+          }
+        `}} />
+
         {/* Logo / Brand */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-8 relative z-10">
           <h1 className="text-[28px] font-semibold text-white tracking-tight">
             0<span className="text-[#888]">colors</span>
           </h1>
@@ -135,12 +149,19 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
 
         {/* Auth Card */}
         <div
-          className="rounded-2xl p-6"
+          className="rounded-2xl p-6 relative z-10 shadow-2xl"
           style={{
             background: '#111111',
             border: '1px solid #1e1e1e',
           }}
         >
+          {/* Close button inside card (optional) */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 p-1.5 rounded-full text-[#666] hover:text-white hover:bg-[#222] transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
           {/* Toggle */}
           <div
             className="flex rounded-lg mb-6 p-1"
@@ -254,15 +275,6 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
           </form>
         </div>
 
-        {/* Skip link */}
-        <div className="text-center mt-6">
-          <button
-            onClick={onSkip}
-            className="text-[12px] text-[#444] hover:text-[#666] transition-colors underline underline-offset-2"
-          >
-            Continue without account (local only)
-          </button>
-        </div>
       </div>
     </div>
   );

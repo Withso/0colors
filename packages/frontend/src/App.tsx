@@ -10,7 +10,7 @@ import { MultiPageExport } from './components/MultiPageExport';
 import { CommandPalette } from './components/CommandPalette';
 import { ColorNode, DesignToken, TokenProject, TokenGroup, CanvasState, Page, Theme, NodeAdvancedLogic, ExpressionToken, ConditionRow, ChannelLogic, TokenAssignmentLogic, DevConfig, createDefaultDevConfig } from './components/types';
 import { Button } from './components/ui/button';
-import { Plus, Share2, Download, Upload, Copy, Palette, Library, ChevronDown, Edit2, Trash2, RotateCcw, ArrowLeft, Search, LayoutGrid, Code, Workflow, RefreshCw, Type, Wand2, Film, Grid, Crown, CircleDot, Ruler, Table, SwatchBook, Undo2, Redo2, Maximize, Locate, Lightbulb, RotateCw, Eye, EyeOff, Tag, Command, BookOpen, Lock, Sparkles, Terminal } from 'lucide-react';
+import { Plus, Share2, Download, Upload, Copy, Palette, Library, ChevronDown, Edit2, Trash2, RotateCcw, ArrowLeft, Search, LayoutGrid, Code, Workflow, RefreshCw, Type, Wand2, Film, Grid, Crown, CircleDot, Ruler, Table, SwatchBook, Undo2, Redo2, Maximize, Locate, Lightbulb, RotateCw, Eye, EyeOff, Tag, Command, BookOpen, Lock, Sparkles, Terminal, User, LogOut } from 'lucide-react';
 import { AskAIChat } from './components/AskAIChat';
 import { AISettingsPopup } from './components/AISettingsPopup';
 import {
@@ -59,9 +59,10 @@ import {
   getEffectiveBaseValues,
 } from './utils/advanced-logic-engine';
 import { isAdvancedDraft } from './utils/advanced-draft-registry';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // ── Cloud sync & auth ──
-import { AuthPage } from './components/AuthPage';
+import { AuthModal } from './components/AuthModal';
 import { getSupabaseClient, SERVER_BASE } from './utils/supabase/client';
 import { publicAnonKey } from './utils/supabase/info';
 import { decryptPAT } from './utils/crypto';
@@ -316,9 +317,9 @@ const regeneratePaletteShades = (
     } else if (paletteColorSpace === 'hct') {
       const rgb = hslToRgb(shadeHue, shadeSaturation, shadeLightness);
       const hct = rgbToHct(rgb.r, rgb.g, rgb.b);
-      nativeProps.hctH = hct.hue;
-      nativeProps.hctC = hct.chroma;
-      nativeProps.hctT = hct.tone;
+      nativeProps.hctH = hct.h;
+      nativeProps.hctC = hct.c;
+      nativeProps.hctT = hct.t;
     }
 
     updatedNodes[shadeIndex] = {
@@ -747,6 +748,7 @@ const getDefaultData = () => ({
     id: 'grey-group',
     name: 'grey',
     projectId: 'sample-project',
+    pageId: 'page-1',
     isExpanded: true,
   }],
   projects: [{
@@ -973,6 +975,7 @@ export default function App() {
     return null;
   });
   const [authChecking, setAuthChecking] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [authSkipped, setAuthSkipped] = useState(() => {
     return localStorage.getItem('0colors-auth-skipped') === 'true';
   });
@@ -982,7 +985,9 @@ export default function App() {
   const authSessionRef = useRef(authSession);
   authSessionRef.current = authSession;
 
-  const [viewingProjects, setViewingProjects] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const viewingProjects = location.pathname === '/projects' || location.pathname === '/';
 
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [shareLink, setShareLink] = useState('');
@@ -1025,6 +1030,27 @@ export default function App() {
   const [activeProjectId, setActiveProjectId] = useState<string>(defaultData.activeProjectId);
   const [activePageId, setActivePageId] = useState<string>(defaultData.activePageId);
   const [activeThemeId, setActiveThemeId] = useState<string>(defaultData.activeThemeId);
+
+  // ── Route / URL Sync Engine ──
+  useEffect(() => {
+    // Redirect logic for the root path
+    if (location.pathname === '/') {
+      if (!authSession && projects.length <= 1) { // 1 because of sample-project or default empty
+        navigate('/sample-project', { replace: true });
+      } else {
+        navigate('/projects', { replace: true });
+      }
+      return;
+    }
+
+    // Sync URL -> activeProjectId
+    if (location.pathname.startsWith('/project/')) {
+      const pid = location.pathname.replace('/project/', '');
+      if (activeProjectId !== pid) setActiveProjectId(pid);
+    } else if (location.pathname.startsWith('/sample-project')) {
+      if (activeProjectId !== 'sample-project') setActiveProjectId('sample-project');
+    }
+  }, [location.pathname, authSession, projects.length, activeProjectId, navigate]);
 
   // Advanced Logic Layer — stored separately from nodes
   const [advancedLogic, setAdvancedLogic] = useState<NodeAdvancedLogic[]>(() => {
@@ -1077,58 +1103,115 @@ export default function App() {
   const [sampleTemplateSearch, setSampleTemplateSearch] = useState('');
 
   // Fetch templates when entering sample mode
+  // Helper to compute zoom-to-fit canvas state
+  const getFitCanvasState = (templateData: any) => {
+    if (templateData.nodes && templateData.nodes.length > 0) {
+      const nodes = templateData.nodes;
+      const minX = Math.min(...nodes.map((n: any) => n.position.x));
+      const maxX = Math.max(...nodes.map((n: any) => n.position.x + (n.width || 240)));
+      const minY = Math.min(...nodes.map((n: any) => n.position.y));
+      const maxY = Math.max(...nodes.map((n: any) => n.position.y + 150));
+
+      const contentWidth = Math.max(maxX - minX, 1);
+      const contentHeight = Math.max(maxY - minY, 1);
+      const viewportWidth = window.innerWidth || 1200;
+      const viewportHeight = window.innerHeight || 800;
+
+      const padding = 100;
+      const scaleX = (viewportWidth - padding * 2) / contentWidth;
+      const scaleY = (viewportHeight - padding * 2) / contentHeight;
+      let zoom = Math.min(scaleX, scaleY, 1);
+      if (zoom < 0.1) zoom = 0.1;
+
+      const panX = viewportWidth / 2 - (minX + contentWidth / 2) * zoom;
+      const panY = viewportHeight / 2 - (minY + contentHeight / 2) * zoom;
+
+      const defaultPageId = templateData.pages?.[0]?.id || 'page-1';
+      return [{ projectId: 'sample-project', pageId: defaultPageId, pan: { x: panX, y: panY }, zoom }];
+    } else if (templateData.canvasStates) {
+      const csArray = Array.isArray(templateData.canvasStates)
+        ? templateData.canvasStates
+        : Object.values(templateData.canvasStates);
+      return csArray.map((x: any) => ({ ...x, projectId: 'sample-project' }));
+    }
+    return [];
+  };
+
   useEffect(() => {
     if (isSampleMode && sampleTemplates.length === 0) {
-      fetch(`${SERVER_BASE}/templates`)
+      fetch('/api/templates')
         .then(res => res.json())
         .then(data => {
-          if (data && data.projects && data.projects.length > 0) {
-            setSampleTemplates(data.projects);
-            // Load the first template into the canvas immediately
-            const firstTemplate = data.projects[0];
-            if (firstTemplate) {
-              setAllNodes((firstTemplate.storage_data.nodes || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
-              setTokens((firstTemplate.storage_data.tokens || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
-              if (firstTemplate.storage_data.groups) {
-                setGroups(firstTemplate.storage_data.groups.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+          if (data && data.data && data.data.length > 0) {
+            setSampleTemplates(data.data);
+
+            const slugify = (text: string) => encodeURIComponent(text.toLowerCase().replace(/\s+/g, '-'));
+            const templateSlugMatch = location.pathname.match(/^\/sample-project\/(.+)$/);
+            const templateSlug = templateSlugMatch ? templateSlugMatch[1] : null;
+
+            let targetIdx = 0;
+            if (templateSlug) {
+              const matchedIdx = data.data.findIndex((t: any) => slugify(t.name) === templateSlug);
+              if (matchedIdx !== -1) targetIdx = matchedIdx;
+              else navigate(`/sample-project/${slugify(data.data[0].name)}`, { replace: true });
+            } else {
+              navigate(`/sample-project/${slugify(data.data[0].name)}`, { replace: true });
+            }
+
+            const targetTemplate = data.data[targetIdx];
+            if (targetTemplate && targetTemplate.storage_data) {
+              setActiveSampleIdx(targetIdx);
+              setAllNodes((targetTemplate.storage_data.nodes || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
+              setTokens((targetTemplate.storage_data.tokens || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
+              if (targetTemplate.storage_data.groups) {
+                setGroups(targetTemplate.storage_data.groups.map((x: any) => ({ ...x, projectId: 'sample-project' })));
               }
-              if (firstTemplate.storage_data.pages) {
-                setPages(firstTemplate.storage_data.pages.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+              if (targetTemplate.storage_data.pages) {
+                setPages(targetTemplate.storage_data.pages.map((x: any) => ({ ...x, projectId: 'sample-project' })));
               }
-              if (firstTemplate.storage_data.canvasStates) {
-                // If it's an object (as in previous code), grab its values, otherwise map it directly
-                const csArray = Array.isArray(firstTemplate.storage_data.canvasStates)
-                  ? firstTemplate.storage_data.canvasStates
-                  : Object.values(firstTemplate.storage_data.canvasStates);
-                setCanvasStates(csArray.map((x: any) => ({ ...x, projectId: 'sample-project' })));
-              }
+              const fittedStates = getFitCanvasState(targetTemplate.storage_data);
+              if (fittedStates.length > 0) setCanvasStates(fittedStates);
             }
           }
         })
         .catch(err => console.error('Failed to fetch templates:', err));
     }
-  }, [isSampleMode, sampleTemplates.length]);
+  }, [isSampleMode, sampleTemplates.length, location.pathname, navigate]);
+
+  // Sync Sample Template state when URL changes
+  useEffect(() => {
+    if (isSampleMode && sampleTemplates.length > 0) {
+      const slugify = (text: string) => encodeURIComponent(text.toLowerCase().replace(/\s+/g, '-'));
+      const templateSlugMatch = location.pathname.match(/^\/sample-project\/(.+)$/);
+      const templateSlug = templateSlugMatch ? templateSlugMatch[1] : null;
+
+      if (templateSlug) {
+        const idx = sampleTemplates.findIndex((t: any) => slugify(t.name) === templateSlug);
+        if (idx !== -1 && idx !== activeSampleIdx) {
+          const targetTemplate = sampleTemplates[idx];
+          setActiveSampleIdx(idx);
+          setAllNodes((targetTemplate.storage_data.nodes || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
+          setTokens((targetTemplate.storage_data.tokens || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
+          if (targetTemplate.storage_data.groups) {
+            setGroups(targetTemplate.storage_data.groups.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+          }
+          if (targetTemplate.storage_data.pages) {
+            setPages(targetTemplate.storage_data.pages.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+          }
+          const fittedStates = getFitCanvasState(targetTemplate.storage_data);
+          if (fittedStates.length > 0) setCanvasStates(fittedStates);
+        }
+      }
+    }
+  }, [location.pathname, isSampleMode, sampleTemplates, activeSampleIdx]);
 
   const filteredSampleTemplates = sampleTemplates.filter(t => t.name.toLowerCase().includes(sampleTemplateSearch.toLowerCase()));
 
   const handleSwitchSampleTemplate = (idx: number) => {
     const template = sampleTemplates[idx];
     if (template) {
-      setActiveSampleIdx(idx);
-      setAllNodes((template.storage_data.nodes || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
-      setTokens((template.storage_data.tokens || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
-      if (template.storage_data.groups) {
-        setGroups(template.storage_data.groups.map((x: any) => ({ ...x, projectId: 'sample-project' })));
-      }
-      if (template.storage_data.pages) {
-        setPages(template.storage_data.pages.map((x: any) => ({ ...x, projectId: 'sample-project' })));
-      }
-      if (template.storage_data.canvasStates) {
-        const csArray = Array.isArray(template.storage_data.canvasStates)
-          ? template.storage_data.canvasStates
-          : Object.values(template.storage_data.canvasStates);
-        setCanvasStates(csArray.map((x: any) => ({ ...x, projectId: 'sample-project' })));
-      }
+      const slugify = (text: string) => encodeURIComponent(text.toLowerCase().replace(/\s+/g, '-'));
+      navigate(`/sample-project/${slugify(template.name)}`);
     }
   };
 
@@ -1136,16 +1219,12 @@ export default function App() {
     const template = sampleTemplates[activeSampleIdx];
     if (!template) return;
 
-    const fauxProject: Project = {
+    const fauxProject: TokenProject = {
       id: 'sample-project',
       name: `${template.name} (Copy)`,
-      updatedAt: Date.now(),
-      createdAt: Date.now(),
-      userId: authSession ? authSession.userId : '',
+      isExpanded: true,
       isCloud: type === 'cloud',
-      cloudSyncStatus: type === 'cloud' ? 'dirty' : 'local',
-      isTemplate: false,
-      storageId: ''
+      isTemplate: false
     };
 
     // Pass fauxProject as override so duplicateProject treats it as the source wrapper
@@ -1459,7 +1538,7 @@ export default function App() {
           if (refreshError || !refreshData?.session?.access_token) {
             console.log(`🔑 Session refresh failed: ${refreshError?.message || 'no session returned'}`);
             // Fall back to cached session — preserve isAdmin/isTemplateAdmin from previous load to avoid blink
-            setAuthSession((prev) => {
+            setAuthSession((prev: any) => {
               const session = {
                 accessToken: sessionData.session.access_token,
                 userId: sessionData.session.user.id,
@@ -1474,12 +1553,12 @@ export default function App() {
           } else {
             // Use the refreshed session — preserve isAdmin/isTemplateAdmin from cache to avoid blink
             console.log('🔑 Session refreshed successfully');
-            setAuthSession((prev) => {
+            setAuthSession((prev: any) => {
               const session = {
-                accessToken: refreshData.session.access_token,
-                userId: refreshData.session.user.id,
-                email: refreshData.session.user.email || '',
-                name: refreshData.session.user.user_metadata?.name || refreshData.session.user.email?.split('@')[0] || '',
+                accessToken: refreshData.session!.access_token,
+                userId: refreshData.session!.user.id,
+                email: refreshData.session!.user.email || '',
+                name: refreshData.session!.user.user_metadata?.name || refreshData.session!.user.email?.split('@')[0] || '',
                 isAdmin: prev?.isAdmin,
                 isTemplateAdmin: prev?.isTemplateAdmin,
               };
@@ -2041,6 +2120,7 @@ export default function App() {
   const handleAuth = useCallback((session: { accessToken: string; userId: string; email: string; name: string }) => {
     setAuthSession(session);
     setAuthSkipped(false);
+    setShowAuthModal(false);
     localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
     localStorage.removeItem('0colors-auth-skipped');
     updateAccessToken(session.accessToken);
@@ -2697,8 +2777,8 @@ export default function App() {
       setTokens(prevTokens => {
         let finalTokens = prevTokens;
         let tokensUpdated = false;
-        affectedNodeIds.forEach(nodeId => {
-          const node = allNodes.find(n => n.id === nodeId);
+        affectedNodeIds.forEach((nodeId: string) => {
+          const node = allNodes.find((n: ColorNode) => n.id === nodeId);
           const update = pendingUpdates.find(u => allNodes[u.idx]?.id === nodeId);
           if (!node || !update) return;
           const effectiveNode = { ...node, ...update.changes };
@@ -2712,7 +2792,7 @@ export default function App() {
           // Determine if this is a non-primary theme update
           const currentThemeObj = themes.find(t => t.id === activeThemeId);
           const isPrimaryThemeSync = currentThemeObj?.isPrimary ?? true;
-          finalTokens = finalTokens.map(token => {
+          finalTokens = finalTokens.map((token: DesignToken) => {
             if (!tokenIds.has(token.id)) return token;
             tokensUpdated = true;
             // Pass theme override for correct color resolution in non-primary themes
@@ -2800,7 +2880,7 @@ export default function App() {
   const allProjectNodes = allNodes.filter(node => node.projectId === activeProjectId);
 
   // Get groups for the active project and page
-  const pageGroups = groups.filter(group => group.projectId === activeProjectId && group.pageId === activePageId);
+  const pageGroups = groups.filter((group: TokenGroup) => group.projectId === activeProjectId && group.pageId === activePageId);
 
   // Get active page
   const activePage = pages.find(p => p.id === activePageId);
@@ -2860,7 +2940,7 @@ export default function App() {
   // Prune stale selection — remove selectedNodeId(s) that no longer exist in allNodes
   // (covers undo removing duplicated nodes, external state changes, etc.)
   useEffect(() => {
-    const nodeIdSet = new Set(allNodes.map(n => n.id));
+    const nodeIdSet = new Set(allNodes.map((n: ColorNode) => n.id));
 
     const staleSingle = selectedNodeId && !nodeIdSet.has(selectedNodeId);
     const filteredMulti = selectedNodeIds.filter(id => nodeIdSet.has(id));
@@ -2905,6 +2985,7 @@ export default function App() {
       } else {
         return [...prev, {
           projectId: activeProjectId,
+          pageId: activePageId,
           pan: updates.pan ?? { x: 0, y: 0 },
           zoom: updates.zoom ?? 1,
         }];
@@ -2996,7 +3077,7 @@ export default function App() {
 
       // Check for orphaned palette groups (palette entries without corresponding nodes)
       const paletteEntryGroups = loadedGroups.filter(g => g.isPaletteEntry);
-      paletteEntryGroups.forEach(group => {
+      paletteEntryGroups.forEach((group: TokenGroup) => {
         const paletteNodeExists = migratedNodes.some(n => n.id === group.paletteNodeId && n.isPalette);
         if (!paletteNodeExists) {
           console.warn(`⚠️ Palette group "${group.name}" (${group.id}) has no matching palette node — data preserved`);
@@ -3032,7 +3113,11 @@ export default function App() {
       setActiveThemeId(storedData.activeThemeId || defaultData.activeThemeId);
       // Restore page state - if user was on canvas, stay on canvas
       if (storedData.viewingProjects !== undefined) {
-        setViewingProjects(storedData.viewingProjects);
+        if (storedData.viewingProjects) {
+          navigate('/projects');
+        } else {
+          navigate(storedData.activeProjectId === 'sample-project' ? '/sample-project' : `/project/${storedData.activeProjectId}`);
+        }
       }
 
       // Restore computed tokens from saved data or separate key
@@ -3160,7 +3245,7 @@ export default function App() {
 
   // Auto-save to localStorage whenever data changes (with debounce)
   useEffect(() => {
-    if (isInitialLoad || isImporting) {
+    if (isInitialLoad || isImporting || isSampleMode) {
       return;
     }
 
@@ -6051,7 +6136,7 @@ export default function App() {
           // Derive shade colorSpace from the palette's paletteColorFormat
           const shadeNativeProps: Partial<ColorNode> = {};
           const parentFormat = nodeBeingUpdated.paletteColorFormat || 'HEX';
-          const parentColorSpace = ({ 'HEX': 'hsl', 'HSLA': 'hsl', 'OKLCH': 'oklch', 'RGBA': 'rgb' } as Record<string, string>)[parentFormat] || 'hsl';
+          const parentColorSpace = (({ 'HEX': 'hsl', 'HSLA': 'hsl', 'OKLCH': 'oklch', 'RGBA': 'rgb' } as Record<string, string>)[parentFormat] || 'hsl') as ColorNode['colorSpace'];
           if (parentColorSpace === 'oklch') {
             const oklch = hslToOklchUpper(shadeHue, shadeSaturation, shadeLightness);
             shadeNativeProps.oklchL = oklch.L;
@@ -6065,9 +6150,9 @@ export default function App() {
           } else if (parentColorSpace === 'hct') {
             const rgb = hslToRgb(shadeHue, shadeSaturation, shadeLightness);
             const hct = rgbToHct(rgb.r, rgb.g, rgb.b);
-            shadeNativeProps.hctH = hct.hue;
-            shadeNativeProps.hctC = hct.chroma;
-            shadeNativeProps.hctT = hct.tone;
+            shadeNativeProps.hctH = hct.h;
+            shadeNativeProps.hctC = hct.c;
+            shadeNativeProps.hctT = hct.t;
           }
 
           const shadeNode: ColorNode = {
@@ -6233,7 +6318,7 @@ export default function App() {
         // Determine shade colorSpace from the palette's paletteColorFormat
         const palFormat = updates.paletteColorFormat ?? nodeBeingUpdated.paletteColorFormat ?? 'HEX';
         const formatToCS: Record<string, string> = { 'HEX': 'hsl', 'HSLA': 'hsl', 'OKLCH': 'oklch', 'RGBA': 'rgb' };
-        const paletteColorSpace = formatToCS[palFormat as string] || 'hsl';
+        const paletteColorSpace = (formatToCS[palFormat as string] || 'hsl') as ColorNode['colorSpace'];
         const updatedNodes = prev.map(n => {
           if (n.parentId === id) {
             const children = prev.filter(child => child.parentId === id).sort((a, b) => a.position.y - b.position.y);
@@ -6261,9 +6346,9 @@ export default function App() {
               } else if (paletteColorSpace === 'hct') {
                 const rgb = hslToRgb(shadeHue, shadeSaturation, shadeLightness);
                 const hct = rgbToHct(rgb.r, rgb.g, rgb.b);
-                nativeProps.hctH = hct.hue;
-                nativeProps.hctC = hct.chroma;
-                nativeProps.hctT = hct.tone;
+                nativeProps.hctH = hct.h;
+                nativeProps.hctC = hct.c;
+                nativeProps.hctT = hct.t;
               }
 
               if (isThemeOverrideChange) {
@@ -6326,7 +6411,7 @@ export default function App() {
             }
           }
 
-          return n.id === id ? { ...n, ...updates } : n;
+          return n.id === id ? { ...n, ...(updates as any) } : n;
         });
 
         // Sync tokens with updated shade values
@@ -6496,9 +6581,9 @@ export default function App() {
             } else if (newColorSpace === 'hct') {
               const rgb = hslToRgb(n.hue, n.saturation, n.lightness);
               const hct = rgbToHct(rgb.r, rgb.g, rgb.b);
-              shadeUpdate.hctH = hct.hue;
-              shadeUpdate.hctC = hct.chroma;
-              shadeUpdate.hctT = hct.tone;
+              shadeUpdate.hctH = hct.h;
+              shadeUpdate.hctC = hct.c;
+              shadeUpdate.hctT = hct.t;
             }
             return { ...n, ...shadeUpdate };
           }
@@ -8827,7 +8912,7 @@ export default function App() {
               setGroups(groupsToImport);
               setProjects(projectsToImport);
               setCanvasStates(canvasStatesToImport);
-              setActiveProjectId(activeProjectToImport);
+              navigate(`/project/${activeProjectToImport}`);
 
               setTimeout(() => {
                 setIsImporting(false);
@@ -8859,7 +8944,7 @@ export default function App() {
     const paletteEntryGroups = groups.filter(g => g.isPaletteEntry);
     const orphanedGroupIds: string[] = [];
 
-    paletteEntryGroups.forEach(group => {
+    paletteEntryGroups.forEach((group: TokenGroup) => {
       if (!group.paletteNodeId) {
         orphanedGroupIds.push(group.id);
         return;
@@ -9895,9 +9980,9 @@ export default function App() {
     };
     setSelectedNodeId(null);
     setSelectedNodeIds([]);
-    setActiveProjectId(newProjectId);
     setActivePageId(newPageId);
     setActiveThemeId(newThemeId); // Set the new theme as active
+    return newProjectId;
   }, [projects]);
 
   const deleteProject = useCallback((projectId: string) => {
@@ -9936,21 +10021,22 @@ export default function App() {
     if (activeProjectId === projectId) {
       const remainingProjects = projects.filter(p => p.id !== projectId);
       if (remainingProjects.length > 0) {
-        setActiveProjectId(remainingProjects[0].id);
+        navigate(`/project/${remainingProjects[0].id}`);
       } else {
         // Create a new default project if no projects remain
         const newProjectId = `project-${Date.now()}`;
-        const newProject: Project = {
+        const newProject: TokenProject = {
           id: newProjectId,
           name: 'Untitled Project',
           isExpanded: true,
           folderColor: Math.floor(Math.random() * 360),
         };
         setProjects([newProject]);
-        setActiveProjectId(newProjectId);
+        navigate(`/project/${newProjectId}`);
         const newCanvasState: CanvasState = {
           projectId: newProjectId,
-          offset: { x: 0, y: 0 },
+          pageId: 'page-1',
+          pan: { x: 0, y: 0 },
           zoom: 1
         };
         setCanvasStates([newCanvasState]);
@@ -9959,9 +10045,9 @@ export default function App() {
     }
 
     setProjects(prev => prev.filter(p => p.id !== projectId));
-  }, [projects, activeProjectId]);
+  }, [projects, activeProjectId, navigate]);
 
-  const duplicateProject = useCallback((projectId: string, overrideProject?: Project) => {
+  const duplicateProject = useCallback((projectId: string, overrideProject?: TokenProject) => {
     const projectToDuplicate = overrideProject || projects.find(p => p.id === projectId);
     if (!projectToDuplicate) return;
 
@@ -10018,7 +10104,7 @@ export default function App() {
     // 4. Group ID map
     const projectGroups = groups.filter(g => g.projectId === projectId);
     const groupIdMap = new Map<string, string>();
-    projectGroups.forEach(group => {
+    projectGroups.forEach((group: TokenGroup) => {
       groupIdMap.set(group.id, `group-${timestamp}-${group.id}`);
     });
 
@@ -10222,7 +10308,7 @@ export default function App() {
       forceSyncNow().catch((e) => console.log('☁️ [SelectProject] Flush failed (will retry):', e));
     }
 
-    setActiveProjectId(projectId);
+    navigate(`/project/${projectId}`);
 
     // Switch to the first page of the selected project
     const projectPages = pages.filter(p => p.projectId === projectId).sort((a, b) => a.createdAt - b.createdAt);
@@ -10249,13 +10335,14 @@ export default function App() {
       setSelectedNodeIds([]);
     }
 
-    setViewingProjects(false);
-  }, [pages, themes]);
+  }, [pages, themes, navigate]);
 
   const handleCreateProject = useCallback((type: 'local' | 'cloud' | 'template' = 'local') => {
-    addProject(type);
-    setViewingProjects(false);
-  }, [addProject]);
+    const newProjectId = addProject(type);
+    if (newProjectId) {
+      navigate(`/project/${newProjectId}`);
+    }
+  }, [addProject, navigate]);
 
   // ── Dev Mode Handlers ──────────────────────────────────────────
 
@@ -10467,7 +10554,7 @@ export default function App() {
       forceSyncNow().catch((e) => console.log('☁️ [BackToProjects] Flush failed (will retry):', e));
     }
 
-    setViewingProjects(true);
+    navigate('/projects');
     setViewMode('canvas');
     setSelectedNodeId(null);
     setSelectedNodeIds([]);
@@ -10900,7 +10987,6 @@ export default function App() {
     }
   }, [flushUndo]);
 
-  // Auth gate — show auth page if still checking or not authenticated and user hasn't skipped
   if (authChecking) {
     return (
       <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
@@ -10909,15 +10995,12 @@ export default function App() {
     );
   }
 
-  if (!authSession && !authSkipped) {
-    return <AuthPage onAuth={handleAuth} onSkip={handleSkipAuth} />;
-  }
-
   // If viewing projects page, show that instead of the app
   if (viewingProjects) {
     return (
       <>
         <ProjectsPage
+          cloudProjectLimit={2}
           projects={projects}
           allNodes={allNodes}
           tokens={tokens}
@@ -10936,8 +11019,6 @@ export default function App() {
           userEmail={authSession?.email}
           onSignOut={handleSignOut}
           cloudSyncStatus={cloudSyncStatus}
-
-
           onForceCloudRefresh={handleForceCloudRefresh}
           onOpenAISettings={() => setShowAISettingsPopup(true)}
         />
@@ -11437,6 +11518,36 @@ export default function App() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
+
+                {/* Sign In / Account Dropdown */}
+                {!authSession ? (
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="flex items-center gap-1.5 h-8 px-3 ml-2 rounded-full border border-transparent bg-[#bbbbbb] text-[#000] hover:bg-[#fff] transition-all cursor-pointer text-[12px] font-medium"
+                  >
+                    <span>Sign In</span>
+                  </button>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center justify-center h-8 w-8 ml-2 rounded-full bg-[#1e1e1e] border border-[#333] hover:border-[#444] text-[#E5A336] hover:text-[#f0b84a] transition-all outline-none cursor-pointer">
+                        <User className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-48 bg-[#111] border-[#252525] p-1 shadow-xl z-[60]">
+                      <div className="px-2 py-1.5 text-xs text-[#888] truncate break-all border-b border-[#222] mb-1">
+                        {authSession.email}
+                      </div>
+                      <DropdownMenuItem
+                        onClick={handleSignOut}
+                        className="flex items-center gap-2 px-2 py-2 text-[#666] hover:text-[#e5484d] focus:text-[#e5484d] focus:bg-[#1a1a1a] rounded-md cursor-pointer transition-colors"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span>Sign Out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             )}
           </>
@@ -11482,7 +11593,7 @@ export default function App() {
                 {filteredSampleTemplates.length === 0 ? (
                   <div className="px-3 py-4 text-center text-[11px] text-[#555]">No templates match "{sampleTemplateSearch}"</div>
                 ) : (
-                  filteredSampleTemplates.map((t) => (
+                  filteredSampleTemplates.map((t: any) => (
                     <DropdownMenuItem
                       key={t.projectId}
                       onClick={() => handleSwitchSampleTemplate(t._origIdx)}
@@ -12243,8 +12354,8 @@ export default function App() {
         onClose={() => setShowAIChat(false)}
         conversations={aiConversations}
         onConversationsChange={handleAIConversationsChange}
-        isCloudProject={!!projects.find(p => p.id === activeProjectId)?.isCloud}
-        isTemplate={!!projects.find(p => p.id === activeProjectId)?.isTemplate}
+        isCloudProject={isSampleMode ? !!sampleTemplates[activeSampleIdx]?.isCloud : !!projects.find(p => p.id === activeProjectId)?.isCloud}
+        isTemplate={isSampleMode ? !!sampleTemplates[activeSampleIdx]?.isTemplate : !!projects.find(p => p.id === activeProjectId)?.isTemplate}
         projectContext={aiProjectContext}
         isDocked={aiChatDocked}
         onDockChange={handleAIChatDockChange}
@@ -12327,7 +12438,7 @@ export default function App() {
           nodes={allNodes}
           themes={themes}
           activeProjectId={activeProjectId}
-          activeProject={projects.find(p => p.id === activeProjectId)}
+          activeProject={isSampleMode ? sampleTemplates[activeSampleIdx] : projects.find(p => p.id === activeProjectId)}
           userId={authSession?.userId}
           onClose={() => setShowDevMode(false)}
           onRunNow={() => {
@@ -12415,7 +12526,12 @@ export default function App() {
         onSwitchPage={handleSwitchPage}
         onSwitchTheme={handleSwitchTheme}
       />
-
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuth={handleAuth}
+      />
     </div>
   );
 }

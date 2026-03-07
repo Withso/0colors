@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, Cloud, HardDrive, LogOut, LayoutTemplate, RefreshCw, Sparkles } from 'lucide-react';
-import { Button } from './ui/button';
+import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, Cloud, HardDrive, LogOut, LayoutTemplate, RefreshCw, Sparkles, Lock } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,53 +10,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog';
-
-interface ColorNode {
-  id: string;
-  projectId: string;
-  hue: number;
-  saturation: number;
-  lightness: number;
-  alpha: number;
-  position: { x: number; y: number };
-  parentId: string | null;
-  colorSpace: 'hsl' | 'rgb' | 'oklch';
-  red?: number;
-  green?: number;
-  blue?: number;
-}
-
-interface Project {
-  id: string;
-  name: string;
-  folderColor?: number;
-  isCloud?: boolean;
-  isTemplate?: boolean;
-  lastSyncedAt?: number;
-}
-
-interface DesignToken {
-  id: string;
-  name: string;
-  value: string;
-  nodeId: string | null;
-  collectionId: string;
-  groupId: string | null;
-  projectId: string;
-}
-
-interface TokenCollection {
-  id: string;
-  name: string;
-  projectId: string;
-}
-
-interface TokenGroup {
-  id: string;
-  name: string;
-  collectionId: string;
-  projectId: string;
-}
+import {
+  ColorNode,
+  DesignToken,
+  TokenProject as Project,
+  TokenGroup,
+  TokenCollection
+} from './types';
+import { Button } from './ui/button';
 
 interface ProjectsPageProps {
   projects: Project[];
@@ -321,33 +281,43 @@ function FolderCard({
               </div>
 
               {/* ⋯ menu button */}
-              <div className="relative flex-shrink-0" ref={menuRef}>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
-                  className="flex items-center justify-center rounded-full transition-all duration-150"
-                  style={{ width: '26px', height: '26px', background: tc.menuBtn, backdropFilter: 'blur(8px)', border: `1px solid ${tc.menuBorder}` }}
+              {project.id === 'sample-project' ? (
+                <div
+                  className="flex items-center justify-center rounded-full px-2.5 py-1 gap-1.5 flex-shrink-0"
+                  style={{ background: tc.menuBtn, backdropFilter: 'blur(8px)', border: `1px solid ${tc.menuBorder}` }}
                 >
-                  <MoreHorizontal className="w-[14px] h-[14px]" style={{ color: tc.menuIcon }} />
-                </button>
-
-                {menuOpen && (
-                  <div
-                    className="absolute right-0 top-full mt-2 w-[156px] rounded-xl overflow-hidden z-50"
-                    style={{ background: 'rgba(18,18,18,0.96)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 16px 48px rgba(0,0,0,0.75)', backdropFilter: 'blur(20px)' }}
+                  <Lock className="w-[10px] h-[10px]" style={{ color: tc.menuIcon }} />
+                  <span style={{ color: tc.menuIcon, fontSize: '10px', fontWeight: 500, letterSpacing: '0.02em', textShadow: tc.isYellow ? 'none' : '0 1px 2px rgba(0,0,0,0.25)' }}>Read-Only</span>
+                </div>
+              ) : (
+                <div className="relative flex-shrink-0" ref={menuRef}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+                    className="flex items-center justify-center rounded-full transition-all duration-150"
+                    style={{ width: '26px', height: '26px', background: tc.menuBtn, backdropFilter: 'blur(8px)', border: `1px solid ${tc.menuBorder}` }}
                   >
-                    <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#bbb] hover:bg-white/[0.06] transition-colors" onClick={(e) => { e.stopPropagation(); onExport(e); setMenuOpen(false); }}>
-                      <Download className="w-3.5 h-3.5 opacity-50" /> Export
-                    </button>
-                    <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#bbb] hover:bg-white/[0.06] transition-colors" onClick={(e) => { e.stopPropagation(); onDuplicate(e); setMenuOpen(false); }}>
-                      <Copy className="w-3.5 h-3.5 opacity-50" /> Duplicate
-                    </button>
-                    <div className="mx-3 h-px bg-white/[0.06]" />
-                    <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-red-400 hover:bg-red-500/10 transition-colors" onClick={(e) => { e.stopPropagation(); onDelete(e); setMenuOpen(false); }}>
-                      <Trash2 className="w-3.5 h-3.5 opacity-50" /> Delete
-                    </button>
-                  </div>
-                )}
-              </div>
+                    <MoreHorizontal className="w-[14px] h-[14px]" style={{ color: tc.menuIcon }} />
+                  </button>
+
+                  {menuOpen && (
+                    <div
+                      className="absolute right-0 top-full mt-2 w-[156px] rounded-xl overflow-hidden z-50"
+                      style={{ background: 'rgba(18,18,18,0.96)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 16px 48px rgba(0,0,0,0.75)', backdropFilter: 'blur(20px)' }}
+                    >
+                      <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#bbb] hover:bg-white/[0.06] transition-colors" onClick={(e) => { e.stopPropagation(); onExport(e); setMenuOpen(false); }}>
+                        <Download className="w-3.5 h-3.5 opacity-50" /> Export
+                      </button>
+                      <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#bbb] hover:bg-white/[0.06] transition-colors" onClick={(e) => { e.stopPropagation(); onDuplicate(e); setMenuOpen(false); }}>
+                        <Copy className="w-3.5 h-3.5 opacity-50" /> Duplicate
+                      </button>
+                      <div className="mx-3 h-px bg-white/[0.06]" />
+                      <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-red-400 hover:bg-red-500/10 transition-colors" onClick={(e) => { e.stopPropagation(); onDelete(e); setMenuOpen(false); }}>
+                        <Trash2 className="w-3.5 h-3.5 opacity-50" /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Bottom stat badges */}

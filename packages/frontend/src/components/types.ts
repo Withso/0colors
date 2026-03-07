@@ -14,26 +14,28 @@ export interface ColorNode {
   tokenId: string | null; // Reference to assigned design token (legacy)
   tokenIds?: string[]; // References to assigned design tokens (legacy - theme-agnostic)
   tokenAssignments?: { [themeId: string]: string[] }; // Theme-specific token assignments
-  themeOverrides?: { [themeId: string]: {
-    hue: number;
-    saturation: number;
-    lightness: number;
-    alpha: number;
-    red?: number;
-    green?: number;
-    blue?: number;
-    oklchL?: number;
-    oklchC?: number;
-    oklchH?: number;
-    hctH?: number;
-    hctC?: number;
-    hctT?: number;
-    hexValue?: string;
-  }}; // Theme-specific color overrides (when unlinked from primary)
+  themeOverrides?: {
+    [themeId: string]: {
+      hue: number;
+      saturation: number;
+      lightness: number;
+      alpha: number;
+      red?: number;
+      green?: number;
+      blue?: number;
+      oklchL?: number;
+      oklchC?: number;
+      oklchH?: number;
+      hctH?: number;
+      hctC?: number;
+      hctT?: number;
+      hexValue?: string;
+    }
+  }; // Theme-specific color overrides (when unlinked from primary)
   width?: number; // Custom width in pixels (default: 240)
   projectId: string; // Reference to parent project
   pageId: string; // Reference to parent page
-  
+
   // RGB properties (for colorSpace === 'rgb')
   red?: number; // 0-255
   green?: number; // 0-255
@@ -41,7 +43,7 @@ export interface ColorNode {
   redOffset?: number; // Difference from parent's red
   greenOffset?: number; // Difference from parent's green
   blueOffset?: number; // Difference from parent's blue
-  
+
   // OKLCH properties (for colorSpace === 'oklch')
   oklchL?: number; // 0-100 (lightness)
   oklchC?: number; // 0-100 (chroma, scaled from 0-0.4)
@@ -49,7 +51,7 @@ export interface ColorNode {
   oklchLOffset?: number; // Difference from parent's oklchL
   oklchCOffset?: number; // Difference from parent's oklchC
   oklchHOffset?: number; // Difference from parent's oklchH
-  
+
   // HCT properties (for colorSpace === 'hct')
   hctH?: number; // 0-360 (hue)
   hctC?: number; // 0-100 (chroma, scaled)
@@ -57,7 +59,7 @@ export interface ColorNode {
   hctHOffset?: number; // Difference from parent's hctH
   hctCOffset?: number; // Difference from parent's hctC
   hctTOffset?: number; // Difference from parent's hctT
-  
+
   // Lock states - when locked, property doesn't change with parent
   lockHue?: boolean;
   lockSaturation?: boolean;
@@ -72,11 +74,11 @@ export interface ColorNode {
   lockHctH?: boolean;
   lockHctC?: boolean;
   lockHctT?: boolean;
-  
+
   // Hex lock state - when locked, hex value is manual; when unlocked, inherits from parent
   hexLocked?: boolean;
   hexValue?: string; // Stored hex value for hex nodes (e.g., "#FF5733" or "#FF5733FF")
-  
+
   // Diff states - when enabled (default), maintains offset; when disabled, matches parent exactly
   diffHue?: boolean;
   diffSaturation?: boolean;
@@ -91,10 +93,10 @@ export interface ColorNode {
   diffHctH?: boolean;
   diffHctC?: boolean;
   diffHctT?: boolean;
-  
+
   // UI state
   isExpanded?: boolean; // Whether the node details are expanded or collapsed
-  
+
   // Reference name properties
   referenceName?: string; // The user-visible prefix name (auto-generated from color or manually set)
   referenceNameLocked?: boolean; // True when user has manually renamed (prevents auto-update from color changes and parent propagation)
@@ -125,7 +127,7 @@ export interface ColorNode {
   paletteSaturationEnd?: number; // Ending saturation (0-100) for manual mode
   paletteHueShift?: number; // Hue rotation across scale (-30 to 30)
   paletteExpandedSections?: Record<string, boolean>; // Accordion expand/collapse state per section
-  
+
   // Spacing node properties
   isSpacing?: boolean; // Whether this is a spacing value node
   spacingValue?: number; // Numeric spacing value
@@ -160,7 +162,7 @@ export interface DesignToken {
   projectId: string; // Reference to parent project
   pageId: string; // Reference to parent page
   themeId?: string; // DEPRECATED - for backward compatibility only
-  
+
   // Theme-specific values - new architecture where tokens are shared across themes
   themeValues?: {
     [themeId: string]: {
@@ -169,48 +171,48 @@ export interface DesignToken {
       saturation?: number; // 0-100
       lightness?: number; // 0-100
       alpha?: number; // 0-100 (percentage)
-      
+
       // Spacing/Radius/FontSize properties (for numeric values)
       value?: number; // Numeric value
       unit?: 'px' | 'rem' | 'em' | '%'; // Unit for spacing, radius, fontSize
-      
+
       // Font weight (for type === 'fontWeight')
       fontWeight?: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
-      
+
       // Line height (for type === 'lineHeight')
       lineHeight?: number; // Can be unitless or with unit
-      
+
       // Shadow (for type === 'shadow')
       shadowValue?: string; // CSS shadow string
-      
+
       // Opacity (for type === 'opacity')
       opacity?: number; // 0-100
     };
   };
-  
+
   // Legacy properties (for backward compatibility - use themeValues instead)
   // Color-specific properties (only for type === 'color')
   hue?: number; // 0-360
   saturation?: number; // 0-100
   lightness?: number; // 0-100
   alpha?: number; // 0-100 (percentage)
-  
+
   // Spacing/Radius/FontSize properties (for numeric values)
   value?: number; // Numeric value
   unit?: 'px' | 'rem' | 'em' | '%'; // Unit for spacing, radius, fontSize
-  
+
   // Font weight (for type === 'fontWeight')
   fontWeight?: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
-  
+
   // Line height (for type === 'lineHeight')
   lineHeight?: number; // Can be unitless or with unit
-  
+
   // Shadow (for type === 'shadow')
   shadowValue?: string; // CSS shadow string
-  
+
   // Opacity (for type === 'opacity')
   opacity?: number; // 0-100
-  
+
   // Ordering & timestamps
   sortOrder?: number; // Explicit sort position within group (ascending); undefined = legacy createdAt order
   createdAt?: number; // Timestamp for default sorting when sortOrder is absent
@@ -218,10 +220,16 @@ export interface DesignToken {
   // Visibility per theme: false=hidden, true=visible override, undefined=inherit from primary
   themeVisibility?: Record<string, boolean>;
 }
+export interface TokenCollection {
+  id: string;
+  name: string;
+  projectId: string;
+}
 
 export interface TokenGroup {
   id: string;
   name: string;
+  collectionId?: string;
   projectId: string; // Reference to parent project
   pageId: string; // Reference to parent page
   isExpanded: boolean;
