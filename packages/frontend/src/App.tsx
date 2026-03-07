@@ -952,83 +952,6 @@ export default function App() {
   // NOTE: Network error suppression is handled at module level (above)
   // so it's active before React mounts — no useEffect needed.
 
-  // ── Sample mode: Allow viewing backend templates as an interactive exhibition ──
-  const isSampleMode = activeProjectId === 'sample-project';
-  const [sampleTemplates, setSampleTemplates] = useState<any[]>([]);
-  const [activeSampleIdx, setActiveSampleIdx] = useState(0);
-  const [sampleTemplateSearch, setSampleTemplateSearch] = useState('');
-
-  // Fetch templates when entering sample mode
-  useEffect(() => {
-    if (isSampleMode && sampleTemplates.length === 0) {
-      fetch(`${SERVER_BASE}/templates`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.projects && data.projects.length > 0) {
-            setSampleTemplates(data.projects);
-            // Load the first template into the canvas immediately
-            const firstTemplate = data.projects[0];
-            if (firstTemplate) {
-              setAllNodes(firstTemplate.storage_data.nodes || []);
-              setTokens(firstTemplate.storage_data.tokens || []);
-              if (firstTemplate.storage_data.groups) setGroups(firstTemplate.storage_data.groups);
-              if (firstTemplate.storage_data.pages) setPages(firstTemplate.storage_data.pages);
-              if (firstTemplate.storage_data.canvasStates) setCanvasStates(firstTemplate.storage_data.canvasStates);
-              // Force focus
-              const defaultCanvas = firstTemplate.storage_data.canvasStates && Object.keys(firstTemplate.storage_data.canvasStates).length > 0
-                ? Object.values(firstTemplate.storage_data.canvasStates)[0] : { x: 0, y: 0, zoom: 1 };
-              // We'll trust the child component's re-render to catch this or user panning.
-            }
-          }
-        })
-        .catch(err => console.error('Failed to fetch templates:', err));
-    }
-  }, [isSampleMode, sampleTemplates.length]);
-
-  const filteredSampleTemplates = sampleTemplates.filter(t => t.name.toLowerCase().includes(sampleTemplateSearch.toLowerCase()));
-
-  const handleSwitchSampleTemplate = (idx: number) => {
-    const template = sampleTemplates[idx];
-    if (template) {
-      setActiveSampleIdx(idx);
-      setAllNodes(template.storage_data.nodes || []);
-      setTokens(template.storage_data.tokens || []);
-      if (template.storage_data.groups) setGroups(template.storage_data.groups);
-      if (template.storage_data.pages) setPages(template.storage_data.pages);
-      if (template.storage_data.canvasStates) setCanvasStates(template.storage_data.canvasStates);
-    }
-  };
-
-  const handleDuplicateSampleProject = async (type: 'cloud' | 'local') => {
-    const template = sampleTemplates[activeSampleIdx];
-    if (!template) return;
-
-    // We already have duplicateProject which handles taking the current state 
-    // and copying it into a new project id in the projects list.
-    // However, the current duplicateProject takes a specific Project object.
-    // Let's create a faux-project representation of what's on the screen
-    // and pass it to duplicateProject.
-
-    const fauxProject: Project = {
-      id: 'sample-project',
-      name: `${template.name} (Copy)`,
-      updatedAt: Date.now(),
-      createdAt: Date.now(),
-      userId: authSession ? authSession.userId : '',
-      isCloud: type === 'cloud',
-      cloudSyncStatus: type === 'cloud' ? 'dirty' : 'local',
-      isTemplate: false,
-      storageId: ''
-    };
-
-    duplicateProject(fauxProject, type === 'cloud'); // duplicate via type
-    // Navigate away from sample project to the new project will be handled by duplicateProject
-  };
-
-
-
-
-
 
 
 
@@ -1146,6 +1069,88 @@ export default function App() {
   selectedNodeIdRef.current = selectedNodeId;
   selectedNodeIdsRef.current = selectedNodeIds;
   activeThemeIdRef.current = activeThemeId;
+
+  // ── Sample mode: Allow viewing backend templates as an interactive exhibition ──
+  const isSampleMode = activeProjectId === 'sample-project';
+  const [sampleTemplates, setSampleTemplates] = useState<any[]>([]);
+  const [activeSampleIdx, setActiveSampleIdx] = useState(0);
+  const [sampleTemplateSearch, setSampleTemplateSearch] = useState('');
+
+  // Fetch templates when entering sample mode
+  useEffect(() => {
+    if (isSampleMode && sampleTemplates.length === 0) {
+      fetch(`${SERVER_BASE}/templates`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.projects && data.projects.length > 0) {
+            setSampleTemplates(data.projects);
+            // Load the first template into the canvas immediately
+            const firstTemplate = data.projects[0];
+            if (firstTemplate) {
+              setAllNodes((firstTemplate.storage_data.nodes || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
+              setTokens((firstTemplate.storage_data.tokens || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
+              if (firstTemplate.storage_data.groups) {
+                setGroups(firstTemplate.storage_data.groups.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+              }
+              if (firstTemplate.storage_data.pages) {
+                setPages(firstTemplate.storage_data.pages.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+              }
+              if (firstTemplate.storage_data.canvasStates) {
+                // If it's an object (as in previous code), grab its values, otherwise map it directly
+                const csArray = Array.isArray(firstTemplate.storage_data.canvasStates)
+                  ? firstTemplate.storage_data.canvasStates
+                  : Object.values(firstTemplate.storage_data.canvasStates);
+                setCanvasStates(csArray.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+              }
+            }
+          }
+        })
+        .catch(err => console.error('Failed to fetch templates:', err));
+    }
+  }, [isSampleMode, sampleTemplates.length]);
+
+  const filteredSampleTemplates = sampleTemplates.filter(t => t.name.toLowerCase().includes(sampleTemplateSearch.toLowerCase()));
+
+  const handleSwitchSampleTemplate = (idx: number) => {
+    const template = sampleTemplates[idx];
+    if (template) {
+      setActiveSampleIdx(idx);
+      setAllNodes((template.storage_data.nodes || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
+      setTokens((template.storage_data.tokens || []).map((x: any) => ({ ...x, projectId: 'sample-project' })));
+      if (template.storage_data.groups) {
+        setGroups(template.storage_data.groups.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+      }
+      if (template.storage_data.pages) {
+        setPages(template.storage_data.pages.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+      }
+      if (template.storage_data.canvasStates) {
+        const csArray = Array.isArray(template.storage_data.canvasStates)
+          ? template.storage_data.canvasStates
+          : Object.values(template.storage_data.canvasStates);
+        setCanvasStates(csArray.map((x: any) => ({ ...x, projectId: 'sample-project' })));
+      }
+    }
+  };
+
+  const handleDuplicateSampleProject = async (type: 'cloud' | 'local') => {
+    const template = sampleTemplates[activeSampleIdx];
+    if (!template) return;
+
+    const fauxProject: Project = {
+      id: 'sample-project',
+      name: `${template.name} (Copy)`,
+      updatedAt: Date.now(),
+      createdAt: Date.now(),
+      userId: authSession ? authSession.userId : '',
+      isCloud: type === 'cloud',
+      cloudSyncStatus: type === 'cloud' ? 'dirty' : 'local',
+      isTemplate: false,
+      storageId: ''
+    };
+
+    // Pass fauxProject as override so duplicateProject treats it as the source wrapper
+    duplicateProject('sample-project', fauxProject);
+  };
 
   // Project editing state
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
@@ -9956,8 +9961,8 @@ export default function App() {
     setProjects(prev => prev.filter(p => p.id !== projectId));
   }, [projects, activeProjectId]);
 
-  const duplicateProject = useCallback((projectId: string) => {
-    const projectToDuplicate = projects.find(p => p.id === projectId);
+  const duplicateProject = useCallback((projectId: string, overrideProject?: Project) => {
+    const projectToDuplicate = overrideProject || projects.find(p => p.id === projectId);
     if (!projectToDuplicate) return;
 
     const timestamp = Date.now();
