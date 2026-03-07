@@ -49,8 +49,9 @@ interface SyncState {
 }
 
 // ── Constants ──
-const SYNC_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
+const SYNC_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes (safety-net interval)
 const IDLE_SAVE_MS = 30 * 1000; // 30 seconds idle → auto save
+const DEBOUNCE_SAVE_MS = 3_000; // 3 seconds debounce after any markDirty → instant save
 const DIRTY_KEY = '0colors-cloud-dirty-projects';
 const FETCH_TIMEOUT_MS = 20_000; // 20s timeout (edge functions can have cold starts)
 const MAX_RETRIES = 1; // Retry once on network failure
@@ -65,6 +66,9 @@ const state: SyncState = {
   lastSyncAttempt: 0,
   pendingSyncQueue: [],
 };
+
+// ── Debounced instant-save state ──
+let _debounceSaveTimerId: ReturnType<typeof setTimeout> | null = null;
 
 // ── Idle save state ──
 let _idleTimerId: ReturnType<typeof setTimeout> | null = null;
@@ -176,6 +180,11 @@ export function destroyCloudSync() {
     clearInterval(state.intervalId);
     state.intervalId = null;
   }
+  // Clear debounced save timer
+  if (_debounceSaveTimerId) {
+    clearTimeout(_debounceSaveTimerId);
+    _debounceSaveTimerId = null;
+  }
   // Stop idle tracking
   stopIdleTracking();
   if (typeof window !== 'undefined') {
@@ -190,10 +199,26 @@ export function updateAccessToken(token: string | null) {
   state.accessToken = token;
 }
 
-/** Mark a cloud project as dirty (needs sync) */
+/** Mark a cloud project as dirty (needs sync).
+ *  Triggers a debounced auto-flush (3 s) so changes are saved near-instantly
+ *  without hammering the server during rapid edits. */
 export function markDirty(projectId: string) {
   state.dirtyProjectIds.add(projectId);
   saveDirtyState();
+  _scheduleDebouncedFlush();
+}
+
+/** Schedule a debounced flush — resets the timer on every call so rapid
+ *  markDirty() calls collapse into a single sync 3 s after the last one. */
+function _scheduleDebouncedFlush() {
+  if (_debounceSaveTimerId) clearTimeout(_debounceSaveTimerId);
+  _debounceSaveTimerId = setTimeout(() => {
+    _debounceSaveTimerId = null;
+    if (state.dirtyProjectIds.size > 0 && state.accessToken && state.isOnline) {
+      console.log('☁️ Debounced auto-save triggered (3 s after last change)');
+      flushDirtyProjects();
+    }
+  }, DEBOUNCE_SAVE_MS);
 }
 
 /** Remove a project from the dirty set (e.g. after deletion) */
@@ -305,6 +330,49 @@ export async function loadCloudProjects(accessToken: string): Promise<{
     return data.projects || [];
   } catch (e) {
     console.log(`☁️ Load-all error: ${e}`);
+    return [];
+  }
+}
+
+/**
+ * Load public template project snapshots.
+ * These are template projects created by template admins, publicly readable
+ * by all users (no auth required). Falls back to empty array on failure.
+ *
+ * BACKEND ACTION NEEDED: Requires a GET /templates endpoint on Railway that
+ * returns { templates: [{ templateId, snapshot, name, description }] }
+ * reading from the same KV store but filtered to isTemplate projects.
+ */
+export async function loadPublicTemplates(): Promise<{
+  templateId: string;
+  snapshot: ProjectSnapshot | null;
+  name?: string;
+  description?: string;
+}[]> {
+  try {
+    const res = await safeFetch(`${SERVER_BASE}/templates`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${publicAnonKey}`,
+      },
+    });
+
+    if (!res.ok) {
+      // Expected to fail until backend endpoint is deployed
+      console.log(`☁️ Load public templates failed (${res.status}) — using built-in templates`);
+      return [];
+    }
+
+    const data = await res.json();
+    // Backend returns { projectId, name, snapshot } — normalize to { templateId, ... }
+    return (data.templates || []).map((t: any) => ({
+      templateId: t.templateId || t.projectId,
+      snapshot: t.snapshot || null,
+      name: t.name,
+      description: t.description,
+    }));
+  } catch (e) {
+    console.log(`☁️ Load public templates error: ${e} — using built-in templates`);
     return [];
   }
 }
@@ -507,14 +575,14 @@ function handleBeforeUnload() {
   // rely on localStorage dirty state to retry on the next app load.
   try {
     const body = JSON.stringify({ projects: snapshots });
-
+    
     if (body.length < 60000) {
       fetch(`${SERVER_BASE}/sync-batch`, {
         method: 'POST',
         headers: makeHeaders(state.accessToken, true),
         body,
         keepalive: true,
-      }).catch(() => { });
+      }).catch(() => {});
     }
     // For larger payloads, dirty state is persisted in localStorage
     // and will be synced on next app load — no sendBeacon (lacks auth headers).

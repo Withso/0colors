@@ -55,7 +55,7 @@ export function getSupabaseClient(): SupabaseClient {
       auth: {
         autoRefreshToken: false, // We handle refresh manually in App.tsx checkSession + onAuthStateChange
         persistSession: true,
-        detectSessionInUrl: false, // We don't use OAuth redirects; avoids unnecessary URL parsing
+        detectSessionInUrl: true, // Required for email verification & password reset redirect flows
         // Use a stable storage key so double-mount in React Strict Mode
         // doesn't create competing lock scopes.
         storageKey: `sb-${projectId}-auth-token`,

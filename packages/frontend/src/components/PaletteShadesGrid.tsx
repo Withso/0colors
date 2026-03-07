@@ -62,7 +62,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
           }}
           className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
             isLocked
-              ? 'text-[#0070f3] hover:bg-[#0070f3]/10'
+              ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
               : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
           }`}
           title={isLocked ? 'Locked - will not change with parent' : 'Unlocked - will change with parent'}
@@ -80,7 +80,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
             }}
             className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
               isDiffEnabled
-                ? 'text-[#0070f3] hover:bg-[#0070f3]/10'
+                ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
                 : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
             }`}
             title={isDiffEnabled ? 'Diff enabled - maintains offset from parent' : 'Diff disabled - matches parent exactly'}
@@ -477,7 +477,7 @@ export function PaletteShadesGrid({
                   backgroundColor: shadeColor,
                   borderWidth: '2px',
                   borderStyle: 'solid',
-                  borderColor: isSelected ? '#0070f3' : 'transparent',
+                  borderColor: isSelected ? '#6b8598' : 'transparent',
                   filter: isSelected ? 'brightness(1.1)' : 'none',
                 }}
                 tabIndex={0}

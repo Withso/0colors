@@ -291,7 +291,7 @@ function CurveVisualizer({
       <line x1={PAD} y1={PAD + 0.25 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.25 * (H - PAD * 2)} stroke="#111" strokeWidth="0.5" strokeDasharray="1,4" />
       <line x1={PAD} y1={PAD + 0.75 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.75 * (H - PAD * 2)} stroke="#111" strokeWidth="0.5" strokeDasharray="1,4" />
       {/* Curve path */}
-      <path d={pathParts.join(' ')} fill="none" stroke="#0070f3" strokeWidth="1.5" opacity="0.8" />
+      <path d={pathParts.join(' ')} fill="none" stroke="#6b8598" strokeWidth="1.5" opacity="0.8" />
       {/* Shade dots — always draggable */}
       {dots.map((dot, i) => (
         <g key={i}>
@@ -309,7 +309,7 @@ function CurveVisualizer({
             cy={dot.y}
             r={draggingIndex !== null ? 5 : 4}
             fill={dot.color}
-            stroke={draggingIndex === i ? '#0070f3' : '#000'}
+            stroke={draggingIndex === i ? '#6b8598' : '#000'}
             strokeWidth={draggingIndex === i ? 2 : 1}
             style={{ cursor: 'ns-resize' }}
             onMouseDown={(e) => handleDotMouseDown(e, i)}
@@ -407,9 +407,9 @@ function Island({
       className={`rounded-xl overflow-hidden transition-all duration-150 ${className}`}
       style={{
         backgroundColor: '#0e0e0e',
-        border: `1px solid ${isSelected || isMultiSelected ? 'rgba(0, 112, 243, 0.5)' : '#1a1a1a'}`,
+        border: `1px solid ${isSelected || isMultiSelected ? 'rgba(107, 133, 152, 0.5)' : '#1a1a1a'}`,
         boxShadow: isSelected
-          ? '0 0 0 1px rgba(0,112,243,0.3), 0 4px 16px rgba(0,0,0,0.4)'
+          ? '0 0 0 1px rgba(107,133,152,0.3), 0 4px 16px rgba(0,0,0,0.4)'
           : '0 2px 8px rgba(0,0,0,0.3)',
       }}
     >
@@ -805,7 +805,7 @@ export function PaletteNodeCard({
         <div
           className={`absolute top-[10px] -left-[22px] z-10 transition-all cursor-pointer ${
             isNodeHidden
-              ? 'opacity-100 text-[#3B82F6]'
+              ? 'opacity-100 text-[#6b8598]'
               : isHovered
                 ? 'opacity-100 text-[#a1a1a1] hover:text-[#ededed]'
                 : 'opacity-0'
@@ -835,7 +835,7 @@ export function PaletteNodeCard({
               isLinkedToPrimary()
                 ? 'text-yellow-500 fill-yellow-500'
                 : hasColorBeenModified
-                  ? 'text-[#3B82F6] fill-[#3B82F6]'
+                  ? 'text-[#6b8598] fill-[#6b8598]'
                   : 'text-[#555] fill-none'
             }`}
             fill={isLinkedToPrimary() ? 'currentColor' : hasColorBeenModified ? 'currentColor' : 'none'}
@@ -914,7 +914,7 @@ export function PaletteNodeCard({
                 title={node.paletteNameLocked ? 'Unlock name' : 'Lock name'}
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                {node.paletteNameLocked ? <Lock className="w-3 h-3 text-[#0070f3]" /> : <Unlock className="w-3 h-3 text-[#444]" />}
+                {node.paletteNameLocked ? <Lock className="w-3 h-3 text-[#6b8598]" /> : <Unlock className="w-3 h-3 text-[#444]" />}
               </button>
               <ChevronDown className={`w-3.5 h-3.5 text-[#555] transition-transform ${expandedSections.name ? 'rotate-180' : ''}`} />
             </div>
@@ -1252,7 +1252,7 @@ export function PaletteNodeCard({
           style={{ opacity: isSelected ? undefined : 0 }}
         >
           <button
-            className="w-5 h-5 rounded-full bg-[#e5484d] flex items-center justify-center hover:bg-[#f76b6b] transition-colors"
+            className="w-5 h-5 rounded-full bg-[#d47272] flex items-center justify-center hover:bg-[#e09090] transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               onDeleteNode(node.id);

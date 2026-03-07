@@ -1,230 +1,334 @@
-import { useState, useEffect } from 'react';
-import { Search, LayoutGrid, Copy, Sparkles, Clock, ArrowRight } from 'lucide-react';
-import { Button } from './ui/button';
-import { SERVER_BASE } from '../utils/supabase/client';
-import { toast } from 'sonner';
+/**
+ * CommunityPage — Browse all published community projects.
+ *
+ * Two-column grid with thumbnails, titles, descriptions, remix & share buttons.
+ */
 
-interface CommunityProject {
-    projectId: string;
-    slug: string;
-    title: string;
-    description: string;
-    userName: string;
-    publishedAt: string;
-    thumbnailUrl: string;
-    nodeCount: number;
-    tokenCount: number;
-    allowRemix: boolean;
-}
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  ArrowLeft,
+  Globe,
+  Shuffle,
+  Share2,
+  Loader2,
+  Search,
+  Users,
+  Sparkles,
+  ChevronDown,
+  ExternalLink,
+} from 'lucide-react';
+import { toast } from 'sonner@2.0.3';
+import { fetchCommunityProjects, type CommunityProjectMeta } from '../utils/community-api';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+import { copyTextToClipboard } from '../utils/clipboard';
 
 interface CommunityPageProps {
-    onBack: () => void;
-    onSelectProject: (slug: string) => void;
-    onRemixProject: (projectId: string) => void;
-    isAuthenticated: boolean;
-    onSignIn: () => void;
+  onBack: () => void;
+  onOpenProject: (slug: string) => void;
+  onRemixProject: (slug: string) => void;
 }
 
-export function CommunityPage({ onBack, onSelectProject, onRemixProject, isAuthenticated, onSignIn }: CommunityPageProps) {
-    const [projects, setProjects] = useState<CommunityProject[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-
-    useEffect(() => {
-        async function fetchCommunity() {
-            try {
-                const res = await fetch(`${SERVER_BASE}/community`);
-                if (!res.ok) throw new Error('Failed to fetch community projects');
-                const data = await res.json();
-                setProjects(data.projects || []);
-            } catch (err) {
-                toast.error('Could not load community projects');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchCommunity();
-    }, []);
-
-    const filteredProjects = projects.filter(p =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.userName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    return (
-        <div className="h-screen bg-[#0a0a0a] text-white flex flex-col overflow-hidden">
-            {/* Top Header */}
-            <div className="shrink-0 h-16 border-b border-[#1a1a1a] flex items-center justify-between px-8 bg-[#0d0d0d]/80 backdrop-blur-md z-10">
-                <div className="flex items-center gap-6">
-                    <button
-                        onClick={onBack}
-                        className="flex items-center gap-2 text-[#888] hover:text-white transition-colors group"
-                    >
-                        <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
-                        <span className="text-[13px] font-medium">Dashboard</span>
-                    </button>
-                    <div className="h-4 w-px bg-[#222]" />
-                    <h1 className="text-[15px] font-semibold text-[#e5e5e5] flex items-center gap-2">
-                        <LayoutGrid className="w-4 h-4 text-[#4488ff]" />
-                        Community
-                    </h1>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555]" />
-                        <input
-                            type="text"
-                            placeholder="Search projects by title or user..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            className="w-[280px] bg-[#141414] border border-[#222] rounded-full pl-9 pr-4 py-1.5 text-[13px] text-white placeholder-[#444] outline-none focus:border-[#333] transition-colors"
-                        />
-                    </div>
-                    {!isAuthenticated && (
-                        <Button
-                            onClick={onSignIn}
-                            variant="default"
-                            className="bg-[#e5e5e5] text-black hover:bg-white h-8 text-[12px] px-4 rounded-full font-semibold"
-                        >
-                            Sign up to remix
-                        </Button>
-                    )}
-                </div>
-            </div>
-
-            {/* Hero / Banner Area */}
-            <div className="shrink-0 px-8 py-10 bg-gradient-to-b from-[#0d0d0d] to-[#0a0a0a] relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-[600px] h-[300px] bg-[#4488ff]/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
-                <div className="max-w-[1200px] mx-auto relative z-10 text-center sm:text-left">
-                    <h2 className="text-[32px] font-bold text-white tracking-tight mb-3">Explore Design Systems</h2>
-                    <p className="text-[15px] text-[#888] max-w-[600px] leading-relaxed">
-                        Discover, remix, and learn from design token architectures created by the community.
-                        All projects are open for exploration.
-                    </p>
-                </div>
-            </div>
-
-            {/* Main Content Area */}
-            <div className="flex-1 overflow-auto px-8 pb-20">
-                <div className="max-w-[1200px] mx-auto">
-                    {loading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 py-10">
-                            {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="aspect-[1.5/1] bg-[#111] rounded-2xl animate-pulse border border-[#1a1a1a]" />
-                            ))}
-                        </div>
-                    ) : filteredProjects.length === 0 ? (
-                        <div className="py-40 text-center">
-                            <LayoutGrid className="w-12 h-12 text-[#222] mx-auto mb-4" />
-                            <p className="text-[#555] text-[15px]">No projects found matching your search.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 py-6">
-                            {filteredProjects.map((project) => (
-                                <CommunityCard
-                                    key={project.projectId}
-                                    project={project}
-                                    onSelect={() => onSelectProject(project.slug)}
-                                    onRemix={() => onRemixProject(project.projectId)}
-                                    isAuthenticated={isAuthenticated}
-                                    onSignIn={onSignIn}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function CommunityCard({ project, onSelect, onRemix, isAuthenticated, onSignIn }: {
-    project: CommunityProject;
-    onSelect: () => void;
-    onRemix: () => void;
-    isAuthenticated: boolean;
-    onSignIn: () => void;
+function DescriptionPopup({
+  title,
+  description,
+  onClose,
+}: {
+  title: string;
+  description: string;
+  onClose: () => void;
 }) {
-    const [isHovered, setIsHovered] = useState(false);
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
 
-    return (
-        <div
-            className="group relative"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            <div
-                onClick={onSelect}
-                className="aspect-[1.5/1] rounded-2xl bg-[#111] border border-[#1e1e1e] overflow-hidden cursor-pointer relative transition-all duration-300 group-hover:border-[#333] group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] group-hover:-translate-y-1"
-            >
-                {/* Thumbnail or Fallback */}
-                {project.thumbnailUrl ? (
-                    <img
-                        src={project.thumbnailUrl}
-                        alt={project.title}
-                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = ''; // Clear source to show fallback
-                        }}
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#111] to-[#0a0a0a]">
-                        <Sparkles className="w-8 h-8 text-[#222]" />
-                    </div>
-                )}
-
-                {/* Floating Badges */}
-                <div className="absolute top-4 left-4 flex gap-2">
-                    <div className="px-2 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/5 text-[10px] font-medium text-white/80">
-                        {project.tokenCount} tokens
-                    </div>
-                </div>
-
-                {/* Hover Overlay Buttons */}
-                <div className={`absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center gap-3 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-                    <Button
-                        onClick={(e) => { e.stopPropagation(); onSelect(); }}
-                        className="bg-white text-black hover:bg-[#eee] h-8 text-[12px] px-4 rounded-full font-semibold"
-                    >
-                        Explore
-                    </Button>
-                    {project.allowRemix && (
-                        <Button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (isAuthenticated) onRemix();
-                                else onSignIn();
-                            }}
-                            variant="outline"
-                            className="bg-black/60 text-white border-white/20 hover:bg-black/80 h-8 text-[12px] px-4 rounded-full font-semibold backdrop-blur-md"
-                        >
-                            <Copy className="w-3.5 h-3.5 mr-1.5" />
-                            Remix
-                        </Button>
-                    )}
-                </div>
-            </div>
-
-            {/* Info Row */}
-            <div className="mt-4 flex items-start justify-between px-1">
-                <div>
-                    <h3 className="text-[14px] font-semibold text-[#e5e5e5] group-hover:text-white transition-colors truncate max-w-[200px]">
-                        {project.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                        <div className="w-4 h-4 rounded-full bg-gradient-to-br from-[#333] to-[#111] flex items-center justify-center text-[8px] border border-white/5">
-                            {project.userName.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-[11px] text-[#666]">{project.userName}</span>
-                    </div>
-                </div>
-                <div className="text-[11px] text-[#444] flex items-center gap-1.5 mt-0.5">
-                    <Clock className="w-3 h-3" />
-                    {new Date(project.publishedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                </div>
-            </div>
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center"
+      style={{ zIndex: 200000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-[500px] rounded-2xl bg-[#111] border border-[#252525] shadow-2xl p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-[16px] font-semibold text-[#ededed] mb-3">{title}</h3>
+        <p className="text-[13px] text-[#aaa] leading-relaxed whitespace-pre-wrap">{description}</p>
+        <div className="flex justify-end mt-5">
+          <button
+            onClick={onClose}
+            className="h-8 px-4 rounded-lg text-[12px] text-[#888] hover:text-white bg-[#1a1a1a] hover:bg-[#252525] transition-colors cursor-pointer"
+          >
+            Close
+          </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ProjectCard({
+  project,
+  onOpen,
+  onRemix,
+}: {
+  project: CommunityProjectMeta;
+  onOpen: () => void;
+  onRemix: () => void;
+}) {
+  const [showFullDesc, setShowFullDesc] = useState(false);
+  const descTruncated = project.description && project.description.length > 100;
+
+  const handleShare = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const url = `${window.location.origin}/community/${project.slug}`;
+      copyTextToClipboard(url);
+      toast.success('Link copied to clipboard');
+    },
+    [project.slug],
+  );
+
+  return (
+    <>
+      <div className="group rounded-xl bg-[#111] border border-[#1a1a1a] hover:border-[#333] transition-all overflow-hidden">
+        {/* Thumbnail */}
+        <div
+          className="relative w-full aspect-[16/9] bg-[#0a0a0a] cursor-pointer overflow-hidden"
+          onClick={onOpen}
+        >
+          {project.thumbnailUrl ? (
+            <ImageWithFallback
+              src={project.thumbnailUrl}
+              alt={project.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Globe className="h-10 w-10 text-[#222]" />
+            </div>
+          )}
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <ExternalLink className="h-6 w-6 text-white drop-shadow-lg" />
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="px-4 py-3.5">
+          {/* Title */}
+          <h3
+            className="text-[14px] font-semibold text-[#ededed] truncate cursor-pointer hover:text-white transition-colors"
+            onClick={onOpen}
+            title={project.title}
+          >
+            {project.title}
+          </h3>
+
+          {/* Description */}
+          {project.description && (
+            <div className="mt-1.5">
+              <p className="text-[12px] text-[#777] leading-relaxed line-clamp-2">
+                {project.description}
+              </p>
+              {descTruncated && (
+                <button
+                  onClick={() => setShowFullDesc(true)}
+                  className="text-[11px] text-[#555] hover:text-[#6b8598] transition-colors mt-0.5 cursor-pointer"
+                >
+                  Read more
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Author */}
+          <div className="flex items-center gap-1.5 mt-2.5">
+            <div className="w-4 h-4 rounded-full bg-[#252525] flex items-center justify-center">
+              <Users className="h-2.5 w-2.5 text-[#666]" />
+            </div>
+            <span className="text-[11px] text-[#555] truncate">{project.userName}</span>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#1a1a1a]">
+            {project.allowRemix && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemix();
+                }}
+                className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-[#6b8598]/10 border border-[#6b8598]/20 text-[#6b8598] text-[11px] font-medium hover:bg-[#6b8598]/20 transition-colors cursor-pointer"
+              >
+                <Shuffle className="h-3 w-3" />
+                Remix
+              </button>
+            )}
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-[#1a1a1a] border border-[#252525] text-[#888] text-[11px] hover:text-white hover:border-[#333] transition-colors cursor-pointer"
+            >
+              <Share2 className="h-3 w-3" />
+              Share
+            </button>
+            <div className="flex-1" />
+            <span className="text-[10px] text-[#333]">
+              {project.nodeCount} node{project.nodeCount !== 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {showFullDesc && (
+        <DescriptionPopup
+          title={project.title}
+          description={project.description}
+          onClose={() => setShowFullDesc(false)}
+        />
+      )}
+    </>
+  );
+}
+
+export function CommunityPage({ onBack, onOpenProject, onRemixProject }: CommunityPageProps) {
+  const [projects, setProjects] = useState<CommunityProjectMeta[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const data = await fetchCommunityProjects();
+      if (!cancelled) {
+        setProjects(data);
+        setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const filteredProjects = useMemo(() => {
+    if (!search.trim()) return projects;
+    const q = search.toLowerCase();
+    return projects.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.userName.toLowerCase().includes(q),
     );
+  }, [projects, search]);
+
+  return (
+    <div className="h-screen bg-[#0a0a0a] text-white overflow-auto">
+      {/* Hero Banner */}
+      <div className="relative overflow-hidden">
+        {/* Background gradient */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(59,130,246,0.06) 50%, rgba(168,85,247,0.08) 100%)',
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.12) 0%, transparent 60%)',
+          }}
+        />
+
+        <div className="relative max-w-[1100px] mx-auto px-8 pt-8 pb-12">
+          {/* Top nav */}
+          <div className="flex items-center justify-between mb-10">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 h-9 px-4 rounded-lg text-[13px] text-[#888] hover:text-white bg-[#111]/80 border border-[#252525] hover:border-[#333] backdrop-blur-sm transition-all cursor-pointer"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              All Projects
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-[22px] text-[#e5e5e5]">
+                0<span className="text-[#666]">colors</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Hero text */}
+          <div className="text-center max-w-[600px] mx-auto">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-[#6b8598]/10 border border-[#6b8598]/20 flex items-center justify-center">
+                <Globe className="h-5 w-5 text-[#6b8598]" />
+              </div>
+            </div>
+            <h1 className="text-[28px] font-bold text-[#ededed] mb-2">
+              Community
+            </h1>
+            <p className="text-[14px] text-[#666] leading-relaxed">
+              Explore color systems shared by the community. Find inspiration, remix projects, and build on the work of others.
+            </p>
+          </div>
+
+          {/* Search */}
+          <div className="max-w-[400px] mx-auto mt-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#444]" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search projects..."
+                className="w-full h-10 pl-10 pr-4 rounded-xl bg-[#111]/80 border border-[#252525] text-[13px] text-[#ededed] placeholder-[#444] outline-none focus:border-[#6b8598]/30 backdrop-blur-sm transition-colors"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Projects Grid */}
+      <div className="max-w-[1100px] mx-auto px-8 pb-16">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-6 w-6 text-[#555] animate-spin" />
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-16 h-16 rounded-2xl bg-[#111] border border-[#1a1a1a] flex items-center justify-center mb-4">
+              <Sparkles className="h-7 w-7 text-[#222]" />
+            </div>
+            <h3 className="text-[15px] text-[#555] font-medium mb-1">
+              {search ? 'No matching projects' : 'No community projects yet'}
+            </h3>
+            <p className="text-[12px] text-[#333]">
+              {search ? 'Try a different search term' : 'Be the first to publish a project!'}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-[12px] text-[#444]">
+                {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+              {filteredProjects.map((project) => (
+                <ProjectCard
+                  key={project.projectId}
+                  project={project}
+                  onOpen={() => onOpenProject(project.slug)}
+                  onRemix={() => onRemixProject(project.slug)}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }

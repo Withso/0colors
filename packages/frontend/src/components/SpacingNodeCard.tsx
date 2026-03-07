@@ -200,7 +200,7 @@ export function SpacingNodeCard({
       data-node-card
       className={`relative rounded-[19px] transition-all border ${
         isSelected
-          ? 'border-[#0070f3]'
+          ? 'border-[#6b8598]'
           : 'border-[#111111]'
       }`}
       style={{ width: `${node.width || 240}px` }}
@@ -220,7 +220,7 @@ export function SpacingNodeCard({
         <button
           data-button-type="left-connect"
           data-node-id={node.id}
-          className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#555] border-2 border-[#111111] hover:bg-[#0070f3] hover:border-[#1e8aff] transition-colors z-10"
+          className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#555] border-2 border-[#111111] hover:bg-[#6b8598] hover:border-[#8ea3b4] transition-colors z-10"
           onMouseDown={(e) => {
             e.stopPropagation();
             onWireStartDrag(node.id, 'left', e);
@@ -233,7 +233,7 @@ export function SpacingNodeCard({
         <button
           data-button-type="right-connect"
           data-node-id={node.id}
-          className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#555] border-2 border-[#111111] hover:bg-[#0070f3] hover:border-[#1e8aff] transition-colors z-10"
+          className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#555] border-2 border-[#111111] hover:bg-[#6b8598] hover:border-[#8ea3b4] transition-colors z-10"
           onMouseDown={(e) => {
             e.stopPropagation();
             onWireStartDrag(node.id, 'right', e);
@@ -405,7 +405,7 @@ export function SpacingNodeCard({
                                 )}
                                 title={isAssignedToOther && otherNode ? `This variable is already assigned to another node. Reassigning it will remove it from that node. Previous node: ${otherNode.spacingName || `${otherNode.spacingValue}${otherNode.spacingUnit}`}` : undefined}
                               >
-                                <div className={cn("flex items-center gap-2 flex-1 min-w-0 px-[8px] rounded-[10px] py-[2px]", isCurrentlyAssigned ? "bg-[#ffffff]/[0.08]" : isAssignedToOther ? "bg-[#0051a8]" : "")}>
+                                <div className={cn("flex items-center gap-2 flex-1 min-w-0 px-[8px] rounded-[10px] py-[2px]", isCurrentlyAssigned ? "bg-[#ffffff]/[0.08]" : isAssignedToOther ? "bg-[#4a6475]" : "")}>
                                   <div
                                     className="w-3 h-3 rounded-full bg-purple-500 shrink-0"
                                   />
@@ -413,7 +413,7 @@ export function SpacingNodeCard({
                                     <span className={cn("truncate text-[#ededed] group-hover:text-white transition-colors", isCurrentlyAssigned && "text-white font-medium")}>{token.name}</span>
                                   </div>
                                   {isAssignedToOther && (
-                                    <Target className="h-4 w-4 text-[#1e8aff] shrink-0" />
+                                    <Target className="h-4 w-4 text-[#8ea3b4] shrink-0" />
                                   )}
                                 </div>
                               </CommandItem>
@@ -459,7 +459,7 @@ export function SpacingNodeCard({
                                 )}
                                 title={isAssignedToOther && otherNode ? `This variable is already assigned to another node. Reassigning it will remove it from that node. Previous node: ${otherNode.spacingName || `${otherNode.spacingValue}${otherNode.spacingUnit}`}` : undefined}
                               >
-                                <div className={cn("flex items-center gap-2 flex-1 min-w-0 px-[8px] rounded-[10px] py-[2px]", isCurrentlyAssigned ? "bg-[#ffffff]/[0.08]" : isAssignedToOther ? "bg-[#0051a8]" : "")}>
+                                <div className={cn("flex items-center gap-2 flex-1 min-w-0 px-[8px] rounded-[10px] py-[2px]", isCurrentlyAssigned ? "bg-[#ffffff]/[0.08]" : isAssignedToOther ? "bg-[#4a6475]" : "")}>
                                   <div
                                     className="w-3 h-3 rounded-full bg-purple-500 shrink-0"
                                   />
@@ -467,7 +467,7 @@ export function SpacingNodeCard({
                                     <span className={cn("truncate text-[#ededed] group-hover:text-white transition-colors", isCurrentlyAssigned && "text-white font-medium")}>{token.name}</span>
                                   </div>
                                   {isAssignedToOther && (
-                                    <Target className="h-4 w-4 text-[#1e8aff] shrink-0" />
+                                    <Target className="h-4 w-4 text-[#8ea3b4] shrink-0" />
                                   )}
                                 </div>
                               </CommandItem>

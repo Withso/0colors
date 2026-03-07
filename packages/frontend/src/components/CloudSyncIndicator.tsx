@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Cloud, CloudOff, Check, AlertTriangle, WifiOff, Loader2 } from 'lucide-react';
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip@1.1.8";
 
 export type CloudSyncStatus = 'local' | 'idle' | 'dirty' | 'syncing' | 'synced' | 'error' | 'offline';
 
@@ -100,25 +100,25 @@ export function CloudSyncIndicator({
 
     switch (effectiveStatus) {
       case 'syncing':
-        lines.push({ label: 'Status', value: 'Syncing...', color: '#3B82F6' });
+        lines.push({ label: 'Status', value: 'Syncing...', color: '#6b8598' });
         break;
       case 'synced':
-        lines.push({ label: 'Status', value: 'All changes saved', color: '#22C55E' });
+        lines.push({ label: 'Status', value: 'All changes saved', color: '#6aab8a' });
         break;
       case 'error':
-        lines.push({ label: 'Status', value: 'Sync failed', color: '#EF4444' });
+        lines.push({ label: 'Status', value: 'Sync failed', color: '#d47272' });
         if (lastError) {
-          lines.push({ label: 'Error', value: lastError.length > 50 ? lastError.slice(0, 50) + '...' : lastError, color: '#EF4444' });
+          lines.push({ label: 'Error', value: lastError.length > 50 ? lastError.slice(0, 50) + '...' : lastError, color: '#d47272' });
         }
         break;
       case 'dirty':
-        lines.push({ label: 'Status', value: `Unsaved changes${dirtyCount > 1 ? ` (${dirtyCount} projects)` : ''}`, color: '#F59E0B' });
+        lines.push({ label: 'Status', value: `Unsaved changes${dirtyCount > 1 ? ` (${dirtyCount} projects)` : ''}`, color: '#d4aa55' });
         break;
       case 'offline':
-        lines.push({ label: 'Status', value: 'Offline — will sync when online', color: '#F59E0B' });
+        lines.push({ label: 'Status', value: 'Offline — will sync when online', color: '#d4aa55' });
         break;
       default: // idle
-        lines.push({ label: 'Status', value: 'Up to date', color: '#22C55E' });
+        lines.push({ label: 'Status', value: 'Up to date', color: '#6aab8a' });
         break;
     }
 
@@ -142,7 +142,7 @@ export function CloudSyncIndicator({
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
             <div className="absolute -bottom-0.5 -right-0.5">
-              <Loader2 className="h-2.5 w-2.5 text-[#3B82F6] animate-spin" />
+              <Loader2 className="h-2.5 w-2.5 text-[#6b8598] animate-spin" />
             </div>
           </div>
         );
@@ -151,7 +151,7 @@ export function CloudSyncIndicator({
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
             <div className="absolute -bottom-0.5 -right-0.5 bg-[#111111] rounded-full">
-              <Check className="h-2.5 w-2.5 text-[#22C55E]" strokeWidth={3} />
+              <Check className="h-2.5 w-2.5 text-[#6aab8a]" strokeWidth={3} />
             </div>
           </div>
         );
@@ -160,7 +160,7 @@ export function CloudSyncIndicator({
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
             <div className="absolute -bottom-0.5 -right-0.5 bg-[#111111] rounded-full">
-              <AlertTriangle className="h-2.5 w-2.5 text-[#EF4444]" strokeWidth={3} />
+              <AlertTriangle className="h-2.5 w-2.5 text-[#d47272]" strokeWidth={3} />
             </div>
           </div>
         );
@@ -168,7 +168,7 @@ export function CloudSyncIndicator({
         return (
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
-            <div className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#F59E0B]" />
+            <div className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#d4aa55]" />
           </div>
         );
       case 'offline':
@@ -176,7 +176,7 @@ export function CloudSyncIndicator({
           <div className="relative">
             <Cloud className="h-4 w-4 text-[#888]" />
             <div className="absolute -bottom-0.5 -right-0.5 bg-[#111111] rounded-full">
-              <WifiOff className="h-2.5 w-2.5 text-[#F59E0B]" strokeWidth={3} />
+              <WifiOff className="h-2.5 w-2.5 text-[#d4aa55]" strokeWidth={3} />
             </div>
           </div>
         );

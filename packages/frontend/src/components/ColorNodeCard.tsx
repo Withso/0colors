@@ -119,7 +119,7 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
             }}
             className={`w-6 h-6 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] ${
               node[`lock${prop}` as keyof ColorNode] === true
-                ? 'text-[#0070f3]'
+                ? 'text-[#6b8598]'
                 : 'text-[#a1a1a1]'
             }`}
             title={node[`lock${prop}` as keyof ColorNode] === true ? 'Locked' : 'Unlocked'}
@@ -137,7 +137,7 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
             }}
             className="w-6 h-6 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06]"
             style={{
-              color: node[`diff${prop}` as keyof ColorNode] === true ? '#0070f3' : '#a1a1a1'
+              color: node[`diff${prop}` as keyof ColorNode] === true ? '#6b8598' : '#a1a1a1'
             }}
             title={node[`diff${prop}` as keyof ColorNode] === false ? 'Diff disabled - matches parent' : 'Diff enabled - maintains offset'}
           >
@@ -218,9 +218,9 @@ function FxButton({ nodeId, channelKey }: { nodeId: string; channelKey: string }
       onMouseDown={(e) => e.stopPropagation()}
       className="w-7 h-7 rounded-md flex items-center justify-center cursor-pointer transition-colors hover:brightness-110 shrink-0"
       style={{
-        backgroundColor: 'rgba(69,179,107,0.12)',
-        border: '1px solid rgba(69,179,107,0.30)',
-        color: '#45B36B',
+        backgroundColor: 'rgba(106,171,138,0.12)',
+        border: '1px solid rgba(106,171,138,0.30)',
+        color: '#6aab8a',
       }}
       title="Advanced logic active — click to edit"
     >
@@ -279,7 +279,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
           className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
             disabled ? 'cursor-not-allowed text-[#a1a1a1]' :
             isLocked
-              ? 'text-[#0070f3] hover:bg-[#0070f3]/10'
+              ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
               : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
           }`}
           title={disabled ? 'Inherited — unlink to modify' : isLocked ? 'Locked - will not change with parent' : 'Unlocked - will change with parent'}
@@ -300,7 +300,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
             className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
               disabled ? 'cursor-not-allowed text-[#a1a1a1]' :
               isDiffEnabled
-                ? 'text-[#0070f3] hover:bg-[#0070f3]/10'
+                ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
                 : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
             }`}
             title={disabled ? 'Inherited — unlink to modify' : isDiffEnabled ? 'Diff enabled - maintains offset from parent' : 'Diff disabled - matches parent exactly'}
@@ -334,8 +334,8 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
                 className="w-[38px] h-[20px] text-[11px] text-center rounded border outline-none"
                 style={{
                   background: '#1a1a1a',
-                  borderColor: '#0070f3',
-                  color: isDiffEnabled ? '#0070f3' : '#666',
+                  borderColor: '#6b8598',
+                  color: isDiffEnabled ? '#6b8598' : '#666',
                 }}
               />
             ) : (
@@ -350,7 +350,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
                 disabled={disabled}
                 className="h-[20px] min-w-[28px] px-1 text-[11px] rounded transition-colors hover:bg-[#252525]"
                 style={{
-                  color: isDiffEnabled ? '#0070f3' : '#666',
+                  color: isDiffEnabled ? '#6b8598' : '#666',
                 }}
                 title={`Offset from parent: ${formattedDiff}. Click to edit.`}
               >
@@ -574,7 +574,7 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
             onMouseDown={(e) => e.stopPropagation()}
           >
             {node.paletteNameLocked ? (
-              <Lock className="w-3.5 h-3.5 text-[#0070f3]" />
+              <Lock className="w-3.5 h-3.5 text-[#6b8598]" />
             ) : (
               <Unlock className="w-3.5 h-3.5 text-[#a1a1a1]" />
             )}
@@ -2585,9 +2585,9 @@ export function ColorNodeCard({
           style={{
             backgroundColor: hslColor,
             border: isSelected
-              ? '2px solid #0070f3'
+              ? '2px solid #6b8598'
               : isMultiSelected
-              ? '2px solid #52a8ff'
+              ? '2px solid #8ea3b4'
               : '2px solid transparent',
             width: `${nodeWidth}px`,
             height: '44px',
@@ -2733,7 +2733,7 @@ export function ColorNodeCard({
           className="absolute -left-[5px] top-1/2 -translate-y-1/2 z-20"
         >
           <div
-            className="w-[10px] h-[10px] rounded-full bg-[#0070f3] flex items-center justify-center"
+            className="w-[10px] h-[10px] rounded-full bg-[#6b8598] flex items-center justify-center"
             title="Connected to palette"
             data-node-id={node.id}
             data-button-type="left-connect"
@@ -2816,7 +2816,7 @@ export function ColorNodeCard({
       {/* Connection port indicator on right top */}
       {(
         <div
-          className="absolute -right-[5px] top-6 z-10 w-[10px] h-[10px] rounded-full bg-[#0070f3]"
+          className="absolute -right-[5px] top-6 z-10 w-[10px] h-[10px] rounded-full bg-[#6b8598]"
         />
       )}
 
@@ -2840,7 +2840,7 @@ export function ColorNodeCard({
               isLinkedToPrimary() 
                 ? 'text-yellow-500 fill-yellow-500' 
                 : hasColorBeenModified
-                  ? 'text-[#3B82F6] fill-[#3B82F6]'
+                  ? 'text-[#6b8598] fill-[#6b8598]'
                   : 'text-[#555] fill-none'
             }`} 
           />
@@ -2864,7 +2864,7 @@ export function ColorNodeCard({
       className="overflow-visible cursor-default relative rounded-[20px]"
       style={{ 
         backgroundColor: '#0e0e0e',
-        border: isSelected ? '1px solid #0070f3' : isMultiSelected ? '1px solid #52a8ff' : '1px solid transparent',
+        border: isSelected ? '1px solid #6b8598' : isMultiSelected ? '1px solid #8ea3b4' : '1px solid transparent',
         width: `${nodeWidth}px`,
         maxWidth: `${nodeWidth}px`,
         minWidth: `${nodeWidth}px`
@@ -2944,7 +2944,7 @@ export function ColorNodeCard({
           <div
             className={`absolute top-2 -left-[22px] transition-all cursor-pointer ${
               isNodeHidden
-                ? 'opacity-100 text-[#3B82F6]'
+                ? 'opacity-100 text-[#6b8598]'
                 : isHovered
                   ? 'opacity-100 text-[#a1a1a1] hover:text-[#ededed]'
                   : 'opacity-0'
@@ -3635,7 +3635,7 @@ export function ColorNodeCard({
                       }`
                     : `p-1 rounded transition-colors ${
                         node.hexLocked
-                          ? 'text-[#0070f3] hover:bg-[#0070f3]/10'
+                          ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
                           : 'text-[#a1a1a1] hover:text-[#888888] hover:bg-[#1a1a1a]'
                       }`
                 }
@@ -4044,8 +4044,8 @@ export function ColorNodeCard({
               <Crown
                 className={`h-3 w-3 shrink-0 transition-all ${
                   hasAnyTokenChanges
-                    ? 'text-[#3B82F6] fill-[#3B82F6]'
-                    : 'text-[#EFB100] fill-[#EFB100]'
+                    ? 'text-[#6b8598] fill-[#6b8598]'
+                    : 'text-[#d4aa55] fill-[#d4aa55]'
                 }`}
               />
               <Switch
@@ -4089,9 +4089,10 @@ export function ColorNodeCard({
                   <Tag className="w-3 h-3 text-[#a1a1a1] shrink-0" />
                   <span className="truncate text-xs min-w-0">{assignedToken.name}</span>
                   {isAutoAssigned && (
-                    <Zap className="w-3 h-3 text-[#0070f3] shrink-0 fill-current ml-auto" />
+                    <Zap className="w-3 h-3 text-[#6b8598] shrink-0 fill-current ml-auto" />
                   )}
                 </div>
+                {!readOnly && (
                 <Tip label={isAutoAssigned ? "Delete Auto-assigned Token" : "Remove Token"} side="top">
                 <button
                   onClick={(e) => {
@@ -4105,12 +4106,14 @@ export function ColorNodeCard({
                   <Trash2 className="h-4 w-4 text-[#a1a1a1] hover:text-[#ededed]" />
                 </button>
                 </Tip>
+                )}
               </div>
             );
           });
           })()}
           
-          {/* Add new token button */}
+          {/* Add new token button — hidden in readOnly mode */}
+          {!readOnly && (
           <div className="flex items-center gap-2">
             <Popover open={tokenComboOpenIndex === -1} onOpenChange={(open) => setTokenComboOpenIndex(open ? -1 : null)}>
               <PopoverTrigger asChild>
@@ -4206,6 +4209,7 @@ export function ColorNodeCard({
                               const hexValue1 = _isEmpty1 ? '' : hslToHex(_h1, _s1, _l1);
                               const assignedNode = nodes.find(n => !n.isTokenNode && !n.isSpacing && !n.isPalette && getNodeTokenIds(n).includes(token.id) && n.id !== node.id && n.pageId === node.pageId);
                               const isAlreadyAssigned = !!assignedNode;
+                              
                               const isCurrentlyAssigned = getNodeTokenIds(node).includes(token.id);
                               const isAssignedToAnyNode = isCurrentlyAssigned || isAlreadyAssigned || nodes.some(n => !n.isTokenNode && !n.isSpacing && !n.isPalette && getNodeTokenIds(n).includes(token.id));
                               
@@ -4259,8 +4263,8 @@ export function ColorNodeCard({
                                             ? cn(
                                                 "ring-1",
                                                 isReassignPopoverOpen
-                                                  ? "bg-[#0070f3]/[0.22] ring-[#0070f3]/35"
-                                                  : "bg-[#0070f3]/[0.12] ring-[#0070f3]/20 hover:bg-[#0070f3]/[0.20] hover:ring-[#0070f3]/30"
+                                                  ? "bg-[#6b8598]/[0.22] ring-[#6b8598]/35"
+                                                  : "bg-[#6b8598]/[0.12] ring-[#6b8598]/20 hover:bg-[#6b8598]/[0.20] hover:ring-[#6b8598]/30"
                                               )
                                             : "hover:bg-[#ffffff]/[0.05]"
                                       )}>
@@ -4296,7 +4300,7 @@ export function ColorNodeCard({
                                         onPointerDown={(e) => e.stopPropagation()}
                                         className="absolute right-[14px] top-1/2 -translate-y-1/2 z-10 p-0.5 hover:bg-[#ffffff]/[0.1] rounded transition-colors cursor-pointer"
                                       >
-                                        <Target className="h-3.5 w-3.5 text-[#0070f3]" />
+                                        <Target className="h-3.5 w-3.5 text-[#6b8598]" />
                                       </button>
                                     </Tip>
                                   )}
@@ -4335,7 +4339,7 @@ export function ColorNodeCard({
                                             }}
                                             className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-[#ededed] hover:bg-[#ffffff]/[0.06] rounded-md transition-colors cursor-pointer"
                                           >
-                                            <Link2 className="h-4 w-4 text-[#0070f3] shrink-0" />
+                                            <Link2 className="h-4 w-4 text-[#6b8598] shrink-0" />
                                             <span>Reassign to this node</span>
                                           </button>
                                         </div>
@@ -4444,8 +4448,8 @@ export function ColorNodeCard({
                                             ? cn(
                                                 "ring-1",
                                                 isReassignPopoverOpen
-                                                  ? "bg-[#0070f3]/[0.22] ring-[#0070f3]/35"
-                                                  : "bg-[#0070f3]/[0.12] ring-[#0070f3]/20 hover:bg-[#0070f3]/[0.20] hover:ring-[#0070f3]/30"
+                                                  ? "bg-[#6b8598]/[0.22] ring-[#6b8598]/35"
+                                                  : "bg-[#6b8598]/[0.12] ring-[#6b8598]/20 hover:bg-[#6b8598]/[0.20] hover:ring-[#6b8598]/30"
                                               )
                                             : "hover:bg-[#ffffff]/[0.05]"
                                       )}>
@@ -4481,7 +4485,7 @@ export function ColorNodeCard({
                                         onPointerDown={(e) => e.stopPropagation()}
                                         className="absolute right-[14px] top-1/2 -translate-y-1/2 z-10 p-0.5 hover:bg-[#ffffff]/[0.1] rounded transition-colors cursor-pointer"
                                       >
-                                        <Target className="h-3.5 w-3.5 text-[#0070f3]" />
+                                        <Target className="h-3.5 w-3.5 text-[#6b8598]" />
                                       </button>
                                     </Tip>
                                   )}
@@ -4520,7 +4524,7 @@ export function ColorNodeCard({
                                             }}
                                             className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-[#ededed] hover:bg-[#ffffff]/[0.06] rounded-md transition-colors cursor-pointer"
                                           >
-                                            <Link2 className="h-4 w-4 text-[#0070f3] shrink-0" />
+                                            <Link2 className="h-4 w-4 text-[#6b8598] shrink-0" />
                                             <span>Reassign to this node</span>
                                           </button>
                                         </div>
@@ -4546,6 +4550,7 @@ export function ColorNodeCard({
                 </PopoverContent>
               </Popover>
             </div>
+          )}
         </div>
         )}
       </div>
@@ -4597,9 +4602,9 @@ export function ColorNodeCard({
                     key={chKey}
                     className="text-[9px] font-mono w-[16px] h-[16px] flex items-center justify-center rounded select-none"
                     style={{
-                      color: '#45B36B',
-                      backgroundColor: 'rgba(69,179,107,0.12)',
-                      border: '1px solid rgba(69,179,107,0.25)',
+                      color: '#6aab8a',
+                      backgroundColor: 'rgba(106,171,138,0.12)',
+                      border: '1px solid rgba(106,171,138,0.25)',
                     }}
                   >
                     {label}
@@ -4629,7 +4634,7 @@ export function ColorNodeCard({
       <AlertDialogContent className="bg-[#111111] border-[#222] max-w-[400px]">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-[#ededed] flex items-center gap-2">
-            <Zap size={14} className="text-[#0070f3]" />
+            <Zap size={14} className="text-[#6b8598]" />
             Delete auto-assigned token?
           </AlertDialogTitle>
           <AlertDialogDescription asChild>

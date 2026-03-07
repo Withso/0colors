@@ -18,14 +18,14 @@ const SECTIONS = [
 
 // ── Pill colors matching the expression editor ──────────────────
 const PILL = {
-  keyword: '#E93D82',
-  fn: '#45B36B',
-  op: '#FF8B3E',
-  ref: '#52A8FF',
+  keyword: '#C4A3AB',
+  fn: '#9FB295',
+  op: '#CFA08A',
+  ref: '#9AAFBA',
   lit: '#A1A1A1',
-  bool: '#9D5BD2',
-  prop: '#E5C07B',
-  local: '#FF6347',
+  bool: '#B3979C',
+  prop: '#9AAFBA',
+  local: '#B5AB8E',
 };
 
 // ── Styled code inline ──────────────────────────────────────────
@@ -363,7 +363,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
                 name="locked"
                 syntax="locked"
                 desc="Keep the channel's current base value unchanged"
-                color="#D4915E"
+                color="#d4aa55"
                 useCases={[
                   { label: 'Preserve hue while other channels change', code: 'locked' },
                   { label: 'Conditional lock', code: 'if @Self.S < 5 then locked else @Self.H + 30' },

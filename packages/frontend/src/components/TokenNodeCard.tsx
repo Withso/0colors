@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command';
 import { cn } from './ui/utils';
 import { Tip } from './Tip';
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip@1.1.8";
 import { hslToRgb, rgbToHex, hslToOklch } from '../utils/color-conversions';
 import { rgbToHct } from '../utils/hct-utils';
 
@@ -747,7 +747,7 @@ export function TokenNodeCard({
                 }}
                 className="w-full text-left px-2 py-1 text-sm hover:bg-[#252525] rounded flex items-center gap-2 text-[#ededed]"
               >
-                <Tag className="w-3 h-3 text-[#0070f3]" />
+                <Tag className="w-3 h-3 text-[#6b8598]" />
                 {parent.referenceName || 'Token'}
               </button>
             ))}
@@ -796,14 +796,14 @@ export function TokenNodeCard({
 
       {/* Connection port indicator on right top */}
       <div
-        className="absolute -right-[5px] top-6 z-10 w-[10px] h-[10px] rounded-full bg-[#0070f3]"
+        className="absolute -right-[5px] top-6 z-10 w-[10px] h-[10px] rounded-full bg-[#6b8598]"
       />
 
       <Card
         className="overflow-visible cursor-default relative rounded-[20px] gap-0"
         style={{
           backgroundColor: '#0e0e0e',
-          border: isSelected ? '1px solid #0070f3' : isMultiSelected ? '1px solid #52a8ff' : '1px solid transparent',
+          border: isSelected ? '1px solid #6b8598' : isMultiSelected ? '1px solid #8ea3b4' : '1px solid transparent',
           width: `${nodeWidth}px`,
           maxWidth: `${nodeWidth}px`,
           minWidth: `${nodeWidth}px`,
@@ -850,7 +850,7 @@ export function TokenNodeCard({
             <div
               className={`absolute top-2 -left-[22px] transition-all cursor-pointer ${
                 isNodeHidden
-                  ? 'opacity-100 text-[#3B82F6]'
+                  ? 'opacity-100 text-[#6b8598]'
                   : isHovered
                     ? 'opacity-100 text-[#a1a1a1] hover:text-[#ededed]'
                     : 'opacity-0'
@@ -889,7 +889,7 @@ export function TokenNodeCard({
                   }
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="bg-transparent text-center text-[#ededed] text-sm rounded-lg px-3 py-1.5 outline-none w-full max-w-[180px] border-none focus:bg-[#1a1a1a] transition-colors selection:bg-[#0070f3]/30"
+                className="bg-transparent text-center text-[#ededed] text-sm rounded-lg px-3 py-1.5 outline-none w-full max-w-[180px] border-none focus:bg-[#1a1a1a] transition-colors selection:bg-[#6b8598]/30"
                 maxLength={50}
               />
             ) : (
@@ -927,8 +927,8 @@ export function TokenNodeCard({
               <Crown
                 className={`h-3 w-3 shrink-0 transition-all ${
                   hasAnyTokenChanges
-                    ? 'text-[#3B82F6] fill-[#3B82F6]'
-                    : 'text-[#EFB100] fill-[#EFB100]'
+                    ? 'text-[#6b8598] fill-[#6b8598]'
+                    : 'text-[#d4aa55] fill-[#d4aa55]'
                 }`}
               />
               <Switch
@@ -1304,7 +1304,7 @@ export function TokenNodeCard({
                               )}
                               <span className="truncate flex-1">{token.name}</span>
                               {isCurrentValue && (
-                                <Check className="h-3 w-3 text-[#0070f3] shrink-0" />
+                                <Check className="h-3 w-3 text-[#6b8598] shrink-0" />
                               )}
                               {isUsedElsewhere && (
                                 <div className="w-5 shrink-0" />
@@ -1341,7 +1341,7 @@ export function TokenNodeCard({
                                       "min-w-[20px] h-[20px] rounded-full flex items-center justify-center",
                                       "text-[10px] tabular-nums transition-colors cursor-pointer",
                                       isUsagePopoverOpen
-                                        ? "bg-[#0070f3]/25 text-[#5ea3f8]"
+                                        ? "bg-[#6b8598]/25 text-[#8ea3b4]"
                                         : "bg-[#ffffff]/[0.06] text-[#777] hover:bg-[#ffffff]/[0.12] hover:text-[#aaa]"
                                     )}
                                     onPointerDown={(e) => e.stopPropagation()}
@@ -1624,7 +1624,7 @@ export function TokenNodeCard({
                 <span
                   className="text-[9px] tracking-wide uppercase px-1.5 h-[16px] flex items-center justify-center rounded select-none"
                   style={{
-                    color: '#E5A336',
+                    color: '#b29256',
                     backgroundColor: 'rgba(229,163,54,0.12)',
                     border: '1px solid rgba(229,163,54,0.25)',
                   }}
@@ -1646,9 +1646,9 @@ export function TokenNodeCard({
                         key={chKey}
                         className="text-[9px] font-mono w-[16px] h-[16px] flex items-center justify-center rounded select-none"
                         style={{
-                          color: '#45B36B',
-                          backgroundColor: 'rgba(69,179,107,0.12)',
-                          border: '1px solid rgba(69,179,107,0.25)',
+                          color: '#6aab8a',
+                          backgroundColor: 'rgba(106,171,138,0.12)',
+                          border: '1px solid rgba(106,171,138,0.25)',
                         }}
                       >
                         {label}

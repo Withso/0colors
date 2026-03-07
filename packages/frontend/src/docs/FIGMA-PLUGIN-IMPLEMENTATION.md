@@ -45,7 +45,7 @@ The plugin never imports `@supabase/supabase-js`. All communication is `fetch()`
 ## Server Constants
 
 ```typescript
-const SERVER_BASE = "https://qvayepdjxvkdeiczjzfj.supabase.co/functions/v1/make-server-c36383cd";
+const SERVER_BASE = "https://api-server-production-0064.up.railway.app/api";
 const PUBLIC_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2YXllcGRqeHZrZGVpY3pqemZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMTMxNTUsImV4cCI6MjA4NzU4OTE1NX0.3mAW-M5p2GxU0wHO6PYQS-ihlaJYdhWOzWL0WtiCFaY";
 ```
 
@@ -691,7 +691,7 @@ parent.postMessage({ pluginMessage: { type: 'sync-tokens', themes } }, '*');
 ## Quick Reference: Complete Auth + Fetch Example
 
 ```typescript
-const SERVER_BASE = "https://qvayepdjxvkdeiczjzfj.supabase.co/functions/v1/make-server-c36383cd";
+const SERVER_BASE = "https://api-server-production-0064.up.railway.app/api";
 const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2YXllcGRqeHZrZGVpY3pqemZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMTMxNTUsImV4cCI6MjA4NzU4OTE1NX0.3mAW-M5p2GxU0wHO6PYQS-ihlaJYdhWOzWL0WtiCFaY";
 const AUTH_URL = "https://qvayepdjxvkdeiczjzfj.supabase.co/auth/v1";
 

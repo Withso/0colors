@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, Cloud, HardDrive, LogOut, LayoutTemplate, RefreshCw, Sparkles, Lock } from 'lucide-react';
+import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, Cloud, HardDrive, LogOut, LayoutTemplate, RefreshCw, Sparkles, Eye, Lock, LogIn, Globe } from 'lucide-react';
+import { Button } from './ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,14 +11,54 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog';
-import {
-  ColorNode,
-  DesignToken,
-  TokenProject as Project,
-  TokenGroup,
-  TokenCollection
-} from './types';
-import { Button } from './ui/button';
+
+interface ColorNode {
+  id: string;
+  projectId: string;
+  hue: number;
+  saturation: number;
+  lightness: number;
+  alpha: number;
+  position: { x: number; y: number };
+  parentId: string | null;
+  colorSpace: 'hsl' | 'rgb' | 'oklch';
+  red?: number;
+  green?: number;
+  blue?: number;
+}
+
+interface Project {
+  id: string;
+  name: string;
+  folderColor?: number;
+  isCloud?: boolean;
+  isTemplate?: boolean;
+  isSample?: boolean;
+  lastSyncedAt?: number;
+}
+
+interface DesignToken {
+  id: string;
+  name: string;
+  value: string;
+  nodeId: string | null;
+  collectionId: string;
+  groupId: string | null;
+  projectId: string;
+}
+
+interface TokenCollection {
+  id: string;
+  name: string;
+  projectId: string;
+}
+
+interface TokenGroup {
+  id: string;
+  name: string;
+  collectionId: string;
+  projectId: string;
+}
 
 interface ProjectsPageProps {
   projects: Project[];
@@ -40,7 +81,10 @@ interface ProjectsPageProps {
   cloudSyncStatus?: string;
   onForceCloudRefresh?: () => void;
   onOpenAISettings?: () => void;
-  cloudProjectLimit: number;
+  onSignIn?: () => void;
+  onOpenCommunity?: () => void;
+  /** Set of project IDs that are currently published to community */
+  publishedProjectIds?: Set<string>;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -58,6 +102,12 @@ function getTextColors(hue: number) {
       menuIcon: 'rgba(0,0,0,0.55)',
       menuBorder: 'rgba(0,0,0,0.12)',
       isYellow: true,
+      // Sample project indicator colors — contrast-safe on yellow backgrounds
+      sampleLabel: 'rgba(0,0,0,0.62)',
+      sampleBadgeText: 'rgba(0,0,0,0.6)',
+      sampleBadgeBg: 'rgba(0,0,0,0.08)',
+      sampleBadgeBorder: 'rgba(0,0,0,0.12)',
+      sampleShadow: 'none',
     };
   }
   return {
@@ -68,6 +118,12 @@ function getTextColors(hue: number) {
     menuIcon: 'rgba(255,255,255,0.75)',
     menuBorder: 'rgba(255,255,255,0.15)',
     isYellow: false,
+    // Sample project indicator colors — contrast-safe on dark/saturated backgrounds
+    sampleLabel: 'rgba(255,255,255,0.78)',
+    sampleBadgeText: 'rgba(255,255,255,0.85)',
+    sampleBadgeBg: 'rgba(255,255,255,0.14)',
+    sampleBadgeBorder: 'rgba(255,255,255,0.22)',
+    sampleShadow: '0 1px 3px rgba(0,0,0,0.4)',
   };
 }
 
@@ -80,6 +136,7 @@ function FolderCard({
   tokenCount,
   nodeCount,
   isHighlighted,
+  isPublished,
   onClick,
   onExport,
   onDuplicate,
@@ -90,6 +147,7 @@ function FolderCard({
   tokenCount: number;
   nodeCount: number;
   isHighlighted: boolean;
+  isPublished?: boolean;
   onClick: () => void;
   onExport: (e: React.MouseEvent) => void;
   onDuplicate: (e: React.MouseEvent) => void;
@@ -120,13 +178,13 @@ function FolderCard({
       : 'Empty project';
 
   // ── Derived palette ──
-  const backDark = `hsl(${hue}, 42%, 22%)`;
-  const backMid = `hsl(${hue}, 40%, 18%)`;
-  const frontTop = `hsla(${hue}, 58%, 52%, 0.82)`;
-  const frontBot = `hsla(${hue}, 48%, 38%, 0.88)`;
-  const glassEdge = `hsla(${hue}, 60%, 82%, 0.55)`;
+  const backDark    = `hsl(${hue}, 42%, 22%)`;
+  const backMid     = `hsl(${hue}, 40%, 18%)`;
+  const frontTop    = `hsla(${hue}, 58%, 52%, 0.82)`;
+  const frontBot    = `hsla(${hue}, 48%, 38%, 0.88)`;
+  const glassEdge   = `hsla(${hue}, 60%, 82%, 0.55)`;
   const glassBorder = `hsla(${hue}, 45%, 68%, 0.30)`;
-  const badgeBg = `hsla(${hue}, 30%, 88%, 0.18)`;
+  const badgeBg     = `hsla(${hue}, 30%, 88%, 0.18)`;
   const badgeBorder = `hsla(${hue}, 35%, 76%, 0.22)`;
 
   // Unique gradient id to avoid SVG conflicts when multiple cards render
@@ -152,8 +210,9 @@ function FolderCard({
   return (
     <div
       ref={innerRef}
-      className={`group relative cursor-pointer transition-all duration-300 ease-out select-none ${isHighlighted ? 'scale-[1.04]' : 'hover:scale-[1.03] hover:-translate-y-1'
-        }`}
+      className={`group relative cursor-pointer transition-all duration-300 ease-out select-none ${
+        isHighlighted ? 'scale-[1.04]' : 'hover:scale-[1.03] hover:-translate-y-1'
+      }`}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -265,72 +324,121 @@ function FolderCard({
             {/* Top row */}
             <div className="flex items-start justify-between gap-1.5">
               <div className="flex-1 min-w-0">
-                <h3
-                  className="truncate"
-                  style={{ color: tc.primary, fontSize: '14px', letterSpacing: '-0.01em', textShadow: tc.isYellow ? 'none' : '0 1px 4px rgba(0,0,0,0.35)' }}
-                  title={project.name}
-                >
-                  {project.name}
-                </h3>
-                <p
-                  className="mt-0.5 truncate"
-                  style={{ color: tc.secondary, fontSize: '11px', textShadow: tc.isYellow ? 'none' : '0 1px 2px rgba(0,0,0,0.25)' }}
-                >
-                  {detailText}
-                </p>
+                {/* Sample project label */}
+                {project.isSample && (
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Eye className="w-2.5 h-2.5" style={{ color: tc.sampleLabel, filter: tc.isYellow ? 'none' : 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+                    <span
+                      style={{
+                        fontSize: '9px',
+                        fontWeight: 600,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase' as const,
+                        color: tc.sampleLabel,
+                        textShadow: tc.sampleShadow,
+                      }}
+                    >
+                      Sample Project
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <h3
+                    className="truncate"
+                    style={{ color: tc.primary, fontSize: '14px', letterSpacing: '-0.01em', textShadow: tc.isYellow ? 'none' : '0 1px 4px rgba(0,0,0,0.35)' }}
+                    title={project.name}
+                  >
+                    {project.name}
+                  </h3>
+                  {isPublished && (
+                    <Globe
+                      className="w-3 h-3 shrink-0"
+                      style={{
+                        color: tc.isYellow ? 'rgba(0,0,0,0.5)' : 'rgba(107,133,152,0.85)',
+                        filter: tc.isYellow ? 'none' : 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
+                      }}
+                      title="Published to Community"
+                    />
+                  )}
+                </div>
+                {!project.isSample && (
+                  <p
+                    className="mt-0.5 truncate"
+                    style={{ color: tc.secondary, fontSize: '11px', textShadow: tc.isYellow ? 'none' : '0 1px 2px rgba(0,0,0,0.25)' }}
+                  >
+                    {detailText}
+                  </p>
+                )}
               </div>
 
               {/* ⋯ menu button */}
-              {project.id === 'sample-project' ? (
-                <div
-                  className="flex items-center justify-center rounded-full px-2.5 py-1 gap-1.5 flex-shrink-0"
-                  style={{ background: tc.menuBtn, backdropFilter: 'blur(8px)', border: `1px solid ${tc.menuBorder}` }}
+              <div className="relative flex-shrink-0" ref={menuRef}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+                  className="flex items-center justify-center rounded-full transition-all duration-150"
+                  style={{ width: '26px', height: '26px', background: tc.menuBtn, backdropFilter: 'blur(8px)', border: `1px solid ${tc.menuBorder}` }}
                 >
-                  <Lock className="w-[10px] h-[10px]" style={{ color: tc.menuIcon }} />
-                  <span style={{ color: tc.menuIcon, fontSize: '10px', fontWeight: 500, letterSpacing: '0.02em', textShadow: tc.isYellow ? 'none' : '0 1px 2px rgba(0,0,0,0.25)' }}>Read-Only</span>
-                </div>
-              ) : (
-                <div className="relative flex-shrink-0" ref={menuRef}>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
-                    className="flex items-center justify-center rounded-full transition-all duration-150"
-                    style={{ width: '26px', height: '26px', background: tc.menuBtn, backdropFilter: 'blur(8px)', border: `1px solid ${tc.menuBorder}` }}
-                  >
-                    <MoreHorizontal className="w-[14px] h-[14px]" style={{ color: tc.menuIcon }} />
-                  </button>
+                  <MoreHorizontal className="w-[14px] h-[14px]" style={{ color: tc.menuIcon }} />
+                </button>
 
-                  {menuOpen && (
-                    <div
-                      className="absolute right-0 top-full mt-2 w-[156px] rounded-xl overflow-hidden z-50"
-                      style={{ background: 'rgba(18,18,18,0.96)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 16px 48px rgba(0,0,0,0.75)', backdropFilter: 'blur(20px)' }}
-                    >
+                {menuOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-2 w-[156px] rounded-xl overflow-hidden z-50"
+                    style={{ background: 'rgba(18,18,18,0.96)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 16px 48px rgba(0,0,0,0.75)', backdropFilter: 'blur(20px)' }}
+                  >
+                    {!project.isSample && (
                       <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#bbb] hover:bg-white/[0.06] transition-colors" onClick={(e) => { e.stopPropagation(); onExport(e); setMenuOpen(false); }}>
                         <Download className="w-3.5 h-3.5 opacity-50" /> Export
                       </button>
-                      <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#bbb] hover:bg-white/[0.06] transition-colors" onClick={(e) => { e.stopPropagation(); onDuplicate(e); setMenuOpen(false); }}>
-                        <Copy className="w-3.5 h-3.5 opacity-50" /> Duplicate
-                      </button>
-                      <div className="mx-3 h-px bg-white/[0.06]" />
-                      <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-red-400 hover:bg-red-500/10 transition-colors" onClick={(e) => { e.stopPropagation(); onDelete(e); setMenuOpen(false); }}>
-                        <Trash2 className="w-3.5 h-3.5 opacity-50" /> Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                    <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#bbb] hover:bg-white/[0.06] transition-colors" onClick={(e) => { e.stopPropagation(); onDuplicate(e); setMenuOpen(false); }}>
+                      <Copy className="w-3.5 h-3.5 opacity-50" /> Duplicate
+                    </button>
+                    {!project.isSample && (
+                      <>
+                        <div className="mx-3 h-px bg-white/[0.06]" />
+                        <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-red-400 hover:bg-red-500/10 transition-colors" onClick={(e) => { e.stopPropagation(); onDelete(e); setMenuOpen(false); }}>
+                          <Trash2 className="w-3.5 h-3.5 opacity-50" /> Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Bottom stat badges */}
             <div className="flex items-center gap-1.5 flex-wrap mt-auto">
-              {tokenCount > 0 && (
-                <span className="inline-flex items-center rounded-full" style={{ padding: '2px 8px', fontSize: '10px', color: tc.badge, background: badgeBg, border: `1px solid ${badgeBorder}`, backdropFilter: 'blur(6px)', textShadow: tc.isYellow ? 'none' : '0 1px 1px rgba(0,0,0,0.18)' }}>
-                  {tokenCount} token{tokenCount !== 1 ? 's' : ''}
+              {project.isSample ? (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full"
+                  style={{
+                    padding: '2.5px 9px',
+                    fontSize: '9.5px',
+                    fontWeight: 600,
+                    color: tc.sampleBadgeText,
+                    background: tc.sampleBadgeBg,
+                    border: `1px solid ${tc.sampleBadgeBorder}`,
+                    backdropFilter: 'blur(6px)',
+                    textShadow: tc.sampleShadow,
+                  }}
+                >
+                  <Lock className="w-2.5 h-2.5" />
+                  Read-only
                 </span>
-              )}
-              {nodeCount > 0 && (
-                <span className="inline-flex items-center rounded-full" style={{ padding: '2px 8px', fontSize: '10px', color: tc.badge, background: badgeBg, border: `1px solid ${badgeBorder}`, backdropFilter: 'blur(6px)', textShadow: tc.isYellow ? 'none' : '0 1px 1px rgba(0,0,0,0.18)' }}>
-                  {nodeCount} node{nodeCount !== 1 ? 's' : ''}
-                </span>
+              ) : (
+                <>
+                  {tokenCount > 0 && (
+                    <span className="inline-flex items-center rounded-full" style={{ padding: '2px 8px', fontSize: '10px', color: tc.badge, background: badgeBg, border: `1px solid ${badgeBorder}`, backdropFilter: 'blur(6px)', textShadow: tc.isYellow ? 'none' : '0 1px 1px rgba(0,0,0,0.18)' }}>
+                      {tokenCount} token{tokenCount !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {nodeCount > 0 && (
+                    <span className="inline-flex items-center rounded-full" style={{ padding: '2px 8px', fontSize: '10px', color: tc.badge, background: badgeBg, border: `1px solid ${badgeBorder}`, backdropFilter: 'blur(6px)', textShadow: tc.isYellow ? 'none' : '0 1px 1px rgba(0,0,0,0.18)' }}>
+                      {nodeCount} node{nodeCount !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -365,7 +473,9 @@ export function ProjectsPage({
   cloudSyncStatus,
   onForceCloudRefresh,
   onOpenAISettings,
-  cloudProjectLimit,
+  onSignIn,
+  onOpenCommunity,
+  publishedProjectIds,
 }: ProjectsPageProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
@@ -405,21 +515,14 @@ export function ProjectsPage({
     return map;
   }, [projects, tokens, allNodes]);
 
-  // Split projects into template, cloud, and local
+  // Split projects into template, cloud, sample, and local
   const templateProjects = useMemo(() => projects.filter(p => p.isTemplate), [projects]);
-  // Always include the sample project in the cloud projects array visually as the first element.
-  const cloudProjects = useMemo(() => {
-    const list = projects.filter(p => p.isCloud && !p.isTemplate);
-    const sampleProj = projects.find(p => p.id === 'sample-project');
-    if (sampleProj && !list.some(p => p.id === 'sample-project')) {
-      return [sampleProj, ...list];
-    }
-    return list;
-  }, [projects]);
-  const localProjects = useMemo(() => projects.filter(p => !p.isCloud && !p.isTemplate && p.id !== 'sample-project'), [projects]);
-  // The 'sample-project' doesn't count towards the user's limit since it's just a read-only viewer.
-  const userCloudProjectCount = cloudProjects.filter(p => p.id !== 'sample-project').length;
-  const canCreateCloudProject = isAuthenticated && (isAdmin || userCloudProjectCount < cloudProjectLimit);
+  const cloudProjects = useMemo(() => projects.filter(p => p.isCloud && !p.isTemplate), [projects]);
+  const sampleProjects = useMemo(() => projects.filter(p => p.isSample), [projects]);
+  const localProjects = useMemo(() => projects.filter(p => !p.isCloud && !p.isTemplate && !p.isSample), [projects]);
+  // Combine sample + cloud projects for display (sample first)
+  const cloudSectionProjects = useMemo(() => [...sampleProjects, ...cloudProjects], [sampleProjects, cloudProjects]);
+  const canCreateCloudProject = isAuthenticated && (isAdmin || cloudProjects.length < 20);
 
   const renderProjectGrid = (projectList: typeof projects) => (
     <div
@@ -438,6 +541,7 @@ export function ProjectsPage({
             tokenCount={stats.tokenCount}
             nodeCount={stats.nodeCount}
             isHighlighted={highlightedProjectId === project.id}
+            isPublished={publishedProjectIds?.has(project.id)}
             onClick={() => onSelectProject(project.id)}
             onExport={(e) => { e.stopPropagation(); onExportProject(project.id); }}
             onDuplicate={(e) => { e.stopPropagation(); onDuplicateProject(project.id); }}
@@ -484,6 +588,15 @@ export function ProjectsPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {!isAuthenticated && onSignIn && (
+              <Button
+                onClick={onSignIn}
+                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#6b8598] hover:text-[#8ea3b4] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </Button>
+            )}
             <Button
               onClick={onImportProject}
               className="bg-[#161616] hover:bg-[#1e1e1e] text-[#999] hover:text-white gap-2 border border-[#282828] transition-colors"
@@ -491,10 +604,19 @@ export function ProjectsPage({
               <Upload className="w-4 h-4" />
               Import
             </Button>
+            {onOpenCommunity && (
+              <Button
+                onClick={onOpenCommunity}
+                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#6b8598] hover:text-[#8ea3b4] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors"
+              >
+                <Globe className="w-4 h-4" />
+                Community
+              </Button>
+            )}
             {isAuthenticated && onOpenAISettings && (
               <Button
                 onClick={onOpenAISettings}
-                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#E5A336] hover:text-[#f0b84a] gap-2 border border-[#2a2210] hover:border-[#3d3318] transition-colors"
+                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#b29256] hover:text-[#c7ac78] gap-2 border border-[#2a2210] hover:border-[#3d3318] transition-colors"
               >
                 <Sparkles className="w-4 h-4" />
                 AI Settings
@@ -570,28 +692,23 @@ export function ProjectsPage({
             {/* Section header */}
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2.5">
-                <Cloud className="w-4 h-4 text-[#4488ff]" />
+                <Cloud className="w-4 h-4 text-[#6b8598]" />
                 <h2 className="text-[15px] text-[#ccc] font-medium">Supabase Cloud</h2>
-                {isAuthenticated && !isAdmin && (
-                  <span className="text-[10px] bg-[#1a2a44] text-[#4488ff] px-2 py-0.5 rounded-full font-medium ml-2">
-                    {userCloudProjectCount}/{cloudProjectLimit}
-                  </span>
-                )}
-                {isAdmin && (
-                  <span
-                    className="text-[11px] px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(68, 136, 255, 0.12)', color: '#6699ff', border: '1px solid rgba(68, 136, 255, 0.15)' }}
-                  >
-                    {cloudProjects.length}
-                  </span>
-                )}
+                <span
+                  className="text-[11px] px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(107, 133, 152, 0.12)', color: '#8ea3b4', border: '1px solid rgba(107, 133, 152, 0.15)' }}
+                >
+                  {isAdmin
+                    ? `${cloudProjects.length}`
+                    : `${cloudProjects.length}/20`}
+                </span>
                 {cloudSyncStatus === 'syncing' && (
-                  <span className="text-[11px] text-[#4488ff] animate-pulse">Syncing...</span>
+                  <span className="text-[11px] text-[#6b8598] animate-pulse">Syncing...</span>
                 )}
                 {onForceCloudRefresh && (
                   <button
                     onClick={onForceCloudRefresh}
-                    className="text-[11px] text-[#666] hover:text-[#4488ff] flex items-center gap-1 transition-colors ml-1"
+                    className="text-[11px] text-[#666] hover:text-[#6b8598] flex items-center gap-1 transition-colors ml-1"
                     title="Force re-download all cloud projects from server"
                   >
                     <RefreshCw className="w-3 h-3" />
@@ -602,15 +719,15 @@ export function ProjectsPage({
               {canCreateCloudProject && (
                 <Button
                   onClick={() => onCreateProject('cloud')}
-                  className="bg-[#161616] hover:bg-[#1e1e1e] text-[#6699ff] hover:text-[#88bbff] gap-2 border border-[#1a2a44] hover:border-[#2a3a55] transition-colors text-[13px] h-8 px-3"
+                  className="bg-[#161616] hover:bg-[#1e1e1e] text-[#8ea3b4] hover:text-[#b7c4d1] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors text-[13px] h-8 px-3"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   New cloud project
                 </Button>
               )}
             </div>
-            {/* Cloud projects grid */}
-            {cloudProjects.length === 0 ? (
+            {/* Cloud projects grid — sample project is always first */}
+            {cloudSectionProjects.length === 0 ? (
               <div
                 className="flex items-center justify-center py-10 rounded-xl"
                 style={{ background: '#0a0d14', border: '1px dashed rgba(68, 136, 255, 0.15)' }}
@@ -622,10 +739,30 @@ export function ProjectsPage({
                 </div>
               </div>
             ) : (
-              renderProjectGrid(cloudProjects)
+              renderProjectGrid(cloudSectionProjects)
             )}
 
             {/* Divider */}
+            <div className="mt-10 border-t border-[#1a1a1a]" />
+          </div>
+        )}
+
+        {/* ═══ CLOUD SECTION FOR UNAUTHENTICATED USERS — shows sample project in the grid ═══ */}
+        {!isAuthenticated && sampleProjects.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2.5">
+                <Cloud className="w-4 h-4 text-[#6b8598]" />
+                <h2 className="text-[15px] text-[#ccc] font-medium">Supabase Cloud</h2>
+                <span
+                  className="text-[11px] px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(107, 133, 152, 0.12)', color: '#8ea3b4', border: '1px solid rgba(107, 133, 152, 0.15)' }}
+                >
+                  Sign in to sync
+                </span>
+              </div>
+            </div>
+            {renderProjectGrid(sampleProjects)}
             <div className="mt-10 border-t border-[#1a1a1a]" />
           </div>
         )}

@@ -78,6 +78,8 @@ interface AutoAssignTokenMenuProps {
   // True when THIS node is the one whose menu/popup is active at canvas level.
   // When another node takes over, this goes false and we must close local state.
   isActiveMenu: boolean;
+  // When true, show auto-assign status as read-only (sample/community/read-only projects)
+  readOnly?: boolean;
 }
 
 export function AutoAssignTokenMenu({
@@ -99,6 +101,7 @@ export function AutoAssignTokenMenu({
   onPopupOpenChange,
   onSelectNode,
   isActiveMenu,
+  readOnly = false,
 }: AutoAssignTokenMenuProps) {
   // ─── UI state ────────────────────────────────────────────────
   const [menuOpen, setMenuOpen] = useState(false);
@@ -518,12 +521,25 @@ export function AutoAssignTokenMenu({
   const parentNode = node.parentId ? allNodes.find(n => n.id === node.parentId) : null;
   if (parentNode?.isPalette) return null;
 
+  // In readOnly mode, only show the Zap indicator when auto-assign is enabled
+  if (readOnly && !isEnabled) return null;
+
   // ─── Zap button click handler ────────────────────────────────
   const handleZapClick = (e: React.MouseEvent) => {
     e.stopPropagation();
 
     // Always select the node when interacting with the Zap button
     onSelectNode();
+
+    if (readOnly) {
+      // In readOnly mode, toggle the read-only popup (view settings only)
+      if (popupOpen) {
+        setPopupOpen(false);
+      } else {
+        setPopupOpen(true);
+      }
+      return;
+    }
 
     if (popupOpen) {
       // Already showing popup → close it
@@ -611,7 +627,7 @@ export function AutoAssignTokenMenu({
         <button
           className={`flex items-center justify-center w-6 h-6 rounded transition-colors ${
             isEnabled
-              ? 'bg-[#0070f3]/20 text-[#0070f3] hover:bg-[#0070f3]/30'
+              ? 'bg-[#6b8598]/20 text-[#6b8598] hover:bg-[#6b8598]/30'
               : popupOpen || menuOpen
               ? 'bg-[#333] text-[#ededed]'
               : 'text-[#666] hover:text-[#999] hover:bg-[#252525]'
@@ -636,7 +652,7 @@ export function AutoAssignTokenMenu({
             >
               <div
                 className={`w-8 h-[18px] rounded-full flex items-center transition-colors duration-200 ${
-                  isEnabled ? 'bg-[#0070f3] justify-end' : 'bg-[#444] justify-start'
+                  isEnabled ? 'bg-[#6b8598] justify-end' : 'bg-[#444] justify-start'
                 }`}
               >
                 <div className="w-3.5 h-3.5 rounded-full bg-white mx-[2px] transition-all duration-200" />
@@ -653,7 +669,7 @@ export function AutoAssignTokenMenu({
                   <RefreshCw size={12} className="ml-[6px]" />
                   <span>Re-apply/Refresh</span>
                   {missingTokenCount > 0 && (
-                    <span className="ml-auto bg-[#0070f3]/20 text-[#0070f3] text-[10px] px-1.5 py-0.5 rounded-full">
+                    <span className="ml-auto bg-[#6b8598]/20 text-[#6b8598] text-[10px] px-1.5 py-0.5 rounded-full">
                       {missingTokenCount}
                     </span>
                   )}
@@ -691,9 +707,9 @@ export function AutoAssignTokenMenu({
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-[#2a2a2a]">
               <div className="flex items-center gap-1.5">
-                <Zap size={12} className="text-[#0070f3]" />
+                <Zap size={12} className="text-[#6b8598]" />
                 <span className="text-[12px] text-[#ededed]">
-                  {isEnabled ? 'Edit auto-assign' : 'Auto-assign tokens'}
+                  {readOnly ? 'Auto-assign settings' : isEnabled ? 'Edit auto-assign' : 'Auto-assign tokens'}
                 </span>
               </div>
               <button
@@ -708,6 +724,71 @@ export function AutoAssignTokenMenu({
             </div>
 
             <div className="p-3 space-y-3">
+              {readOnly ? (
+                <>
+                  {/* Read-only view of auto-assign settings */}
+                  <div className="space-y-2.5">
+                    <div className="space-y-0.5">
+                      <div className="text-[11px] text-[#888] uppercase tracking-wider">Prefix</div>
+                      <div className="text-[13px] text-[#ededed] font-mono bg-[#111] border border-[#2a2a2a] rounded-md px-2.5 py-1.5">
+                        {node.autoAssignPrefix || defaultPrefix}
+                      </div>
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="text-[11px] text-[#888] uppercase tracking-wider">Suffix</div>
+                      <div className="text-[13px] text-[#ededed] bg-[#111] border border-[#2a2a2a] rounded-md px-2.5 py-1.5">
+                        {isCustomSuffix(node.autoAssignSuffix || '1-9')
+                          ? `Custom (+${getCustomIncrement(node.autoAssignSuffix!)})`
+                          : node.autoAssignSuffix || '1-9'}
+                      </div>
+                    </div>
+                    {(node.autoAssignSuffix || '1-9') !== 'a-z' && node.autoAssignStartFrom !== undefined && (
+                      <div className="space-y-0.5">
+                        <div className="text-[11px] text-[#888] uppercase tracking-wider">Start from</div>
+                        <div className="text-[13px] text-[#ededed] bg-[#111] border border-[#2a2a2a] rounded-md px-2.5 py-1.5">
+                          {node.autoAssignStartFrom}
+                        </div>
+                      </div>
+                    )}
+                    <div className="space-y-0.5">
+                      <div className="text-[11px] text-[#888] uppercase tracking-wider">Group</div>
+                      <div className="text-[13px] text-[#ededed] bg-[#111] border border-[#2a2a2a] rounded-md px-2.5 py-1.5 truncate">
+                        {node.autoAssignGroupId
+                          ? availableGroups.find(g => g.id === node.autoAssignGroupId)?.name || 'Unknown'
+                          : 'Ungrouped'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Preview */}
+                  <div className="bg-[#111] rounded-md px-2.5 py-2 border border-[#2a2a2a]">
+                    <div className="text-[10px] text-[#666] uppercase tracking-wider mb-1">Preview</div>
+                    <div className="text-[12px] text-[#aaa] font-mono">
+                      {node.autoAssignPrefix || defaultPrefix}-
+                      {getAutoAssignSuffixValue(node.autoAssignSuffix || '1-9', 0, node.autoAssignStartFrom)},{' '}
+                      {node.autoAssignPrefix || defaultPrefix}-
+                      {getAutoAssignSuffixValue(node.autoAssignSuffix || '1-9', 1, node.autoAssignStartFrom)},{' '}
+                      {node.autoAssignPrefix || defaultPrefix}-
+                      {getAutoAssignSuffixValue(node.autoAssignSuffix || '1-9', 2, node.autoAssignStartFrom)}
+                      <span className="text-[#555]">...</span>
+                    </div>
+                  </div>
+
+                  {/* Children count */}
+                  <div className="text-[11px] text-[#666] flex items-center justify-between">
+                    <span>{directChildren.filter(c => !c.autoAssignExcluded).length} children assigned</span>
+                    {excludedChildren.length > 0 && (
+                      <span className="text-[#f5a623]/70">{excludedChildren.length} excluded</span>
+                    )}
+                  </div>
+
+                  {/* Read-only notice */}
+                  <div className="text-[10px] text-[#555] text-center pt-1 border-t border-[#2a2a2a]">
+                    Read-only preview
+                  </div>
+                </>
+              ) : (
+                <>
               {/* Prefix */}
               <div className="space-y-1">
                 <label className="text-[11px] text-[#888] uppercase tracking-wider">
@@ -718,7 +799,7 @@ export function AutoAssignTokenMenu({
                   value={prefix}
                   onChange={(e) => setPrefix(e.target.value)}
                   maxLength={MAX_AUTO_ASSIGN_PREFIX}
-                  className="w-full bg-[#111] border border-[#333] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] outline-none focus:border-[#0070f3] transition-colors"
+                  className="w-full bg-[#111] border border-[#333] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] outline-none focus:border-[#6b8598] transition-colors"
                   placeholder={defaultPrefix}
                 />
               </div>
@@ -745,7 +826,7 @@ export function AutoAssignTokenMenu({
                         <button
                           key={opt}
                           className={`w-full text-left px-2.5 py-1.5 text-[13px] hover:bg-[#252525] transition-colors flex items-center justify-between ${
-                            suffix === opt ? 'text-[#0070f3]' : 'text-[#ededed]'
+                            suffix === opt ? 'text-[#6b8598]' : 'text-[#ededed]'
                           }`}
                           onClick={() => {
                             setSuffix(opt);
@@ -761,7 +842,7 @@ export function AutoAssignTokenMenu({
                       {/* Custom increment option */}
                       <button
                         className={`w-full text-left px-2.5 py-1.5 text-[13px] hover:bg-[#252525] transition-colors flex items-center justify-between ${
-                          isCustomSuffix(suffix) ? 'text-[#0070f3]' : 'text-[#ededed]'
+                          isCustomSuffix(suffix) ? 'text-[#6b8598]' : 'text-[#ededed]'
                         }`}
                         onClick={() => {
                           const inc = parseInt(customIncrementInput, 10);
@@ -810,7 +891,7 @@ export function AutoAssignTokenMenu({
                           (e.target as HTMLInputElement).blur();
                         }
                       }}
-                      className="flex-1 bg-[#111] border border-[#333] rounded-md px-2 py-1 text-[13px] text-[#ededed] outline-none focus:border-[#0070f3] transition-colors text-center w-16"
+                      className="flex-1 bg-[#111] border border-[#333] rounded-md px-2 py-1 text-[13px] text-[#ededed] outline-none focus:border-[#6b8598] transition-colors text-center w-16"
                     />
                   </div>
                 )}
@@ -852,7 +933,7 @@ export function AutoAssignTokenMenu({
                     }
                   }}
                   placeholder={String(getDefaultStartFrom(suffix))}
-                  className="w-full bg-[#111] border border-[#333] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] outline-none focus:border-[#0070f3] transition-colors"
+                  className="w-full bg-[#111] border border-[#333] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] outline-none focus:border-[#6b8598] transition-colors"
                 />
                 <div className="text-[10px] text-[#555]">
                   Leave empty for default ({getDefaultStartFrom(suffix)})
@@ -897,7 +978,7 @@ export function AutoAssignTokenMenu({
                     <div className="absolute left-0 right-0 top-full mt-1 bg-[#111] border border-[#333] rounded-md shadow-xl z-50 py-1 max-h-[140px] overflow-y-auto">
                       <button
                         className={`w-full text-left px-2.5 py-1 text-[13px] hover:bg-[#252525] transition-colors flex items-center justify-between ${
-                          !groupId ? 'text-[#0070f3]' : 'text-[#ededed]'
+                          !groupId ? 'text-[#6b8598]' : 'text-[#ededed]'
                         }`}
                         onClick={() => {
                           setGroupId(null);
@@ -911,7 +992,7 @@ export function AutoAssignTokenMenu({
                         <button
                           key={g.id}
                           className={`w-full text-left px-2.5 py-1 text-[13px] hover:bg-[#252525] transition-colors flex items-center justify-between ${
-                            groupId === g.id ? 'text-[#0070f3]' : 'text-[#ededed]'
+                            groupId === g.id ? 'text-[#6b8598]' : 'text-[#ededed]'
                           }`}
                           onClick={() => {
                             setGroupId(g.id);
@@ -931,7 +1012,7 @@ export function AutoAssignTokenMenu({
                   <div
                     className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                       createNewGroup
-                        ? 'bg-[#0070f3] border-[#0070f3]'
+                        ? 'bg-[#6b8598] border-[#6b8598]'
                         : 'border-[#555] group-hover:border-[#777]'
                     }`}
                     onClick={() => {
@@ -999,12 +1080,12 @@ export function AutoAssignTokenMenu({
 
               {/* Change summary (shown when editing enabled config or re-enabling with changed settings) */}
               {hasChanges && (
-                <div className="bg-[#0070f3]/8 rounded-md px-2.5 py-2 border border-[#0070f3]/20">
-                  <div className="text-[10px] text-[#0070f3]/70 uppercase tracking-wider mb-1">
+                <div className="bg-[#6b8598]/8 rounded-md px-2.5 py-2 border border-[#6b8598]/20">
+                  <div className="text-[10px] text-[#6b8598]/70 uppercase tracking-wider mb-1">
                     Changes to apply
                   </div>
                   {changeSummary.map((change, idx) => (
-                    <div key={idx} className="text-[11px] text-[#0070f3]/90 flex items-start gap-1.5">
+                    <div key={idx} className="text-[11px] text-[#6b8598]/90 flex items-start gap-1.5">
                       <span className="mt-[2px] shrink-0">•</span>
                       <span>{change}</span>
                     </div>
@@ -1017,12 +1098,14 @@ export function AutoAssignTokenMenu({
 
               {/* Apply button */}
               <button
-                className="w-full bg-[#0070f3] hover:bg-[#0060d0] text-white text-[13px] rounded-md py-1.5 transition-colors flex items-center justify-center gap-1.5"
+                className="w-full bg-[#6b8598] hover:bg-[#4f6d80] text-white text-[13px] rounded-md py-1.5 transition-colors flex items-center justify-center gap-1.5"
                 onClick={handleApply}
               >
                 <Zap size={12} />
                 {isEnabled ? 'Update & Apply' : 'Enable & Apply'}
               </button>
+                </>
+              )}
             </div>
           </div>
         )}

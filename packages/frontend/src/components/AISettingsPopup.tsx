@@ -40,9 +40,9 @@ const PROVIDER_INFO: Record<ProviderType, { desc: string; keyHint: string; keyUr
 };
 
 const TIER_COLORS: Record<ContextTier, string> = {
-  small: '#E93D82',
-  medium: '#E5A336',
-  large: '#45B36B',
+  small: '#d47272',
+  medium: '#b29256',
+  large: '#6aab8a',
 };
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ function ToggleSwitch({ enabled, onChange, label }: { enabled: boolean; onChange
       title={label}
     >
       {enabled ? (
-        <ToggleRight size={18} className="text-[#45B36B] group-hover:text-[#5AC97F]" />
+        <ToggleRight size={18} className="text-[#6aab8a] group-hover:text-[#78b896]" />
       ) : (
         <ToggleLeft size={18} className="text-[#333] group-hover:text-[#555]" />
       )}
@@ -251,7 +251,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                     <motion.div
                       layoutId="settings-tab-indicator"
                       className="absolute bottom-0 left-1 right-1 h-[2px] rounded-full"
-                      style={{ background: '#E5A336' }}
+                      style={{ background: '#b29256' }}
                       transition={{ duration: 0.2 }}
                     />
                   )}
@@ -288,7 +288,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           color: isActive ? '#ededed' : '#666',
                         }}
                       >
-                        {isConfigured && <div className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? '#45B36B' : '#333' }} />}
+                        {isConfigured && <div className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? '#6aab8a' : '#333' }} />}
                         {DEFAULT_PROVIDERS[type].label}
                       </button>
                     );
@@ -322,7 +322,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           {DEFAULT_PROVIDERS[type].label}
                         </span>
                         {isActive && (
-                          <span className="text-[9px] text-[#45B36B] bg-[#45B36B]/10 px-1.5 py-0.5 rounded">Active</span>
+                          <span className="text-[9px] text-[#6aab8a] bg-[#6aab8a]/10 px-1.5 py-0.5 rounded">Active</span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
@@ -355,16 +355,16 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                                   onClick={() => applyPreset(preset)}
                                   className="flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all cursor-pointer"
                                   style={{
-                                    background: isSelected ? 'rgba(229,163,54,0.15)' : 'rgba(255,255,255,0.04)',
-                                    border: `1px solid ${isSelected ? 'rgba(229,163,54,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                                    color: isSelected ? '#E5A336' : '#888',
+                                    background: isSelected ? 'rgba(178,146,86,0.15)' : 'rgba(255,255,255,0.04)',
+                                    border: `1px solid ${isSelected ? 'rgba(178,146,86,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                    color: isSelected ? '#b29256' : '#888',
                                   }}
                                 >
                                   <Zap size={8} />
                                   {preset.label}
                                   {preset.hasFreeTier && (
                                     <span className="text-[8px] px-1 py-[1px] rounded"
-                                      style={{ background: 'rgba(69,179,107,0.15)', color: '#45B36B' }}
+                                      style={{ background: 'rgba(106,171,138,0.15)', color: '#6aab8a' }}
                                     >
                                       free
                                     </span>
@@ -374,7 +374,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                             })}
                           </div>
                           {currentPreset?.freeNote && (
-                            <p className="text-[9px] text-[#45B36B]/70 mt-1.5 flex items-start gap-1">
+                            <p className="text-[9px] text-[#6aab8a]/70 mt-1.5 flex items-start gap-1">
                               <Info size={9} className="shrink-0 mt-[1px]" />
                               {currentPreset.freeNote}
                             </p>
@@ -394,7 +394,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                             className="flex-1 h-8 px-2.5 rounded-md text-[11px] text-[#ccc] placeholder:text-[#2a2a2a] outline-none"
                             style={{
                               background: 'rgba(0,0,0,0.3)',
-                              border: `1px solid ${provider.apiKey ? 'rgba(69,179,107,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                              border: `1px solid ${provider.apiKey ? 'rgba(106,171,138,0.2)' : 'rgba(255,255,255,0.06)'}`,
                             }}
                           />
                           <button
@@ -588,7 +588,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           Project Data
                         </span>
                         {tokenBreakdown.projectRawTokens > tokenBreakdown.projectBudget && contextToggles.projectContext && (
-                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(229,163,54,0.15)', color: '#E5A336' }}>
+                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(178,146,86,0.15)', color: '#b29256' }}>
                             truncated
                           </span>
                         )}
@@ -620,7 +620,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           Conversation History
                         </span>
                         {tokenBreakdown.convTokens > tokenBreakdown.convBudget && contextToggles.conversationHistory && (
-                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(229,163,54,0.15)', color: '#E5A336' }}>
+                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(178,146,86,0.15)', color: '#b29256' }}>
                             truncated
                           </span>
                         )}
@@ -724,7 +724,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                       className="h-full"
                       style={{
                         width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`,
-                        background: '#E5A336',
+                        background: '#b29256',
                       }}
                       title={`Project: ${formatTokens(tokenBreakdown.activeProject)}`}
                     />
@@ -735,7 +735,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                       className="h-full"
                       style={{
                         width: `${(tokenBreakdown.activeConv / tokenBreakdown.totalBudget) * 100}%`,
-                        background: '#45B36B',
+                        background: '#6aab8a',
                       }}
                       title={`Conversation: ${formatTokens(tokenBreakdown.activeConv)}`}
                     />
@@ -757,11 +757,11 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                     <span className="text-[8px] text-[#555]">KB</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: '#E5A336' }} />
+                    <div className="w-2 h-2 rounded-sm" style={{ background: '#b29256' }} />
                     <span className="text-[8px] text-[#555]">Project</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: '#45B36B' }} />
+                    <div className="w-2 h-2 rounded-sm" style={{ background: '#6aab8a' }} />
                     <span className="text-[8px] text-[#555]">Conversation</span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -772,8 +772,8 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
               </div>
 
               {/* ── How It Works ── */}
-              <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(229,163,54,0.04)', border: '1px solid rgba(229,163,54,0.08)' }}>
-                <p className="text-[10px] text-[#E5A336]/70 leading-relaxed">
+              <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(178,146,86,0.04)', border: '1px solid rgba(178,146,86,0.08)' }}>
+                <p className="text-[10px] text-[#b29256]/70 leading-relaxed">
                   <strong>How it works:</strong> The Context Tier sets a total token budget. Each source (KB, project, conversation)
                   gets a share of that budget. Toggle sources off to reduce token usage or free up budget for other sources.
                   If the total exceeds what your model can handle, you'll see an error in chat — just switch to a smaller tier or
@@ -795,9 +795,9 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
             onClick={handleSave}
             className="flex items-center gap-1.5 h-8 px-4 rounded-lg text-[12px] cursor-pointer transition-colors"
             style={{
-              background: saved ? '#45B36B' : 'rgba(255,255,255,0.08)',
+              background: saved ? '#6aab8a' : 'rgba(255,255,255,0.08)',
               color: saved ? '#fff' : '#ccc',
-              border: `1px solid ${saved ? '#45B36B' : 'rgba(255,255,255,0.1)'}`,
+              border: `1px solid ${saved ? '#6aab8a' : 'rgba(255,255,255,0.1)'}`,
             }}
           >
             {saved ? <><Check size={12} /> Saved</> : 'Save Settings'}

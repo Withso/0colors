@@ -12,31 +12,31 @@ const COLORS = {
   text: '#abb2bf',
 
   // CSS
-  cssSelector: '#c792ea',      // :root, [data-theme]
-  cssProperty: '#e5c07b',      // --color-xxx
-  cssValue: '#98c379',          // #hex, hsl(), oklch()
-  cssNumber: '#d19a66',         // numeric values
+  cssSelector: '#C4A3AB',      // :root, [data-theme]  — Tourmaline
+  cssProperty: '#B5AB8E',      // --color-xxx — Feldspar
+  cssValue: '#9FB295',          // #hex, hsl(), oklch() — Serpentine
+  cssNumber: '#CFA08A',         // numeric values — Carnelian
   cssPunctuation: '#636d83',    // { } ; :
   cssComment: '#5c6370',        // /* comment */
-  cssUnit: '#56b6c2',           // px, rem, em, %
-  cssFunction: '#61afef',       // hsl(), hsla(), oklch(), rgb()
+  cssUnit: '#9AAFBA',           // px, rem, em, % — Chalcedony
+  cssFunction: '#9AAFBA',       // hsl(), hsla(), oklch(), rgb() — Chalcedony
 
   // JSON
-  jsonKey: '#e06c75',           // "key"
-  jsonString: '#98c379',        // "value"
-  jsonNumber: '#d19a66',        // 123
-  jsonBool: '#d19a66',          // true/false/null
+  jsonKey: '#C4A3AB',           // "key" — Tourmaline
+  jsonString: '#9FB295',        // "value" — Serpentine
+  jsonNumber: '#CFA08A',        // 123 — Carnelian
+  jsonBool: '#CFA08A',          // true/false/null — Carnelian
   jsonBrace: '#abb2bf',         // { } [ ]
   jsonPunctuation: '#636d83',   // : ,
 
   // JS / Tailwind
-  jsKeyword: '#c792ea',        // module, exports, const, theme
-  jsString: '#98c379',         // 'string'
+  jsKeyword: '#C4A3AB',        // module, exports, const, theme — Tourmaline
+  jsString: '#9FB295',         // 'string' — Serpentine
   jsComment: '#5c6370',        // // comment
-  jsProperty: '#e5c07b',       // property names
-  jsNumber: '#d19a66',         // numbers
+  jsProperty: '#B5AB8E',       // property names — Feldspar
+  jsNumber: '#CFA08A',         // numbers — Carnelian
   jsPunctuation: '#636d83',    // { } ; = ,
-  jsFunction: '#61afef',       // extend, colors
+  jsFunction: '#9AAFBA',       // extend, colors — Chalcedony
 };
 
 type Language = 'css' | 'json' | 'javascript';

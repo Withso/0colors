@@ -14,7 +14,7 @@ import { MAX_TOKEN_NAME, MAX_GROUP_NAME, MAX_PAGE_NAME, MAX_THEME_NAME } from '.
 import { isTokenHiddenInTheme } from '../utils/visibility';
 import { evaluateAllTokenAssignments, TokenAssignExportResult } from '../utils/advanced-logic-engine';
 import { tokenColorToNativeCSS } from '../utils/tokenFormatters';
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip@1.1.8";
 import type { ProjectComputedTokens } from '../utils/computed-tokens';
 
 interface TokenTablePopupProps {
@@ -1072,7 +1072,7 @@ export function TokenTablePopup({
       if (state === 'inherited') {
         return <Crown className="h-3 w-3 shrink-0 text-yellow-500 fill-yellow-500" />;
       }
-      return <Crown className="h-3 w-3 shrink-0 text-[#3B82F6] fill-[#3B82F6]" />;
+      return <Crown className="h-3 w-3 shrink-0 text-[#6b8598] fill-[#6b8598]" />;
     }
     const node = tokenNodeMap.get(`${token.id}-${themeId}`);
     if (!node) return null;
@@ -1083,8 +1083,8 @@ export function TokenTablePopup({
       // Inherited from primary: yellow crown
       return <Crown className="h-3 w-3 shrink-0 text-yellow-500 fill-yellow-500" />;
     }
-    // Modified: blue crown
-    return <Crown className="h-3 w-3 shrink-0 text-[#3B82F6] fill-[#3B82F6]" />;
+    // Modified: accent crown
+    return <Crown className="h-3 w-3 shrink-0 text-[#6b8598] fill-[#6b8598]" />;
   };
 
   // ───── Cell click → navigate to node ─────
@@ -1262,7 +1262,7 @@ export function TokenTablePopup({
       const tnCrown = (() => {
         if (tnModState === 'primary') return null;
         if (tnModState === 'inherited') return <Crown className="h-3 w-3 shrink-0 text-yellow-500 fill-yellow-500" />;
-        return <Crown className="h-3 w-3 shrink-0 text-[#3B82F6] fill-[#3B82F6]" />;
+        return <Crown className="h-3 w-3 shrink-0 text-[#6b8598] fill-[#6b8598]" />;
       })();
       const tnDimClass = tnModState === 'inherited' ? 'opacity-50 hover:opacity-100 transition-opacity' : '';
       // Check for computed result from advanced logic — show computed color when available
@@ -1684,7 +1684,7 @@ export function TokenTablePopup({
     <tr
       key={token.id}
       data-table-token-id={token.id}
-      className={`group/row border-b border-[#141414] transition-colors duration-300 ${highlightRowTokenId === token.id ? 'ring-1 ring-inset ring-[#3B82F6]/50 bg-[#3B82F6]/[0.08]' : ''}`}
+      className={`group/row border-b border-[#141414] transition-colors duration-300 ${highlightRowTokenId === token.id ? 'ring-1 ring-inset ring-[#6b8598]/50 bg-[#6b8598]/[0.08]' : ''}`}
     >
       <td className="py-[7px] pr-3 text-[12px] text-[#cdcdcd] whitespace-nowrap hover:bg-[#0f0f0f] transition-colors" style={{ paddingLeft: isGroupChild ? 36 : 16 }}>
         <div className="flex items-center gap-1.5 max-w-[220px]">
@@ -1724,7 +1724,7 @@ export function TokenTablePopup({
             tabIndex={canNavigate ? 0 : undefined}
             className={`py-[7px] px-3 border-l border-[#141414] outline-none transition-colors duration-150 ${
               canNavigate
-                ? 'cursor-pointer hover:bg-[#0d1a2a] active:bg-[#0d2040] focus-visible:ring-1 focus-visible:ring-[#3B82F6]/50 focus-visible:ring-inset'
+                ? 'cursor-pointer hover:bg-[#131c22] active:bg-[#1e2b33] focus-visible:ring-1 focus-visible:ring-[#6b8598]/50 focus-visible:ring-inset'
                 : 'hover:bg-[#0f0f0f]'
             }`}
             style={isFlashing ? { animation: 'cellFlash 600ms ease-out' } : undefined}
@@ -2134,7 +2134,7 @@ export function TokenTablePopup({
               <Tip label="Back to Previous View" side="top">
               <button
                 onClick={handleGoBack}
-                className="flex items-center gap-1 h-[20px] px-2 rounded bg-[#161616] border border-[#222] hover:border-[#3B82F6]/40 hover:bg-[#111827] text-[10px] text-[#555] hover:text-[#93C5FD] transition-colors cursor-pointer"
+                className="flex items-center gap-1 h-[20px] px-2 rounded bg-[#161616] border border-[#222] hover:border-[#6b8598]/40 hover:bg-[#131c22] text-[10px] text-[#555] hover:text-[#8ea3b4] transition-colors cursor-pointer"
               >
                 <Undo2 className="h-2.5 w-2.5" />
                 <span>Back</span>

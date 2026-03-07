@@ -1376,17 +1376,17 @@ export const PROPERTY_OPTIONS: Record<string, { label: string; key: string; shor
 // ── Token Colors (for pill rendering) ───────────────────────────
 
 export const TOKEN_COLORS: Record<ExpressionToken['type'], string> = {
-  keyword: '#E93D82',    // Rose — if/then/else/AND/OR
-  operator: '#FF8B3E',   // Orange — +, -, >, <, etc.
-  reference: '#52A8FF',  // Blue — @Parent, @Node
-  function: '#45B36B',   // Green — clamp, round, etc.
+  keyword: '#C4A3AB',    // Tourmaline — if/then/else/AND/OR
+  operator: '#CFA08A',   // Carnelian — +, -, >, <, etc.
+  reference: '#9AAFBA',  // Chalcedony — @Parent, @Node
+  function: '#9FB295',   // Serpentine — clamp, round, etc.
   literal: '#A1A1A1',    // Gray — numbers
-  boolean: '#9D5BD2',    // Purple — true/false
-  property: '#E5C07B',   // Gold — .H, .S, .L
+  boolean: '#B3979C',    // Rhodolite — true/false
+  property: '#9AAFBA',   // Chalcedony — .H, .S, .L
   paren: '#666666',      // Dim — ( )
   comma: '#666666',      // Dim — ,
-  local: '#FF6347',      // Tomato — $varName
-  tokenRef: '#E5A336',   // Amber-gold — {token-name} design token references
+  local: '#B5AB8E',      // Feldspar — $varName
+  tokenRef: '#CFA08A',   // Carnelian — {token-name} design token references
 };
 
 // ═══════════════════════════════════════════════════════════════════

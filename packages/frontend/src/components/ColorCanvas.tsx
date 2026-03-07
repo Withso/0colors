@@ -10,7 +10,7 @@ import { Zap, GripVertical, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Tip } from './Tip';
 import { motion, AnimatePresence } from 'motion/react';
 import namer from 'color-namer';
-import { toast } from "sonner";
+import { toast } from "sonner@2.0.3";
 import { isNodeNameTaken } from '../utils/nameValidation';
 import { MAX_NODE_NAME } from '../utils/textLimits';
 import { isNodeHiddenInTheme, toggleVisibilityMap } from '../utils/visibility';
@@ -326,9 +326,9 @@ function NodeReferenceLabel({
               </div>
             ) : (
               <span
-                className={`text-[16px] text-[#888] truncate cursor-default transition-colors px-1 py-0.5 rounded block ${isPrimaryTheme ? 'hover:text-[#bbb]' : ''}`}
-                onDoubleClick={isPrimaryTheme ? handleStartEditing : undefined}
-                title={isPrimaryTheme ? `${fullName} (double-click to rename)` : fullName}
+                className={`text-[16px] text-[#888] truncate cursor-default transition-colors px-1 py-0.5 rounded block ${isPrimaryTheme && !readOnly ? 'hover:text-[#bbb]' : ''}`}
+                onDoubleClick={isPrimaryTheme && !readOnly ? handleStartEditing : undefined}
+                title={isPrimaryTheme && !readOnly ? `${fullName} (double-click to rename)` : fullName}
               >
                 {fullName}
               </span>
@@ -338,8 +338,9 @@ function NodeReferenceLabel({
         </div>
       </div>
 
-      {/* Right: Auto-assign token menu — only in primary theme, not for token nodes, hidden in readOnly */}
-      {isPrimaryTheme && !node.isTokenNode && !readOnly && (
+      {/* Right: Auto-assign token menu — only in primary theme, not for token nodes */}
+      {/* In readOnly mode, AutoAssignTokenMenu shows as read-only indicator for enabled nodes */}
+      {isPrimaryTheme && !node.isTokenNode && (
         <AutoAssignTokenMenu
           node={node}
           allNodes={allNodes}
@@ -359,12 +360,13 @@ function NodeReferenceLabel({
           onPopupOpenChange={onPopupOpenChange}
           onSelectNode={onSelectNode}
           isActiveMenu={isActiveMenu}
+          readOnly={readOnly}
         />
       )}
 
       {/* Right: Prefix toggle for non-root token nodes — only in primary theme */}
       {(() => {
-        if (!isPrimaryTheme || !node.isTokenNode || !onTogglePrefix) return null;
+        if (!isPrimaryTheme || readOnly || !node.isTokenNode || !onTogglePrefix) return null;
         const isPrefix = !!node.isTokenPrefix;
         // Can toggle? Must have a token-node parent (i.e. not the root prefix)
         const parentIsToken = node.parentId && allNodes.find(n => n.id === node.parentId)?.isTokenNode;
@@ -374,7 +376,7 @@ function NodeReferenceLabel({
             <button
               className={`shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-md cursor-pointer transition-all border ${
                 isPrefix
-                  ? 'bg-[#0070f3]/10 border-[#0070f3]/30 text-[#4a9eff] hover:bg-[#0070f3]/20 hover:border-[#0070f3]/50'
+                  ? 'bg-[#6b8598]/10 border-[#6b8598]/30 text-[#8ea3b4] hover:bg-[#6b8598]/20 hover:border-[#6b8598]/50'
                   : 'bg-transparent border-[#333] text-[#555] hover:bg-[#1a1a1a] hover:border-[#444] hover:text-[#888]'
               }`}
               onClick={(e) => {
@@ -1667,10 +1669,10 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       return;
     }
 
-    // Block node dragging in readOnly mode
-    if (readOnly) {
-      return;
-    }
+    // In sample/readOnly mode we intentionally allow transient in-memory
+    // repositioning so visitors can explore the canvas layout.  Changes
+    // won't persist (localStorage save is skipped in sample mode).
+    // Wire creation is still blocked separately below.
 
     // Don't start drag from interactive elements (dropdowns, inputs, sliders, etc.)
     const target = e.target as HTMLElement;
@@ -2922,7 +2924,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
             // Check if this wire connects to any selected node (single or multi-selection)
             const isSelectedWire = (selectedNodeId && (conn.parentId === selectedNodeId || conn.childId === selectedNodeId)) ||
                                    (selectedNodeIds.length > 0 && (selectedNodeIds.includes(conn.parentId) || selectedNodeIds.includes(conn.childId)));
-            const wireColor = isSelectedWire ? '#0070f3' : '#444';
+            const wireColor = isSelectedWire ? '#6b8598' : '#444';
 
             const connKey = `${conn.parentId}__${conn.childId}`;
             return (
@@ -2951,7 +2953,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
             const toX = wireMousePosition.x;
             const toY = wireMousePosition.y;
-            const wireColor = wireHoverNodeId ? "#22c55e" : "#525252";
+            const wireColor = wireHoverNodeId ? "#6b8598" : "#525252";
 
             // Helper to compute the "from" position for a given node
             const getFromPosition = (nodeId: string): { x: number; y: number } | null => {
@@ -3017,7 +3019,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                 width={width}
                 height={height}
                 fill="rgba(0, 108, 255, 0.1)"
-                stroke="#0070f3"
+                stroke="#6b8598"
                 strokeWidth="1"
                 strokeDasharray="4,4"
               />
@@ -3374,6 +3376,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                   <div className="relative" style={{ height: 0, overflow: 'visible' }}>
                   <AnimatePresence>
                     {isPrimaryTheme &&
+                     !readOnly &&
                      autoAssignPromptNodeId === node.id &&
                      !node.autoAssignEnabled &&
                      !node.isPalette &&
@@ -3402,7 +3405,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                           />
                         </div>
                         <button
-                          className="group flex items-center gap-2.5 bg-[#1a1a1a]/95 backdrop-blur-sm border border-[#2a2a2a] rounded-lg px-3.5 py-2 shadow-lg shadow-black/30 hover:border-[#0070f3]/40 hover:shadow-[0_0_12px_rgba(0,112,243,0.08)] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                          className="group flex items-center gap-2.5 bg-[#1a1a1a]/95 backdrop-blur-sm border border-[#2a2a2a] rounded-lg px-3.5 py-2 shadow-lg shadow-black/30 hover:border-[#6b8598]/40 hover:shadow-[0_0_12px_rgba(107,133,152,0.08)] transition-all duration-200 cursor-pointer whitespace-nowrap"
                           onClick={() => {
                             // Select the node so the label row stays visible
                             onSelectNode(node.id);
@@ -3412,8 +3415,8 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                             dismissAutoAssignPrompt();
                           }}
                         >
-                          <div className="flex items-center justify-center w-5 h-5 rounded bg-[#0070f3]/15 shrink-0">
-                            <Zap size={11} className="text-[#0070f3]" />
+                          <div className="flex items-center justify-center w-5 h-5 rounded bg-[#6b8598]/15 shrink-0">
+                            <Zap size={11} className="text-[#6b8598]" />
                           </div>
                           <span className="text-[13px] text-[#ccc] group-hover:text-[#ededed] transition-colors">
                             Auto-assign tokens

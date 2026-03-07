@@ -40,7 +40,7 @@
   --muted-foreground: #a1a1a1;
   --accent: #1a1a1a;
   --accent-foreground: #ededed;
-  --destructive: #e5484d;
+  --destructive: #d47272;
   --destructive-foreground: #ffffff;
   --border: #333333;
   --input: #1a1a1a;
@@ -57,7 +57,7 @@
   --radius: 0.5rem;
   --sidebar: #0a0a0a;
   --sidebar-foreground: #ededed;
-  --sidebar-primary: #0070f3;
+  --sidebar-primary: #6b8598;
   --sidebar-primary-foreground: #ededed;
   --sidebar-accent: #1a1a1a;
   --sidebar-accent-foreground: #ededed;
@@ -80,7 +80,7 @@
   --muted-foreground: #a1a1a1;
   --accent: #1a1a1a;
   --accent-foreground: #ededed;
-  --destructive: #e5484d;
+  --destructive: #d47272;
   --destructive-foreground: #ffffff;
   --border: #333333;
   --input: #1a1a1a;
@@ -94,7 +94,7 @@
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: #0a0a0a;
   --sidebar-foreground: #ededed;
-  --sidebar-primary: #0070f3;
+  --sidebar-primary: #6b8598;
   --sidebar-primary-foreground: #ededed;
   --sidebar-accent: #1a1a1a;
   --sidebar-accent-foreground: #ededed;
@@ -218,11 +218,11 @@
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] svg {
-  color: #0070f3 !important;
+  color: #6aab8a !important;
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] svg {
-  color: #f33 !important;
+  color: #d47272 !important;
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="success"],
@@ -252,7 +252,7 @@
   overflow: visible !important;
 }
 
-/* ── Shared diamond shape (both classes) ──────────────────────────── */
+/* ── Shared diamond shape (both classes) ───────────────────��──────── */
 
 /* WebKit / Blink (Chrome, Edge, Safari, Opera) */
 .color-slider::-webkit-slider-thumb,

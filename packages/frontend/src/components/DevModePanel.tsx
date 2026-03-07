@@ -26,9 +26,9 @@ interface DevModePanelProps {
 const BASE_URL = SERVER_BASE;
 
 // Geist-style input component
-function GeistInput({
+function GeistInput({ 
   value, onChange, placeholder, type = 'text', mono = false, disabled = false, className = ''
-}: {
+}: { 
   value: string; onChange: (v: string) => void; placeholder?: string; type?: string; mono?: boolean; disabled?: boolean; className?: string;
 }) {
   return (
@@ -72,11 +72,13 @@ function GeistToggle({ checked, onChange, disabled = false }: {
     <button
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
-      className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${checked ? 'bg-[#ededed]' : 'bg-[#333]'
-        }`}
+      className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+        checked ? 'bg-[#ededed]' : 'bg-[#333]'
+      }`}
     >
-      <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform ${checked ? 'translate-x-4 bg-[#0a0a0a]' : 'translate-x-0 bg-[#666]'
-        }`} />
+      <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform ${
+        checked ? 'translate-x-4 bg-[#0a0a0a]' : 'translate-x-0 bg-[#666]'
+      }`} />
     </button>
   );
 }
@@ -146,9 +148,9 @@ export function DevModePanel({
   // Derived values
   const webhookUrl = `${BASE_URL}/webhook/${activeProjectId}`;
   const pullApiUrl = `${BASE_URL}/tokens/${activeProjectId}`;
-
+  
   // Get selectable nodes for target node dropdown
-  const allSelectableNodes = useMemo(() =>
+  const allSelectableNodes = useMemo(() => 
     nodes.filter(n => n.projectId === activeProjectId && !n.isPalette && !n.isSpacing),
     [nodes, activeProjectId]
   );
@@ -222,8 +224,9 @@ export function DevModePanel({
           <div className="flex px-5 border-b border-[#1a1a1a] shrink-0">
             <button
               onClick={() => setActiveTab('output')}
-              className={`relative px-4 py-2.5 text-[12px] font-medium transition-colors cursor-pointer ${activeTab === 'output' ? 'text-[#ededed]' : 'text-[#555] hover:text-[#888]'
-                }`}
+              className={`relative px-4 py-2.5 text-[12px] font-medium transition-colors cursor-pointer ${
+                activeTab === 'output' ? 'text-[#ededed]' : 'text-[#555] hover:text-[#888]'
+              }`}
             >
               Code Sync
               {activeTab === 'output' && (
@@ -232,8 +235,9 @@ export function DevModePanel({
             </button>
             <button
               onClick={() => setActiveTab('input')}
-              className={`relative px-4 py-2.5 text-[12px] font-medium transition-colors cursor-pointer ${activeTab === 'input' ? 'text-[#ededed]' : 'text-[#555] hover:text-[#888]'
-                }`}
+              className={`relative px-4 py-2.5 text-[12px] font-medium transition-colors cursor-pointer ${
+                activeTab === 'input' ? 'text-[#ededed]' : 'text-[#555] hover:text-[#888]'
+              }`}
             >
               Webhook Input
               {activeTab === 'input' && (
@@ -457,7 +461,7 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
                 <div className="flex-1">
                   <GeistInput
                     value={`${pullApiUrl}/${devConfig.outputFormat}`}
-                    onChange={() => { }}
+                    onChange={() => {}}
                     disabled
                     mono
                   />
@@ -467,8 +471,8 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
             </FieldRow>
             <div className="mt-2 p-2.5 rounded-md bg-[#0a0a0a] border border-[#1a1a1a]">
               <p className="text-[10px] text-[#555] leading-relaxed">
-                <span className="text-[#666] font-medium">Recommended:</span> Use webhook push instead of polling.
-                Pull API is rate-limited and consumes Supabase invocations. For real-time updates,
+                <span className="text-[#666] font-medium">Recommended:</span> Use webhook push instead of polling. 
+                Pull API is rate-limited and consumes Supabase invocations. For real-time updates, 
                 enable webhook output above and receive tokens on your server.
               </p>
             </div>
@@ -514,7 +518,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
             <FieldRow label="Webhook URL">
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <GeistInput value={webhookUrl} onChange={() => { }} disabled mono />
+                  <GeistInput value={webhookUrl} onChange={() => {}} disabled mono />
                 </div>
                 <CopyButton text={webhookUrl} />
               </div>
@@ -525,7 +529,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                 <div className="flex-1">
                   <GeistInput
                     value={showSecret ? devConfig.webhookSecret : '••••••••••••••••••••••••••••••••'}
-                    onChange={() => { }}
+                    onChange={() => {}}
                     disabled
                     mono
                   />
@@ -561,10 +565,11 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                           : [...devConfig.webhookAcceptFormats, fmt];
                         if (formats.length > 0) update({ webhookAcceptFormats: formats });
                       }}
-                      className={`h-6 px-2 rounded text-[10px] font-mono font-medium transition-colors cursor-pointer ${isActive
+                      className={`h-6 px-2 rounded text-[10px] font-mono font-medium transition-colors cursor-pointer ${
+                        isActive
                           ? 'bg-[#252525] text-[#ededed] border border-[#333]'
                           : 'bg-[#0a0a0a] text-[#444] border border-[#1a1a1a] hover:text-[#666] hover:border-[#252525]'
-                        }`}
+                      }`}
                     >
                       {formatLabels[fmt]}
                     </button>
@@ -577,7 +582,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
             <div className="mt-3 p-3 rounded-md bg-[#0a0a0a] border border-[#1a1a1a]">
               <p className="text-[10px] text-[#555] mb-2 font-medium">Example Request</p>
               <pre className="text-[10px] text-[#666] font-mono leading-relaxed whitespace-pre-wrap break-all">
-                {`curl -X POST ${webhookUrl} \\
+{`curl -X POST ${webhookUrl} \\
   -H "Content-Type: application/json" \\
   -H "X-Webhook-Secret: ${showSecret ? devConfig.webhookSecret : '<secret>'}" \\
   -d '{"value": "#FF5500", "format": "hex"}'`}
@@ -599,7 +604,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                           {node.referenceName || `Node ${node.id.slice(0, 6)}`}
                         </span>
                         <div className="flex-1">
-                          <GeistInput value={nodeUrl} onChange={() => { }} disabled mono className="!text-[10px] !h-6" />
+                          <GeistInput value={nodeUrl} onChange={() => {}} disabled mono className="!text-[10px] !h-6" />
                         </div>
                         <CopyButton text={nodeUrl} />
                       </div>
@@ -643,19 +648,21 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
               <div className="flex gap-2 mb-3">
                 <button
                   onClick={() => update({ scheduleSource: 'values' })}
-                  className={`flex-1 h-8 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${devConfig.scheduleSource === 'values'
+                  className={`flex-1 h-8 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
+                    devConfig.scheduleSource === 'values'
                       ? 'bg-[#252525] text-[#ededed] border border-[#333]'
                       : 'bg-[#0a0a0a] text-[#555] border border-[#1a1a1a] hover:border-[#252525]'
-                    }`}
+                  }`}
                 >
                   Value List
                 </button>
                 <button
                   onClick={() => update({ scheduleSource: 'api' })}
-                  className={`flex-1 h-8 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${devConfig.scheduleSource === 'api'
+                  className={`flex-1 h-8 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
+                    devConfig.scheduleSource === 'api'
                       ? 'bg-[#252525] text-[#ededed] border border-[#333]'
                       : 'bg-[#0a0a0a] text-[#555] border border-[#1a1a1a] hover:border-[#252525]'
-                    }`}
+                  }`}
                 >
                   API Endpoint
                 </button>

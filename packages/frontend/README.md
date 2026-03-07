@@ -1,7 +1,7 @@
 
-  # Noddy
+  # 0colors
 
-  This is a code bundle for Noddy. The original project is available at https://www.figma.com/design/WNMAslMD2TbsGl9T06wRzG/Noddy.
+  This is a code bundle for 0colors. The original project is available at https://www.figma.com/design/WNMAslMD2TbsGl9T06wRzG/0colors.
 
   ## Running the code
 
