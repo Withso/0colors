@@ -40,9 +40,9 @@ const PROVIDER_INFO: Record<ProviderType, { desc: string; keyHint: string; keyUr
 };
 
 const TIER_COLORS: Record<ContextTier, string> = {
-  small: '#d47272',
-  medium: '#b29256',
-  large: '#6aab8a',
+  small: '#FF4D6A',
+  medium: '#FD7DEE',
+  large: '#2BBD68',
 };
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ function ToggleSwitch({ enabled, onChange, label }: { enabled: boolean; onChange
       title={label}
     >
       {enabled ? (
-        <ToggleRight size={18} className="text-[#6aab8a] group-hover:text-[#78b896]" />
+        <ToggleRight size={18} className="text-[#2BBD68] group-hover:text-[#5CD88E]" />
       ) : (
         <ToggleLeft size={18} className="text-[#333] group-hover:text-[#555]" />
       )}
@@ -214,7 +214,6 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
           width: 'min(580px, 92vw)',
           maxHeight: 'min(740px, 90vh)',
           background: '#111',
-          border: '1px solid rgba(255,255,255,0.08)',
           boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
         }}
       >
@@ -251,7 +250,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                     <motion.div
                       layoutId="settings-tab-indicator"
                       className="absolute bottom-0 left-1 right-1 h-[2px] rounded-full"
-                      style={{ background: '#b29256' }}
+                      style={{ background: '#FD7DEE' }}
                       transition={{ duration: 0.2 }}
                     />
                   )}
@@ -288,7 +287,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           color: isActive ? '#ededed' : '#666',
                         }}
                       >
-                        {isConfigured && <div className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? '#6aab8a' : '#333' }} />}
+                        {isConfigured && <div className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? '#2BBD68' : '#333' }} />}
                         {DEFAULT_PROVIDERS[type].label}
                       </button>
                     );
@@ -322,7 +321,12 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           {DEFAULT_PROVIDERS[type].label}
                         </span>
                         {isActive && (
-                          <span className="text-[9px] text-[#6aab8a] bg-[#6aab8a]/10 px-1.5 py-0.5 rounded">Active</span>
+                          <span
+                            className="text-[9px] text-[#2BBD68] bg-[#2BBD68]/10 px-1.5 py-0.5 rounded"
+                            style={{ border: 'none' }}
+                          >
+                            Active
+                          </span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
@@ -355,16 +359,16 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                                   onClick={() => applyPreset(preset)}
                                   className="flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all cursor-pointer"
                                   style={{
-                                    background: isSelected ? 'rgba(178,146,86,0.15)' : 'rgba(255,255,255,0.04)',
-                                    border: `1px solid ${isSelected ? 'rgba(178,146,86,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                                    color: isSelected ? '#b29256' : '#888',
+                                    background: isSelected ? 'rgba(253,125,238,0.15)' : 'rgba(255,255,255,0.04)',
+                                    border: `1px solid ${isSelected ? 'rgba(253,125,238,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                    color: isSelected ? '#FD7DEE' : '#888',
                                   }}
                                 >
                                   <Zap size={8} />
                                   {preset.label}
                                   {preset.hasFreeTier && (
                                     <span className="text-[8px] px-1 py-[1px] rounded"
-                                      style={{ background: 'rgba(106,171,138,0.15)', color: '#6aab8a' }}
+                                      style={{ background: 'rgba(43,189,104,0.15)', color: '#2BBD68', border: 'none' }}
                                     >
                                       free
                                     </span>
@@ -374,7 +378,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                             })}
                           </div>
                           {currentPreset?.freeNote && (
-                            <p className="text-[9px] text-[#6aab8a]/70 mt-1.5 flex items-start gap-1">
+                            <p className="text-[9px] text-[#2BBD68]/70 mt-1.5 flex items-start gap-1">
                               <Info size={9} className="shrink-0 mt-[1px]" />
                               {currentPreset.freeNote}
                             </p>
@@ -394,7 +398,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                             className="flex-1 h-8 px-2.5 rounded-md text-[11px] text-[#ccc] placeholder:text-[#2a2a2a] outline-none"
                             style={{
                               background: 'rgba(0,0,0,0.3)',
-                              border: `1px solid ${provider.apiKey ? 'rgba(106,171,138,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                              border: `1px solid ${provider.apiKey ? 'rgba(43,189,104,0.2)' : 'rgba(255,255,255,0.06)'}`,
                             }}
                           />
                           <button
@@ -588,7 +592,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           Project Data
                         </span>
                         {tokenBreakdown.projectRawTokens > tokenBreakdown.projectBudget && contextToggles.projectContext && (
-                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(178,146,86,0.15)', color: '#b29256' }}>
+                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(253,125,238,0.15)', color: '#FD7DEE' }}>
                             truncated
                           </span>
                         )}
@@ -620,7 +624,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           Conversation History
                         </span>
                         {tokenBreakdown.convTokens > tokenBreakdown.convBudget && contextToggles.conversationHistory && (
-                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(178,146,86,0.15)', color: '#b29256' }}>
+                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(253,125,238,0.15)', color: '#FD7DEE' }}>
                             truncated
                           </span>
                         )}
@@ -724,7 +728,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                       className="h-full"
                       style={{
                         width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`,
-                        background: '#b29256',
+                        background: '#FD7DEE',
                       }}
                       title={`Project: ${formatTokens(tokenBreakdown.activeProject)}`}
                     />
@@ -735,7 +739,7 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                       className="h-full"
                       style={{
                         width: `${(tokenBreakdown.activeConv / tokenBreakdown.totalBudget) * 100}%`,
-                        background: '#6aab8a',
+                        background: '#2BBD68',
                       }}
                       title={`Conversation: ${formatTokens(tokenBreakdown.activeConv)}`}
                     />
@@ -757,11 +761,11 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                     <span className="text-[8px] text-[#555]">KB</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: '#b29256' }} />
+                    <div className="w-2 h-2 rounded-sm" style={{ background: '#FD7DEE' }} />
                     <span className="text-[8px] text-[#555]">Project</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: '#6aab8a' }} />
+                    <div className="w-2 h-2 rounded-sm" style={{ background: '#2BBD68' }} />
                     <span className="text-[8px] text-[#555]">Conversation</span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -772,8 +776,8 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
               </div>
 
               {/* ── How It Works ── */}
-              <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(178,146,86,0.04)', border: '1px solid rgba(178,146,86,0.08)' }}>
-                <p className="text-[10px] text-[#b29256]/70 leading-relaxed">
+              <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(253,125,238,0.04)', border: '1px solid rgba(253,125,238,0.08)' }}>
+                <p className="text-[10px] text-[#FD7DEE]/70 leading-relaxed">
                   <strong>How it works:</strong> The Context Tier sets a total token budget. Each source (KB, project, conversation)
                   gets a share of that budget. Toggle sources off to reduce token usage or free up budget for other sources.
                   If the total exceeds what your model can handle, you'll see an error in chat — just switch to a smaller tier or
@@ -795,9 +799,9 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
             onClick={handleSave}
             className="flex items-center gap-1.5 h-8 px-4 rounded-lg text-[12px] cursor-pointer transition-colors"
             style={{
-              background: saved ? '#6aab8a' : 'rgba(255,255,255,0.08)',
+              background: saved ? '#2BBD68' : 'rgba(255,255,255,0.08)',
               color: saved ? '#fff' : '#ccc',
-              border: `1px solid ${saved ? '#6aab8a' : 'rgba(255,255,255,0.1)'}`,
+              border: `1px solid ${saved ? '#2BBD68' : 'rgba(255,255,255,0.1)'}`,
             }}
           >
             {saved ? <><Check size={12} /> Saved</> : 'Save Settings'}

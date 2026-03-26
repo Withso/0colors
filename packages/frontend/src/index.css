@@ -381,7 +381,7 @@
   }
 
   * {
-    border-color: var(--border);
+    border-color: transparent;
     outline-color: var(--ring);
   }
 
@@ -397,7 +397,7 @@
   }
 
   * {
-    border-color: var(--border);
+    border-color: transparent;
     outline-color: var(--ring);
   }
 
@@ -6256,72 +6256,72 @@
 }
 
 :root {
-  --moonstone-50: #f1f4f7;
-  --moonstone-100: #dce3ea;
-  --moonstone-200: #b7c4d1;
-  --moonstone-300: #8ea3b4;
-  --moonstone-400: #6b8598;
-  --moonstone-500: #4f6d80;
-  --moonstone-600: #405a6a;
-  --moonstone-700: #334855;
-  --moonstone-800: #283841;
-  --moonstone-900: #1e2b33;
-  --moonstone-950: #131c22;
-  --sunstone-50: #f8f5ed;
-  --sunstone-100: #efe6d2;
-  --sunstone-200: #dccba6;
-  --sunstone-300: #c7ac78;
-  --sunstone-400: #b29256;
-  --sunstone-500: #8a6d3b;
-  --sunstone-600: #725a30;
-  --sunstone-700: #5b4827;
-  --sunstone-800: #47381f;
-  --sunstone-900: #362b18;
-  --sunstone-950: #211a10;
-  --olivine-50: #f3f5f0;
-  --olivine-100: #e4e8dd;
-  --olivine-200: #c9d1bc;
-  --olivine-300: #a9b597;
-  --olivine-400: #8a9b77;
-  --olivine-500: #697459;
-  --olivine-600: #555f48;
-  --olivine-700: #444c3a;
-  --olivine-800: #363b2e;
-  --olivine-900: #292e24;
-  --olivine-950: #181c15;
-  --malachite-50: #edf5f1;
-  --malachite-100: #d2e8dc;
-  --malachite-200: #a5d1b9;
-  --malachite-300: #78b896;
-  --malachite-400: #52a078;
-  --malachite-500: #3d8b6e;
-  --malachite-600: #2d7a60;
-  --malachite-700: #226250;
-  --malachite-800: #1a4c3e;
-  --malachite-900: #13382e;
-  --malachite-950: #0e211a;
-  --garnet-50: #f7ecec;
-  --garnet-100: #f0d8d8;
-  --garnet-200: #e0b2b2;
-  --garnet-300: #cf8c8c;
-  --garnet-400: #be6666;
-  --garnet-500: #b54a4a;
-  --garnet-600: #953d3d;
-  --garnet-700: #753131;
-  --garnet-800: #592626;
-  --garnet-900: #401c1c;
-  --garnet-950: #2a1111;
-  --ochre-50: #f5f0e3;
-  --ochre-100: #ede3c7;
-  --ochre-200: #dbc693;
-  --ochre-300: #c9a860;
-  --ochre-400: #b79442;
-  --ochre-500: #9f8136;
-  --ochre-600: #836a2c;
-  --ochre-700: #675423;
-  --ochre-800: #4e3f1b;
-  --ochre-900: #382d14;
-  --ochre-950: #241e0d;
+  --moonstone-50: #E8EBFF;
+  --moonstone-100: #D0D6FF;
+  --moonstone-200: #A8B3FF;
+  --moonstone-300: #7B8FFF;
+  --moonstone-400: #465BFE;
+  --moonstone-500: #3548CC;
+  --moonstone-600: #2A3AA6;
+  --moonstone-700: #1F2C80;
+  --moonstone-800: #161F5C;
+  --moonstone-900: #0F1540;
+  --moonstone-950: #0C0F22;
+  --sunstone-50: #FFF0FD;
+  --sunstone-100: #FDE4F9;
+  --sunstone-200: #FEC5F4;
+  --sunstone-300: #FEA3F4;
+  --sunstone-400: #FD7DEE;
+  --sunstone-500: #C44DB5;
+  --sunstone-600: #A33D98;
+  --sunstone-700: #7D2F75;
+  --sunstone-800: #5C2257;
+  --sunstone-900: #3D163A;
+  --sunstone-950: #220D1F;
+  --olivine-50: #ECFDF3;
+  --olivine-100: #D4F5E2;
+  --olivine-200: #A8EBC5;
+  --olivine-300: #5CD88E;
+  --olivine-400: #2BBD68;
+  --olivine-500: #0D9645;
+  --olivine-600: #0A7536;
+  --olivine-700: #085A29;
+  --olivine-800: #06401E;
+  --olivine-900: #042B14;
+  --olivine-950: #061F10;
+  --malachite-50: #ECFDF3;
+  --malachite-100: #D4F5E2;
+  --malachite-200: #A8EBC5;
+  --malachite-300: #5CD88E;
+  --malachite-400: #2BBD68;
+  --malachite-500: #0D9645;
+  --malachite-600: #0A7536;
+  --malachite-700: #085A29;
+  --malachite-800: #06401E;
+  --malachite-900: #042B14;
+  --malachite-950: #061F10;
+  --garnet-50: #FFF0F2;
+  --garnet-100: #FFE0E5;
+  --garnet-200: #FFC0CB;
+  --garnet-300: #FF7A90;
+  --garnet-400: #FF4D6A;
+  --garnet-500: #EA0B2D;
+  --garnet-600: #C00924;
+  --garnet-700: #96071C;
+  --garnet-800: #6E0515;
+  --garnet-900: #4A030E;
+  --garnet-950: #220710;
+  --ochre-50: #FFFCF0;
+  --ochre-100: #FFF3D6;
+  --ochre-200: #FFE7AD;
+  --ochre-300: #FFD56E;
+  --ochre-400: #FBBF24;
+  --ochre-500: #D4960B;
+  --ochre-600: #AD7A09;
+  --ochre-700: #866007;
+  --ochre-800: #604505;
+  --ochre-900: #3D2C03;
+  --ochre-950: #221506;
   --neutral-0: #fff;
   --neutral-50: #fafafa;
   --neutral-100: #f5f5f5;
@@ -6360,33 +6360,33 @@
   --token-border: #eaeaea;
   --token-border-strong: #d1d1d1;
   --token-border-subtle: #f0f0f0;
-  --token-accent: #4f6d80;
-  --token-accent-hover: #405a6a;
-  --token-accent-light: #dce3ea;
+  --token-accent: #3548CC;
+  --token-accent-hover: #2A3AA6;
+  --token-accent-light: #E0E4FF;
   --token-accent-fg: #fff;
-  --token-accent-muted: #4f6d801f;
-  --token-secondary: #8a6d3b;
-  --token-secondary-hover: #725a30;
-  --token-secondary-light: #efe6d2;
+  --token-accent-muted: #3548CC1f;
+  --token-secondary: #C44DB5;
+  --token-secondary-hover: #A33D98;
+  --token-secondary-light: #FDE4F9;
   --token-secondary-fg: #fff;
-  --token-tertiary: #697459;
-  --token-tertiary-hover: #555f48;
-  --token-tertiary-light: #e4e8dd;
+  --token-tertiary: #0A7536;
+  --token-tertiary-hover: #065A29;
+  --token-tertiary-light: #D4F5E2;
   --token-tertiary-fg: #fff;
-  --token-success: #2d7a60;
-  --token-success-light: #d2e8dc;
-  --token-error: #b54a4a;
-  --token-error-light: #f0d8d8;
-  --token-warning: #9f8136;
-  --token-warning-light: #ede3c7;
-  --token-info: #4f6d80;
-  --token-info-light: #dce3ea;
-  --token-chart-1: #957a7f;
-  --token-chart-2: #b5836c;
-  --token-chart-3: #9a9070;
-  --token-chart-4: #7e909b;
-  --token-chart-5: #849478;
-  --token-chart-6: #a8878f;
+  --token-success: #0D9645;
+  --token-success-light: #D4F5E2;
+  --token-error: #EA0B2D;
+  --token-error-light: #FFE0E5;
+  --token-warning: #D4960B;
+  --token-warning-light: #FFF3D6;
+  --token-info: #3548CC;
+  --token-info-light: #E0E4FF;
+  --token-chart-1: #FFA0E6;
+  --token-chart-2: #FF7A90;
+  --token-chart-3: #FBBF24;
+  --token-chart-4: #7B8FFF;
+  --token-chart-5: #5CD88E;
+  --token-chart-6: #D4A0FF;
   --token-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --token-font-mono: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
   --token-text-2xs: 11px;
@@ -6445,7 +6445,7 @@
   --token-shadow-md: 0 4px 12px #0000000f;
   --token-shadow-lg: 0 8px 24px #00000014;
   --token-shadow-xl: 0 20px 40px #0000001a;
-  --token-shadow-accent: 0 4px 16px #4f6d8026;
+  --token-shadow-accent: 0 4px 16px #3548CC26;
   --token-duration-fast: .12s;
   --token-duration-normal: .2s;
   --token-duration-slow: .35s;
@@ -6500,41 +6500,41 @@
   --token-border: #27272a;
   --token-border-strong: #3f3f46;
   --token-border-subtle: #1c1c1f;
-  --token-accent: #6b8598;
-  --token-accent-hover: #8ea3b4;
-  --token-accent-light: #131c22;
-  --token-accent-muted: #6b85981f;
-  --token-secondary: #b29256;
-  --token-secondary-hover: #c7ac78;
-  --token-secondary-light: #211a10;
-  --token-tertiary: #8a9b77;
-  --token-tertiary-hover: #a9b597;
-  --token-tertiary-light: #181c15;
-  --token-success: #6aab8a;
-  --token-success-light: #0e211a;
-  --token-error: #d47272;
-  --token-error-light: #2a1111;
-  --token-warning: #d4aa55;
-  --token-warning-light: #241e0d;
-  --token-info: #6b8598;
-  --token-info-light: #131c22;
-  --token-chart-1: #b3979c;
-  --token-chart-2: #cfa08a;
-  --token-chart-3: #b5ab8e;
-  --token-chart-4: #9aafba;
-  --token-chart-5: #9fb295;
-  --token-chart-6: #c4a3ab;
+  --token-accent: #465BFE;
+  --token-accent-hover: #7B8FFF;
+  --token-accent-light: #0C0F22;
+  --token-accent-muted: #465BFE1f;
+  --token-secondary: #FD7DEE;
+  --token-secondary-hover: #FEA3F4;
+  --token-secondary-light: #220D1F;
+  --token-tertiary: #0D9645;
+  --token-tertiary-hover: #2BBD68;
+  --token-tertiary-light: #061F10;
+  --token-success: #2BBD68;
+  --token-success-light: #061F10;
+  --token-error: #FF4D6A;
+  --token-error-light: #220710;
+  --token-warning: #FBBF24;
+  --token-warning-light: #221506;
+  --token-info: #465BFE;
+  --token-info-light: #0C0F22;
+  --token-chart-1: #FFA0E6;
+  --token-chart-2: #FF7A90;
+  --token-chart-3: #FBBF24;
+  --token-chart-4: #7B8FFF;
+  --token-chart-5: #5CD88E;
+  --token-chart-6: #D4A0FF;
   --token-shadow-xs: 0 1px 2px #00000040;
   --token-shadow-sm: 0 2px 4px #00000040;
   --token-shadow-md: 0 4px 12px #00000059;
   --token-shadow-lg: 0 8px 24px #0006;
   --token-shadow-xl: 0 20px 40px #00000080;
-  --token-shadow-accent: 0 4px 16px #6b859833;
+  --token-shadow-accent: 0 4px 16px #465BFE33;
 }
 
 
 :root {
-  --font-size: 15px;
+  --font-size: 14px;
   --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "Geist Mono", "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
   --geist-bg-000: #000;
@@ -6568,7 +6568,7 @@
   --muted-foreground: #a1a1a1;
   --accent: #1a1a1a;
   --accent-foreground: #ededed;
-  --destructive: #d47272;
+  --destructive: #FF4D6A;
   --destructive-foreground: #fff;
   --border: #333;
   --input: #1a1a1a;
@@ -6582,10 +6582,10 @@
   --chart-3: oklch(.398 .07 227.392);
   --chart-4: oklch(.828 .189 84.429);
   --chart-5: oklch(.769 .188 70.08);
-  --radius: .5rem;
+  --radius: .625rem;
   --sidebar: #0a0a0a;
   --sidebar-foreground: #ededed;
-  --sidebar-primary: #6b8598;
+  --sidebar-primary: #465BFE;
   --sidebar-primary-foreground: #ededed;
   --sidebar-accent: #1a1a1a;
   --sidebar-accent-foreground: #ededed;
@@ -6608,7 +6608,7 @@
   --muted-foreground: #a1a1a1;
   --accent: #1a1a1a;
   --accent-foreground: #ededed;
-  --destructive: #d47272;
+  --destructive: #FF4D6A;
   --destructive-foreground: #fff;
   --border: #333;
   --input: #1a1a1a;
@@ -6622,7 +6622,7 @@
   --chart-5: oklch(.645 .246 16.439);
   --sidebar: #0a0a0a;
   --sidebar-foreground: #ededed;
-  --sidebar-primary: #6b8598;
+  --sidebar-primary: #465BFE;
   --sidebar-primary-foreground: #ededed;
   --sidebar-accent: #1a1a1a;
   --sidebar-accent-foreground: #ededed;
@@ -6660,17 +6660,17 @@
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] svg {
-  color: #6aab8a !important;
+  color: #2BBD68 !important;
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] svg {
-  color: #d47272 !important;
+  color: #FF4D6A !important;
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="success"], [data-sonner-toaster] [data-sonner-toast][data-type="error"], [data-sonner-toaster] [data-sonner-toast][data-type="info"], [data-sonner-toaster] [data-sonner-toast][data-type="warning"] {
   color: #ededed !important;
   background: #1a1a1af2 !important;
-  border-color: #2a2a2a !important;
+  border-color: transparent !important;
 }
 
 .color-slider, .palette-range-slider {

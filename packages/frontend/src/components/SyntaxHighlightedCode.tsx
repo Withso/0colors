@@ -5,38 +5,38 @@ const COLORS = {
   // Base
   bg: '#0a0a0a',
   gutterBg: '#0a0a0a',
-  gutterBorder: '#1a1a1a',
+  gutterBorder: '#141414',
   lineNumber: '#444',
   lineNumberActive: '#666',
   lineHighlight: 'rgba(255,255,255,0.03)',
   text: '#abb2bf',
 
   // CSS
-  cssSelector: '#C4A3AB',      // :root, [data-theme]  — Tourmaline
-  cssProperty: '#B5AB8E',      // --color-xxx — Feldspar
-  cssValue: '#9FB295',          // #hex, hsl(), oklch() — Serpentine
-  cssNumber: '#CFA08A',         // numeric values — Carnelian
+  cssSelector: '#FFA0E6',      // :root, [data-theme]  — Pink
+  cssProperty: '#D4A0FF',      // --color-xxx — Lavender
+  cssValue: '#5CD88E',          // #hex, hsl(), oklch() — Green
+  cssNumber: '#FF7A90',         // numeric values — Coral
   cssPunctuation: '#636d83',    // { } ; :
   cssComment: '#5c6370',        // /* comment */
-  cssUnit: '#9AAFBA',           // px, rem, em, % — Chalcedony
-  cssFunction: '#9AAFBA',       // hsl(), hsla(), oklch(), rgb() — Chalcedony
+  cssUnit: '#7B8FFF',           // px, rem, em, % — Blue
+  cssFunction: '#7B8FFF',       // hsl(), hsla(), oklch(), rgb() — Blue
 
   // JSON
-  jsonKey: '#C4A3AB',           // "key" — Tourmaline
-  jsonString: '#9FB295',        // "value" — Serpentine
-  jsonNumber: '#CFA08A',        // 123 — Carnelian
-  jsonBool: '#CFA08A',          // true/false/null — Carnelian
+  jsonKey: '#FFA0E6',           // "key" — Pink
+  jsonString: '#5CD88E',        // "value" — Green
+  jsonNumber: '#FF7A90',        // 123 — Coral
+  jsonBool: '#FF7A90',          // true/false/null — Coral
   jsonBrace: '#abb2bf',         // { } [ ]
   jsonPunctuation: '#636d83',   // : ,
 
   // JS / Tailwind
-  jsKeyword: '#C4A3AB',        // module, exports, const, theme — Tourmaline
-  jsString: '#9FB295',         // 'string' — Serpentine
+  jsKeyword: '#FFA0E6',        // module, exports, const, theme — Pink
+  jsString: '#5CD88E',         // 'string' — Green
   jsComment: '#5c6370',        // // comment
-  jsProperty: '#B5AB8E',       // property names — Feldspar
-  jsNumber: '#CFA08A',         // numbers — Carnelian
+  jsProperty: '#D4A0FF',       // property names — Lavender
+  jsNumber: '#FF7A90',         // numbers — Coral
   jsPunctuation: '#636d83',    // { } ; = ,
-  jsFunction: '#9AAFBA',       // extend, colors — Chalcedony
+  jsFunction: '#7B8FFF',       // extend, colors — Blue
 };
 
 type Language = 'css' | 'json' | 'javascript';

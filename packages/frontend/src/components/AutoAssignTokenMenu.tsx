@@ -627,7 +627,7 @@ export function AutoAssignTokenMenu({
         <button
           className={`flex items-center justify-center w-6 h-6 rounded transition-colors ${
             isEnabled
-              ? 'bg-[#6b8598]/20 text-[#6b8598] hover:bg-[#6b8598]/30'
+              ? 'bg-[#465BFE]/20 text-[#465BFE] hover:bg-[#465BFE]/30'
               : popupOpen || menuOpen
               ? 'bg-[#333] text-[#ededed]'
               : 'text-[#666] hover:text-[#999] hover:bg-[#252525]'
@@ -642,7 +642,7 @@ export function AutoAssignTokenMenu({
         {/* Toggle dropdown (only shown when auto-assign is already ENABLED) */}
         {menuOpen && !popupOpen && (
           <div
-            className="absolute left-full top-0 ml-1.5 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl z-50 py-1 min-w-[200px]"
+            className="absolute left-full top-0 ml-1.5 bg-[#1a1a1a] border border-[#252525] rounded-lg shadow-xl z-50 py-1 min-w-[200px]"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
@@ -652,7 +652,7 @@ export function AutoAssignTokenMenu({
             >
               <div
                 className={`w-8 h-[18px] rounded-full flex items-center transition-colors duration-200 ${
-                  isEnabled ? 'bg-[#6b8598] justify-end' : 'bg-[#444] justify-start'
+                  isEnabled ? 'bg-[#465BFE] justify-end' : 'bg-[#444] justify-start'
                 }`}
               >
                 <div className="w-3.5 h-3.5 rounded-full bg-white mx-[2px] transition-all duration-200" />
@@ -669,7 +669,7 @@ export function AutoAssignTokenMenu({
                   <RefreshCw size={12} className="ml-[6px]" />
                   <span>Re-apply/Refresh</span>
                   {missingTokenCount > 0 && (
-                    <span className="ml-auto bg-[#6b8598]/20 text-[#6b8598] text-[10px] px-1.5 py-0.5 rounded-full">
+                    <span className="ml-auto bg-[#465BFE]/20 text-[#465BFE] text-[10px] px-1.5 py-0.5 rounded-full">
                       {missingTokenCount}
                     </span>
                   )}
@@ -694,7 +694,7 @@ export function AutoAssignTokenMenu({
         {popupOpen && (
           <div
             ref={popupRef}
-            className="absolute z-50 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-2xl"
+            className="absolute z-50 bg-[#1a1a1a] border border-[#252525] rounded-lg shadow-2xl"
             style={{
               left: '100%',
               top: 0,
@@ -707,7 +707,7 @@ export function AutoAssignTokenMenu({
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-[#2a2a2a]">
               <div className="flex items-center gap-1.5">
-                <Zap size={12} className="text-[#6b8598]" />
+                <Zap size={12} className="text-[#465BFE]" />
                 <span className="text-[12px] text-[#ededed]">
                   {readOnly ? 'Auto-assign settings' : isEnabled ? 'Edit auto-assign' : 'Auto-assign tokens'}
                 </span>
@@ -778,7 +778,7 @@ export function AutoAssignTokenMenu({
                   <div className="text-[11px] text-[#666] flex items-center justify-between">
                     <span>{directChildren.filter(c => !c.autoAssignExcluded).length} children assigned</span>
                     {excludedChildren.length > 0 && (
-                      <span className="text-[#f5a623]/70">{excludedChildren.length} excluded</span>
+                      <span className="text-[#FBBF24]/70">{excludedChildren.length} excluded</span>
                     )}
                   </div>
 
@@ -799,7 +799,7 @@ export function AutoAssignTokenMenu({
                   value={prefix}
                   onChange={(e) => setPrefix(e.target.value)}
                   maxLength={MAX_AUTO_ASSIGN_PREFIX}
-                  className="w-full bg-[#111] border border-[#333] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] outline-none focus:border-[#6b8598] transition-colors"
+                  className="w-full bg-[#111] border border-[#252525] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] outline-none focus:border-[#465BFE] transition-colors"
                   placeholder={defaultPrefix}
                 />
               </div>
@@ -811,7 +811,7 @@ export function AutoAssignTokenMenu({
                 </label>
                 <div className="relative">
                   <button
-                    className="w-full bg-[#111] border border-[#333] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] flex items-center justify-between hover:border-[#555] transition-colors"
+                    className="w-full bg-[#111] border border-[#252525] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] flex items-center justify-between hover:border-[#555] transition-colors"
                     onClick={() => {
                       setSuffixDropdownOpen(!suffixDropdownOpen);
                       setGroupDropdownOpen(false);
@@ -821,12 +821,12 @@ export function AutoAssignTokenMenu({
                     <ChevronDown size={12} className="text-[#666]" />
                   </button>
                   {suffixDropdownOpen && (
-                    <div className="absolute left-0 right-0 top-full mt-1 bg-[#111] border border-[#333] rounded-md shadow-xl z-50 py-1">
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-[#111] border border-[#252525] rounded-md shadow-xl z-50 py-1">
                       {PRESET_SUFFIXES.map((opt) => (
                         <button
                           key={opt}
                           className={`w-full text-left px-2.5 py-1.5 text-[13px] hover:bg-[#252525] transition-colors flex items-center justify-between ${
-                            suffix === opt ? 'text-[#6b8598]' : 'text-[#ededed]'
+                            suffix === opt ? 'text-[#465BFE]' : 'text-[#ededed]'
                           }`}
                           onClick={() => {
                             setSuffix(opt);
@@ -842,7 +842,7 @@ export function AutoAssignTokenMenu({
                       {/* Custom increment option */}
                       <button
                         className={`w-full text-left px-2.5 py-1.5 text-[13px] hover:bg-[#252525] transition-colors flex items-center justify-between ${
-                          isCustomSuffix(suffix) ? 'text-[#6b8598]' : 'text-[#ededed]'
+                          isCustomSuffix(suffix) ? 'text-[#465BFE]' : 'text-[#ededed]'
                         }`}
                         onClick={() => {
                           const inc = parseInt(customIncrementInput, 10);
@@ -891,7 +891,7 @@ export function AutoAssignTokenMenu({
                           (e.target as HTMLInputElement).blur();
                         }
                       }}
-                      className="flex-1 bg-[#111] border border-[#333] rounded-md px-2 py-1 text-[13px] text-[#ededed] outline-none focus:border-[#6b8598] transition-colors text-center w-16"
+                      className="flex-1 bg-[#111] border border-[#252525] rounded-md px-2 py-1 text-[13px] text-[#ededed] outline-none focus:border-[#465BFE] transition-colors text-center w-16"
                     />
                   </div>
                 )}
@@ -933,7 +933,7 @@ export function AutoAssignTokenMenu({
                     }
                   }}
                   placeholder={String(getDefaultStartFrom(suffix))}
-                  className="w-full bg-[#111] border border-[#333] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] outline-none focus:border-[#6b8598] transition-colors"
+                  className="w-full bg-[#111] border border-[#252525] rounded-md px-2.5 py-1.5 text-[13px] text-[#ededed] outline-none focus:border-[#465BFE] transition-colors"
                 />
                 <div className="text-[10px] text-[#555]">
                   Leave empty for default ({getDefaultStartFrom(suffix)})
@@ -951,7 +951,7 @@ export function AutoAssignTokenMenu({
                     className={`w-full bg-[#111] border rounded-md px-2.5 py-1.5 text-[13px] flex items-center justify-between transition-colors ${
                       createNewGroup
                         ? 'border-[#555] text-[#666]'
-                        : 'border-[#333] text-[#ededed] hover:border-[#555]'
+                        : 'border-[#252525] text-[#ededed] hover:border-[#555]'
                     }`}
                     disabled={createNewGroup}
                     onClick={() => {
@@ -975,10 +975,10 @@ export function AutoAssignTokenMenu({
                     <ChevronDown size={12} className="text-[#666] shrink-0" />
                   </button>
                   {groupDropdownOpen && !createNewGroup && (
-                    <div className="absolute left-0 right-0 top-full mt-1 bg-[#111] border border-[#333] rounded-md shadow-xl z-50 py-1 max-h-[140px] overflow-y-auto">
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-[#111] border border-[#252525] rounded-md shadow-xl z-50 py-1 max-h-[140px] overflow-y-auto">
                       <button
                         className={`w-full text-left px-2.5 py-1 text-[13px] hover:bg-[#252525] transition-colors flex items-center justify-between ${
-                          !groupId ? 'text-[#6b8598]' : 'text-[#ededed]'
+                          !groupId ? 'text-[#465BFE]' : 'text-[#ededed]'
                         }`}
                         onClick={() => {
                           setGroupId(null);
@@ -992,7 +992,7 @@ export function AutoAssignTokenMenu({
                         <button
                           key={g.id}
                           className={`w-full text-left px-2.5 py-1 text-[13px] hover:bg-[#252525] transition-colors flex items-center justify-between ${
-                            groupId === g.id ? 'text-[#6b8598]' : 'text-[#ededed]'
+                            groupId === g.id ? 'text-[#465BFE]' : 'text-[#ededed]'
                           }`}
                           onClick={() => {
                             setGroupId(g.id);
@@ -1012,7 +1012,7 @@ export function AutoAssignTokenMenu({
                   <div
                     className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                       createNewGroup
-                        ? 'bg-[#6b8598] border-[#6b8598]'
+                        ? 'bg-[#465BFE] border-[#465BFE]'
                         : 'border-[#555] group-hover:border-[#777]'
                     }`}
                     onClick={() => {
@@ -1052,8 +1052,8 @@ export function AutoAssignTokenMenu({
               {excludedChildren.length > 0 && (
                 <div className="bg-[#1c1510] rounded-md px-2.5 py-2 border border-[#4a3520]">
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <UserX size={10} className="text-[#f5a623]" />
-                    <span className="text-[10px] text-[#f5a623]/80 uppercase tracking-wider">
+                    <UserX size={10} className="text-[#FBBF24]" />
+                    <span className="text-[10px] text-[#FBBF24]/80 uppercase tracking-wider">
                       Excluded nodes ({excludedChildren.length})
                     </span>
                   </div>
@@ -1067,7 +1067,7 @@ export function AutoAssignTokenMenu({
                           {child.referenceName || child.id.slice(0, 8)}
                         </span>
                         <button
-                          className="text-[10px] text-[#888] hover:text-[#ededed] transition-colors shrink-0 px-1.5 py-0.5 rounded hover:bg-[#333]"
+                          className="text-[10px] text-[#888] hover:text-[#ededed] transition-colors shrink-0 px-1.5 py-0.5 rounded hover:bg-[#2a2a2a]"
                           onClick={() => handleReincludeChild(child.id)}
                         >
                           Re-include
@@ -1080,12 +1080,12 @@ export function AutoAssignTokenMenu({
 
               {/* Change summary (shown when editing enabled config or re-enabling with changed settings) */}
               {hasChanges && (
-                <div className="bg-[#6b8598]/8 rounded-md px-2.5 py-2 border border-[#6b8598]/20">
-                  <div className="text-[10px] text-[#6b8598]/70 uppercase tracking-wider mb-1">
+                <div className="bg-[#465BFE]/8 rounded-md px-2.5 py-2 border border-[#465BFE]/20">
+                  <div className="text-[10px] text-[#465BFE]/70 uppercase tracking-wider mb-1">
                     Changes to apply
                   </div>
                   {changeSummary.map((change, idx) => (
-                    <div key={idx} className="text-[11px] text-[#6b8598]/90 flex items-start gap-1.5">
+                    <div key={idx} className="text-[11px] text-[#465BFE]/90 flex items-start gap-1.5">
                       <span className="mt-[2px] shrink-0">•</span>
                       <span>{change}</span>
                     </div>
@@ -1098,7 +1098,7 @@ export function AutoAssignTokenMenu({
 
               {/* Apply button */}
               <button
-                className="w-full bg-[#6b8598] hover:bg-[#4f6d80] text-white text-[13px] rounded-md py-1.5 transition-colors flex items-center justify-center gap-1.5"
+                className="w-full bg-[#465BFE] hover:bg-[#3548CC] text-white text-[13px] rounded-md py-1.5 transition-colors flex items-center justify-center gap-1.5"
                 onClick={handleApply}
               >
                 <Zap size={12} />

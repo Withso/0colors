@@ -333,7 +333,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
         <div
           className="absolute -inset-px rounded-[22px] pointer-events-none"
           style={{
-            background: 'linear-gradient(135deg, rgba(107,133,152,0.15) 0%, rgba(106,171,138,0.08) 50%, rgba(107,133,152,0.05) 100%)',
+            background: 'linear-gradient(135deg, rgba(70,91,254,0.15) 0%, rgba(43,189,104,0.08) 50%, rgba(70,91,254,0.05) 100%)',
           }}
         />
 
@@ -342,7 +342,6 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
           className="relative rounded-[21px] overflow-hidden"
           style={{
             background: '#111111',
-            border: '1px solid #1e1e1e',
             boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset',
           }}
         >
@@ -366,8 +365,8 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
           {/* ── Reset link sent ── */}
           {mode === 'reset-sent' ? (
             renderConfirmationScreen(
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(106,171,138,0.1)', border: '1px solid rgba(106,171,138,0.15)' }}>
-                <CheckCircle2 className="w-6 h-6 text-[#6aab8a]" />
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(43,189,104,0.1)' }}>
+                <CheckCircle2 className="w-6 h-6 text-[#2BBD68]" />
               </div>,
               'Check your inbox',
               `We sent a password reset link to ${email}. Click the link in the email to set a new password.`,
@@ -379,8 +378,8 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
           ) : mode === 'verify-email' ? (
             <div className="px-6 pb-6 pt-5 text-center">
               <div className="flex justify-center mb-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(107,133,152,0.1)', border: '1px solid rgba(107,133,152,0.15)' }}>
-                  <MailCheck className="w-6 h-6 text-[#6b8598]" />
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(70,91,254,0.1)' }}>
+                  <MailCheck className="w-6 h-6 text-[#465BFE]" />
                 </div>
               </div>
               <h3 className="text-[15px] font-semibold text-white mb-1.5">Verify your email</h3>
@@ -392,7 +391,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
               {error && (
                 <div
                   className="px-3 py-2 rounded-xl text-[12px] mb-3"
-                  style={{ background: 'rgba(212, 114, 114, 0.08)', border: '1px solid rgba(212, 114, 114, 0.15)', color: '#d47272' }}
+                  style={{ background: 'rgba(212, 114, 114, 0.08)', color: '#FF4D6A' }}
                 >
                   {error}
                 </div>
@@ -404,9 +403,8 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 disabled={resending || resendCooldown > 0}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 mb-3 cursor-pointer"
                 style={{
-                  background: resendSuccess ? 'rgba(106,171,138,0.1)' : 'rgba(107,133,152,0.08)',
-                  color: resendSuccess ? '#6aab8a' : (resendCooldown > 0 ? '#555' : '#6b8598'),
-                  border: resendSuccess ? '1px solid rgba(106,171,138,0.2)' : '1px solid rgba(107,133,152,0.15)',
+                  background: resendSuccess ? 'rgba(43,189,104,0.1)' : 'rgba(70,91,254,0.08)',
+                  color: resendSuccess ? '#2BBD68' : (resendCooldown > 0 ? '#555' : '#465BFE'),
                   cursor: (resending || resendCooldown > 0) ? 'not-allowed' : 'pointer',
                   opacity: (resendCooldown > 0 && !resendSuccess) ? 0.6 : 1,
                 }}
@@ -462,7 +460,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
               {mode !== 'forgot' ? (
                 <div
                   className="flex rounded-xl mb-5 p-1"
-                  style={{ background: '#0a0a0a', border: '1px solid #1a1a1a' }}
+                  style={{ background: '#0a0a0a' }}
                 >
                   <button
                     onClick={() => { setMode('signin'); setError(''); }}
@@ -470,7 +468,6 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                     style={{
                       background: mode === 'signin' ? '#1a1a1a' : 'transparent',
                       color: mode === 'signin' ? '#e5e5e5' : '#505050',
-                      border: mode === 'signin' ? '1px solid #282828' : '1px solid transparent',
                       boxShadow: mode === 'signin' ? '0 2px 8px rgba(0,0,0,0.3)' : 'none',
                     }}
                   >
@@ -482,7 +479,6 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                     style={{
                       background: mode === 'signup' ? '#1a1a1a' : 'transparent',
                       color: mode === 'signup' ? '#e5e5e5' : '#505050',
-                      border: mode === 'signup' ? '1px solid #282828' : '1px solid transparent',
                       boxShadow: mode === 'signup' ? '0 2px 8px rgba(0,0,0,0.3)' : 'none',
                     }}
                   >
@@ -493,7 +489,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 /* Forgot password sub-header */
                 <div className="mb-5">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <KeyRound className="w-4 h-4 text-[#6b8598]" />
+                    <KeyRound className="w-4 h-4 text-[#465BFE]" />
                     <span className="text-[14px] font-medium text-white">Reset password</span>
                   </div>
                   <p className="text-[11px] text-[#555] leading-relaxed">
@@ -516,7 +512,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                       value={name}
                       onChange={e => setName(e.target.value)}
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px] text-white placeholder-[#3a3a3a] outline-none focus:ring-1 focus:ring-[#333] transition-all"
-                      style={{ background: '#0d0d0d', border: '1px solid #1e1e1e' }}
+                      style={{ background: '#0d0d0d' }}
                     />
                   </div>
                 )}
@@ -533,7 +529,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px] text-white placeholder-[#3a3a3a] outline-none focus:ring-1 focus:ring-[#333] transition-all"
-                    style={{ background: '#0d0d0d', border: '1px solid #1e1e1e' }}
+                    style={{ background: '#0d0d0d' }}
                     required
                     autoComplete="email"
                     autoFocus
@@ -553,7 +549,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px] text-white placeholder-[#3a3a3a] outline-none focus:ring-1 focus:ring-[#333] transition-all"
-                      style={{ background: '#0d0d0d', border: '1px solid #1e1e1e' }}
+                      style={{ background: '#0d0d0d' }}
                       required
                       minLength={6}
                       autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
@@ -567,7 +563,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                     <button
                       type="button"
                       onClick={() => { setMode('forgot'); setError(''); }}
-                      className="text-[11px] text-[#6b8598]/70 hover:text-[#6b8598] transition-colors cursor-pointer"
+                      className="text-[11px] text-[#465BFE]/70 hover:text-[#465BFE] transition-colors cursor-pointer"
                     >
                       Forgot password?
                     </button>
@@ -578,7 +574,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 {error && (
                   <div
                     className="px-3 py-2 rounded-xl text-[12px]"
-                    style={{ background: 'rgba(212, 114, 114, 0.08)', border: '1px solid rgba(212, 114, 114, 0.15)', color: '#d47272' }}
+                    style={{ background: 'rgba(212, 114, 114, 0.08)', color: '#FF4D6A' }}
                   >
                     {error}
                   </div>
@@ -621,7 +617,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
               )}
 
               {/* Skip link */}
-              <div className="text-center mt-4 pt-3" style={{ borderTop: '1px solid #1a1a1a' }}>
+              <div className="text-center mt-4 pt-3" style={{ borderTop: '1px solid #141414' }}>
                 <button
                   onClick={onSkip}
                   className="text-[11px] text-[#3a3a3a] hover:text-[#666] transition-colors cursor-pointer"

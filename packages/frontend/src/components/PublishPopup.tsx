@@ -181,7 +181,7 @@ export function PublishPopup({
     >
       <div
         ref={cardRef}
-        className="w-full max-w-[480px] rounded-2xl bg-[#111] border border-[#252525] shadow-2xl"
+        className="w-full max-w-[480px] rounded-2xl bg-[#111] shadow-2xl"
         style={{
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.97)',
@@ -191,8 +191,8 @@ export function PublishPopup({
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#6b8598]/10">
-              <Globe className="h-4 w-4 text-[#6b8598]" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#465BFE]/10">
+              <Globe className="h-4 w-4 text-[#465BFE]" />
             </div>
             <div>
               <h2 className="text-[15px] font-semibold text-[#ededed]">
@@ -228,7 +228,7 @@ export function PublishPopup({
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={80}
                 placeholder="My Color System"
-                className="w-full h-10 px-3 rounded-lg bg-[#0a0a0a] border border-[#252525] text-[13px] text-[#ededed] placeholder-[#444] outline-none focus:border-[#6b8598]/40 transition-colors"
+                className="w-full h-10 px-3 rounded-lg bg-[#0a0a0a] border border-[#252525] text-[13px] text-[#ededed] placeholder-[#444] outline-none focus:border-[#465BFE]/40 transition-colors"
               />
             </div>
 
@@ -243,7 +243,7 @@ export function PublishPopup({
                 maxLength={500}
                 rows={3}
                 placeholder="A brief description of your color system..."
-                className="w-full px-3 py-2.5 rounded-lg bg-[#0a0a0a] border border-[#252525] text-[13px] text-[#ededed] placeholder-[#444] outline-none focus:border-[#6b8598]/40 transition-colors resize-none"
+                className="w-full px-3 py-2.5 rounded-lg bg-[#0a0a0a] border border-[#252525] text-[13px] text-[#ededed] placeholder-[#444] outline-none focus:border-[#465BFE]/40 transition-colors resize-none"
               />
               <div className="text-right mt-1">
                 <span className="text-[10px] text-[#444]">{description.length}/500</span>
@@ -255,7 +255,7 @@ export function PublishPopup({
               <label className="flex items-start gap-3 cursor-pointer group">
                 <div
                   className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${allowRemix
-                      ? 'bg-[#6b8598] border-[#6b8598]'
+                      ? 'bg-[#465BFE] border-[#465BFE]'
                       : 'bg-transparent border-[#444] group-hover:border-[#666]'
                     }`}
                   onClick={() => setAllowRemix(!allowRemix)}
@@ -264,7 +264,7 @@ export function PublishPopup({
                 </div>
                 <div onClick={() => setAllowRemix(!allowRemix)}>
                   <div className="flex items-center gap-1.5">
-                    <Shuffle className="h-3.5 w-3.5 text-[#6b8598]" />
+                    <Shuffle className="h-3.5 w-3.5 text-[#465BFE]" />
                     <span className="text-[13px] text-[#ededed] font-medium">Anyone can remix</span>
                   </div>
                   <p className="text-[11px] text-[#666] mt-0.5">
@@ -283,7 +283,7 @@ export function PublishPopup({
                       <button
                         onClick={handleUnpublish}
                         disabled={loading}
-                        className="h-9 px-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[12px] font-medium hover:bg-red-500/20 transition-colors cursor-pointer disabled:opacity-50"
+                        className="h-9 px-4 rounded-lg bg-[#FF4D6A]/10 border border-[#FF4D6A]/20 text-[#FF4D6A] text-[12px] font-medium hover:bg-[#FF4D6A]/20 transition-colors cursor-pointer disabled:opacity-50"
                       >
                         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Confirm Unpublish'}
                       </button>
@@ -297,7 +297,7 @@ export function PublishPopup({
                   ) : (
                     <button
                       onClick={() => setShowUnpublishConfirm(true)}
-                      className="h-9 px-3 rounded-lg text-red-400/60 hover:text-red-400 text-[12px] transition-colors cursor-pointer flex items-center gap-1.5"
+                      className="h-9 px-3 rounded-lg text-[#FF4D6A]/60 hover:text-[#FF4D6A] text-[12px] transition-colors cursor-pointer flex items-center gap-1.5"
                     >
                       <Trash2 className="h-3 w-3" />
                       Unpublish
@@ -317,7 +317,7 @@ export function PublishPopup({
               <button
                 onClick={handlePublish}
                 disabled={loading || !title.trim()}
-                className="h-9 px-5 rounded-lg bg-[#6b8598] text-white text-[12px] font-semibold hover:bg-[#4f6d80] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="h-9 px-5 rounded-lg bg-[#465BFE] text-white text-[12px] font-semibold hover:bg-[#3548CC] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />

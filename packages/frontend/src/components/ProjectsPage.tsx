@@ -354,7 +354,7 @@ function FolderCard({
                     <Globe
                       className="w-3 h-3 shrink-0"
                       style={{
-                        color: tc.isYellow ? 'rgba(0,0,0,0.5)' : 'rgba(107,133,152,0.85)',
+                        color: tc.isYellow ? 'rgba(0,0,0,0.5)' : 'rgba(70,91,254,0.85)',
                         filter: tc.isYellow ? 'none' : 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
                       }}
                       title="Published to Community"
@@ -397,7 +397,7 @@ function FolderCard({
                     {!project.isSample && (
                       <>
                         <div className="mx-3 h-px bg-white/[0.06]" />
-                        <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-red-400 hover:bg-red-500/10 transition-colors" onClick={(e) => { e.stopPropagation(); onDelete(e); setMenuOpen(false); }}>
+                        <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#FF4D6A] hover:bg-[#FF4D6A]/10 transition-colors" onClick={(e) => { e.stopPropagation(); onDelete(e); setMenuOpen(false); }}>
                           <Trash2 className="w-3.5 h-3.5 opacity-50" /> Delete
                         </button>
                       </>
@@ -591,7 +591,7 @@ export function ProjectsPage({
             {!isAuthenticated && onSignIn && (
               <Button
                 onClick={onSignIn}
-                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#6b8598] hover:text-[#8ea3b4] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors"
+                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#465BFE] hover:text-[#7B8FFF] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors"
               >
                 <LogIn className="w-4 h-4" />
                 Sign In
@@ -599,7 +599,7 @@ export function ProjectsPage({
             )}
             <Button
               onClick={onImportProject}
-              className="bg-[#161616] hover:bg-[#1e1e1e] text-[#999] hover:text-white gap-2 border border-[#282828] transition-colors"
+              className="bg-[#161616] hover:bg-[#1e1e1e] text-[#999] hover:text-white gap-2 transition-colors"
             >
               <Upload className="w-4 h-4" />
               Import
@@ -607,7 +607,7 @@ export function ProjectsPage({
             {onOpenCommunity && (
               <Button
                 onClick={onOpenCommunity}
-                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#6b8598] hover:text-[#8ea3b4] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors"
+                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#465BFE] hover:text-[#7B8FFF] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors"
               >
                 <Globe className="w-4 h-4" />
                 Community
@@ -616,7 +616,7 @@ export function ProjectsPage({
             {isAuthenticated && onOpenAISettings && (
               <Button
                 onClick={onOpenAISettings}
-                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#b29256] hover:text-[#c7ac78] gap-2 border border-[#2a2210] hover:border-[#3d3318] transition-colors"
+                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#FD7DEE] hover:text-[#FEA3F4] gap-2 border border-[#220D1F] hover:border-[#3D163A] transition-colors"
               >
                 <Sparkles className="w-4 h-4" />
                 AI Settings
@@ -625,7 +625,7 @@ export function ProjectsPage({
             {isAuthenticated && onSignOut && (
               <Button
                 onClick={onSignOut}
-                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#666] hover:text-white gap-2 border border-[#282828] transition-colors"
+                className="bg-[#161616] hover:bg-[#1e1e1e] text-[#666] hover:text-white gap-2 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
@@ -682,7 +682,7 @@ export function ProjectsPage({
             )}
 
             {/* Divider */}
-            <div className="mt-10 border-t border-[#1a1a1a]" />
+            <div className="mt-10 border-t border-[#141414]" />
           </div>
         )}
 
@@ -692,23 +692,23 @@ export function ProjectsPage({
             {/* Section header */}
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2.5">
-                <Cloud className="w-4 h-4 text-[#6b8598]" />
+                <Cloud className="w-4 h-4 text-[#465BFE]" />
                 <h2 className="text-[15px] text-[#ccc] font-medium">Supabase Cloud</h2>
                 <span
                   className="text-[11px] px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(107, 133, 152, 0.12)', color: '#8ea3b4', border: '1px solid rgba(107, 133, 152, 0.15)' }}
+                  style={{ background: 'rgba(70, 91, 254, 0.12)', color: '#7B8FFF', border: '1px solid rgba(70, 91, 254, 0.15)' }}
                 >
                   {isAdmin
                     ? `${cloudProjects.length}`
                     : `${cloudProjects.length}/20`}
                 </span>
                 {cloudSyncStatus === 'syncing' && (
-                  <span className="text-[11px] text-[#6b8598] animate-pulse">Syncing...</span>
+                  <span className="text-[11px] text-[#465BFE] animate-pulse">Syncing...</span>
                 )}
                 {onForceCloudRefresh && (
                   <button
                     onClick={onForceCloudRefresh}
-                    className="text-[11px] text-[#666] hover:text-[#6b8598] flex items-center gap-1 transition-colors ml-1"
+                    className="text-[11px] text-[#666] hover:text-[#465BFE] flex items-center gap-1 transition-colors ml-1"
                     title="Force re-download all cloud projects from server"
                   >
                     <RefreshCw className="w-3 h-3" />
@@ -719,7 +719,7 @@ export function ProjectsPage({
               {canCreateCloudProject && (
                 <Button
                   onClick={() => onCreateProject('cloud')}
-                  className="bg-[#161616] hover:bg-[#1e1e1e] text-[#8ea3b4] hover:text-[#b7c4d1] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors text-[13px] h-8 px-3"
+                  className="bg-[#161616] hover:bg-[#1e1e1e] text-[#7B8FFF] hover:text-[#b7c4d1] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors text-[13px] h-8 px-3"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   New cloud project
@@ -743,7 +743,7 @@ export function ProjectsPage({
             )}
 
             {/* Divider */}
-            <div className="mt-10 border-t border-[#1a1a1a]" />
+            <div className="mt-10 border-t border-[#141414]" />
           </div>
         )}
 
@@ -752,18 +752,18 @@ export function ProjectsPage({
           <div className="mb-12">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2.5">
-                <Cloud className="w-4 h-4 text-[#6b8598]" />
+                <Cloud className="w-4 h-4 text-[#465BFE]" />
                 <h2 className="text-[15px] text-[#ccc] font-medium">Supabase Cloud</h2>
                 <span
                   className="text-[11px] px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(107, 133, 152, 0.12)', color: '#8ea3b4', border: '1px solid rgba(107, 133, 152, 0.15)' }}
+                  style={{ background: 'rgba(70, 91, 254, 0.12)', color: '#7B8FFF', border: '1px solid rgba(70, 91, 254, 0.15)' }}
                 >
                   Sign in to sync
                 </span>
               </div>
             </div>
             {renderProjectGrid(sampleProjects)}
-            <div className="mt-10 border-t border-[#1a1a1a]" />
+            <div className="mt-10 border-t border-[#141414]" />
           </div>
         )}
 
@@ -783,7 +783,7 @@ export function ProjectsPage({
             </div>
             <Button
               onClick={() => onCreateProject('local')}
-              className="bg-[#161616] hover:bg-[#1e1e1e] text-[#999] hover:text-white gap-2 border border-[#282828] transition-colors text-[13px] h-8 px-3"
+              className="bg-[#161616] hover:bg-[#1e1e1e] text-[#999] hover:text-white gap-2 transition-colors text-[13px] h-8 px-3"
             >
               <Plus className="w-3.5 h-3.5" />
               New local project
@@ -793,7 +793,7 @@ export function ProjectsPage({
           {localProjects.length === 0 ? (
             <div
               className="flex items-center justify-center py-10 rounded-xl"
-              style={{ background: '#0d0d0d', border: '1px dashed #1e1e1e' }}
+              style={{ background: '#0d0d0d' }}
             >
               <div className="text-center">
                 <HardDrive className="w-8 h-8 text-[#2a2a2a] mx-auto mb-2" />
@@ -809,7 +809,7 @@ export function ProjectsPage({
 
       {/* Delete dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-[#111111] border-[#252525] text-white">
+        <AlertDialogContent className="bg-[#111111] text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Project</AlertDialogTitle>
             <AlertDialogDescription className="text-[#878787]">
@@ -818,12 +818,12 @@ export function ProjectsPage({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-[#1a1a1a] hover:bg-[#222] border-[#252525] text-white">
+            <AlertDialogCancel className="bg-[#1a1a1a] hover:bg-[#222] text-white">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-[#EA0B2D] hover:bg-[#C00924] text-white"
             >
               Delete
             </AlertDialogAction>

@@ -593,11 +593,11 @@ export function CommandPalette({
       onKeyDown={handleKeyDown}
     >
       <div
-        className="w-full max-w-[600px] bg-[#0a0a0a] border border-[#222] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        className="w-full max-w-[600px] bg-[#0a0a0a] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
         style={{ maxHeight: '62vh', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 24px 68px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4)', animation: 'cmdkSlideIn 0.15s ease-out' }}
       >
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 h-[52px] border-b border-[#1a1a1a]">
+        <div className="flex items-center gap-3 px-4 h-[52px] border-b border-[#141414]">
           <Search className="w-4 h-4 text-[#444] shrink-0" />
           <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search nodes, tokens, palettes, or type an action..." className="flex-1 bg-transparent text-[#ededed] text-[13px] placeholder:text-[#444] outline-none" autoComplete="off" autoCorrect="off" spellCheck={false} />
           {query && (
@@ -670,14 +670,14 @@ export function CommandPalette({
                         onClick={(e) => { e.stopPropagation(); togglePin(result.id); }}
                         className={`w-5 h-5 flex items-center justify-center rounded transition-all cursor-pointer ${
                           isPinned
-                            ? 'text-yellow-500 opacity-100'
+                            ? 'text-[#FBBF24] opacity-100'
                             : sel
                               ? 'text-[#444] hover:text-[#888] opacity-100'
                               : 'text-[#333] hover:text-[#666] opacity-0 group-hover/row:opacity-100'
                         }`}
                         title={isPinned ? 'Unpin' : 'Pin (⌘↵)'}
                       >
-                        <Star className={`w-3 h-3 ${isPinned ? 'fill-yellow-500' : ''}`} />
+                        <Star className={`w-3 h-3 ${isPinned ? 'fill-[#FBBF24]' : ''}`} />
                       </button>
                       <span className="text-[10px] text-[#2a2a2a] max-w-[100px] truncate hidden sm:block">{result.locationHint}</span>
                       {sel && (
@@ -694,29 +694,29 @@ export function CommandPalette({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 h-[38px] border-t border-[#1a1a1a] bg-[#080808]">
+        <div className="flex items-center justify-between px-4 h-[38px] border-t border-[#141414] bg-[#080808]">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] border border-[#252525] text-[10px] text-[#444]">↑</kbd>
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] border border-[#252525] text-[10px] text-[#444]">↓</kbd>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">↑</kbd>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">↓</kbd>
               <span className="text-[10px] text-[#333] ml-0.5">Navigate</span>
             </div>
             <div className="flex items-center gap-1">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] border border-[#252525] text-[10px] text-[#444]">↵</kbd>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">↵</kbd>
               <span className="text-[10px] text-[#333] ml-0.5">Open</span>
             </div>
             <div className="flex items-center gap-1">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] border border-[#252525] text-[10px] text-[#444]">⌘↵</kbd>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">⌘↵</kbd>
               <span className="text-[10px] text-[#333] ml-0.5">Pin</span>
             </div>
             <div className="flex items-center gap-1">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] border border-[#252525] text-[10px] text-[#444]">Esc</kbd>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">Esc</kbd>
               <span className="text-[10px] text-[#333] ml-0.5">Close</span>
             </div>
           </div>
           <div className="flex items-center gap-0.5">
-            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] border border-[#252525] text-[10px] text-[#444]">⌘</kbd>
-            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] border border-[#252525] text-[10px] text-[#444]">K</kbd>
+            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">⌘</kbd>
+            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">K</kbd>
           </div>
         </div>
       </div>

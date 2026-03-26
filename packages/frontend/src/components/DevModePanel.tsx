@@ -38,7 +38,7 @@ function GeistInput({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
-      className={`w-full h-8 px-3 bg-[#0a0a0a] border border-[#252525] rounded-md text-[12px] text-[#ededed] placeholder:text-[#444] focus:outline-none focus:border-[#444] transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${mono ? 'font-mono' : ''} ${className}`}
+      className={`w-full h-8 px-3 bg-[#0a0a0a] border border-[#1a1a1a] rounded-md text-[12px] text-[#ededed] placeholder:text-[#444] focus:outline-none focus:border-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${mono ? 'font-mono' : ''} ${className}`}
     />
   );
 }
@@ -53,7 +53,7 @@ function GeistSelect({ value, onChange, options, disabled = false }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full h-8 px-3 pr-8 bg-[#0a0a0a] border border-[#252525] rounded-md text-[12px] text-[#ededed] focus:outline-none focus:border-[#444] transition-colors appearance-none cursor-pointer disabled:opacity-40"
+        className="w-full h-8 px-3 pr-8 bg-[#0a0a0a] border border-[#1a1a1a] rounded-md text-[12px] text-[#ededed] focus:outline-none focus:border-[#333] transition-colors appearance-none cursor-pointer disabled:opacity-40"
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -92,8 +92,8 @@ function CopyButton({ text }: { text: string }) {
     setTimeout(() => setCopied(false), 2000);
   }, [text]);
   return (
-    <button onClick={handleCopy} className="h-8 px-2.5 bg-[#0a0a0a] border border-[#252525] rounded-md text-[#666] hover:text-[#ededed] hover:border-[#444] transition-colors cursor-pointer flex items-center gap-1.5">
-      {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+    <button onClick={handleCopy} className="h-8 px-2.5 bg-[#0a0a0a] border border-[#1a1a1a] rounded-md text-[#666] hover:text-[#ededed] hover:border-[#444] transition-colors cursor-pointer flex items-center gap-1.5">
+      {copied ? <Check className="h-3 w-3 text-[#2BBD68]" /> : <Copy className="h-3 w-3" />}
       <span className="text-[11px]">{copied ? 'Copied' : 'Copy'}</span>
     </button>
   );
@@ -109,7 +109,7 @@ function SectionHeader({ icon: Icon, title, badge, children }: {
         <Icon className="h-3.5 w-3.5 text-[#666]" />
         <span className="text-[12px] font-medium text-[#888] uppercase tracking-wider">{title}</span>
         {badge && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1a1a1a] border border-[#252525] text-[#666]">{badge}</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1a1a1a] border border-[#1a1a1a] text-[#666]">{badge}</span>
         )}
       </div>
       {children}
@@ -189,11 +189,11 @@ export function DevModePanel({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.98 }}
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="w-[580px] max-h-[85vh] bg-[#111] border border-[#252525] rounded-xl shadow-2xl overflow-hidden flex flex-col"
+          className="w-[580px] max-h-[85vh] bg-[#111] border border-[#1a1a1a] rounded-xl shadow-xl overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 h-12 border-b border-[#1a1a1a] shrink-0">
+          <div className="flex items-center justify-between px-5 h-12 border-b border-[#141414] shrink-0">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Terminal className="h-4 w-4 text-[#666]" />
@@ -207,9 +207,9 @@ export function DevModePanel({
               {devConfig.lastRunAt && (
                 <div className="flex items-center gap-1.5 text-[11px]">
                   {devConfig.lastRunStatus === 'success' ? (
-                    <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                    <CheckCircle2 className="h-3 w-3 text-[#2BBD68]" />
                   ) : devConfig.lastRunStatus === 'error' ? (
-                    <AlertCircle className="h-3 w-3 text-red-400" />
+                    <AlertCircle className="h-3 w-3 text-[#FF4D6A]" />
                   ) : null}
                   <span className="text-[#555]">{lastRunDisplay}</span>
                 </div>
@@ -221,7 +221,7 @@ export function DevModePanel({
           </div>
 
           {/* Tab Switcher */}
-          <div className="flex px-5 border-b border-[#1a1a1a] shrink-0">
+          <div className="flex px-5 border-b border-[#141414] shrink-0">
             <button
               onClick={() => setActiveTab('output')}
               className={`relative px-4 py-2.5 text-[12px] font-medium transition-colors cursor-pointer ${
@@ -274,10 +274,10 @@ export function DevModePanel({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-5 h-14 border-t border-[#1a1a1a] shrink-0 bg-[#0d0d0d]">
+          <div className="flex items-center justify-between px-5 h-14 border-t border-[#141414] shrink-0 bg-[#0d0d0d]">
             <div className="flex items-center gap-2">
               {devConfig.lastRunStatus === 'error' && devConfig.lastRunError && (
-                <div className="flex items-center gap-1.5 text-[11px] text-red-400 max-w-[250px] truncate">
+                <div className="flex items-center gap-1.5 text-[11px] text-[#FF4D6A] max-w-[250px] truncate">
                   <AlertCircle className="h-3 w-3 shrink-0" />
                   <span className="truncate">{devConfig.lastRunError}</span>
                 </div>
@@ -286,7 +286,7 @@ export function DevModePanel({
             <div className="flex items-center gap-2">
               <button
                 onClick={onTestWebhook}
-                className="h-8 px-3 bg-[#0a0a0a] border border-[#252525] rounded-md text-[11px] text-[#888] hover:text-[#ededed] hover:border-[#444] transition-colors cursor-pointer flex items-center gap-1.5"
+                className="h-8 px-3 bg-[#0a0a0a] border border-[#1a1a1a] rounded-md text-[11px] text-[#888] hover:text-[#ededed] hover:border-[#444] transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <TestTube className="h-3 w-3" />
                 Test
@@ -335,7 +335,7 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
   return (
     <div className="space-y-5">
       {/* Format & Theme */}
-      <div className="p-4 rounded-lg border border-[#1a1a1a] bg-[#0d0d0d]">
+      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
         <SectionHeader icon={Code2} title="Output Format" />
         <div className="grid grid-cols-2 gap-3">
           <FieldRow label="Format">
@@ -356,7 +356,7 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
       </div>
 
       {/* GitHub */}
-      <div className="p-4 rounded-lg border border-[#1a1a1a] bg-[#0d0d0d]">
+      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
         <SectionHeader icon={Github} title="GitHub" badge="Push">
           <GeistToggle checked={devConfig.githubEnabled} onChange={(v) => update({ githubEnabled: v })} />
         </SectionHeader>
@@ -411,19 +411,19 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
                     }
                   }}
                   disabled={!patInput || !userId}
-                  className="h-8 px-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-md text-[11px] text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="h-8 px-2.5 bg-[#2BBD68]/10 border border-[#2BBD68]/30 rounded-md text-[11px] text-[#2BBD68] hover:bg-[#2BBD68]/20 hover:border-[#2BBD68]/40 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   Set
                 </button>
                 <button
                   onClick={() => setShowPAT(!showPAT)}
-                  className="h-8 px-2 bg-[#0a0a0a] border border-[#252525] rounded-md text-[#555] hover:text-[#ededed] hover:border-[#444] transition-colors cursor-pointer"
+                  className="h-8 px-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-md text-[#555] hover:text-[#ededed] hover:border-[#444] transition-colors cursor-pointer"
                 >
                   {showPAT ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                 </button>
               </div>
               {devConfig.githubPATEncrypted && (
-                <p className="text-[10px] text-emerald-400/60 mt-1 flex items-center gap-1">
+                <p className="text-[10px] text-[#2BBD68]/60 mt-1 flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" /> PAT encrypted and saved
                 </p>
               )}
@@ -433,7 +433,7 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
       </div>
 
       {/* Webhook Output */}
-      <div className="p-4 rounded-lg border border-[#1a1a1a] bg-[#0d0d0d]">
+      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
         <SectionHeader icon={Send} title="Webhook" badge="Push">
           <GeistToggle checked={devConfig.webhookOutputEnabled} onChange={(v) => update({ webhookOutputEnabled: v })} />
         </SectionHeader>
@@ -450,7 +450,7 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
       </div>
 
       {/* Pull API */}
-      <div className="p-4 rounded-lg border border-[#1a1a1a] bg-[#0d0d0d]">
+      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
         <SectionHeader icon={Globe} title="Pull API" badge="Cached">
           <GeistToggle checked={devConfig.pullApiEnabled} onChange={(v) => update({ pullApiEnabled: v })} />
         </SectionHeader>
@@ -469,7 +469,7 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
                 <CopyButton text={`${pullApiUrl}/${devConfig.outputFormat}`} />
               </div>
             </FieldRow>
-            <div className="mt-2 p-2.5 rounded-md bg-[#0a0a0a] border border-[#1a1a1a]">
+            <div className="mt-2 p-2.5 rounded-md bg-[#0a0a0a] border border-[#141414]">
               <p className="text-[10px] text-[#555] leading-relaxed">
                 <span className="text-[#666] font-medium">Recommended:</span> Use webhook push instead of polling. 
                 Pull API is rate-limited and consumes Supabase invocations. For real-time updates, 
@@ -509,7 +509,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
   return (
     <div className="space-y-5">
       {/* Webhook Input */}
-      <div className="p-4 rounded-lg border border-[#1a1a1a] bg-[#0d0d0d]">
+      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
         <SectionHeader icon={Webhook} title="Webhook Input">
           <GeistToggle checked={devConfig.webhookEnabled} onChange={(v) => update({ webhookEnabled: v })} />
         </SectionHeader>
@@ -536,7 +536,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                 </div>
                 <button
                   onClick={() => setShowSecret(!showSecret)}
-                  className="h-8 px-2 bg-[#0a0a0a] border border-[#252525] rounded-md text-[#555] hover:text-[#ededed] hover:border-[#444] transition-colors cursor-pointer"
+                  className="h-8 px-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-md text-[#555] hover:text-[#ededed] hover:border-[#444] transition-colors cursor-pointer"
                 >
                   {showSecret ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                 </button>
@@ -567,8 +567,8 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                       }}
                       className={`h-6 px-2 rounded text-[10px] font-mono font-medium transition-colors cursor-pointer ${
                         isActive
-                          ? 'bg-[#252525] text-[#ededed] border border-[#333]'
-                          : 'bg-[#0a0a0a] text-[#444] border border-[#1a1a1a] hover:text-[#666] hover:border-[#252525]'
+                          ? 'bg-[#252525] text-[#ededed] border border-[#252525]'
+                          : 'bg-[#0a0a0a] text-[#444] border border-[#141414] hover:text-[#666] hover:border-[#1a1a1a]'
                       }`}
                     >
                       {formatLabels[fmt]}
@@ -579,7 +579,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
             </FieldRow>
 
             {/* Example cURL */}
-            <div className="mt-3 p-3 rounded-md bg-[#0a0a0a] border border-[#1a1a1a]">
+            <div className="mt-3 p-3 rounded-md bg-[#0a0a0a] border border-[#141414]">
               <p className="text-[10px] text-[#555] mb-2 font-medium">Example Request</p>
               <pre className="text-[10px] text-[#666] font-mono leading-relaxed whitespace-pre-wrap break-all">
 {`curl -X POST ${webhookUrl} \\
@@ -591,8 +591,8 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
 
             {/* Per-Node Webhook URLs (Option B) */}
             {webhookInputNodes.length > 0 && (
-              <div className="mt-3 p-3 rounded-md bg-[#0a0a0a] border border-amber-500/20">
-                <p className="text-[10px] text-amber-400/80 mb-2 font-medium flex items-center gap-1.5">
+              <div className="mt-3 p-3 rounded-md bg-[#0a0a0a] border border-[#FBBF24]/20">
+                <p className="text-[10px] text-[#FBBF24]/80 mb-2 font-medium flex items-center gap-1.5">
                   <span>{'\u26A1'}</span> Per-Node Webhook URLs
                 </p>
                 <div className="space-y-2">
@@ -621,7 +621,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
       </div>
 
       {/* Schedule */}
-      <div className="p-4 rounded-lg border border-[#1a1a1a] bg-[#0d0d0d]">
+      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
         <SectionHeader icon={Clock} title="Schedule" badge="Cron">
           <GeistToggle checked={devConfig.scheduleEnabled} onChange={(v) => update({ scheduleEnabled: v })} />
         </SectionHeader>
@@ -650,8 +650,8 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                   onClick={() => update({ scheduleSource: 'values' })}
                   className={`flex-1 h-8 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
                     devConfig.scheduleSource === 'values'
-                      ? 'bg-[#252525] text-[#ededed] border border-[#333]'
-                      : 'bg-[#0a0a0a] text-[#555] border border-[#1a1a1a] hover:border-[#252525]'
+                      ? 'bg-[#252525] text-[#ededed] border border-[#252525]'
+                      : 'bg-[#0a0a0a] text-[#555] border border-[#141414] hover:border-[#1a1a1a]'
                   }`}
                 >
                   Value List
@@ -660,8 +660,8 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                   onClick={() => update({ scheduleSource: 'api' })}
                   className={`flex-1 h-8 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
                     devConfig.scheduleSource === 'api'
-                      ? 'bg-[#252525] text-[#ededed] border border-[#333]'
-                      : 'bg-[#0a0a0a] text-[#555] border border-[#1a1a1a] hover:border-[#252525]'
+                      ? 'bg-[#252525] text-[#ededed] border border-[#252525]'
+                      : 'bg-[#0a0a0a] text-[#555] border border-[#141414] hover:border-[#1a1a1a]'
                   }`}
                 >
                   API Endpoint

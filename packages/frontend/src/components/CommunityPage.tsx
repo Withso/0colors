@@ -52,7 +52,7 @@ function DescriptionPopup({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[500px] rounded-2xl bg-[#111] border border-[#252525] shadow-2xl p-6"
+        className="w-full max-w-[500px] rounded-2xl bg-[#111] shadow-2xl p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-[16px] font-semibold text-[#ededed] mb-3">{title}</h3>
@@ -94,7 +94,7 @@ function ProjectCard({
 
   return (
     <>
-      <div className="group rounded-xl bg-[#111] border border-[#1a1a1a] hover:border-[#333] transition-all overflow-hidden">
+      <div className="group rounded-xl bg-[#111] border border-[#141414] hover:border-[#333] transition-all overflow-hidden">
         {/* Thumbnail */}
         <div
           className="relative w-full aspect-[16/9] bg-[#0a0a0a] cursor-pointer overflow-hidden"
@@ -139,7 +139,7 @@ function ProjectCard({
               {descTruncated && (
                 <button
                   onClick={() => setShowFullDesc(true)}
-                  className="text-[11px] text-[#555] hover:text-[#6b8598] transition-colors mt-0.5 cursor-pointer"
+                  className="text-[11px] text-[#555] hover:text-[#465BFE] transition-colors mt-0.5 cursor-pointer"
                 >
                   Read more
                 </button>
@@ -156,14 +156,14 @@ function ProjectCard({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#1a1a1a]">
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#141414]">
             {project.allowRemix && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onRemix();
                 }}
-                className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-[#6b8598]/10 border border-[#6b8598]/20 text-[#6b8598] text-[11px] font-medium hover:bg-[#6b8598]/20 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-[#465BFE]/10 border border-[#465BFE]/20 text-[#465BFE] text-[11px] font-medium hover:bg-[#465BFE]/20 transition-colors cursor-pointer"
               >
                 <Shuffle className="h-3 w-3" />
                 Remix
@@ -171,7 +171,7 @@ function ProjectCard({
             )}
             <button
               onClick={handleShare}
-              className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-[#1a1a1a] border border-[#252525] text-[#888] text-[11px] hover:text-white hover:border-[#333] transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-[#1a1a1a] text-[#888] text-[11px] hover:text-white hover:border-[#333] transition-colors cursor-pointer"
             >
               <Share2 className="h-3 w-3" />
               Share
@@ -248,7 +248,7 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject }: Communi
           <div className="flex items-center justify-between mb-10">
             <button
               onClick={onBack}
-              className="flex items-center gap-2 h-9 px-4 rounded-lg text-[13px] text-[#888] hover:text-white bg-[#111]/80 border border-[#252525] hover:border-[#333] backdrop-blur-sm transition-all cursor-pointer"
+              className="flex items-center gap-2 h-9 px-4 rounded-lg text-[13px] text-[#888] hover:text-white bg-[#111]/80 hover:border-[#333] backdrop-blur-sm transition-all cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               All Projects
@@ -263,8 +263,8 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject }: Communi
           {/* Hero text */}
           <div className="text-center max-w-[600px] mx-auto">
             <div className="flex items-center justify-center gap-2 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#6b8598]/10 border border-[#6b8598]/20 flex items-center justify-center">
-                <Globe className="h-5 w-5 text-[#6b8598]" />
+              <div className="w-10 h-10 rounded-xl bg-[#465BFE]/10 border border-[#465BFE]/20 flex items-center justify-center">
+                <Globe className="h-5 w-5 text-[#465BFE]" />
               </div>
             </div>
             <h1 className="text-[28px] font-bold text-[#ededed] mb-2">
@@ -284,7 +284,7 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject }: Communi
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search projects..."
-                className="w-full h-10 pl-10 pr-4 rounded-xl bg-[#111]/80 border border-[#252525] text-[13px] text-[#ededed] placeholder-[#444] outline-none focus:border-[#6b8598]/30 backdrop-blur-sm transition-colors"
+                className="w-full h-10 pl-10 pr-4 rounded-xl bg-[#111]/80 text-[13px] text-[#ededed] placeholder-[#444] outline-none focus:border-[#465BFE]/30 backdrop-blur-sm transition-colors"
               />
             </div>
           </div>
@@ -299,7 +299,7 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject }: Communi
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-[#111] border border-[#1a1a1a] flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-[#111] border border-[#141414] flex items-center justify-center mb-4">
               <Sparkles className="h-7 w-7 text-[#222]" />
             </div>
             <h3 className="text-[15px] text-[#555] font-medium mb-1">

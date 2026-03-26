@@ -139,22 +139,22 @@ function parseStructuredError(content: string): StructuredError | null {
 }
 
 const ERROR_ICON_COLORS: Record<string, string> = {
-  'rate_limit_exceeded': '#d4aa55',
-  'rate_limited': '#d4aa55',
-  '429': '#d4aa55',
-  'authentication_error': '#d47272',
-  '401': '#d47272',
-  '403': '#d47272',
+  'rate_limit_exceeded': '#FBBF24',
+  'rate_limited': '#FBBF24',
+  '429': '#FBBF24',
+  'authentication_error': '#FF4D6A',
+  '401': '#FF4D6A',
+  '403': '#FF4D6A',
   'not_found': '#7C66DC',
   '404': '#7C66DC',
-  'network_error': '#d47272',
-  '0': '#d47272',
+  'network_error': '#FF4D6A',
+  '0': '#FF4D6A',
 };
 
 function getErrorColor(err: StructuredError): string {
   return ERROR_ICON_COLORS[err.errorCode] ||
     ERROR_ICON_COLORS[String(err.code)] ||
-    '#d47272';
+    '#FF4D6A';
 }
 
 function ErrorBubble({ error }: { error: StructuredError }) {
@@ -210,7 +210,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-white/5 transition-all cursor-pointer"
-      style={{ color: copied ? '#6aab8a' : '#444' }}
+      style={{ color: copied ? '#2BBD68' : '#444' }}
       onClick={() => {
         copyTextToClipboard(text);
         setCopied(true);
@@ -685,7 +685,7 @@ export function AskAIChat({
         <Menu size={14} />
       </button>
       <div className="flex items-center gap-1.5">
-        <Sparkles size={13} className="text-[#b29256]" />
+        <Sparkles size={13} className="text-[#FD7DEE]" />
         <span className="text-[13px] text-[#ccc]">Ask AI</span>
       </div>
     </div>
@@ -704,7 +704,7 @@ export function AskAIChat({
       <button
         onClick={(e) => { e.stopPropagation(); toggleDock(); }}
         className="p-1.5 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
-        style={{ color: isDocked ? '#b29256' : '#555' }}
+        style={{ color: isDocked ? '#FD7DEE' : '#555' }}
         title={isDocked ? 'Undock (floating popup)' : 'Dock to right panel'}
       >
         {isDocked ? <Maximize2 size={14} /> : <PanelRight size={14} />}
@@ -754,7 +754,7 @@ export function AskAIChat({
                   <span className="text-[12px] text-[#999]">Conversations</span>
                   {conversations.length > 0 && (
                     <span className="text-[9px] bg-white/[0.04] px-1.5 py-0.5 rounded-full"
-                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? '#b29256' : '#444' }}
+                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? '#FD7DEE' : '#444' }}
                       title={`${conversations.length} of ${MAX_CONVERSATIONS} max conversations`}
                     >
                       {conversations.length}/{MAX_CONVERSATIONS}
@@ -765,9 +765,9 @@ export function AskAIChat({
                   onClick={startNewConversation}
                   className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[11px] cursor-pointer transition-colors"
                   style={{
-                    background: 'rgba(229,163,54,0.1)',
-                    color: '#b29256',
-                    border: '1px solid rgba(229,163,54,0.15)',
+                    background: 'rgba(253,125,238,0.1)',
+                    color: '#FD7DEE',
+                    border: '1px solid rgba(253,125,238,0.15)',
                   }}
                 >
                   <Plus size={12} />
@@ -800,15 +800,15 @@ export function AskAIChat({
                           key={conv.id}
                           className="group flex items-start gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-all"
                           style={{
-                            background: isActive ? 'rgba(229,163,54,0.08)' : 'transparent',
-                            border: `1px solid ${isActive ? 'rgba(229,163,54,0.12)' : 'transparent'}`,
+                            background: isActive ? 'rgba(253,125,238,0.08)' : 'transparent',
+                            border: `1px solid ${isActive ? 'rgba(253,125,238,0.12)' : 'transparent'}`,
                           }}
                           onClick={() => { setActiveConvId(conv.id); setShowSidebar(false); }}
                           onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
                           onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; } }}
                         >
                           <div className="shrink-0 mt-0.5">
-                            <MessageSquare size={12} style={{ color: isActive ? '#b29256' : '#444' }} />
+                            <MessageSquare size={12} style={{ color: isActive ? '#FD7DEE' : '#444' }} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
@@ -838,7 +838,7 @@ export function AskAIChat({
                               {preview}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[9px]" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? '#b29256' : '#333' }}
+                              <span className="text-[9px]" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? '#FD7DEE' : '#333' }}
                                 title={msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5 ? `${msgCount}/${MAX_MESSAGES_PER_CONVERSATION} max messages` : undefined}
                               >
                                 {msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5
@@ -881,7 +881,7 @@ export function AskAIChat({
                 ) : !activeConversation || activeConversation.messages.length === 0 ? (
                   /* ── Empty state ── */
                   <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                    <Sparkles size={28} className="text-[#b29256]/30 mb-3" />
+                    <Sparkles size={28} className="text-[#FD7DEE]/30 mb-3" />
                     <p className="text-[13px] text-[#666] mb-1">Ask anything about 0colors</p>
                     <p className="text-[10px] text-[#444] leading-relaxed">
                       How to create palettes, use advanced logic,<br />
@@ -893,7 +893,7 @@ export function AskAIChat({
                     {!isProviderConfigured(aiSettings) && (
                       <button
                         onClick={() => setShowSettings(true)}
-                        className="mt-3 text-[10px] text-[#b29256] hover:underline cursor-pointer"
+                        className="mt-3 text-[10px] text-[#FD7DEE] hover:underline cursor-pointer"
                       >
                         Configure your AI provider first
                       </button>
@@ -948,7 +948,7 @@ export function AskAIChat({
                         >
                           <div className="text-[12px] leading-[1.6] text-[#aaa] whitespace-pre-wrap break-words">
                             {renderContent(streamingText)}
-                            <span className="inline-block w-1.5 h-3.5 bg-[#b29256] ml-0.5 animate-pulse rounded-sm" />
+                            <span className="inline-block w-1.5 h-3.5 bg-[#FD7DEE] ml-0.5 animate-pulse rounded-sm" />
                           </div>
                         </div>
                       </div>
@@ -960,9 +960,9 @@ export function AskAIChat({
                           style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
                         >
                           <div className="flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b29256] animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b29256] animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#b29256] animate-bounce" style={{ animationDelay: '300ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#FD7DEE] animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#FD7DEE] animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#FD7DEE] animate-bounce" style={{ animationDelay: '300ms' }} />
                           </div>
                         </div>
                       </div>
@@ -987,13 +987,13 @@ export function AskAIChat({
               {hasAccess && activeConversation && activeConversation.messages.length >= MAX_MESSAGES_PER_CONVERSATION && !isStreaming && (
                 <div className="shrink-0 mx-3 mb-1 rounded-lg px-3 py-2 flex items-center gap-2.5"
                   style={{
-                    background: 'rgba(229,163,54,0.06)',
-                    border: '1px solid rgba(229,163,54,0.12)',
+                    background: 'rgba(253,125,238,0.06)',
+                    border: '1px solid rgba(253,125,238,0.12)',
                   }}
                 >
-                  <MessageSquare size={13} style={{ color: '#b29256', flexShrink: 0 }} />
+                  <MessageSquare size={13} style={{ color: '#FD7DEE', flexShrink: 0 }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-[#b29256] leading-tight">
+                    <p className="text-[10px] text-[#FD7DEE] leading-tight">
                       Conversation full ({activeConversation.messages.length}/{MAX_MESSAGES_PER_CONVERSATION}). Older messages will be trimmed.
                     </p>
                   </div>
@@ -1001,7 +1001,7 @@ export function AskAIChat({
                     <button
                       onClick={() => exportConversation(activeConversation)}
                       className="flex items-center gap-1 h-6 px-2 rounded-md text-[9px] cursor-pointer transition-colors"
-                      style={{ background: 'rgba(229,163,54,0.1)', color: '#b29256', border: '1px solid rgba(229,163,54,0.15)' }}
+                      style={{ background: 'rgba(253,125,238,0.1)', color: '#FD7DEE', border: '1px solid rgba(253,125,238,0.15)' }}
                       title="Export this conversation before starting a new one"
                     >
                       <Download size={9} />
@@ -1010,7 +1010,7 @@ export function AskAIChat({
                     <button
                       onClick={startNewConversation}
                       className="flex items-center gap-1 h-6 px-2 rounded-md text-[9px] cursor-pointer transition-colors"
-                      style={{ background: 'rgba(229,163,54,0.15)', color: '#b29256', border: '1px solid rgba(229,163,54,0.2)' }}
+                      style={{ background: 'rgba(253,125,238,0.15)', color: '#FD7DEE', border: '1px solid rgba(253,125,238,0.2)' }}
                     >
                       <Plus size={9} />
                       New Chat
@@ -1045,7 +1045,7 @@ export function AskAIChat({
                     <div className="flex items-center justify-between px-2.5 pb-2">
                       <div className="flex items-center gap-2">
                         {charCount > 500 && (
-                          <span className={`text-[9px] ${isOverLimit ? 'text-[#d47272]' : 'text-[#333]'}`}>
+                          <span className={`text-[9px] ${isOverLimit ? 'text-[#FF4D6A]' : 'text-[#333]'}`}>
                             {charCount.toLocaleString()} / {MAX_INPUT_CHARS.toLocaleString()}
                           </span>
                         )}
@@ -1055,7 +1055,7 @@ export function AskAIChat({
                           <button
                             onClick={stopStreaming}
                             className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] cursor-pointer transition-colors"
-                            style={{ background: 'rgba(212,114,114,0.15)', color: '#d47272', border: '1px solid rgba(212,114,114,0.2)' }}
+                            style={{ background: 'rgba(255,77,106,0.15)', color: '#FF4D6A', border: '1px solid rgba(255,77,106,0.2)' }}
                           >
                             <StopCircle size={12} />
                             Stop
@@ -1066,7 +1066,7 @@ export function AskAIChat({
                             disabled={!input.trim() || isOverLimit}
                             className="flex items-center justify-center h-7 w-7 rounded-lg cursor-pointer transition-colors disabled:cursor-default"
                             style={{
-                              background: input.trim() && !isOverLimit ? '#b29256' : 'rgba(255,255,255,0.04)',
+                              background: input.trim() && !isOverLimit ? '#FD7DEE' : 'rgba(255,255,255,0.04)',
                               color: input.trim() && !isOverLimit ? '#000' : '#333',
                             }}
                           >
@@ -1117,7 +1117,7 @@ export function AskAIChat({
       >
         {/* ── Header Island ── */}
         <div
-          className="shrink-0 rounded-2xl h-14 px-3 flex items-center justify-between select-none"
+          className="shrink-0 rounded-2xl h-12 px-3 flex items-center justify-between select-none border border-[#1a1a1a]"
           style={{ backgroundColor: '#111111' }}
         >
           {headerLeft}
@@ -1126,7 +1126,7 @@ export function AskAIChat({
 
         {/* ── Chat Body Island ── */}
         <div
-          className="flex-1 rounded-2xl flex flex-col overflow-hidden min-h-0"
+          className="flex-1 rounded-2xl flex flex-col overflow-hidden min-h-0 border border-[#1a1a1a]"
           style={{ backgroundColor: '#111111' }}
         >
           {chatBody}

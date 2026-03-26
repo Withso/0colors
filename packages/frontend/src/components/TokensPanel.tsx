@@ -217,7 +217,7 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
                 ) : valueTokenRef.color ? (
                   <div className="w-3 h-3 rounded-[3px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: valueTokenRef.color }} />
                 ) : (
-                  <div className="w-3 h-3 rounded-[3px] shrink-0 border border-[#333]/60 opacity-40" />
+                  <div className="w-3 h-3 rounded-[3px] shrink-0 border border-[#222]/50 opacity-40" />
                 )}
                 <span className="text-[11px] text-[#ccc] truncate">{valueTokenRef.name}</span>
               </div>
@@ -268,7 +268,7 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
         {color ? (
           <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: color }} />
         ) : (
-          <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-dashed border-[#333]/60 opacity-40" />
+          <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-dashed border-[#222]/50 opacity-40" />
         )}
         <span className="text-[11px] text-[#e0e0e0] truncate">{name}</span>
       </div>
@@ -2166,11 +2166,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
 
   // Drop indicator line shown during drag-to-reorder
   const renderDropIndicator = () => (
-    <div className="h-[2px] bg-[#6b8598] rounded-full mx-2 my-[1px] pointer-events-none" />
+    <div className="h-[2px] bg-[#465BFE] rounded-full mx-2 my-[1px] pointer-events-none" />
   );
   // Drop indicator line for group-level reordering
   const renderGroupDropIndicator = () => (
-    <div className="h-[2px] bg-[#6b8598] rounded-full mx-1 my-[2px] pointer-events-none" />
+    <div className="h-[2px] bg-[#465BFE] rounded-full mx-1 my-[2px] pointer-events-none" />
   );
   const shouldShowGroupDropBefore = (index: number, type: 'regular' | 'palette') =>
     groupDropIndicator !== null && groupDropIndicator.type === type && groupDropIndicator.index === index;
@@ -2346,13 +2346,13 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
             }}
             className={`group/token ${isSelected ? 'rounded-r-md' : 'rounded-md'} transition-all overflow-hidden w-full relative ${reorderDropIndicator?.dragTokenIds.includes(token.id) ? '!opacity-40' : ''
               } ${highlightedTokenId === token.id
-                ? 'ring-1 ring-[#6b8598]/60 bg-[#6b8598]/[0.12]'
+                ? 'ring-1 ring-[#465BFE]/60 bg-[#465BFE]/[0.12]'
                 : isSelected
-                  ? 'bg-[#6b8598]/[0.08]'
+                  ? 'bg-[#465BFE]/[0.08]'
                   : contextMenuOpenTokenId === token.id
                     ? 'bg-[#ffffff]/[0.04]'
                     : 'hover:bg-[#ffffff]/[0.03] cursor-pointer'
-              } ${inherited && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${tokenIsHidden ? 'opacity-[0.4] hover:opacity-70' : ''} ${tokenNodeHiddenOnCanvas && !tokenIsHidden ? 'opacity-[0.4] hover:opacity-70' : ''} ${focusedTokenId === token.id && isSelected ? 'ring-1 ring-[#6b8598]/40' : ''}`}
+              } ${inherited && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${tokenIsHidden ? 'opacity-[0.4] hover:opacity-70' : ''} ${tokenNodeHiddenOnCanvas && !tokenIsHidden ? 'opacity-[0.4] hover:opacity-70' : ''} ${focusedTokenId === token.id && isSelected ? 'ring-1 ring-[#465BFE]/40' : ''}`}
             onClick={(e) => {
               const target = e.target as HTMLElement;
               if (
@@ -2375,7 +2375,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
               if (isPrimaryTheme && !isReadOnly && !isTokenNodeToken) startEditing(token.id, token.name, 'token');
             }}
           >
-            {isSelected && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#6b8598]" />}
+            {isSelected && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#465BFE]" />}
             <Tooltip delayDuration={400} open={editingId === token.id ? false : undefined}>
               <TooltipTrigger asChild>
                 <div className="relative flex items-center gap-2 w-full min-w-0 overflow-hidden px-2.5 py-[7px]">
@@ -2391,24 +2391,24 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                   {!isPrimaryTheme && (
                     <div className="shrink-0 -ml-1 mr-[-4px] w-3 flex items-center justify-center">
                       {isTokenValueChanged(token.id) && (
-                        <Crown className="h-2.5 w-2.5 text-[#6b8598] fill-[#6b8598]" />
+                        <Crown className="h-2.5 w-2.5 text-[#465BFE] fill-[#465BFE]" />
                       )}
                     </div>
                   )}
                   {isTokenNodeToken ? (
                     valueTokenInfo?.color && valueTokenInfo.color !== 'transparent' ? (
                       <div
-                        className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${isSelected ? 'ring-1.5 ring-[#6b8598]' : ''}`}
+                        className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${isSelected ? 'ring-1.5 ring-[#465BFE]' : ''}`}
                         style={{ backgroundColor: valueTokenInfo.color }}
                       />
                     ) : (
                       <div
-                        className={`w-3.5 h-3.5 rounded-[3px] shrink-0 border border-dashed border-[#333]/60 opacity-40 ${isSelected ? 'ring-1.5 ring-[#6b8598]' : ''}`}
+                        className={`w-3.5 h-3.5 rounded-[3px] shrink-0 border border-dashed border-[#222]/50 opacity-40 ${isSelected ? 'ring-1.5 ring-[#465BFE]' : ''}`}
                       />
                     )
                   ) : (
                     <div
-                      className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${(nodesUsingToken.length === 0 || isEmptyToken) ? 'border border-dashed border-[#333]/60' : ''} ${isSelected ? 'ring-1.5 ring-[#6b8598]' : ''}`}
+                      className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${(nodesUsingToken.length === 0 || isEmptyToken) ? 'border border-dashed border-[#222]/50' : ''} ${isSelected ? 'ring-1.5 ring-[#465BFE]' : ''}`}
                       style={{ backgroundColor: (nodesUsingToken.length > 0 && !isEmptyToken) ? hslValue : 'transparent', opacity: (nodesUsingToken.length === 0 || isEmptyToken) ? 0.4 : 1 }}
                     />
                   )}
@@ -2431,7 +2431,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       onBlur={saveName}
                       onClick={(e) => e.stopPropagation()}
                       onDoubleClick={(e) => e.stopPropagation()}
-                      className="bg-transparent border-none text-[#ededed] px-2 py-0 m-0 min-w-0 flex-1 outline-none caret-[#6b8598] select-text"
+                      className="bg-transparent border-none text-[#ededed] px-2 py-0 m-0 min-w-0 flex-1 outline-none caret-[#465BFE] select-text"
                       style={{ fontSize: '12px', lineHeight: 'normal', height: 'auto' }}
                     />
                   ) : (
@@ -2455,7 +2455,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       )}
                       {/* "LOGIC" badge — shown when token has active advanced condition logic */}
                       {tokensWithActiveLogic.has(token.id) ? (
-                        <span className="text-[9px] font-mono text-amber-500/70 px-1 py-px rounded bg-amber-500/[0.08] shrink-0 uppercase tracking-wider">
+                        <span className="text-[9px] font-mono text-[#FBBF24]/70 px-1 py-px rounded bg-[#FBBF24]/[0.08] shrink-0 uppercase tracking-wider">
                           logic
                         </span>
                       ) : valueTokenInfo ? (
@@ -2466,11 +2466,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
 
                     </div>
                   ) : nodesUsingToken.length > 0 && (() => {
-                    const badgeTextColor = nodeInheritanceState === 'modified' ? 'text-[#6b8598]'
+                    const badgeTextColor = nodeInheritanceState === 'modified' ? 'text-[#465BFE]'
                       : nodeInheritanceState === 'inherited' ? 'text-[#d4a017]'
                         : 'text-[#555]';
-                    const badgeBgColor = nodeInheritanceState === 'modified' ? 'bg-[#6b8598]/[0.12]'
-                      : nodeInheritanceState === 'inherited' ? 'bg-[#d4aa55]/[0.10]'
+                    const badgeBgColor = nodeInheritanceState === 'modified' ? 'bg-[#465BFE]/[0.12]'
+                      : nodeInheritanceState === 'inherited' ? 'bg-[#FBBF24]/[0.10]'
                         : 'bg-[#ffffff]/[0.04]';
 
                     return (
@@ -2479,7 +2479,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                         {tokenHasAssignedNodes && (
                           <button
                             className={`shrink-0 p-0 border-none bg-transparent transition-all ${tokenIsHidden
-                                ? 'opacity-100 text-[#6b8598]'
+                                ? 'opacity-100 text-[#465BFE]'
                                 : 'opacity-0 group-hover/token:opacity-100 text-[#555] hover:text-[#ededed]'
                               } ${tokenForcedHidden ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                             onClick={(e) => {
@@ -2541,7 +2541,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
             </Tooltip>
           </div>
         </ContextMenuTrigger>
-        <ContextMenuContent className="bg-[#0e0e0e] border border-[#1e1e1e] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1 min-w-[160px]">
+        <ContextMenuContent className="bg-[#0e0e0e] border border-[#141414] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1 min-w-[160px]">
           {/* If mixed selection (token-node + normal tokens), show nothing actionable */}
           {selectionHasMixedTokenNodeTypes && isSelected ? (
             <ContextMenuItem
@@ -2668,7 +2668,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       <Folder className="h-3.5 w-3.5 text-[#555]" />
                       {selectedTokens.size > 1 && isSelected ? `Move ${selectedTokens.size} to group` : 'Move to group'}
                     </ContextMenuSubTrigger>
-                    <ContextMenuSubContent className="bg-[#0e0e0e] border border-[#1e1e1e] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1 min-w-[140px] max-h-[300px] overflow-y-auto">
+                    <ContextMenuSubContent className="bg-[#0e0e0e] border border-[#141414] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1 min-w-[140px] max-h-[300px] overflow-y-auto">
                       <ContextMenuItem
                         onClick={() => {
                           if (selectedTokens.size > 0 && isSelected) {
@@ -2729,7 +2729,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                         handleTokenDelete(token.id);
                       }
                     }}
-                    className="text-[#d47272] focus:bg-[#ffffff]/[0.06] focus:text-[#e09090] cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                    className="text-[#FF4D6A] focus:bg-[#ffffff]/[0.06] focus:text-[#FF7A90] cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     {selectedTokens.size > 1 && isSelected ? `Delete ${selectedTokens.size} variables` : 'Delete'}
@@ -2779,7 +2779,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                     }
                   }}
                   onBlur={saveProjectName}
-                  className="bg-[#1a1a1a] text-white text-sm px-2 py-0.5 rounded border border-[#252525] focus:border-[#6b8598] focus:outline-none min-w-0 flex-1"
+                  className="bg-[#1a1a1a] text-white text-sm px-2 py-0.5 rounded border border-transparent focus:border-[#465BFE] focus:outline-none min-w-0 flex-1"
                 />
               ) : (
                 <span
@@ -2881,8 +2881,8 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       top: Math.min(dragStart.y, dragEnd.y),
                       width: Math.abs(dragEnd.x - dragStart.x),
                       height: Math.abs(dragEnd.y - dragStart.y),
-                      backgroundColor: 'rgba(107, 133, 152, 0.1)',
-                      border: '1px solid #6b8598',
+                      backgroundColor: 'rgba(70, 91, 254, 0.1)',
+                      border: '1px solid #465BFE',
                       pointerEvents: 'none',
                       zIndex: 1000,
                     }}
@@ -2925,7 +2925,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             }}
                             onBlur={saveName}
                             onClick={(e) => e.stopPropagation()}
-                            className="h-6 text-xs min-w-0 flex-1 bg-[#1a1a1a] border-[#252525] text-[#ededed] select-text"
+                            className="h-6 text-xs min-w-0 flex-1 bg-[#1a1a1a] border-transparent text-[#ededed] select-text"
                           />
                         ) : (
                           <div className="flex-1 min-w-0 overflow-hidden">
@@ -2985,8 +2985,8 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             const anyShadeModifiedA = !isPrimaryTheme && paletteTokens.some(t => isTokenValueChanged(t.id));
                             const palFmtA = paletteNode?.paletteColorFormat || 'HEX';
                             const groupColorSpaceA = palFmtA === 'OKLCH' ? 'OKLCH' : palFmtA === 'RGBA' ? 'RGBA' : 'HSL';
-                            const groupBadgeTextA = anyShadeModifiedA ? 'text-[#6b8598]' : isPalInherited ? 'text-[#d4aa55]' : 'text-[#555]';
-                            const groupBadgeBgA = anyShadeModifiedA ? 'bg-[#6b8598]/[0.12]' : isPalInherited ? 'bg-[#d4aa55]/[0.12]' : 'bg-[#ffffff]/[0.04]';
+                            const groupBadgeTextA = anyShadeModifiedA ? 'text-[#465BFE]' : isPalInherited ? 'text-[#FBBF24]' : 'text-[#555]';
+                            const groupBadgeBgA = anyShadeModifiedA ? 'bg-[#465BFE]/[0.12]' : isPalInherited ? 'bg-[#FBBF24]/[0.12]' : 'bg-[#ffffff]/[0.04]';
 
                             return (
                               <div key={group.id} className={`mb-0.5 min-w-0 ${isPalHiddenA ? 'opacity-[0.4]' : ''}`} style={palInheritedStyle}>
@@ -3003,7 +3003,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                           moveGroupInDirection(group.id, e.key === 'ArrowUp' ? 'up' : 'down');
                                         }
                                       }}
-                                      className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-md hover:bg-[#ffffff]/[0.03] transition-colors w-full min-w-0 group outline-none focus-visible:ring-1 focus-visible:ring-[#6b8598]/50"
+                                      className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-md hover:bg-[#ffffff]/[0.03] transition-colors w-full min-w-0 group outline-none focus-visible:ring-1 focus-visible:ring-[#465BFE]/50"
                                     >
                                       {!isReadOnly && isPrimaryTheme && (
                                         <div
@@ -3016,7 +3016,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                       {!isPrimaryTheme && (
                                         <div className="shrink-0 w-3 flex items-center justify-center">
                                           {anyShadeModifiedA && (
-                                            <Crown className="h-2.5 w-2.5 text-[#6b8598] fill-[#6b8598]" />
+                                            <Crown className="h-2.5 w-2.5 text-[#465BFE] fill-[#465BFE]" />
                                           )}
                                         </div>
                                       )}
@@ -3061,7 +3061,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                               setEditingType(null);
                                             }}
                                             onClick={(e) => e.stopPropagation()}
-                                            className="h-auto text-xs bg-[#1a1a1a] border-[#252525] text-[#ededed] px-2 py-0 min-w-[120px] flex-1 select-text"
+                                            className="h-auto text-xs bg-[#1a1a1a] border-transparent text-[#ededed] px-2 py-0 min-w-[120px] flex-1 select-text"
                                           />
                                         ) : (
                                           <div className="flex items-center gap-1 w-full">
@@ -3096,7 +3096,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                   className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0 opacity-0 group-hover:opacity-100"
                                                 >
                                                   {paletteNode.paletteNameLocked ? (
-                                                    <Lock className="w-3 h-3 text-[#6b8598]" />
+                                                    <Lock className="w-3 h-3 text-[#465BFE]" />
                                                   ) : (
                                                     <Unlock className="w-3 h-3 text-[#555]" />
                                                   )}
@@ -3112,7 +3112,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                   }}
                                                   className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0 opacity-0 group-hover:opacity-100"
                                                 >
-                                                  <Trash2 className="w-3 h-3 text-[#555] hover:text-red-400" />
+                                                  <Trash2 className="w-3 h-3 text-[#555] hover:text-[#FF4D6A]" />
                                                 </button>
                                               </Tip>
                                             )}
@@ -3167,7 +3167,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                         </ContextMenuItem>
                                         <ContextMenuItem
                                           onClick={() => deletePaletteGroup(group.id, paletteNode.id)}
-                                          className="text-red-400 focus:bg-[#ffffff]/[0.06] focus:text-red-400 cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                          className="text-[#FF4D6A] focus:bg-[#ffffff]/[0.06] focus:text-[#FF4D6A] cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
                                         >
                                           <Trash2 className="h-3.5 w-3.5" />
                                           Delete palette
@@ -3207,11 +3207,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                 }
                                               }}
                                               className={`flex items-center gap-2 px-2.5 py-[6px] ${shadeIsSelected1 ? 'rounded-r-md' : 'rounded-md'} transition-all cursor-pointer relative ${highlightedTokenId === shadeToken.id
-                                                  ? 'ring-1 ring-[#6b8598]/60 bg-[#6b8598]/[0.12]'
+                                                  ? 'ring-1 ring-[#465BFE]/60 bg-[#465BFE]/[0.12]'
                                                   : shadeIsSelected1
-                                                    ? 'bg-[#6b8598]/[0.08]'
+                                                    ? 'bg-[#465BFE]/[0.08]'
                                                     : 'hover:bg-[#ffffff]/[0.03]'
-                                                } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${focusedTokenId === shadeToken.id && shadeIsSelected1 ? 'ring-1 ring-[#6b8598]/40' : ''}`}
+                                                } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${focusedTokenId === shadeToken.id && shadeIsSelected1 ? 'ring-1 ring-[#465BFE]/40' : ''}`}
                                               onClick={(e) => {
                                                 const target = e.target as HTMLElement;
                                                 if (target.closest('input')) return;
@@ -3226,9 +3226,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                 if (isPrimaryTheme && !isReadOnly) startEditing(shadeToken.id, shadeToken.name, 'token');
                                               }}
                                             >
-                                              {shadeIsSelected1 && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#6b8598]" />}
+                                              {shadeIsSelected1 && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#465BFE]" />}
                                               <div
-                                                className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${shadeIsSelected1 ? 'ring-1.5 ring-[#6b8598]' : ''}`}
+                                                className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${shadeIsSelected1 ? 'ring-1.5 ring-[#465BFE]' : ''}`}
                                                 style={{ backgroundColor: shadeColor }}
                                               />
                                               {editingId === shadeToken.id && editingType === 'token' ? (
@@ -3244,7 +3244,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                   onBlur={saveName}
                                                   onClick={(e) => e.stopPropagation()}
                                                   onDoubleClick={(e) => e.stopPropagation()}
-                                                  className="bg-transparent border-none text-[#ededed] px-0 py-0 m-0 min-w-0 flex-1 outline-none caret-[#6b8598] select-text"
+                                                  className="bg-transparent border-none text-[#ededed] px-0 py-0 m-0 min-w-0 flex-1 outline-none caret-[#465BFE] select-text"
                                                   style={{ fontSize: '12px', lineHeight: 'normal', height: 'auto' }}
                                                   maxLength={MAX_TOKEN_NAME}
                                                 />
@@ -3310,8 +3310,8 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             const anyShadeModifiedB = !isPrimaryTheme && palTokens.some(t => isTokenValueChanged(t.id));
                             const palFmtB = paletteNode?.paletteColorFormat || 'HEX';
                             const groupColorSpaceB = palFmtB === 'OKLCH' ? 'OKLCH' : palFmtB === 'RGBA' ? 'RGBA' : 'HSL';
-                            const groupBadgeTextB = anyShadeModifiedB ? 'text-[#6b8598]' : isPaletteInherited ? 'text-[#d4aa55]' : 'text-[#555]';
-                            const groupBadgeBgB = anyShadeModifiedB ? 'bg-[#6b8598]/[0.12]' : isPaletteInherited ? 'bg-[#d4aa55]/[0.12]' : 'bg-[#ffffff]/[0.04]';
+                            const groupBadgeTextB = anyShadeModifiedB ? 'text-[#465BFE]' : isPaletteInherited ? 'text-[#FBBF24]' : 'text-[#555]';
+                            const groupBadgeBgB = anyShadeModifiedB ? 'bg-[#465BFE]/[0.12]' : isPaletteInherited ? 'bg-[#FBBF24]/[0.12]' : 'bg-[#ffffff]/[0.04]';
 
                             return (
                               <div key={group.id} className={`mb-0.5 min-w-0 ${isPalHiddenB ? 'opacity-[0.4]' : ''}`} style={paletteInheritedStyle}>
@@ -3319,7 +3319,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                   {!isPrimaryTheme && (
                                     <div className="shrink-0 w-3 flex items-center justify-center">
                                       {anyShadeModifiedB && (
-                                        <Crown className="h-2.5 w-2.5 text-[#6b8598] fill-[#6b8598]" />
+                                        <Crown className="h-2.5 w-2.5 text-[#465BFE] fill-[#465BFE]" />
                                       )}
                                     </div>
                                   )}
@@ -3364,7 +3364,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                           setEditingType(null);
                                         }}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="h-auto text-xs bg-[#1a1a1a] border-[#252525] text-[#ededed] px-2 py-0 min-w-[120px] flex-1 select-text"
+                                        className="h-auto text-xs bg-[#1a1a1a] border-transparent text-[#ededed] px-2 py-0 min-w-[120px] flex-1 select-text"
                                       />
                                     ) : (
                                       <div className="flex items-center gap-1 w-full">
@@ -3399,7 +3399,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                               className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0"
                                             >
                                               {paletteNode.paletteNameLocked ? (
-                                                <Lock className="w-3 h-3 text-[#6b8598]" />
+                                                <Lock className="w-3 h-3 text-[#465BFE]" />
                                               ) : (
                                                 <Unlock className="w-3 h-3 text-[#555]" />
                                               )}
@@ -3415,7 +3415,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                               }}
                                               className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0"
                                             >
-                                              <Trash2 className="w-3 h-3 text-[#555] hover:text-red-400" />
+                                              <Trash2 className="w-3 h-3 text-[#555] hover:text-[#FF4D6A]" />
                                             </button>
                                           </Tip>
                                         )}
@@ -3469,11 +3469,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                 }
                                               }}
                                               className={`flex items-center gap-2 px-2.5 py-[6px] ${shadeIsSelected2 ? 'rounded-r-md' : 'rounded-md'} transition-all cursor-pointer relative ${highlightedTokenId === shadeToken.id
-                                                  ? 'ring-1 ring-[#6b8598]/60 bg-[#6b8598]/[0.12]'
+                                                  ? 'ring-1 ring-[#465BFE]/60 bg-[#465BFE]/[0.12]'
                                                   : shadeIsSelected2
-                                                    ? 'bg-[#6b8598]/[0.08]'
+                                                    ? 'bg-[#465BFE]/[0.08]'
                                                     : 'hover:bg-[#ffffff]/[0.03]'
-                                                } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${focusedTokenId === shadeToken.id && shadeIsSelected2 ? 'ring-1 ring-[#6b8598]/40' : ''}`}
+                                                } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${focusedTokenId === shadeToken.id && shadeIsSelected2 ? 'ring-1 ring-[#465BFE]/40' : ''}`}
                                               onClick={(e) => {
                                                 const target = e.target as HTMLElement;
                                                 if (target.closest('input')) return;
@@ -3488,9 +3488,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                 if (isPrimaryTheme && !isReadOnly) startEditing(shadeToken.id, shadeToken.name, 'token');
                                               }}
                                             >
-                                              {shadeIsSelected2 && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#6b8598]" />}
+                                              {shadeIsSelected2 && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#465BFE]" />}
                                               <div
-                                                className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${shadeIsSelected2 ? 'ring-1.5 ring-[#6b8598]' : ''}`}
+                                                className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${shadeIsSelected2 ? 'ring-1.5 ring-[#465BFE]' : ''}`}
                                                 style={{ backgroundColor: shadeColor }}
                                               />
                                               {editingId === shadeToken.id && editingType === 'token' ? (
@@ -3506,7 +3506,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                   onBlur={saveName}
                                                   onClick={(e) => e.stopPropagation()}
                                                   onDoubleClick={(e) => e.stopPropagation()}
-                                                  className="bg-transparent border-none text-[#ededed] px-0 py-0 m-0 min-w-0 flex-1 outline-none caret-[#6b8598] select-text"
+                                                  className="bg-transparent border-none text-[#ededed] px-0 py-0 m-0 min-w-0 flex-1 outline-none caret-[#465BFE] select-text"
                                                   style={{ fontSize: '12px', lineHeight: 'normal', height: 'auto' }}
                                                   maxLength={MAX_TOKEN_NAME}
                                                 />
@@ -3559,7 +3559,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                         moveGroupInDirection(group.id, e.key === 'ArrowUp' ? 'up' : 'down');
                                       }
                                     }}
-                                    className="flex items-center gap-1 group/group w-full min-w-0 py-1.5 pl-0.5 pr-1 outline-none focus-visible:ring-1 focus-visible:ring-[#6b8598]/50 rounded"
+                                    className="flex items-center gap-1 group/group w-full min-w-0 py-1.5 pl-0.5 pr-1 outline-none focus-visible:ring-1 focus-visible:ring-[#465BFE]/50 rounded"
                                   >
                                     {isPrimaryTheme && (
                                       <div
@@ -3597,7 +3597,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                         onBlur={saveName}
                                         onClick={(e) => e.stopPropagation()}
                                         maxLength={MAX_GROUP_NAME}
-                                        className="h-6 text-xs min-w-0 flex-1 bg-[#1a1a1a] border-[#252525] text-[#ededed] select-text"
+                                        className="h-6 text-xs min-w-0 flex-1 bg-[#1a1a1a] border-transparent text-[#ededed] select-text"
                                       />
                                     ) : (
                                       <div className="flex-1 min-w-0 overflow-hidden">
@@ -3617,7 +3617,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                             onClick={() => requestDeleteGroup(group.id)}
                                             className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0 opacity-0 group-hover/group:opacity-100 transition-opacity ml-auto"
                                           >
-                                            <Trash2 className="h-3 w-3 text-[#555] hover:text-red-400" />
+                                            <Trash2 className="h-3 w-3 text-[#555] hover:text-[#FF4D6A]" />
                                           </button>
                                         </Tip>
                                         <Tip label="Add Variable to Group" side="bottom">
@@ -3664,7 +3664,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                           </ContextMenuItem>
                                           <ContextMenuItem
                                             onClick={() => requestDeleteGroup(group.id)}
-                                            className="text-red-400 focus:bg-[#ffffff]/[0.06] focus:text-red-400 cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                            className="text-[#FF4D6A] focus:bg-[#ffffff]/[0.06] focus:text-[#FF4D6A] cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
                                           >
                                             <Trash2 className="h-3.5 w-3.5" />
                                             Delete group
@@ -3705,8 +3705,8 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                         const anyShadeModifiedC = !isPrimaryTheme && entryPalTokens.some(t => isTokenValueChanged(t.id));
                                         const palFmtC = paletteNode?.paletteColorFormat || 'HEX';
                                         const groupColorSpaceC = palFmtC === 'OKLCH' ? 'OKLCH' : palFmtC === 'RGBA' ? 'RGBA' : 'HSL';
-                                        const groupBadgeTextC = anyShadeModifiedC ? 'text-[#6b8598]' : isPalEntryInherited ? 'text-[#d4aa55]' : 'text-[#555]';
-                                        const groupBadgeBgC = anyShadeModifiedC ? 'bg-[#6b8598]/[0.12]' : isPalEntryInherited ? 'bg-[#d4aa55]/[0.12]' : 'bg-[#ffffff]/[0.04]';
+                                        const groupBadgeTextC = anyShadeModifiedC ? 'text-[#465BFE]' : isPalEntryInherited ? 'text-[#FBBF24]' : 'text-[#555]';
+                                        const groupBadgeBgC = anyShadeModifiedC ? 'bg-[#465BFE]/[0.12]' : isPalEntryInherited ? 'bg-[#FBBF24]/[0.12]' : 'bg-[#ffffff]/[0.04]';
 
                                         return (
                                           <div key={entry.id} className={`mb-0.5 min-w-0 w-full ${isPalHiddenC ? 'opacity-[0.4]' : ''}`} style={palEntryInheritedStyle}>
@@ -3714,7 +3714,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                               {!isPrimaryTheme && (
                                                 <div className="shrink-0 w-3 flex items-center justify-center">
                                                   {anyShadeModifiedC && (
-                                                    <Crown className="h-2.5 w-2.5 text-[#6b8598] fill-[#6b8598]" />
+                                                    <Crown className="h-2.5 w-2.5 text-[#465BFE] fill-[#465BFE]" />
                                                   )}
                                                 </div>
                                               )}
@@ -3751,7 +3751,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                         className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0 opacity-0 group-hover:opacity-100"
                                                       >
                                                         {paletteNode.paletteNameLocked ? (
-                                                          <Lock className="w-3 h-3 text-[#6b8598]" />
+                                                          <Lock className="w-3 h-3 text-[#465BFE]" />
                                                         ) : (
                                                           <Unlock className="w-3 h-3 text-[#555]" />
                                                         )}
@@ -3767,7 +3767,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                         }}
                                                         className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0 opacity-0 group-hover:opacity-100"
                                                       >
-                                                        <Trash2 className="w-3 h-3 text-[#555] hover:text-red-400" />
+                                                        <Trash2 className="w-3 h-3 text-[#555] hover:text-[#FF4D6A]" />
                                                       </button>
                                                     </Tip>
                                                   )}
@@ -3817,9 +3817,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                             }
                                                           }}
                                                           className={`flex items-center gap-2 px-2.5 py-[6px] ${selectedTokens.has(shadeToken.id) ? 'rounded-r-md' : 'rounded-md'} transition-all cursor-pointer relative ${selectedTokens.has(shadeToken.id)
-                                                              ? 'bg-[#6b8598]/[0.08]'
+                                                              ? 'bg-[#465BFE]/[0.08]'
                                                               : 'hover:bg-[#ffffff]/[0.03]'
-                                                            } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${focusedTokenId === shadeToken.id && selectedTokens.has(shadeToken.id) ? 'ring-1 ring-[#6b8598]/40' : ''}`}
+                                                            } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${focusedTokenId === shadeToken.id && selectedTokens.has(shadeToken.id) ? 'ring-1 ring-[#465BFE]/40' : ''}`}
                                                           onClick={(e) => {
                                                             e.stopPropagation();
                                                             if (wasDraggingRef.current) return;
@@ -3832,9 +3832,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                             if (isPrimaryTheme && !isReadOnly) startEditing(shadeToken.id, shadeToken.name, 'token');
                                                           }}
                                                         >
-                                                          {selectedTokens.has(shadeToken.id) && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#6b8598]" />}
+                                                          {selectedTokens.has(shadeToken.id) && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#465BFE]" />}
                                                           <div
-                                                            className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${selectedTokens.has(shadeToken.id) ? 'ring-1.5 ring-[#6b8598]' : ''}`}
+                                                            className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${selectedTokens.has(shadeToken.id) ? 'ring-1.5 ring-[#465BFE]' : ''}`}
                                                             style={{ backgroundColor: shadeColor }}
                                                           />
                                                           <span className="text-xs text-[#ededed] truncate flex-1 min-w-0">
@@ -3931,11 +3931,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
 
           {/* Bulk Actions Panel - Show at bottom when tokens are selected */}
           {selectedTokens.size > 0 && (
-            <div className="border-t border-[#1e1e1e] bg-[#111111] shrink-0">
+            <div className="border-t border-[#141414] bg-[#111111] shrink-0">
               {/* Header */}
-              <div className={`px-3 py-2 ${!isReadOnly ? 'border-b border-[#1e1e1e]' : ''} flex items-center justify-between`}>
+              <div className={`px-3 py-2 ${!isReadOnly ? 'border-b border-[#141414]' : ''} flex items-center justify-between`}>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-[#6b8598]">{selectedTokens.size} variable{selectedTokens.size > 1 ? 's' : ''} selected</span>
+                  <span className="text-xs text-[#465BFE]">{selectedTokens.size} variable{selectedTokens.size > 1 ? 's' : ''} selected</span>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -3972,7 +3972,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                           className={`flex items-center justify-center h-6 w-6 rounded-md transition-all ${mixedTokenVis
                               ? 'text-[#444] cursor-not-allowed'
                               : allTokensHidden
-                                ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
+                                ? 'text-[#465BFE] hover:bg-[#465BFE]/10'
                                 : 'text-[#777] hover:text-[#ededed] hover:bg-[#ffffff]/[0.06]'
                             }`}
                           disabled={mixedTokenVis}
@@ -4030,14 +4030,14 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 px-3 text-xs bg-[#1a1a1a] border-[#252525] hover:bg-[#222] text-[#ededed]"
+                            className="h-8 px-3 text-xs bg-[#1a1a1a] border-transparent hover:bg-[#222] text-[#ededed]"
                           >
                             <Folder className="h-3 w-3 mr-1.5" />
                             Move to group
                             <ChevronDown className="h-3 w-3 ml-1.5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-[#161616] border-[#252525] max-h-[300px] overflow-y-auto">
+                        <DropdownMenuContent align="end" className="bg-[#161616] border-transparent max-h-[300px] overflow-y-auto">
                           <DropdownMenuItem
                             onClick={() => bulkMoveToGroup(null)}
                             className="text-[#ededed] focus:bg-[#ffffff]/[0.06] focus:text-[#ededed] cursor-pointer"
@@ -4083,10 +4083,10 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             <Button
                               size="sm"
                               variant="outline"
-                              className={`h-8 w-8 p-0 text-xs border-[#252525] ${mixedTokenVis
+                              className={`h-8 w-8 p-0 text-xs border-transparent ${mixedTokenVis
                                   ? 'text-[#444] cursor-not-allowed bg-[#1a1a1a]'
                                   : allTokensHidden
-                                    ? 'text-[#6b8598] bg-[#6b8598]/10 border-[#6b8598]/20 hover:bg-[#6b8598]/15'
+                                    ? 'text-[#465BFE] bg-[#465BFE]/10 border-[#465BFE]/20 hover:bg-[#465BFE]/15'
                                     : 'text-[#ededed] bg-[#1a1a1a] hover:bg-[#222]'
                                 }`}
                               disabled={mixedTokenVis}
@@ -4113,7 +4113,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-8 w-8 p-0 text-xs bg-red-500/10 border-red-500/20 hover:bg-red-500/15 text-red-400 hover:text-red-300"
+                          className="h-8 w-8 p-0 text-xs bg-[#FF4D6A]/10 border-[#FF4D6A]/20 hover:bg-[#FF4D6A]/15 text-[#FF4D6A] hover:text-[#FF7A90]"
                           onClick={handleBulkDeleteTokens}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -4164,11 +4164,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       This group contains <span className="font-semibold text-[#ededed]">{groupToDelete.tokenCount} token{groupToDelete.tokenCount !== 1 ? 's' : ''}</span>.
                     </div>
                     {groupToDelete.assignedCount > 0 && (
-                      <div className="text-amber-400">
+                      <div className="text-[#FBBF24]">
                         ⚠️ <span className="font-semibold">{groupToDelete.assignedCount} token{groupToDelete.assignedCount !== 1 ? 's are' : ' is'}</span> currently assigned to nodes and will be removed from those nodes.
                       </div>
                     )}
-                    <div className="mt-3 font-semibold text-red-400">
+                    <div className="mt-3 font-semibold text-[#FF4D6A]">
                       All tokens in this group will be permanently deleted.
                     </div>
                     <div className="text-sm">
@@ -4180,12 +4180,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-[#1a1a1a] border-[#252525] text-[#ededed] hover:bg-[#222]">
+            <AlertDialogCancel className="bg-[#1a1a1a] border-transparent text-[#ededed] hover:bg-[#222]">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => groupToDelete && confirmDeleteGroup(groupToDelete.id)}
-              className="bg-red-600 text-white hover:bg-red-700"
+              className="bg-[#EA0B2D] text-white hover:bg-[#C00924]"
             >
               Delete Group & Tokens
             </AlertDialogAction>
@@ -4201,7 +4201,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
         <AlertDialogContent className="bg-[#111111] border-[#222] max-w-[400px]">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#ededed] flex items-center gap-2">
-              <Zap size={14} className="text-[#6b8598]" />
+              <Zap size={14} className="text-[#465BFE]" />
               {autoAssignDeleteDialog.items.length === 1
                 ? 'Delete auto-assigned token?'
                 : `Delete ${autoAssignDeleteDialog.items.length} auto-assigned tokens?`}
@@ -4228,7 +4228,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                     <div className="space-y-1 max-h-[120px] overflow-y-auto">
                       {autoAssignDeleteDialog.items.map(item => (
                         <div key={item.tokenId} className="flex items-center gap-2 text-[12px]">
-                          <Zap size={10} className="text-[#6b8598] shrink-0" />
+                          <Zap size={10} className="text-[#465BFE] shrink-0" />
                           <span className="text-[#ededed] font-mono bg-[#1a1a1a] px-1.5 py-0.5 rounded truncate">
                             {item.tokenName}
                           </span>
@@ -4247,10 +4247,10 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                     </div>
                   </>
                 )}
-                <label className="flex items-start gap-2.5 cursor-pointer group bg-[#1a1a1a] rounded-lg px-3 py-2.5 border border-[#252525] hover:border-[#333] transition-colors">
+                <label className="flex items-start gap-2.5 cursor-pointer group bg-[#1a1a1a] rounded-lg px-3 py-2.5 border border-transparent hover:border-[#222] transition-colors">
                   <div
                     className={`w-4 h-4 mt-[1px] rounded border flex items-center justify-center transition-colors shrink-0 ${autoAssignDeleteDialog.excludeFromAutoAssign
-                        ? 'bg-[#f5a623] border-[#f5a623]'
+                        ? 'bg-[#FBBF24] border-[#FBBF24]'
                         : 'border-[#555] group-hover:border-[#777]'
                       }`}
                     onClick={(e) => {
@@ -4286,12 +4286,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-[#1a1a1a] border-[#252525] text-[#ededed] hover:bg-[#222]">
+            <AlertDialogCancel className="bg-[#1a1a1a] border-transparent text-[#ededed] hover:bg-[#222]">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmAutoAssignDelete}
-              className="bg-red-600 text-white hover:bg-red-700"
+              className="bg-[#EA0B2D] text-white hover:bg-[#C00924]"
             >
               {autoAssignDeleteDialog.items.length === 1
                 ? 'Delete Token'

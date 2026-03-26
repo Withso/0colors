@@ -915,7 +915,7 @@ function TokenPill({
 
   // Special color for `locked` keyword — distinct amber to differentiate from control flow
   const isLocked = token.type === 'keyword' && token.value === 'locked';
-  const finalColor = isLocked ? '#d4aa55' : pillColor;
+  const finalColor = isLocked ? '#FBBF24' : pillColor;
 
   return (
     <span
@@ -923,7 +923,7 @@ function TokenPill({
       style={{
         color: '#fff',
         backgroundColor: isSelected ? `${finalColor}44` : `${finalColor}22`,
-        border: `1px solid ${isSelected ? finalColor : `${finalColor}44`}`,
+        border: 'none',
         outline: isSelected ? `1px solid ${finalColor}` : 'none',
         outlineOffset: '1px',
       }}
@@ -1037,7 +1037,7 @@ function DropdownPortal({
         onScroll={handleDropdownScroll}
         style={{
           background: '#111',
-          border: '1px solid rgba(255,255,255,0.1)',
+          border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: '8px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
           maxHeight: `${maxH}px`,
@@ -1085,7 +1085,7 @@ function DropdownPortal({
                   )}
                   <span
                     className="text-[11px] font-mono shrink-0"
-                    style={{ color: (item.tokenType === 'keyword' && item.tokenValue === 'locked') ? '#d4aa55' : (TOKEN_COLORS[item.tokenType] || '#888') }}
+                    style={{ color: (item.tokenType === 'keyword' && item.tokenValue === 'locked') ? '#FBBF24' : (TOKEN_COLORS[item.tokenType] || '#888') }}
                   >
                     {item.label}
                   </span>
@@ -2204,7 +2204,7 @@ function ConditionRowEditor({
           border: '1px solid transparent',
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
+          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.04)';
         }}
         onMouseLeave={(e) => {
           (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
@@ -2218,7 +2218,7 @@ function ConditionRowEditor({
         >
           <Circle
             size={8}
-            fill={row.enabled ? '#6aab8a' : '#333'}
+            fill={row.enabled ? '#2BBD68' : '#333'}
             stroke="none"
           />
         </button>
@@ -2244,9 +2244,9 @@ function ConditionRowEditor({
             <span
               className="absolute -top-2.5 -right-1 px-1 py-0 text-[8px] font-mono rounded-full pointer-events-none z-10"
               style={{
-                background: 'rgba(142,163,180,0.25)',
-                color: '#8ea3b4',
-                border: '1px solid rgba(142,163,180,0.35)',
+                background: 'rgba(123,143,255,0.25)',
+                color: '#7B8FFF',
+                border: 'none',
                 lineHeight: '13px',
               }}
             >
@@ -2259,7 +2259,7 @@ function ConditionRowEditor({
         <div className="flex items-center gap-0.5 shrink-0 mt-[2px] opacity-0 group-hover:opacity-100 transition-opacity">
           {onCopy && (
             <button
-              className="text-[#333] hover:text-[#8ea3b4] cursor-pointer"
+              className="text-[#333] hover:text-[#7B8FFF] cursor-pointer"
               onClick={onCopy}
               title="Copy condition"
             >
@@ -2267,7 +2267,7 @@ function ConditionRowEditor({
             </button>
           )}
           <button
-            className="text-[#333] hover:text-[#d47272] cursor-pointer"
+            className="text-[#333] hover:text-[#FF4D6A] cursor-pointer"
             onClick={onDelete}
             title="Delete condition"
           >
@@ -2284,7 +2284,7 @@ function ConditionRowEditor({
             left: ctxMenu.x,
             top: ctxMenu.y,
             background: '#1e1e1e',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.08)',
           }}
           onMouseDown={(e) => e.stopPropagation()}
         >
@@ -2295,7 +2295,7 @@ function ConditionRowEditor({
               setCtxMenu(null);
             }}
           >
-            <Copy size={11} className="text-[#8ea3b4]" /> Copy
+            <Copy size={11} className="text-[#7B8FFF]" /> Copy
             <span className="ml-auto text-[9px] text-[#555]">⌘C</span>
           </button>
           <button
@@ -2305,7 +2305,7 @@ function ConditionRowEditor({
               setCtxMenu(null);
             }}
           >
-            <Scissors size={11} className="text-[#d4aa55]" /> Cut
+            <Scissors size={11} className="text-[#FBBF24]" /> Cut
             <span className="ml-auto text-[9px] text-[#555]">⌘X</span>
           </button>
           {((_expressionClipboard && _expressionClipboard.length > 0) ||
@@ -2338,7 +2338,7 @@ function ConditionRowEditor({
                 setCtxMenu(null);
               }}
             >
-              <ClipboardPaste size={11} className="text-[#6aab8a]" /> Paste
+              <ClipboardPaste size={11} className="text-[#2BBD68]" /> Paste
               <span className="ml-auto text-[9px] text-[#555]">⌘V</span>
             </button>
           )}
@@ -2350,7 +2350,7 @@ function ConditionRowEditor({
               setCtxMenu(null);
             }}
           >
-            <Trash2 size={11} className="text-[#d47272]" /> Delete
+            <Trash2 size={11} className="text-[#FF4D6A]" /> Delete
             <span className="ml-auto text-[9px] text-[#555]">⌫</span>
           </button>
         </div>,
@@ -2578,7 +2578,7 @@ function ChannelColumn({
     <div
       className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden"
       style={{
-        borderRight: isLast ? 'none' : '1px solid rgba(255,255,255,0.06)',
+        borderRight: isLast ? 'none' : '1px solid rgba(255,255,255,0.04)',
         outline: columnHovered ? '1px solid rgba(139,180,224,0.08)' : 'none',
       }}
       onMouseEnter={() => setColumnHovered(true)}
@@ -2587,7 +2587,7 @@ function ChannelColumn({
       {/* Column header */}
       <div
         className="px-3 py-2 shrink-0 flex items-center justify-between"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
         onMouseEnter={onHeaderEnter}
         onMouseLeave={() => setHeaderHovered(false)}
       >
@@ -2601,7 +2601,7 @@ function ChannelColumn({
               onClick={() => onSaveChannel(channelKey)}
               title="Re-evaluate and apply logic"
             >
-              <Play size={8} className="text-[#6aab8a]" fill="#6aab8a" />
+              <Play size={8} className="text-[#2BBD68]" fill="#2BBD68" />
             </button>
           )}
           {/* Copy / Paste column buttons — visible on header hover */}
@@ -2622,13 +2622,13 @@ function ChannelColumn({
                   onClick={(e) => handlePasteColumn(e.shiftKey)}
                   title={`Paste${_conditionClipboard?.sourceLabel ? ` from ${_conditionClipboard.sourceLabel}` : ''} (${_conditionClipboard?.rows.length} row${(_conditionClipboard?.rows.length ?? 0) > 1 ? 's' : ''}) · ⌘V · Shift = append`}
                 >
-                  <ClipboardPaste size={8} className="text-[#8ea3b4]" />
+                  <ClipboardPaste size={8} className="text-[#7B8FFF]" />
                 </button>
               )}
             </>
           )}
           {channelHasUnsaved && (
-            <span className="text-[8px] text-[#d4aa55] select-none">unsaved</span>
+            <span className="text-[8px] text-[#FBBF24] select-none">unsaved</span>
           )}
         </div>
         <div className="flex items-center gap-1.5">
@@ -2640,24 +2640,24 @@ function ChannelColumn({
             <button
               className="flex items-center gap-1 px-1.5 h-5 rounded transition-colors cursor-pointer"
               style={{
-                background: 'rgba(106,171,138,0.15)',
-                border: '1px solid rgba(106,171,138,0.3)',
+                background: 'rgba(43,189,104,0.15)',
+                border: 'none',
               }}
               onClick={() => onSaveChannel(channelKey)}
               title={`Save ${channelDef.label} logic`}
             >
-              <Save size={9} className="text-[#6aab8a]" />
-              <span className="text-[8px] text-[#6aab8a] select-none">Save</span>
+              <Save size={9} className="text-[#2BBD68]" />
+              <span className="text-[8px] text-[#2BBD68] select-none">Save</span>
             </button>
           ) : channelSaveFlash ? (
             <span className="flex items-center gap-1 px-1.5 h-5 rounded" style={{
-              background: 'rgba(106,171,138,0.08)',
-              border: '1px solid rgba(106,171,138,0.15)',
+              background: 'rgba(43,189,104,0.08)',
+              border: 'none',
             }}>
               <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6l3 3 5-5" stroke="#6aab8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 6l3 3 5-5" stroke="#2BBD68" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span className="text-[8px] text-[#6aab8a] select-none">Saved</span>
+              <span className="text-[8px] text-[#2BBD68] select-none">Saved</span>
             </span>
           ) : null}
         </div>
@@ -2699,10 +2699,10 @@ function ChannelColumn({
                   />
                 </div>
                 <span className="text-[9px] font-mono shrink-0 select-none" style={{
-                  color: rowOutput?.error ? '#d47272'
+                  color: rowOutput?.error ? '#FF4D6A'
                     : rowOutput?.skipped ? '#333'
                     : rowOutput?.isNaN ? '#555'
-                    : rowOutput?.isBoolean ? '#b29256'
+                    : rowOutput?.isBoolean ? '#FD7DEE'
                     : rowOutput?.value !== null ? '#888'
                     : '#333',
                 }}>
@@ -2787,9 +2787,9 @@ function ChannelColumn({
               <div
                 className="shrink-0 px-3 py-1.5"
                 style={{
-                  borderTop: '1px solid rgba(212,170,85,0.2)',
+                  borderTop: '1px solid rgba(251,191,36,0.2)',
                   background: isAutoConstrain
-                    ? 'rgba(212,170,85,0.06)'
+                    ? 'rgba(251,191,36,0.06)'
                     : 'rgba(212,114,114,0.04)',
                 }}
               >
@@ -2799,13 +2799,13 @@ function ChannelColumn({
                     <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="shrink-0">
                       <path
                         d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z"
-                        fill={isAutoConstrain ? 'rgba(212,170,85,0.3)' : 'rgba(212,114,114,0.2)'}
-                        stroke={isAutoConstrain ? '#d4aa55' : '#d47272'}
+                        fill={isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(212,114,114,0.2)'}
+                        stroke={isAutoConstrain ? '#FBBF24' : '#FF4D6A'}
                         strokeWidth="1.2"
                       />
                     </svg>
                     <span className="text-[8px] tracking-wide uppercase select-none" style={{
-                      color: isAutoConstrain ? '#d4aa55' : '#d47272',
+                      color: isAutoConstrain ? '#FBBF24' : '#FF4D6A',
                     }}>
                       {isAutoConstrain ? 'Auto-Constrain' : 'Out of Range'}
                     </span>
@@ -2813,7 +2813,7 @@ function ChannelColumn({
                   <div className="flex items-center gap-1.5">
                     {/* Raw → Constrained display */}
                     <span className="text-[9px] font-mono select-none" style={{
-                      color: isAutoConstrain ? '#d4aa55' : '#d47272',
+                      color: isAutoConstrain ? '#FBBF24' : '#FF4D6A',
                     }}>
                       {constraintInfo && (
                         <>
@@ -2831,9 +2831,9 @@ function ChannelColumn({
                       className="shrink-0 flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer"
                       style={{
                         background: isAutoConstrain
-                          ? 'rgba(212,170,85,0.15)'
+                          ? 'rgba(251,191,36,0.15)'
                           : 'rgba(255,255,255,0.06)',
-                        border: `1px solid ${isAutoConstrain ? 'rgba(212,170,85,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                        border: `1px solid ${isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.08)'}`,
                       }}
                       title={isAutoConstrain
                         ? `Disable auto-constrain (allow values outside ${constraint?.min ?? 0}–${constraint?.max ?? '?'})`
@@ -2848,7 +2848,7 @@ function ChannelColumn({
                     >
                       {isAutoConstrain ? (
                         <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
-                          <path d="M2 6l3 3 5-5" stroke="#d4aa55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M2 6l3 3 5-5" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       ) : (
                         <X size={7} className="text-[#555]" />
@@ -2858,7 +2858,7 @@ function ChannelColumn({
                 </div>
                 {/* Range info line */}
                 {!isAutoConstrain && constraint && (
-                  <div className="mt-1 text-[7px] text-[#d47272] select-none" style={{ opacity: 0.7 }}>
+                  <div className="mt-1 text-[7px] text-[#FF4D6A] select-none" style={{ opacity: 0.7 }}>
                     {Math.round(constraintInfo!.raw * 100) / 100}{unit} exceeds {channelKey} range ({constraint.min}–{constraint.max})
                   </div>
                 )}
@@ -2870,7 +2870,7 @@ function ChannelColumn({
               {/* Warning floated above the final output bar */}
               {warningMessage && (
                 <div
-                  className="absolute left-0 right-0 px-3 py-1 text-[8px] text-[#d47272] select-none pointer-events-none"
+                  className="absolute left-0 right-0 px-3 py-1 text-[8px] text-[#FF4D6A] select-none pointer-events-none"
                   style={{ bottom: '100%' }}
                 >
                   {warningMessage}
@@ -2881,9 +2881,9 @@ function ChannelColumn({
                 style={{
                   borderTop: showConstraintBar
                     ? 'none'
-                    : '1px solid rgba(106,171,138,0.2)',
+                    : '1px solid rgba(43,189,104,0.2)',
                   background: resolvedSource === 'logic'
-                    ? 'rgba(106,171,138,0.06)'
+                    ? 'rgba(43,189,104,0.06)'
                     : 'rgba(255,255,255,0.02)',
                 }}
               >
@@ -2891,7 +2891,7 @@ function ChannelColumn({
                   {/* Left side: label + inline dropdown */}
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="text-[9px] tracking-wide uppercase select-none shrink-0" style={{
-                      color: resolvedSource === 'logic' ? '#6aab8a' : '#444',
+                      color: resolvedSource === 'logic' ? '#2BBD68' : '#444',
                     }}>
                       Final Output
                     </span>
@@ -2903,9 +2903,9 @@ function ChannelColumn({
                           style={{
                             background: (hasValidationError || hasBooleanWarning)
                               ? 'rgba(212,114,114,0.12)'
-                              : 'rgba(106,171,138,0.12)',
-                            color: (hasValidationError || hasBooleanWarning) ? '#d47272' : '#6aab8a',
-                            border: `1px solid ${(hasValidationError || hasBooleanWarning) ? 'rgba(212,114,114,0.25)' : 'rgba(106,171,138,0.25)'}`,
+                              : 'rgba(43,189,104,0.12)',
+                            color: (hasValidationError || hasBooleanWarning) ? '#FF4D6A' : '#2BBD68',
+                            border: `1px solid ${(hasValidationError || hasBooleanWarning) ? 'rgba(212,114,114,0.25)' : 'rgba(43,189,104,0.25)'}`,
                           }}
                           value={selectedVar || '__last__'}
                           onChange={(e) => {
@@ -2924,7 +2924,7 @@ function ChannelColumn({
                         <ChevronDown
                           size={8}
                           className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2"
-                          style={{ color: (hasValidationError || hasBooleanWarning) ? '#d47272' : '#6aab8a' }}
+                          style={{ color: (hasValidationError || hasBooleanWarning) ? '#FF4D6A' : '#2BBD68' }}
                         />
                       </div>
                     )}
@@ -2932,12 +2932,12 @@ function ChannelColumn({
 
                   {/* Right side: value */}
                   {detailedResult?.finalError && !selectedVarUsable ? (
-                    <span className="text-[10px] font-mono text-[#d47272] select-none shrink-0" title={detailedResult.finalError}>
+                    <span className="text-[10px] font-mono text-[#FF4D6A] select-none shrink-0" title={detailedResult.finalError}>
                       Error
                     </span>
                   ) : (
                     <span className="text-[10px] font-mono select-none shrink-0" style={{
-                      color: resolvedSource === 'logic' ? '#6aab8a' : '#555',
+                      color: resolvedSource === 'logic' ? '#2BBD68' : '#555',
                     }}>
                       {displayValue !== undefined ? `${Math.round(displayValue * 100) / 100}${getUnit(channelKey, colorSpace)}` : '—'}
                       {resolvedSource === 'fallback' && (
@@ -3076,7 +3076,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
     if (ro.skipped) return <span className="text-[9px] font-mono text-[#333] select-none">—</span>;
     if (ro.isNaN) return <span className="text-[9px] font-mono text-[#555] select-none">skip</span>;
     if (!ro.result) return <span className="text-[9px] font-mono text-[#333] select-none">—</span>;
-    if (ro.result.type === 'error') return <span className="text-[9px] font-mono text-[#d47272] select-none" title={ro.result.message}>err</span>;
+    if (ro.result.type === 'error') return <span className="text-[9px] font-mono text-[#FF4D6A] select-none" title={ro.result.message}>err</span>;
     if (ro.result.type === 'tokenRef') {
       const css = getTokenCssColor(ro.result.tokenId);
       return (
@@ -3102,7 +3102,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
       return <span className="text-[9px] font-mono text-[#888] select-none">{Math.round(ro.result.value * 100) / 100}</span>;
     }
     if (ro.result.type === 'boolean') {
-      return <span className="text-[9px] font-mono text-[#b29256] select-none">{ro.result.value ? 'true' : 'false'}</span>;
+      return <span className="text-[9px] font-mono text-[#FD7DEE] select-none">{ro.result.value ? 'true' : 'false'}</span>;
     }
     return <span className="text-[9px] font-mono text-[#333] select-none">—</span>;
   };
@@ -3199,12 +3199,12 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
   return (
     <div className="flex flex-1 min-h-0">
       {/* Column 1: Token Info */}
-      <div className="flex flex-col shrink-0 p-3 overflow-y-auto" style={{ width: '15%', minWidth: 120, maxWidth: 200, borderRight: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.01)' }}>
+      <div className="flex flex-col shrink-0 p-3 overflow-y-auto" style={{ width: '15%', minWidth: 120, maxWidth: 200, borderRight: '1px solid rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.01)' }}>
         <div className="text-[9px] tracking-widest uppercase text-[#444] mb-2 select-none">Token Info</div>
         <div className="flex flex-col gap-2">
           <div>
             <div className="text-[8px] text-[#555] uppercase tracking-wide mb-0.5 select-none">Name</div>
-            <div className="text-[11px] font-mono text-[#ccc] px-2 py-1 rounded" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>{tokenName}</div>
+            <div className="text-[11px] font-mono text-[#ccc] px-2 py-1 rounded" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.04)' }}>{tokenName}</div>
           </div>
           {currentValueToken && (
             <div>
@@ -3232,7 +3232,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
         {/* Column header */}
         <div
           className="flex items-center justify-between px-3 py-2 shrink-0"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
           onMouseEnter={onTokenHeaderEnter}
           onMouseLeave={() => setTokenHeaderHovered(false)}
         >
@@ -3244,7 +3244,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                 onClick={onPlay}
                 title="Re-evaluate and apply logic"
               >
-                <Play size={8} className="text-[#6aab8a]" fill="#6aab8a" />
+                <Play size={8} className="text-[#2BBD68]" fill="#2BBD68" />
               </button>
             )}
             {/* Copy / Paste column buttons — visible on header hover */}
@@ -3265,13 +3265,13 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                     onClick={(e) => handlePasteTokenColumn(e.shiftKey)}
                     title={`Paste${_conditionClipboard?.sourceLabel ? ` from ${_conditionClipboard.sourceLabel}` : ''} (${_conditionClipboard?.rows.length} row${(_conditionClipboard?.rows.length ?? 0) > 1 ? 's' : ''}) · ⌘V · Shift = append`}
                   >
-                    <ClipboardPaste size={8} className="text-[#8ea3b4]" />
+                    <ClipboardPaste size={8} className="text-[#7B8FFF]" />
                   </button>
                 )}
               </>
             )}
             {hasUnsaved && (
-              <span className="text-[8px] text-[#d4aa55] select-none">unsaved</span>
+              <span className="text-[8px] text-[#FBBF24] select-none">unsaved</span>
             )}
           </div>
           <div className="flex items-center gap-1.5">
@@ -3280,24 +3280,24 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
               <button
                 className="flex items-center gap-1 px-1.5 h-5 rounded transition-colors cursor-pointer"
                 style={{
-                  background: 'rgba(106,171,138,0.15)',
-                  border: '1px solid rgba(106,171,138,0.3)',
+                  background: 'rgba(43,189,104,0.15)',
+                  border: 'none',
                 }}
                 onClick={onSave}
                 title="Save token assignment logic"
               >
-                <Save size={9} className="text-[#6aab8a]" />
-                <span className="text-[8px] text-[#6aab8a] select-none">Save</span>
+                <Save size={9} className="text-[#2BBD68]" />
+                <span className="text-[8px] text-[#2BBD68] select-none">Save</span>
               </button>
             ) : saveFlash ? (
               <span className="flex items-center gap-1 px-1.5 h-5 rounded" style={{
-                background: 'rgba(106,171,138,0.08)',
-                border: '1px solid rgba(106,171,138,0.15)',
+                background: 'rgba(43,189,104,0.08)',
+                border: 'none',
               }}>
                 <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 6l3 3 5-5" stroke="#6aab8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 6l3 3 5-5" stroke="#2BBD68" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className="text-[8px] text-[#6aab8a] select-none">Saved</span>
+                <span className="text-[8px] text-[#2BBD68] select-none">Saved</span>
               </span>
             ) : null}
           </div>
@@ -3309,7 +3309,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
             <div className="flex items-center justify-center h-full text-[11px] text-[#333] select-none">
               <div className="text-center">
                 <div className="mb-1">No assignment rules yet</div>
-                <button className="text-[10px] px-2 py-1 rounded cursor-pointer" style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15`, border: `1px solid ${TOKEN_COLORS.tokenRef}33` }} onClick={addRow}>+ Add Rule</button>
+                <button className="text-[10px] px-2 py-1 rounded cursor-pointer" style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15`, border: 'none' }} onClick={addRow}>+ Add Rule</button>
               </div>
             </div>
           ) : (
@@ -3477,7 +3477,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
               return (
                 <span className="flex items-center gap-1 shrink-0">
                   <span className="inline-block w-[8px] h-[8px] rounded-[2px] shrink-0" style={{ backgroundColor: css, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }} />
-                  <span className="text-[10px] font-mono select-none" style={{ color: '#6aab8a' }}>
+                  <span className="text-[10px] font-mono select-none" style={{ color: '#2BBD68' }}>
                     {'{' + resolvedResult.tokenName + '}'}
                   </span>
                 </span>
@@ -3488,7 +3488,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
               return (
                 <span className="flex items-center gap-1 shrink-0">
                   <span className="inline-block w-[8px] h-[8px] rounded-[2px] shrink-0" style={{ backgroundColor: resolvedResult.cssColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }} />
-                  <span className="text-[10px] font-mono text-[#6aab8a] select-none">{finalDisplayStr}</span>
+                  <span className="text-[10px] font-mono text-[#2BBD68] select-none">{finalDisplayStr}</span>
                 </span>
               );
             }
@@ -3502,9 +3502,9 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                 <div
                   className="shrink-0 px-3 py-1.5"
                   style={{
-                    borderTop: '1px solid rgba(212,170,85,0.2)',
+                    borderTop: '1px solid rgba(251,191,36,0.2)',
                     background: isAutoConstrain
-                      ? 'rgba(212,170,85,0.06)'
+                      ? 'rgba(251,191,36,0.06)'
                       : 'rgba(212,114,114,0.04)',
                   }}
                 >
@@ -3514,20 +3514,20 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                       <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="shrink-0">
                         <path
                           d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z"
-                          fill={isAutoConstrain ? 'rgba(212,170,85,0.3)' : 'rgba(212,114,114,0.2)'}
-                          stroke={isAutoConstrain ? '#d4aa55' : '#d47272'}
+                          fill={isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(212,114,114,0.2)'}
+                          stroke={isAutoConstrain ? '#FBBF24' : '#FF4D6A'}
                           strokeWidth="1.2"
                         />
                       </svg>
                       <span className="text-[8px] tracking-wide uppercase select-none" style={{
-                        color: isAutoConstrain ? '#d4aa55' : '#d47272',
+                        color: isAutoConstrain ? '#FBBF24' : '#FF4D6A',
                       }}>
                         {isAutoConstrain ? 'Auto-Constrain' : 'Out of Range'}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[9px] font-mono select-none" style={{
-                        color: isAutoConstrain ? '#d4aa55' : '#d47272',
+                        color: isAutoConstrain ? '#FBBF24' : '#FF4D6A',
                       }}>
                         {constraintIssues.map((ci, i) => (
                           <span key={ci.channel}>
@@ -3545,9 +3545,9 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                         className="shrink-0 flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer"
                         style={{
                           background: isAutoConstrain
-                            ? 'rgba(212,170,85,0.15)'
+                            ? 'rgba(251,191,36,0.15)'
                             : 'rgba(255,255,255,0.06)',
-                          border: `1px solid ${isAutoConstrain ? 'rgba(212,170,85,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                          border: `1px solid ${isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.08)'}`,
                         }}
                         title={isAutoConstrain
                           ? 'Disable auto-constrain (allow out-of-range color values)'
@@ -3562,7 +3562,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                       >
                         {isAutoConstrain ? (
                           <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
-                            <path d="M2 6l3 3 5-5" stroke="#d4aa55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M2 6l3 3 5-5" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         ) : (
                           <X size={7} className="text-[#555]" />
@@ -3578,7 +3578,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                 {/* Warning floated above the final output bar */}
                 {warningMessage && (
                   <div
-                    className="absolute left-0 right-0 px-3 py-1 text-[8px] text-[#d47272] select-none pointer-events-none"
+                    className="absolute left-0 right-0 px-3 py-1 text-[8px] text-[#FF4D6A] select-none pointer-events-none"
                     style={{ bottom: '100%' }}
                   >
                     {warningMessage}
@@ -3589,9 +3589,9 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                   style={{
                     borderTop: showConstraintBar
                       ? 'none'
-                      : '1px solid rgba(106,171,138,0.2)',
+                      : '1px solid rgba(43,189,104,0.2)',
                     background: resolvedSource === 'logic'
-                      ? 'rgba(106,171,138,0.06)'
+                      ? 'rgba(43,189,104,0.06)'
                       : 'rgba(255,255,255,0.02)',
                   }}
                 >
@@ -3599,7 +3599,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                     {/* Left side: label + inline dropdown */}
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="text-[9px] tracking-wide uppercase select-none shrink-0" style={{
-                        color: resolvedSource === 'logic' ? '#6aab8a' : '#444',
+                        color: resolvedSource === 'logic' ? '#2BBD68' : '#444',
                       }}>
                         Final Output
                       </span>
@@ -3611,9 +3611,9 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                             style={{
                               background: hasAnyWarning
                                 ? 'rgba(212,114,114,0.12)'
-                                : 'rgba(106,171,138,0.12)',
-                              color: hasAnyWarning ? '#d47272' : '#6aab8a',
-                              border: `1px solid ${hasAnyWarning ? 'rgba(212,114,114,0.25)' : 'rgba(106,171,138,0.25)'}`,
+                                : 'rgba(43,189,104,0.12)',
+                              color: hasAnyWarning ? '#FF4D6A' : '#2BBD68',
+                              border: `1px solid ${hasAnyWarning ? 'rgba(212,114,114,0.25)' : 'rgba(43,189,104,0.25)'}`,
                             }}
                             value={selectedVar || '__last__'}
                             onChange={(e) => {
@@ -3632,7 +3632,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                           <ChevronDown
                             size={8}
                             className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2"
-                            style={{ color: hasAnyWarning ? '#d47272' : '#6aab8a' }}
+                            style={{ color: hasAnyWarning ? '#FF4D6A' : '#2BBD68' }}
                           />
                         </div>
                       )}
@@ -3836,7 +3836,7 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
                       className={`text-[9px] px-1.5 py-[1px] rounded transition-colors cursor-pointer select-none ${
                         isHidden
                           ? 'text-[#8a9b77] bg-[rgba(138,155,119,0.12)] border border-[rgba(138,155,119,0.25)]'
-                          : 'text-[#555] hover:text-[#888] bg-transparent border border-transparent hover:border-[rgba(255,255,255,0.06)]'
+                          : 'text-[#555] hover:text-[#888] bg-transparent border border-transparent hover:border-[rgba(255,255,255,0.04)]'
                       }`}
                       title={isHidden ? 'Channel hidden in node UI — click to show' : 'Hide this channel in node UI'}
                     >
@@ -3859,7 +3859,7 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
                         className={`text-[9px] px-1.5 py-[1px] rounded transition-colors cursor-pointer select-none ${
                           hasSlider
                             ? 'text-[#8a9b77] bg-[rgba(138,155,119,0.12)] border border-[rgba(138,155,119,0.25)]'
-                            : 'text-[#555] hover:text-[#888] bg-transparent border border-transparent hover:border-[rgba(255,255,255,0.06)]'
+                            : 'text-[#555] hover:text-[#888] bg-transparent border border-transparent hover:border-[rgba(255,255,255,0.04)]'
                         }`}
                         title={hasSlider ? `slider(${c.sliderMin}, ${c.sliderMax}) — click to remove` : 'Set custom slider range'}
                       >
@@ -3878,7 +3878,7 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
                       value={editingSlider[ch.key]?.min ?? ''}
                       onChange={(e) => setEditingSlider(prev => ({ ...prev, [ch.key]: { ...prev[ch.key], min: e.target.value } }))}
                       onKeyDown={(e) => { if (e.key === 'Enter') commitSlider(ch.key); if (e.key === 'Escape') setEditingSlider(prev => { const n = { ...prev }; delete n[ch.key]; return n; }); }}
-                      className="w-10 h-5 text-[10px] text-center bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded text-[#ccc] outline-none focus:border-[rgba(139,92,246,0.4)]"
+                      className="w-10 h-5 text-[10px] text-center bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.05)] rounded text-[#ccc] outline-none focus:border-[rgba(139,92,246,0.4)]"
                       min={range.min}
                       max={range.max}
                       step={1}
@@ -3891,7 +3891,7 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
                       value={editingSlider[ch.key]?.max ?? ''}
                       onChange={(e) => setEditingSlider(prev => ({ ...prev, [ch.key]: { ...prev[ch.key], max: e.target.value } }))}
                       onKeyDown={(e) => { if (e.key === 'Enter') commitSlider(ch.key); if (e.key === 'Escape') setEditingSlider(prev => { const n = { ...prev }; delete n[ch.key]; return n; }); }}
-                      className="w-10 h-5 text-[10px] text-center bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded text-[#ccc] outline-none focus:border-[rgba(139,92,246,0.4)]"
+                      className="w-10 h-5 text-[10px] text-center bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.05)] rounded text-[#ccc] outline-none focus:border-[rgba(139,92,246,0.4)]"
                       min={range.min}
                       max={range.max}
                       step={1}
@@ -3947,7 +3947,7 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
                     className={`text-[9px] px-1.5 py-[1px] rounded transition-colors cursor-pointer select-none ${
                       config['_tokenSection']?.hidden
                         ? 'text-[#8a9b77] bg-[rgba(138,155,119,0.12)] border border-[rgba(138,155,119,0.25)]'
-                        : 'text-[#555] hover:text-[#888] bg-transparent border border-transparent hover:border-[rgba(255,255,255,0.06)]'
+                        : 'text-[#555] hover:text-[#888] bg-transparent border border-transparent hover:border-[rgba(255,255,255,0.04)]'
                     }`}
                     title={config['_tokenSection']?.hidden ? 'Token section hidden in node UI — click to show' : 'Hide the token assignment section from node UI'}
                   >
@@ -5059,7 +5059,7 @@ export function AdvancedPopup({
         zIndex: 9999,
         borderRadius: '12px 12px 0 0',
         overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid rgba(255,255,255,0.05)',
         borderBottom: 'none',
         background: '#0A0A0A',
         boxShadow: '0 -8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
@@ -5076,7 +5076,7 @@ export function AdvancedPopup({
         className="flex items-center justify-between px-4 py-1.5 shrink-0"
         style={{
           background: '#0E0E0E',
-          borderBottom: isMinimized ? 'none' : '1px solid rgba(255,255,255,0.06)',
+          borderBottom: isMinimized ? 'none' : '1px solid rgba(255,255,255,0.04)',
           cursor: isMinimized ? 'default' : (isDragging ? 'grabbing' : 'grab'),
         }}
         onMouseDown={isMinimized ? undefined : handleDragStart}
@@ -5105,7 +5105,7 @@ export function AdvancedPopup({
             style={{
               color: '#999',
               background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.05)',
             }}
           >
             {nodeDisplayName || node.referenceName || node.id.slice(0, 8)}
@@ -5113,7 +5113,7 @@ export function AdvancedPopup({
           {isTokenNodeChild && (
             <span
               className="text-[9px] px-1.5 py-[1px] rounded select-none"
-              style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15`, border: `1px solid ${TOKEN_COLORS.tokenRef}33` }}
+              style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15`, border: 'none' }}
             >
               Token
             </span>
@@ -5144,8 +5144,8 @@ export function AdvancedPopup({
 
       {/* Sandbox banner */}
       {readOnly && !isMinimized && (
-        <div className="flex items-center justify-center px-4 py-1.5 shrink-0 select-none" style={{ background: 'rgba(106,171,138,0.04)', borderBottom: '1px solid rgba(106,171,138,0.10)' }}>
-          <span className="text-[10px] tracking-wide uppercase" style={{ color: 'rgba(106,171,138,0.6)' }}>Sandbox — explore freely, changes won't be saved</span>
+        <div className="flex items-center justify-center px-4 py-1.5 shrink-0 select-none" style={{ background: 'rgba(43,189,104,0.04)', borderBottom: '1px solid rgba(43,189,104,0.10)' }}>
+          <span className="text-[10px] tracking-wide uppercase" style={{ color: 'rgba(43,189,104,0.6)' }}>Sandbox — explore freely, changes won't be saved</span>
         </div>
       )}
 
@@ -5163,7 +5163,7 @@ export function AdvancedPopup({
             className="relative z-10 flex items-center gap-2 px-5 py-2 rounded-lg transition-all cursor-pointer select-none"
             style={{
               background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.08)',
               color: '#888',
             }}
             onMouseEnter={(e) => {
@@ -5176,7 +5176,7 @@ export function AdvancedPopup({
               const el = e.currentTarget;
               el.style.background = 'rgba(255,255,255,0.06)';
               el.style.color = '#888';
-              el.style.borderColor = 'rgba(255,255,255,0.1)';
+              el.style.borderColor = 'rgba(255,255,255,0.08)';
             }}
             onClick={handleExpandClick}
           >
@@ -5213,7 +5213,7 @@ export function AdvancedPopup({
                 className="flex flex-col shrink-0 overflow-hidden"
                 style={{
                   width: '200px',
-                  borderRight: '1px solid rgba(255,255,255,0.06)',
+                  borderRight: '1px solid rgba(255,255,255,0.04)',
                 }}
               >
                 <div className="px-4 pt-4 pb-3 flex-1 overflow-y-auto min-h-0">
@@ -5231,7 +5231,7 @@ export function AdvancedPopup({
                       style={{
                         color: '#666',
                         background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.04)',
                       }}
                     >
                       {colorInfo.colorSpace.toUpperCase()}
@@ -5250,9 +5250,9 @@ export function AdvancedPopup({
                             <span
                               className="text-[10px] font-mono px-1.5 py-[1px] rounded select-none"
                               style={{
-                                color: '#6aab8a',
-                                background: 'rgba(106,171,138,0.1)',
-                                border: '1px solid rgba(106,171,138,0.2)',
+                                color: '#2BBD68',
+                                background: 'rgba(43,189,104,0.1)',
+                                border: 'none',
                               }}
                             >
                               {fmtVal(colorInfo.channels[i], ch.key)}
@@ -5277,9 +5277,9 @@ export function AdvancedPopup({
                             <span
                               className="text-[10px] font-mono px-1.5 py-[1px] rounded select-none"
                               style={{
-                                color: '#6aab8a',
-                                background: 'rgba(106,171,138,0.1)',
-                                border: '1px solid rgba(106,171,138,0.2)',
+                                color: '#2BBD68',
+                                background: 'rgba(43,189,104,0.1)',
+                                border: 'none',
                               }}
                             >
                               {Math.round(colorInfo.alpha)}%
@@ -5308,7 +5308,7 @@ export function AdvancedPopup({
                     <>
                       <div className="h-px my-3" style={{ background: 'rgba(255,255,255,0.06)' }} />
                       <div className="flex items-center gap-1.5">
-                        <Circle size={6} fill="#6aab8a" stroke="none" />
+                        <Circle size={6} fill="#2BBD68" stroke="none" />
                         <span className="text-[10px] text-[#555] select-none">
                           {activeChannelCount} active channel{activeChannelCount !== 1 ? 's' : ''}
                         </span>
@@ -5344,7 +5344,7 @@ export function AdvancedPopup({
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'rgba(255,255,255,0.02)';

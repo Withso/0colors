@@ -291,7 +291,7 @@ function CurveVisualizer({
       <line x1={PAD} y1={PAD + 0.25 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.25 * (H - PAD * 2)} stroke="#111" strokeWidth="0.5" strokeDasharray="1,4" />
       <line x1={PAD} y1={PAD + 0.75 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.75 * (H - PAD * 2)} stroke="#111" strokeWidth="0.5" strokeDasharray="1,4" />
       {/* Curve path */}
-      <path d={pathParts.join(' ')} fill="none" stroke="#6b8598" strokeWidth="1.5" opacity="0.8" />
+      <path d={pathParts.join(' ')} fill="none" stroke="#465BFE" strokeWidth="1.5" opacity="0.8" />
       {/* Shade dots — always draggable */}
       {dots.map((dot, i) => (
         <g key={i}>
@@ -309,7 +309,7 @@ function CurveVisualizer({
             cy={dot.y}
             r={draggingIndex !== null ? 5 : 4}
             fill={dot.color}
-            stroke={draggingIndex === i ? '#6b8598' : '#000'}
+            stroke={draggingIndex === i ? '#465BFE' : '#000'}
             strokeWidth={draggingIndex === i ? 2 : 1}
             style={{ cursor: 'ns-resize' }}
             onMouseDown={(e) => handleDotMouseDown(e, i)}
@@ -373,7 +373,7 @@ function ShadePreviewStrip({
             >
               {/* Modification indicator dot */}
               {isModified && (
-                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#f5a623] z-10" style={{ boxShadow: '0 0 2px rgba(0,0,0,0.5)' }} />
+                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FBBF24] z-10" style={{ boxShadow: '0 0 2px rgba(0,0,0,0.5)' }} />
               )}
               {copiedIndex === i && (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -407,9 +407,9 @@ function Island({
       className={`rounded-xl overflow-hidden transition-all duration-150 ${className}`}
       style={{
         backgroundColor: '#0e0e0e',
-        border: `1px solid ${isSelected || isMultiSelected ? 'rgba(107, 133, 152, 0.5)' : '#1a1a1a'}`,
+        border: `1px solid ${isSelected || isMultiSelected ? 'rgba(70, 91, 254, 0.5)' : '#141414'}`,
         boxShadow: isSelected
-          ? '0 0 0 1px rgba(107,133,152,0.3), 0 4px 16px rgba(0,0,0,0.4)'
+          ? '0 0 0 1px rgba(70,91,254,0.3), 0 4px 16px rgba(0,0,0,0.4)'
           : '0 2px 8px rgba(0,0,0,0.3)',
       }}
     >
@@ -805,7 +805,7 @@ export function PaletteNodeCard({
         <div
           className={`absolute top-[10px] -left-[22px] z-10 transition-all cursor-pointer ${
             isNodeHidden
-              ? 'opacity-100 text-[#6b8598]'
+              ? 'opacity-100 text-[#465BFE]'
               : isHovered
                 ? 'opacity-100 text-[#a1a1a1] hover:text-[#ededed]'
                 : 'opacity-0'
@@ -833,9 +833,9 @@ export function PaletteNodeCard({
           <Crown 
             className={`h-3 w-3 shrink-0 transition-all ${
               isLinkedToPrimary()
-                ? 'text-yellow-500 fill-yellow-500'
+                ? 'text-[#FBBF24] fill-[#FBBF24]'
                 : hasColorBeenModified
-                  ? 'text-[#6b8598] fill-[#6b8598]'
+                  ? 'text-[#465BFE] fill-[#465BFE]'
                   : 'text-[#555] fill-none'
             }`}
             fill={isLinkedToPrimary() ? 'currentColor' : hasColorBeenModified ? 'currentColor' : 'none'}
@@ -900,7 +900,7 @@ export function PaletteNodeCard({
         {/* ── All palette controls below the swatch — disabled entirely when inherited ── */}
         <div style={{ ...(isAllInputDisabled ? { pointerEvents: 'none' as const, opacity: showAllVisible ? 1 : 0.45 } : {}) }}>
         {/* ── NAME ── */}
-        <div className="border-t border-[#1a1a1a] transition-opacity">
+        <div className="border-t border-[#141414] transition-opacity">
           <div
             className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-[#111] transition-colors"
             onClick={(e) => { e.stopPropagation(); toggleSection('name'); }}
@@ -914,7 +914,7 @@ export function PaletteNodeCard({
                 title={node.paletteNameLocked ? 'Unlock name' : 'Lock name'}
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                {node.paletteNameLocked ? <Lock className="w-3 h-3 text-[#6b8598]" /> : <Unlock className="w-3 h-3 text-[#444]" />}
+                {node.paletteNameLocked ? <Lock className="w-3 h-3 text-[#465BFE]" /> : <Unlock className="w-3 h-3 text-[#444]" />}
               </button>
               <ChevronDown className={`w-3.5 h-3.5 text-[#555] transition-transform ${expandedSections.name ? 'rotate-180' : ''}`} />
             </div>
@@ -924,7 +924,7 @@ export function PaletteNodeCard({
               <Input
                 value={paletteName}
                 onChange={(e) => { setIsManuallyEdited(true); onUpdateNode(node.id, { paletteName: e.target.value, paletteNameLocked: true }); }}
-                className="h-7 bg-[#111] border-[#1e1e1e] text-[#ededed] text-xs rounded-lg"
+                className="h-7 bg-[#111] border-[#181818] text-[#ededed] text-xs rounded-lg"
                 style={{ fontFamily: 'var(--font-sans)' }}
                 placeholder="Palette name"
                 onMouseDown={(e) => e.stopPropagation()}
@@ -936,7 +936,7 @@ export function PaletteNodeCard({
 
         {/* ── COLOR ── */}
         <div
-          className="border-t border-[#1a1a1a] transition-opacity"
+          className="border-t border-[#141414] transition-opacity"
           style={{ opacity: colorDimOpacity }}
           onMouseEnter={() => colorNeedsHover && setHoveredSection('color')}
           onMouseLeave={() => colorNeedsHover && setHoveredSection(null)}
@@ -948,10 +948,10 @@ export function PaletteNodeCard({
           >
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-[#555] uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Color</span>
-              {isColorChanged && <div className="w-1.5 h-1.5 rounded-full bg-[#f5a623]" title="Modified from primary" />}
+              {isColorChanged && <div className="w-1.5 h-1.5 rounded-full bg-[#FBBF24]" title="Modified from primary" />}
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-4 h-4 rounded border border-[#333]" style={{ backgroundColor: `hsl(${eHue}, ${eSat}%, ${eLit}%)` }} />
+              <div className="w-4 h-4 rounded border border-[#252525]" style={{ backgroundColor: `hsl(${eHue}, ${eSat}%, ${eLit}%)` }} />
               <ChevronDown className={`w-3.5 h-3.5 text-[#555] transition-transform ${expandedSections.color ? 'rotate-180' : ''}`} />
             </div>
           </button>
@@ -994,15 +994,15 @@ export function PaletteNodeCard({
               {/* ── Format selector + value display ── */}
               <div className="flex gap-2 mt-2">
                 <Select value={colorFormat} onValueChange={(value) => onUpdateNode(node.id, { paletteColorFormat: value as any })}>
-                  <SelectTrigger className="w-[72px] bg-[#111] border-[#1e1e1e] text-[#ededed] text-[11px]" style={{ height: '28px' }} onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-[#111] border-[#2a2a2a]">
+                  <SelectTrigger className="w-[72px] bg-[#111] border-[#181818] text-[#ededed] text-[11px]" style={{ height: '28px' }} onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-[#111] border-[#222]">
                     <SelectItem value="HEX" className="text-[#ededed] text-xs">HEX</SelectItem>
                     <SelectItem value="HSLA" className="text-[#ededed] text-xs">HSLA</SelectItem>
                     <SelectItem value="OKLCH" className="text-[#ededed] text-xs">OKLCH</SelectItem>
                     <SelectItem value="RGBA" className="text-[#ededed] text-xs">RGBA</SelectItem>
                   </SelectContent>
                 </Select>
-                <div className="flex-1 bg-[#111] border border-[#1e1e1e] rounded-lg px-2.5 flex items-center text-[#ededed] text-[11px] overflow-hidden" style={{ fontFamily: 'var(--font-mono)', height: '28px' }}>
+                <div className="flex-1 bg-[#111] border border-[#181818] rounded-lg px-2.5 flex items-center text-[#ededed] text-[11px] overflow-hidden" style={{ fontFamily: 'var(--font-mono)', height: '28px' }}>
                   {colorFormat === 'HEX' && hexColor}
                   {colorFormat === 'HSLA' && `hsla(${Math.round(eHue)}, ${Math.round(eSat)}%, ${Math.round(eLit)}%, ${(eAlpha ?? 100) / 100})`}
                   {colorFormat === 'OKLCH' && `oklch(${(oklchValues.l / 100).toFixed(2)} ${(oklchValues.c / 100).toFixed(3)} ${Math.round(oklchValues.h)})`}
@@ -1014,7 +1014,7 @@ export function PaletteNodeCard({
         </div>
 
         {/* ── DISTRIBUTION ── */}
-        <div className="border-t border-[#1a1a1a]">
+        <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-[#111] transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('distribution'); }} onMouseDown={(e) => e.stopPropagation()}>
             <span className="text-[10px] text-[#555] uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Distribution</span>
             <ChevronDown className={`w-3.5 h-3.5 text-[#555] transition-transform ${expandedSections.distribution ? 'rotate-180' : ''}`} />
@@ -1022,8 +1022,8 @@ export function PaletteNodeCard({
           {expandedSections.distribution && (
             <div className="px-4 pb-3">
               <Select value={curveType} onValueChange={handleCurveChange}>
-                <SelectTrigger className="bg-[#111] border-[#1e1e1e] text-[#ededed] h-7 text-xs mb-2" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#111] border-[#2a2a2a]">
+                <SelectTrigger className="bg-[#111] border-[#181818] text-[#ededed] h-7 text-xs mb-2" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#111] border-[#222]">
                   <SelectItem value="linear" className="text-[#ededed] text-xs">Linear</SelectItem>
                   <SelectItem value="ease-in" className="text-[#ededed] text-xs">Ease In</SelectItem>
                   <SelectItem value="ease-out" className="text-[#ededed] text-xs">Ease Out</SelectItem>
@@ -1042,7 +1042,7 @@ export function PaletteNodeCard({
         </div>
 
         {/* ── LIGHTNESS SCALE ── */}
-        <div className="border-t border-[#1a1a1a]">
+        <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-[#111] transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('lightnessScale'); }} onMouseDown={(e) => e.stopPropagation()}>
             <span className="text-[10px] text-[#555] uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Lightness Scale</span>
             <ChevronDown className={`w-3.5 h-3.5 text-[#555] transition-transform ${expandedSections.lightnessScale ? 'rotate-180' : ''}`} />
@@ -1070,7 +1070,7 @@ export function PaletteNodeCard({
         </div>
 
         {/* ── SATURATION ── */}
-        <div className="border-t border-[#1a1a1a]">
+        <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-[#111] transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('saturation'); }} onMouseDown={(e) => e.stopPropagation()}>
             <span className="text-[10px] text-[#555] uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Saturation</span>
             <ChevronDown className={`w-3.5 h-3.5 text-[#555] transition-transform ${expandedSections.saturation ? 'rotate-180' : ''}`} />
@@ -1078,8 +1078,8 @@ export function PaletteNodeCard({
           {expandedSections.saturation && (
             <div className="px-4 pb-3">
               <Select value={satMode} onValueChange={(value) => onUpdateNode(node.id, { paletteSaturationMode: value as any })}>
-                <SelectTrigger className="bg-[#111] border-[#1e1e1e] text-[#ededed] h-7 text-xs mb-2" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#111] border-[#2a2a2a]">
+                <SelectTrigger className="bg-[#111] border-[#181818] text-[#ededed] h-7 text-xs mb-2" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#111] border-[#222]">
                   <SelectItem value="constant" className="text-[#ededed] text-xs">Constant</SelectItem>
                   <SelectItem value="auto" className="text-[#ededed] text-xs">Auto (perceptual)</SelectItem>
                   <SelectItem value="manual" className="text-[#ededed] text-xs">Manual range</SelectItem>
@@ -1107,7 +1107,7 @@ export function PaletteNodeCard({
         </div>
 
         {/* ── HUE SHIFT ── */}
-        <div className="border-t border-[#1a1a1a]">
+        <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-[#111] transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('hueShift'); }} onMouseDown={(e) => e.stopPropagation()}>
             <span className="text-[10px] text-[#555] uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Hue Shift</span>
             <div className="flex items-center gap-1.5">
@@ -1124,7 +1124,7 @@ export function PaletteNodeCard({
 
         {/* ── PATTERN + SHADES ── (hidden for non-primary themes) */}
         {isPrimaryTheme && (
-        <div className="border-t border-[#1a1a1a]">
+        <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-[#111] transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('pattern'); }} onMouseDown={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-4">
               <span className="text-[10px] text-[#555] uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Pattern</span>
@@ -1140,8 +1140,8 @@ export function PaletteNodeCard({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Select value={namingPattern} onValueChange={(value) => onUpdateNode(node.id, { paletteNamingPattern: value as any })}>
-                    <SelectTrigger className="bg-[#111] border-[#1e1e1e] text-[#ededed] h-7 text-xs" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
-                    <SelectContent className="bg-[#111] border-[#2a2a2a]">
+                    <SelectTrigger className="bg-[#111] border-[#181818] text-[#ededed] h-7 text-xs" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-[#111] border-[#222]">
                       <SelectItem value="1-9" className="text-[#ededed] text-xs">1-9</SelectItem>
                       <SelectItem value="10-90" className="text-[#ededed] text-xs">10-90</SelectItem>
                       <SelectItem value="100-900" className="text-[#ededed] text-xs">100-900</SelectItem>
@@ -1159,7 +1159,7 @@ export function PaletteNodeCard({
         )}
 
         {/* ── PREVIEW ── */}
-        <div className="border-t border-[#1a1a1a]">
+        <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-[#111] transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('preview'); }} onMouseDown={(e) => e.stopPropagation()}>
             <span className="text-[10px] text-[#555] uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Preview</span>
             <ChevronDown className={`w-3.5 h-3.5 text-[#555] transition-transform ${expandedSections.preview ? 'rotate-180' : ''}`} />
@@ -1189,8 +1189,8 @@ export function PaletteNodeCard({
             isStructurallyLocked
               ? 'bg-[#222] cursor-not-allowed'
               : isWireHovered && wireStartButtonType === 'right'
-                ? 'bg-green-500'
-                : 'bg-[#333] hover:bg-[#444]'
+                ? 'bg-[#2BBD68]'
+                : 'bg-[#333] hover:bg-[#333]'
           }`}
           onMouseDown={(e) => {
             e.stopPropagation();
@@ -1222,8 +1222,8 @@ export function PaletteNodeCard({
             isStructurallyLocked
               ? 'bg-[#222] cursor-not-allowed'
               : isWireHovered && wireStartButtonType === 'left'
-                ? 'bg-green-500'
-                : 'bg-[#333] hover:bg-[#444]'
+                ? 'bg-[#2BBD68]'
+                : 'bg-[#333] hover:bg-[#333]'
           }`}
           onMouseDown={(e) => {
             e.stopPropagation();
@@ -1252,7 +1252,7 @@ export function PaletteNodeCard({
           style={{ opacity: isSelected ? undefined : 0 }}
         >
           <button
-            className="w-5 h-5 rounded-full bg-[#d47272] flex items-center justify-center hover:bg-[#e09090] transition-colors"
+            className="w-5 h-5 rounded-full bg-[#FF4D6A] flex items-center justify-center hover:bg-[#FF7A90] transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               onDeleteNode(node.id);

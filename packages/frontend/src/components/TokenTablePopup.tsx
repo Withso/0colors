@@ -119,7 +119,7 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
             <div className="h-px bg-[#ffffff]/[0.06] mx-2" />
             <div className="px-3 pt-2 pb-1.5">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[10px] text-amber-500/80 uppercase tracking-wide">Computed</span>
+                <span className="text-[10px] text-[#FBBF24]/80 uppercase tracking-wide">Computed</span>
               </div>
               <div className="flex items-center gap-2 mb-1.5">
                 <div className="w-3 h-3 rounded-[3px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: data.computed.cssColor }} />
@@ -1070,9 +1070,9 @@ export function TokenTablePopup({
       const state = getTokenModificationState(token, themeId);
       if (state === 'primary') return null;
       if (state === 'inherited') {
-        return <Crown className="h-3 w-3 shrink-0 text-yellow-500 fill-yellow-500" />;
+        return <Crown className="h-3 w-3 shrink-0 text-[#FBBF24] fill-[#FBBF24]" />;
       }
-      return <Crown className="h-3 w-3 shrink-0 text-[#6b8598] fill-[#6b8598]" />;
+      return <Crown className="h-3 w-3 shrink-0 text-[#465BFE] fill-[#465BFE]" />;
     }
     const node = tokenNodeMap.get(`${token.id}-${themeId}`);
     if (!node) return null;
@@ -1081,10 +1081,10 @@ export function TokenTablePopup({
     if (state === 'primary') return null;
     if (state === 'inherited') {
       // Inherited from primary: yellow crown
-      return <Crown className="h-3 w-3 shrink-0 text-yellow-500 fill-yellow-500" />;
+      return <Crown className="h-3 w-3 shrink-0 text-[#FBBF24] fill-[#FBBF24]" />;
     }
     // Modified: accent crown
-    return <Crown className="h-3 w-3 shrink-0 text-[#6b8598] fill-[#6b8598]" />;
+    return <Crown className="h-3 w-3 shrink-0 text-[#465BFE] fill-[#465BFE]" />;
   };
 
   // ───── Cell click → navigate to node ─────
@@ -1261,8 +1261,8 @@ export function TokenTablePopup({
       const tnModState = getTokenModificationState(token, themeId);
       const tnCrown = (() => {
         if (tnModState === 'primary') return null;
-        if (tnModState === 'inherited') return <Crown className="h-3 w-3 shrink-0 text-yellow-500 fill-yellow-500" />;
-        return <Crown className="h-3 w-3 shrink-0 text-[#6b8598] fill-[#6b8598]" />;
+        if (tnModState === 'inherited') return <Crown className="h-3 w-3 shrink-0 text-[#FBBF24] fill-[#FBBF24]" />;
+        return <Crown className="h-3 w-3 shrink-0 text-[#465BFE] fill-[#465BFE]" />;
       })();
       const tnDimClass = tnModState === 'inherited' ? 'opacity-50 hover:opacity-100 transition-opacity' : '';
       // Check for computed result from advanced logic — show computed color when available
@@ -1277,7 +1277,7 @@ export function TokenTablePopup({
           return (
             <div className={`flex items-center gap-[6px] min-w-0 ${tnDimClass}`}>
               <div
-                className="w-[11px] h-[11px] rounded-[2px] shrink-0 border border-amber-500/30"
+                className="w-[11px] h-[11px] rounded-[2px] shrink-0 border border-[#FBBF24]/30"
                 style={{ backgroundColor: cssColor }}
               />
               <span className="text-[11px] text-[#888] truncate min-w-0 flex-1" title={computedResult.expressionText}>
@@ -1296,7 +1296,7 @@ export function TokenTablePopup({
             if (isRefOwnedByTokenNode) {
               return (
                 <div className={`flex items-center gap-[6px] min-w-0 ${tnDimClass}`}>
-                  <Tag className="size-[11px] shrink-0 text-amber-500/60" />
+                  <Tag className="size-[11px] shrink-0 text-[#FBBF24]/60" />
                   <span className="text-[11px] text-[#888] truncate min-w-0 flex-1" title={computedResult.expressionText}>
                     {refToken.name}
                   </span>
@@ -1308,7 +1308,7 @@ export function TokenTablePopup({
               return (
                 <div className={`flex items-center gap-[6px] min-w-0 ${tnDimClass}`}>
                   <div
-                    className="w-[11px] h-[11px] rounded-[2px] shrink-0 border border-amber-500/30"
+                    className="w-[11px] h-[11px] rounded-[2px] shrink-0 border border-[#FBBF24]/30"
                     style={{ backgroundColor: vtHsl }}
                   />
                   <span className="text-[11px] text-[#888] truncate min-w-0 flex-1" title={computedResult.expressionText}>
@@ -1684,7 +1684,7 @@ export function TokenTablePopup({
     <tr
       key={token.id}
       data-table-token-id={token.id}
-      className={`group/row border-b border-[#141414] transition-colors duration-300 ${highlightRowTokenId === token.id ? 'ring-1 ring-inset ring-[#6b8598]/50 bg-[#6b8598]/[0.08]' : ''}`}
+      className={`group/row border-b border-[#141414] transition-colors duration-300 ${highlightRowTokenId === token.id ? 'ring-1 ring-inset ring-[#465BFE]/50 bg-[#465BFE]/[0.08]' : ''}`}
     >
       <td className="py-[7px] pr-3 text-[12px] text-[#cdcdcd] whitespace-nowrap hover:bg-[#0f0f0f] transition-colors" style={{ paddingLeft: isGroupChild ? 36 : 16 }}>
         <div className="flex items-center gap-1.5 max-w-[220px]">
@@ -1697,7 +1697,7 @@ export function TokenTablePopup({
             for (const [, themeMap] of computedTokensByTheme) {
               if (themeMap.has(token.id)) {
                 return (
-                  <span className="text-[9px] font-mono text-amber-500/70 px-1 py-px rounded bg-amber-500/[0.08] shrink-0 uppercase tracking-wider">
+                  <span className="text-[9px] font-mono text-[#FBBF24]/70 px-1 py-px rounded bg-[#FBBF24]/[0.08] shrink-0 uppercase tracking-wider">
                     logic
                   </span>
                 );
@@ -1724,7 +1724,7 @@ export function TokenTablePopup({
             tabIndex={canNavigate ? 0 : undefined}
             className={`py-[7px] px-3 border-l border-[#141414] outline-none transition-colors duration-150 ${
               canNavigate
-                ? 'cursor-pointer hover:bg-[#131c22] active:bg-[#1e2b33] focus-visible:ring-1 focus-visible:ring-[#6b8598]/50 focus-visible:ring-inset'
+                ? 'cursor-pointer hover:bg-[#131c22] active:bg-[#1e2b33] focus-visible:ring-1 focus-visible:ring-[#465BFE]/50 focus-visible:ring-inset'
                 : 'hover:bg-[#0f0f0f]'
             }`}
             style={isFlashing ? { animation: 'cellFlash 600ms ease-out' } : undefined}
@@ -1820,7 +1820,6 @@ export function TokenTablePopup({
           width: size.width,
           height: size.height,
           background: '#0a0a0a',
-          border: isActive ? '1px solid #333' : '1px solid #1a1a1a',
           boxShadow: isActive
             ? '0 24px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06) inset'
             : '0 16px 48px rgba(0,0,0,.4)',
@@ -1839,7 +1838,7 @@ export function TokenTablePopup({
         {/* ─── Header ─── */}
         <div
           className="flex items-center justify-between px-4 h-[42px] shrink-0 select-none"
-          style={{ borderBottom: '1px solid #1a1a1a', cursor: isDragging ? 'grabbing' : 'grab' }}
+          style={{ borderBottom: '1px solid #141414', cursor: isDragging ? 'grabbing' : 'grab' }}
           onMouseDown={handleDragStart}
         >
           <div className="flex items-center gap-3 min-w-0">
@@ -1976,7 +1975,7 @@ export function TokenTablePopup({
                   data-dropdown
                   className={`flex items-center gap-1.5 h-[26px] px-2.5 rounded-md border text-[11px] transition-colors outline-none cursor-pointer ${
                     logicFilter !== 'all'
-                      ? 'bg-amber-500/[0.08] border-amber-500/20 text-amber-400'
+                      ? 'bg-[#FBBF24]/[0.08] border-[#FBBF24]/20 text-[#FBBF24]'
                       : 'bg-[#111] border-[#1f1f1f] hover:border-[#333] text-[#777] hover:text-[#ccc]'
                   }`}
                 >
@@ -2025,7 +2024,7 @@ export function TokenTablePopup({
             <thead className="sticky top-0 z-[5]">
               <tr style={{ background: '#0a0a0a' }}>
                 <th
-                  className="text-left py-2 px-4 text-[11px] text-[#555] uppercase tracking-wider border-b border-[#1a1a1a] select-none cursor-pointer hover:text-[#888] transition-colors"
+                  className="text-left py-2 px-4 text-[11px] text-[#555] uppercase tracking-wider border-b border-[#141414] select-none cursor-pointer hover:text-[#888] transition-colors"
                   style={{ width: 200, minWidth: 140 }}
                   onClick={() => toggleSort('name')}
                 >
@@ -2043,11 +2042,11 @@ export function TokenTablePopup({
                 {projectThemes.map(theme => (
                   <th
                     key={theme.id}
-                    className="text-left py-2 px-3 text-[11px] text-[#555] uppercase tracking-wider border-b border-[#1a1a1a] border-l border-l-[#141414]"
+                    className="text-left py-2 px-3 text-[11px] text-[#555] uppercase tracking-wider border-b border-[#141414] border-l border-l-[#141414]"
                   >
                     <div className="flex items-center gap-1.5">
                       {theme.isPrimary && (
-                        <Crown className="w-3 h-3 text-yellow-500 fill-yellow-500 shrink-0" />
+                        <Crown className="w-3 h-3 text-[#FBBF24] fill-[#FBBF24] shrink-0" />
                       )}
                       <span className="truncate" title={theme.name}>{theme.name}</span>
                     </div>
@@ -2112,7 +2111,7 @@ export function TokenTablePopup({
         {/* ─── Footer ─── */}
         <div
           className="flex items-center justify-between px-4 h-[30px] shrink-0 select-none"
-          style={{ borderTop: '1px solid #1a1a1a' }}
+          style={{ borderTop: '1px solid #141414' }}
         >
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-[#444] tabular-nums">
@@ -2124,7 +2123,7 @@ export function TokenTablePopup({
               {tokensWithLogicIds.size > 0 && (
                 <>
                   {' \u00b7 '}
-                  <span className="text-amber-500/50">{tokensWithLogicIds.size} with logic</span>
+                  <span className="text-[#FBBF24]/50">{tokensWithLogicIds.size} with logic</span>
                 </>
               )}
             </span>
@@ -2134,7 +2133,7 @@ export function TokenTablePopup({
               <Tip label="Back to Previous View" side="top">
               <button
                 onClick={handleGoBack}
-                className="flex items-center gap-1 h-[20px] px-2 rounded bg-[#161616] border border-[#222] hover:border-[#6b8598]/40 hover:bg-[#131c22] text-[10px] text-[#555] hover:text-[#8ea3b4] transition-colors cursor-pointer"
+                className="flex items-center gap-1 h-[20px] px-2 rounded bg-[#161616] border border-[#222] hover:border-[#465BFE]/40 hover:bg-[#131c22] text-[10px] text-[#555] hover:text-[#7B8FFF] transition-colors cursor-pointer"
               >
                 <Undo2 className="h-2.5 w-2.5" />
                 <span>Back</span>

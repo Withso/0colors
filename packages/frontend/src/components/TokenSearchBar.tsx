@@ -412,7 +412,7 @@ export function TokenSearchBar({
           onChange={(e) => onSearchQueryChange(e.target.value)}
           onFocus={() => setIsExpanded(true)}
           className={`w-full h-7 pl-7 text-xs bg-[#0a0a0a] text-[#ededed] placeholder-[#555] rounded-md border-0 outline-none transition-all ${
-            isExpanded ? 'ring-1 ring-[#333]' : ''
+            isExpanded ? 'ring-1 ring-[#252525]' : ''
           } ${hasFilters ? 'pr-14' : 'pr-7'}`}
         />
 

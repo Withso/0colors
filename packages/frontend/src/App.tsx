@@ -11036,7 +11036,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="h-screen flex bg-[#000] p-2 gap-2 overflow-hidden">
+    <div className="h-screen flex bg-[#000] p-1.5 gap-1.5 overflow-hidden">
       <Toaster
         position="bottom-right"
         theme="dark"
@@ -11044,7 +11044,7 @@ export function AppShell() {
           style: {
             background: 'rgba(26, 26, 26, 0.95)',
             backdropFilter: 'blur(12px)',
-            border: '1px solid #2a2a2a',
+            border: 'none',
             color: '#ededed',
             boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
             borderRadius: '8px',
@@ -11097,7 +11097,7 @@ export function AppShell() {
       {/* Right Column - Header + Canvas as separate islands */}
       <div className="flex-1 flex flex-col gap-2 min-h-0">
         {/* Top Bar - Floating Island */}
-        <div className="shrink-0 relative bg-[#111] rounded-2xl px-4 h-14 flex items-center justify-between select-none">
+        <div className="shrink-0 relative bg-[#0a0a0a] rounded-xl px-3 h-12 flex items-center justify-between select-none">
           <>
             {/* Left: View Mode Switcher + Search */}
             <div className="flex items-center gap-3">
@@ -11112,7 +11112,7 @@ export function AppShell() {
               ) : (
                 <>
                   {/* View Switcher */}
-                  <div className="flex p-1 bg-[#111] border border-[#333] rounded-lg">
+                  <div className="flex p-1 bg-[#111] rounded-lg">
                     <Tip label="Canvas View" side="bottom">
                       <button
                         onClick={() => setViewMode('canvas')}
@@ -11157,8 +11157,8 @@ export function AppShell() {
                         <button
                           onClick={() => setShowPublishPopup(activeProjectId)}
                           className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${isPublished
-                              ? 'text-[#6b8598] hover:text-[#8ea3b4]'
-                              : 'text-[#666] hover:text-[#6b8598]'
+                              ? 'text-[#465BFE] hover:text-[#7B8FFF]'
+                              : 'text-[#666] hover:text-[#465BFE]'
                             }`}
                         >
                           <Globe className="h-4 w-4" />
@@ -11173,7 +11173,7 @@ export function AppShell() {
             {/* Center: Page Selector */}
             {viewMode !== 'export' && (
               <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
+                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent transition-all">
                   {/* Text Area - Handles Double Click for Rename */}
                   <div
                     className="px-2 h-full flex items-center cursor-default select-none max-w-[200px]"
@@ -11229,7 +11229,7 @@ export function AppShell() {
                         <ChevronDown className="h-3.5 w-3.5 opacity-50" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60] ml-[-60px]">
+                    <DropdownMenuContent align="start" sideOffset={8} className="w-64 bg-[#111] p-1 shadow-lg z-[60] ml-[-60px]">
                       <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
                         Pages
                       </div>
@@ -11305,7 +11305,7 @@ export function AppShell() {
                                             handleDeletePage(page.id);
                                           }
                                         }}
-                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#d47272] transition-colors"
+                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#FF4D6A] transition-colors"
                                       >
                                         <Trash2 className="h-3 w-3" />
                                       </div>
@@ -11323,7 +11323,7 @@ export function AppShell() {
                             onClick={handleCreatePage}
                             className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
                           >
-                            <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
+                            <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed">
                               <Plus className="h-3 w-3" />
                             </div>
                             <span>Add new page</span>
@@ -11349,18 +11349,18 @@ export function AppShell() {
                 <Tip label="Token Overview Table" side="bottom">
                   <button
                     onClick={() => setShowTokenTable(prev => !prev)}
-                    className={`flex items-center gap-2 h-9 px-3 rounded-lg border transition-all cursor-pointer ${showTokenTable ? 'border-[#333] bg-[#1a1a1a] text-[#ededed]' : 'border-transparent hover:border-[#333] hover:bg-[#1a1a1a] text-[#999] hover:text-[#ededed]'}`}
+                    className={`flex items-center gap-2 h-9 px-3 rounded-lg border transition-all cursor-pointer ${showTokenTable ? 'border-transparent bg-[#1a1a1a] text-[#ededed]' : 'border-transparent hover:bg-[#1a1a1a] text-[#999] hover:text-[#ededed]'}`}
                   >
                     <Table className="h-4 w-4" />
                     <span className="text-[13px]">Token Table</span>
                   </button>
                 </Tip>
                 {/* Dev Mode toggle — moved to bottom toolbar */}
-                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent hover:border-[#333] transition-all">
+                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent transition-all">
                   {/* Theme Name Area - Handles Double Click */}
                   <div className="flex items-center px-2 h-full gap-2 cursor-default select-none max-w-[200px]">
                     {themes.find(t => t.id === activeThemeId)?.isPrimary ? (
-                      <Crown className="h-3.5 w-3.5 text-yellow-500/80 fill-yellow-500/80 shrink-0" />
+                      <Crown className="h-3.5 w-3.5 text-[#FBBF24]/80 fill-[#FBBF24]/80 shrink-0" />
                     ) : (
                       <SwatchBook className="h-3.5 w-3.5 text-[#777] shrink-0" />
                     )}
@@ -11420,7 +11420,7 @@ export function AppShell() {
                         <ChevronDown className="h-3.5 w-3.5 opacity-50" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-[#111] border-[#252525] p-1 shadow-xl z-[60]">
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-[#111] p-1 shadow-lg z-[60]">
                       <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
                         Themes
                       </div>
@@ -11447,7 +11447,7 @@ export function AppShell() {
                                 title={theme.isPrimary ? "Primary Theme" : ""}
                               >
                                 {theme.isPrimary ? (
-                                  <Crown className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />
+                                  <Crown className="h-3.5 w-3.5 text-[#FBBF24] flex-shrink-0" />
                                 ) : (
                                   <SwatchBook className={`h-3.5 w-3.5 flex-shrink-0 ${activeThemeId === theme.id ? 'text-[#888]' : 'text-[#555]'
                                     }`} />
@@ -11509,7 +11509,7 @@ export function AppShell() {
                                             handleDeleteTheme(theme.id);
                                           }
                                         }}
-                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#d47272] transition-colors"
+                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#FF4D6A] transition-colors"
                                       >
                                         <Trash2 className="h-3 w-3" />
                                       </div>
@@ -11539,7 +11539,7 @@ export function AppShell() {
                             onClick={handleCreateTheme}
                             className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
                           >
-                            <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed border-[#333]">
+                            <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed">
                               <Plus className="h-3 w-3" />
                             </div>
                             <span>Add new theme</span>
@@ -11555,7 +11555,7 @@ export function AppShell() {
         </div>
 
         {/* Canvas Area - Floating Island */}
-        <div className="flex-1 relative rounded-2xl overflow-hidden bg-[#000] min-h-0">
+        <div className="flex-1 relative rounded-xl overflow-hidden bg-[#000] min-h-0">
 
 
           {/* Top-right canvas area: Sign In button + Template Switcher */}
@@ -11564,7 +11564,7 @@ export function AppShell() {
               {/* Sign In / Sign Up — shown for non-authenticated users on ANY project type */}
               {!authSession && (
                 <button
-                  className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md border border-[#1e2b33] hover:border-[#283841] text-[#6b8598] hover:text-[#8ea3b4] transition-all cursor-pointer shadow-lg"
+                  className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md border border-[#1e2b33] hover:border-[#283841] text-[#465BFE] hover:text-[#7B8FFF] transition-all cursor-pointer shadow-lg"
                   onClick={() => setShowAuthModal(true)}
                 >
                   <LogIn className="h-3.5 w-3.5" />
@@ -11575,8 +11575,8 @@ export function AppShell() {
               {isSampleMode && !isCommunityMode && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md border border-[#252525] hover:border-[#333] text-[#ededed] transition-all cursor-pointer shadow-lg">
-                      <BookOpen className="h-3.5 w-3.5 text-[#6b8598]" />
+                    <button className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md hover:bg-[#1a1a1a] text-[#ededed] transition-all cursor-pointer shadow-lg">
+                      <BookOpen className="h-3.5 w-3.5 text-[#465BFE]" />
                       <span className="text-[12px] max-w-[160px] truncate">
                         {sampleTemplates[activeSampleIdx]?.name || 'Template'}
                       </span>
@@ -11586,7 +11586,7 @@ export function AppShell() {
                       <ChevronDown className="h-3 w-3 text-[#666]" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100002 }}>
+                  <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-[#111] p-1 shadow-lg" style={{ zIndex: 100002 }}>
                     <div className="px-2 py-1.5 flex items-center justify-between">
                       <span className="text-xs font-medium text-[#666] uppercase tracking-wider">Templates</span>
                       <span className="text-[10px] text-[#555] tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
@@ -11596,7 +11596,7 @@ export function AppShell() {
                         <div className="relative">
                           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#555]" />
                           <input
-                            className="w-full h-7 pl-7 pr-2 rounded-md bg-[#0a0a0a] border border-[#252525] text-[12px] text-[#ededed] placeholder:text-[#444] outline-none focus:border-[#333] transition-colors"
+                            className="w-full h-7 pl-7 pr-2 rounded-md bg-[#0a0a0a] text-[12px] text-[#ededed] placeholder:text-[#444] outline-none focus:bg-[#1a1a1a] transition-colors"
                             placeholder="Search templates…"
                             value={sampleTemplateSearch}
                             onChange={(e) => setSampleTemplateSearch(e.target.value)}
@@ -11624,7 +11624,7 @@ export function AppShell() {
                               className="w-3.5 h-3.5 rounded-full shrink-0 border"
                               style={{
                                 background: `hsl(${t.folderColor}, 60%, 45%)`,
-                                borderColor: activeSampleIdx === t._origIdx ? '#6b8598' : 'transparent',
+                                borderColor: activeSampleIdx === t._origIdx ? '#465BFE' : 'transparent',
                               }}
                             />
                             <div className="flex flex-col flex-1 min-w-0">
@@ -11632,7 +11632,7 @@ export function AppShell() {
                               <span className="truncate text-[10px] text-[#555]">{t.description}</span>
                             </div>
                             {activeSampleIdx === t._origIdx && (
-                              <span className="ml-auto text-[10px] text-[#6b8598] font-medium shrink-0">Active</span>
+                              <span className="ml-auto text-[10px] text-[#465BFE] font-medium shrink-0">Active</span>
                             )}
                           </DropdownMenuItem>
                         ))
@@ -11646,12 +11646,12 @@ export function AppShell() {
 
           {isSampleMode && (
             <div className={`absolute ${viewMode === 'canvas' && isViewingPrimaryTheme ? 'bottom-[5rem]' : 'bottom-6'} left-1/2 -translate-x-1/2 pointer-events-auto`} style={{ zIndex: 100000 }}>
-              <div className="flex items-center gap-4 bg-[#111]/95 backdrop-blur-md border border-[#252525] rounded-full px-4 py-2 shadow-xl"
+              <div className="flex items-center gap-4 bg-[#111]/95 backdrop-blur-md rounded-full px-4 py-2 shadow-lg"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className={`flex items-center justify-center w-5 h-5 rounded-md ${isCommunityMode ? 'bg-[#6b8598]/10' : 'bg-[#6b8598]/10'}`}>
-                    {isCommunityMode ? <Globe className="h-3 w-3 text-[#6b8598]" /> : <Lock className="h-3 w-3 text-[#6b8598]" />}
+                  <div className={`flex items-center justify-center w-5 h-5 rounded-md ${isCommunityMode ? 'bg-[#465BFE]/10' : 'bg-[#465BFE]/10'}`}>
+                    {isCommunityMode ? <Globe className="h-3 w-3 text-[#465BFE]" /> : <Lock className="h-3 w-3 text-[#465BFE]" />}
                   </div>
                   <span className="text-[12px] text-[#888] whitespace-nowrap">
                     {isCommunityMode
@@ -11664,13 +11664,13 @@ export function AppShell() {
                 {(!isCommunityMode || (window as any).__communityProjectMeta?.allowRemix) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#6b8598]/10 border border-[#6b8598]/20 hover:bg-[#6b8598]/20 text-[#6b8598] transition-all cursor-pointer text-[12px] font-medium">
+                      <button className="flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#465BFE]/10 border border-[#465BFE]/20 hover:bg-[#465BFE]/20 text-[#465BFE] transition-all cursor-pointer text-[12px] font-medium">
                         {isCommunityMode ? <Shuffle className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                         <span>{isCommunityMode ? 'Remix' : 'Duplicate'}</span>
                         <ChevronDown className="h-3 w-3 opacity-60" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-[#111] border-[#252525] p-1 shadow-xl" style={{ zIndex: 100001 }}>
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-[#111] p-1 shadow-lg" style={{ zIndex: 100001 }}>
                       <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
                         {isCommunityMode ? 'Remix as' : 'Duplicate as'}
                       </div>
@@ -11679,7 +11679,7 @@ export function AppShell() {
                           onClick={() => handleDuplicateSampleProject('cloud')}
                           className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
                         >
-                          <RefreshCw className="h-3.5 w-3.5 text-[#b29256]" />
+                          <RefreshCw className="h-3.5 w-3.5 text-[#FD7DEE]" />
                           <div className="flex flex-col">
                             <span className="text-[13px]">Cloud Project</span>
                             <span className="text-[11px] text-[#666]">Synced to Supabase</span>
@@ -11726,8 +11726,8 @@ export function AppShell() {
                   onMouseEnter={handleGoBackMouseEnter}
                   onMouseLeave={handleGoBackMouseLeave}
                 >
-                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#6b8598]/15 shrink-0">
-                    <ArrowLeft size={13} className="text-[#6b8598]" />
+                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#465BFE]/15 shrink-0">
+                    <ArrowLeft size={13} className="text-[#465BFE]" />
                   </div>
                   <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
                     Go back
@@ -11749,8 +11749,8 @@ export function AppShell() {
                   style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                   onClick={handleRestoreTokens}
                 >
-                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#6b8598]/15 shrink-0">
-                    <RotateCw size={13} className="text-[#6b8598]" />
+                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#465BFE]/15 shrink-0">
+                    <RotateCw size={13} className="text-[#465BFE]" />
                   </div>
                   <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
                     Restore assigned tokens
@@ -11792,7 +11792,7 @@ export function AppShell() {
                       className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixed
                           ? 'text-[#444] cursor-not-allowed'
                           : allHidden
-                            ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
+                            ? 'text-[#465BFE] hover:bg-[#465BFE]/10'
                             : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
                         }`}
                       disabled={mixed}
@@ -11833,7 +11833,7 @@ export function AppShell() {
                   {/* Delete */}
                   <Tip label="Delete" side="top">
                     <button
-                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#d47272] hover:bg-[#d47272]/[0.08] transition-all"
+                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#FF4D6A] hover:bg-[#FF4D6A]/[0.08] transition-all"
                       onClick={() => {
                         selectedNodeIds.forEach(nodeId => deleteNode(nodeId));
                         setSelectedNodeIds([]);
@@ -11892,9 +11892,9 @@ export function AppShell() {
                         className={`h-3 w-3 shrink-0 transition-all ${mixedInheritance
                             ? 'text-[#555] fill-none'
                             : allInherited
-                              ? 'text-yellow-500 fill-yellow-500'
+                              ? 'text-[#FBBF24] fill-[#FBBF24]'
                               : allNotInherited
-                                ? 'text-[#6b8598] fill-[#6b8598]'
+                                ? 'text-[#465BFE] fill-[#465BFE]'
                                 : 'text-[#555] fill-none'
                           }`}
                       />
@@ -11957,7 +11957,7 @@ export function AppShell() {
                       className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixedVisibility
                           ? 'text-[#444] cursor-not-allowed'
                           : allHidden
-                            ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
+                            ? 'text-[#465BFE] hover:bg-[#465BFE]/10'
                             : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
                         }`}
                       disabled={mixedVisibility}
@@ -11988,14 +11988,14 @@ export function AppShell() {
             <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 z-[51] pointer-events-none">
               {/* Ask AI Island (leftmost) */}
               <div
-                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Ask AI" side="top">
                   <button
                     className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                        ? 'text-[#b29256] bg-[#b29256]/10'
-                        : 'text-[#a1a1a1] hover:text-[#b29256] hover:bg-[#252525]'
+                        ? 'text-[#FD7DEE] bg-[#FD7DEE]/10'
+                        : 'text-[#a1a1a1] hover:text-[#FD7DEE] hover:bg-[#252525]'
                       }`}
                     onClick={() => {
                       const activeProject = projects.find(p => p.id === activeProjectId);
@@ -12018,7 +12018,7 @@ export function AppShell() {
 
               {/* Sign In button moved to top-right of canvas (near template switcher) */}
 
-              <div className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+              <div className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 {/* Node tool with dropdown */}
@@ -12033,7 +12033,7 @@ export function AppShell() {
                       </button>
                     </DropdownMenuTrigger>
                   </Tip>
-                  <DropdownMenuContent align="center" sideOffset={12} className="w-[140px] bg-[#111] border-[#333]">
+                  <DropdownMenuContent align="center" sideOffset={12} className="w-[140px] bg-[#111]">
                     <DropdownMenuItem
                       onClick={() => addRootNode('hsl')}
                       className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
@@ -12102,7 +12102,7 @@ export function AppShell() {
 
               {/* Companion bar — View controls */}
               <div
-                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 {/* Fit all nodes */}
@@ -12131,14 +12131,14 @@ export function AppShell() {
                 const proj = projects.find(p => p.id === activeProjectId);
                 return proj?.isCloud ? (
                   <div
-                    className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                    className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                     style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
                   >
                     <Tip label="Dev Mode — Code Sync & Webhooks" side="top">
                       <button
                         className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showDevMode
-                            ? 'text-emerald-400 bg-emerald-400/10'
-                            : 'text-[#a1a1a1] hover:text-emerald-400 hover:bg-[#252525]'
+                            ? 'text-[#2BBD68] bg-[#2BBD68]/10'
+                            : 'text-[#a1a1a1] hover:text-[#2BBD68] hover:bg-[#252525]'
                           }`}
                         onClick={() => setShowDevMode(prev => !prev)}
                       >
@@ -12152,7 +12152,7 @@ export function AppShell() {
 
               {/* Actions (⌘K) Island */}
               <div
-                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Actions (⌘K)" side="top">
@@ -12168,7 +12168,7 @@ export function AppShell() {
 
               {/* Shortcuts & Tips Island */}
               <div
-                className="pointer-events-auto flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Shortcuts & Tips" side="top">
@@ -12190,14 +12190,14 @@ export function AppShell() {
           {viewMode === 'canvas' && !isViewingPrimaryTheme && (
             <div className="absolute bottom-6 right-6 z-[51] pointer-events-auto">
               <div
-                className="flex items-center bg-[#111] border border-[#333] rounded-2xl shadow-2xl h-12 px-1.5"
+                className="flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Ask AI" side="top">
                   <button
                     className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                        ? 'text-[#b29256] bg-[#b29256]/10'
-                        : 'text-[#a1a1a1] hover:text-[#b29256] hover:bg-[#252525]'
+                        ? 'text-[#FD7DEE] bg-[#FD7DEE]/10'
+                        : 'text-[#a1a1a1] hover:text-[#FD7DEE] hover:bg-[#252525]'
                       }`}
                     onClick={() => {
                       const activeProject = projects.find(p => p.id === activeProjectId);
@@ -12227,8 +12227,8 @@ export function AppShell() {
                 <Tip label="Undo" side="top" enabled={canUndo}>
                   <button
                     className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canUndo
-                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
-                        : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
+                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 backdrop-blur-sm'
+                        : 'text-[#444] bg-[#111]/50 cursor-default'
                       }`}
                     onClick={undo}
                     disabled={!canUndo}
@@ -12237,7 +12237,7 @@ export function AppShell() {
                   </button>
                 </Tip>
                 {canUndo && (
-                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/undo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
+                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/undo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
                     style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
                   >
                     {undoCount}
@@ -12248,8 +12248,8 @@ export function AppShell() {
                 <Tip label="Redo" side="top" enabled={canRedo}>
                   <button
                     className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canRedo
-                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 border border-[#333] backdrop-blur-sm'
-                        : 'text-[#444] bg-[#111]/50 border border-[#282828] cursor-default'
+                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 backdrop-blur-sm'
+                        : 'text-[#444] bg-[#111]/50 cursor-default'
                       }`}
                     onClick={redo}
                     disabled={!canRedo}
@@ -12258,7 +12258,7 @@ export function AppShell() {
                   </button>
                 </Tip>
                 {canRedo && (
-                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/redo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] border border-[#333] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
+                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/redo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
                     style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
                   >
                     {redoCount}
@@ -12372,7 +12372,7 @@ export function AppShell() {
             {/* Bottom-left hint for O key visibility toggle (non-primary themes, canvas mode only) */}
             {viewMode === 'canvas' && !isViewingPrimaryTheme && (
               <div className={`absolute top-4 left-4 z-[52] pointer-events-none select-none transition-opacity duration-200 ${showAllVisible ? 'opacity-100' : 'opacity-80'}`}>
-                <div className="flex items-center gap-2 bg-[#161616]/90 backdrop-blur-sm border border-[#333] rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 bg-[#161616]/90 backdrop-blur-sm rounded-lg px-3 py-2">
                   <kbd className="text-[11px] text-[#a1a1a1] bg-[#252525] border border-[#444] rounded px-1.5 py-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>O</kbd>
                   <span className="text-[11px] text-[#888]">
                     {showAllVisible ? 'press O \u2014 restore to default' : 'press O \u2014 make it visible'}

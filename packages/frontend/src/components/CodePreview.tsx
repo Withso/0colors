@@ -145,7 +145,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
   return (
     <div className="w-full h-full flex flex-col bg-[#0c0c0c] overflow-hidden">
       {/* ─── Top Bar ─── */}
-      <div className="flex items-center justify-between px-5 h-[44px] shrink-0 border-b border-[#1a1a1a] bg-[#0c0c0c]">
+      <div className="flex items-center justify-between px-5 h-[44px] shrink-0 border-b border-[#141414] bg-[#0c0c0c]">
         <div className="flex items-center gap-3 min-w-0">
           <FileCode2 className="h-3.5 w-3.5 text-[#444] shrink-0" />
           <span className="text-[11px] text-[#666] uppercase tracking-widest shrink-0">
@@ -173,8 +173,8 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
                   <button
                     className={`flex items-center gap-1.5 h-[28px] px-2.5 rounded-md border text-[11px] transition-colors outline-none cursor-pointer ${
                       hexOverrideSpaces.size > 0
-                        ? 'bg-[#1a1a2e] border-[#333] text-[#ccc]'
-                        : 'bg-[#141414] border-[#222] hover:border-[#333] text-[#888] hover:text-[#ccc]'
+                        ? 'bg-[#1a1a2e] border-[#252525] text-[#ccc]'
+                        : 'bg-[#141414] border-[#1a1a1a] hover:bg-[#1a1a1a] text-[#888] hover:text-[#ccc]'
                     }`}
                   >
                     <span>Show as Hex{hexOverrideSpaces.size > 0 ? ` (${hexOverrideSpaces.size})` : ''}</span>
@@ -183,7 +183,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="start"
-                  className="w-[180px] bg-[#111] border-[#252525] p-1 shadow-xl"
+                  className="w-[180px] bg-[#111] border-[#1a1a1a] p-1 shadow-lg"
                   onCloseAutoFocus={(e) => e.preventDefault()}
                 >
                   {([
@@ -219,13 +219,13 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-[#222] hover:border-[#333] text-[11px] text-[#888] hover:text-[#ccc] transition-colors outline-none cursor-pointer"
+                className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-[#1a1a1a] hover:bg-[#1a1a1a] text-[11px] text-[#888] hover:text-[#ccc] transition-colors outline-none cursor-pointer"
               >
                 <span>{formatLabels[selectedFormat]}</span>
                 <ChevronDown className="h-3 w-3 opacity-40" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[220px] bg-[#111] border-[#252525] p-1 shadow-xl">
+            <DropdownMenuContent align="end" className="w-[220px] bg-[#111] border-[#1a1a1a] p-1 shadow-lg">
               {(Object.keys(formatLabels) as CodeFormat[]).map(fmt => (
                 <DropdownMenuItem
                   key={fmt}
@@ -250,12 +250,12 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
           {/* Copy */}
           <button
             onClick={copyToClipboard}
-            className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-[#222] hover:border-[#333] text-[11px] text-[#888] hover:text-[#ccc] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-[#1a1a1a] hover:bg-[#1a1a1a] text-[11px] text-[#888] hover:text-[#ccc] transition-colors cursor-pointer"
           >
             {copied ? (
               <>
-                <Check className="h-3 w-3 text-emerald-500" />
-                <span className="text-emerald-500">Copied</span>
+                <Check className="h-3 w-3 text-[#2BBD68]" />
+                <span className="text-[#2BBD68]">Copied</span>
               </>
             ) : (
               <>
@@ -268,7 +268,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
           {/* Download */}
           <button
             onClick={downloadFile}
-            className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-[#222] hover:border-[#333] text-[11px] text-[#888] hover:text-[#ccc] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-[#1a1a1a] hover:bg-[#1a1a1a] text-[11px] text-[#888] hover:text-[#ccc] transition-colors cursor-pointer"
           >
             <Download className="h-3 w-3" />
             <span>Download</span>
@@ -281,7 +281,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
         {tokens.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-10 h-10 rounded-lg bg-[#141414] border border-[#1f1f1f] flex items-center justify-center mx-auto mb-3">
+              <div className="w-10 h-10 rounded-lg bg-[#141414] border border-[#181818] flex items-center justify-center mx-auto mb-3">
                 <FileCode2 className="h-5 w-5 text-[#333]" />
               </div>
               <p className="text-[#555] text-[13px] mb-1">No tokens to export</p>
@@ -301,7 +301,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
       {/* ─── Footer ─── */}
       <div
         className="flex items-center justify-between px-5 h-[30px] shrink-0 select-none"
-        style={{ borderTop: '1px solid #1a1a1a' }}
+        style={{ borderTop: '1px solid #141414' }}
       >
         <span className="text-[10px] text-[#444] tabular-nums">
           {lineCount} line{lineCount !== 1 ? 's' : ''}

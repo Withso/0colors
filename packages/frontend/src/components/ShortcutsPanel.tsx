@@ -391,7 +391,6 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
         width: size.width,
         height: size.height,
         background: '#0a0a0a',
-        border: isActive ? '1px solid #333' : '1px solid #1a1a1a',
         boxShadow: isActive
           ? '0 24px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06) inset'
           : '0 16px 48px rgba(0,0,0,.4)',
@@ -410,7 +409,7 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
       {/* ─── Header ─── */}
       <div
         className="flex items-center justify-between px-4 h-[42px] shrink-0 select-none"
-        style={{ borderBottom: '1px solid #1a1a1a', cursor: isDragging ? 'grabbing' : 'grab' }}
+        style={{ borderBottom: '1px solid #141414', cursor: isDragging ? 'grabbing' : 'grab' }}
         onMouseDown={handleDragStart}
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -463,7 +462,7 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
                 <div className="sticky top-0 z-[2] bg-[#0a0a0a]">
                   <div className="flex items-center gap-2 px-3 pt-3.5 pb-1.5">
                     <span className="text-[10px] text-[#555] uppercase tracking-widest">{cat.title}</span>
-                    <div className="flex-1 h-px bg-[#1a1a1a]" />
+                    <div className="flex-1 h-px bg-[#141414]" />
                   </div>
                 </div>
 
@@ -502,7 +501,7 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
                 <div className="sticky top-0 z-[2] bg-[#0a0a0a]">
                   <div className="flex items-center gap-2 px-3 pt-3.5 pb-1.5">
                     <span className="text-[10px] text-[#555] uppercase tracking-widest">{cat.title}</span>
-                    <div className="flex-1 h-px bg-[#1a1a1a]" />
+                    <div className="flex-1 h-px bg-[#141414]" />
                   </div>
                 </div>
 

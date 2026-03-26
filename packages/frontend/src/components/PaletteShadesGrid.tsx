@@ -62,7 +62,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
           }}
           className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
             isLocked
-              ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
+              ? 'text-[#465BFE] hover:bg-[#465BFE]/10'
               : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
           }`}
           title={isLocked ? 'Locked - will not change with parent' : 'Unlocked - will change with parent'}
@@ -80,7 +80,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
             }}
             className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
               isDiffEnabled
-                ? 'text-[#6b8598] hover:bg-[#6b8598]/10'
+                ? 'text-[#465BFE] hover:bg-[#465BFE]/10'
                 : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
             }`}
             title={isDiffEnabled ? 'Diff enabled - maintains offset from parent' : 'Diff disabled - matches parent exactly'}
@@ -477,7 +477,7 @@ export function PaletteShadesGrid({
                   backgroundColor: shadeColor,
                   borderWidth: '2px',
                   borderStyle: 'solid',
-                  borderColor: isSelected ? '#6b8598' : 'transparent',
+                  borderColor: isSelected ? '#465BFE' : 'transparent',
                   filter: isSelected ? 'brightness(1.1)' : 'none',
                 }}
                 tabIndex={0}
@@ -605,7 +605,7 @@ export function PaletteShadesGrid({
                           </button>
                         </PopoverTrigger>
                         <PopoverContent 
-                          className="w-[268px] p-4 bg-[#111111] border-[#252525]"
+                          className="w-[268px] p-4 bg-[#111111] border-[#1a1a1a]"
                           onClick={(e) => e.stopPropagation()}
                           onMouseDown={(e) => e.stopPropagation()}
                           onOpenAutoFocus={(e) => e.preventDefault()}
@@ -821,7 +821,7 @@ export function PaletteShadesGrid({
                 {/* Add child button - positioned at edge */}
                 <button
                   className={`absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
-                    wireHoverNodeId === node.id && wireStartButtonType === 'left' ? 'bg-green-500' : 'bg-[#333] hover:bg-[#444]'
+                    wireHoverNodeId === node.id && wireStartButtonType === 'left' ? 'bg-[#2BBD68]' : 'bg-[#333] hover:bg-[#444]'
                   }`}
                   style={{ zIndex: 10, right: '-14px' }}
                   onMouseDown={(e) => {

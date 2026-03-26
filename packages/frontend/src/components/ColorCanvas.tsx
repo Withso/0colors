@@ -308,7 +308,7 @@ function NodeReferenceLabel({
           {fullName && (
             <>
               {isEditing ? (
-                <div className="flex items-center gap-0 bg-[#1a1a1a] rounded-md border border-[#333] px-1 max-w-full">
+                <div className="flex items-center gap-0 bg-[#1a1a1a] rounded-md border border-[#252525] px-1 max-w-full">
                   <input
                     ref={inputRef}
                     type="text"
@@ -374,8 +374,8 @@ function NodeReferenceLabel({
           <Tip label={isPrefix ? 'Convert to token' : 'Convert to prefix'} side="top">
             <button
               className={`shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-md cursor-pointer transition-all border ${isPrefix
-                  ? 'bg-[#6b8598]/10 border-[#6b8598]/30 text-[#8ea3b4] hover:bg-[#6b8598]/20 hover:border-[#6b8598]/50'
-                  : 'bg-transparent border-[#333] text-[#555] hover:bg-[#1a1a1a] hover:border-[#444] hover:text-[#888]'
+                  ? 'bg-[#465BFE]/10 border-[#465BFE]/30 text-[#7B8FFF] hover:bg-[#465BFE]/20 hover:border-[#465BFE]/50'
+                  : 'bg-transparent border-[#252525] text-[#555] hover:bg-[#1a1a1a] hover:border-[#444] hover:text-[#888]'
                 }`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -2922,7 +2922,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
             // Check if this wire connects to any selected node (single or multi-selection)
             const isSelectedWire = (selectedNodeId && (conn.parentId === selectedNodeId || conn.childId === selectedNodeId)) ||
               (selectedNodeIds.length > 0 && (selectedNodeIds.includes(conn.parentId) || selectedNodeIds.includes(conn.childId)));
-            const wireColor = isSelectedWire ? '#6b8598' : '#444';
+            const wireColor = isSelectedWire ? '#465BFE' : '#444';
 
             const connKey = `${conn.parentId}__${conn.childId}`;
             return (
@@ -2951,7 +2951,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
             const toX = wireMousePosition.x;
             const toY = wireMousePosition.y;
-            const wireColor = wireHoverNodeId ? "#6b8598" : "#525252";
+            const wireColor = wireHoverNodeId ? "#465BFE" : "#525252";
 
             // Helper to compute the "from" position for a given node
             const getFromPosition = (nodeId: string): { x: number; y: number } | null => {
@@ -3017,7 +3017,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                 width={width}
                 height={height}
                 fill="rgba(0, 108, 255, 0.1)"
-                stroke="#6b8598"
+                stroke="#465BFE"
                 strokeWidth="1"
                 strokeDasharray="4,4"
               />
@@ -3403,7 +3403,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                                   />
                                 </div>
                                 <button
-                                  className="group flex items-center gap-2.5 bg-[#1a1a1a]/95 backdrop-blur-sm border border-[#2a2a2a] rounded-lg px-3.5 py-2 shadow-lg shadow-black/30 hover:border-[#6b8598]/40 hover:shadow-[0_0_12px_rgba(107,133,152,0.08)] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                                  className="group flex items-center gap-2.5 bg-[#1a1a1a]/95 backdrop-blur-sm border border-[#2a2a2a] rounded-lg px-3.5 py-2 shadow-lg shadow-black/30 hover:border-[#465BFE]/40 hover:shadow-[0_0_12px_rgba(70,91,254,0.08)] transition-all duration-200 cursor-pointer whitespace-nowrap"
                                   onClick={() => {
                                     // Select the node so the label row stays visible
                                     onSelectNode(node.id);
@@ -3413,8 +3413,8 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                                     dismissAutoAssignPrompt();
                                   }}
                                 >
-                                  <div className="flex items-center justify-center w-5 h-5 rounded bg-[#6b8598]/15 shrink-0">
-                                    <Zap size={11} className="text-[#6b8598]" />
+                                  <div className="flex items-center justify-center w-5 h-5 rounded bg-[#465BFE]/15 shrink-0">
+                                    <Zap size={11} className="text-[#465BFE]" />
                                   </div>
                                   <span className="text-[13px] text-[#ccc] group-hover:text-[#ededed] transition-colors">
                                     Auto-assign tokens

@@ -724,7 +724,7 @@ export function TokenNodeCard({
           className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
             isLeftConnectionLocked
               ? 'bg-[#222] cursor-not-allowed'
-              : isWireHovered && wireStartButtonType === 'right' ? 'bg-green-500' : 'bg-[#333] hover:bg-[#444]'
+              : isWireHovered && wireStartButtonType === 'right' ? 'bg-[#2BBD68]' : 'bg-[#333] hover:bg-[#333]'
           }`}
           title={isLeftConnectionLocked ? "Inherited from primary" : isConnected ? (isMultiSelected ? "Disconnect from parent (Shift+click to unlink all selected)" : "Disconnect from parent") : "Add new parent or drag to connect"}
           data-node-id={node.id}
@@ -735,7 +735,7 @@ export function TokenNodeCard({
 
         {/* Parent selection popup */}
         {showParentSelector && !isConnected && availableParents.length > 0 && (
-          <div className="absolute left-8 top-0 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-lg p-2 min-w-[120px] z-30">
+          <div className="absolute left-8 top-0 bg-[#1a1a1a] border border-[#252525] rounded-lg shadow-lg p-2 min-w-[120px] z-30">
             <div className="text-xs mb-1 px-2 py-1 text-[#888]">Select parent:</div>
             {availableParents.map((parent) => (
               <button
@@ -747,7 +747,7 @@ export function TokenNodeCard({
                 }}
                 className="w-full text-left px-2 py-1 text-sm hover:bg-[#252525] rounded flex items-center gap-2 text-[#ededed]"
               >
-                <Tag className="w-3 h-3 text-[#6b8598]" />
+                <Tag className="w-3 h-3 text-[#465BFE]" />
                 {parent.referenceName || 'Token'}
               </button>
             ))}
@@ -784,7 +784,7 @@ export function TokenNodeCard({
           className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
             isStructurallyLocked
               ? 'bg-[#222] cursor-not-allowed'
-              : isWireHovered && wireStartButtonType === 'left' ? 'bg-green-500' : 'bg-[#333] hover:bg-[#444]'
+              : isWireHovered && wireStartButtonType === 'left' ? 'bg-[#2BBD68]' : 'bg-[#333] hover:bg-[#333]'
           }`}
           title={isStructurallyLocked ? "Inherited from primary" : "Add child node or drag to connect"}
           data-node-id={node.id}
@@ -796,14 +796,14 @@ export function TokenNodeCard({
 
       {/* Connection port indicator on right top */}
       <div
-        className="absolute -right-[5px] top-6 z-10 w-[10px] h-[10px] rounded-full bg-[#6b8598]"
+        className="absolute -right-[5px] top-6 z-10 w-[10px] h-[10px] rounded-full bg-[#465BFE]"
       />
 
       <Card
         className="overflow-visible cursor-default relative rounded-[20px] gap-0"
         style={{
           backgroundColor: '#0e0e0e',
-          border: isSelected ? '1px solid #6b8598' : isMultiSelected ? '1px solid #8ea3b4' : '1px solid transparent',
+          border: isSelected ? '1px solid #465BFE' : isMultiSelected ? '1px solid #7B8FFF' : '1px solid transparent',
           width: `${nodeWidth}px`,
           maxWidth: `${nodeWidth}px`,
           minWidth: `${nodeWidth}px`,
@@ -839,7 +839,7 @@ export function TokenNodeCard({
           className={`h-14 flex items-center justify-center relative ${isPrefix ? 'rounded-[19px]' : 'rounded-tl-[19px] rounded-tr-[19px] mb-3'} ${isNodeInherited && !showAllVisible ? 'transition-opacity duration-200' : ''}`}
           style={{
             backgroundColor: '#0e0e0e',
-            border: '1px solid #252525',
+            border: '1px solid #1a1a1a',
             ...(nameDimOpacity !== undefined ? { opacity: nameDimOpacity } : {}),
           }}
           onMouseEnter={() => { if (!isPrimaryTheme) setHoveredSection('name'); }}
@@ -850,7 +850,7 @@ export function TokenNodeCard({
             <div
               className={`absolute top-2 -left-[22px] transition-all cursor-pointer ${
                 isNodeHidden
-                  ? 'opacity-100 text-[#6b8598]'
+                  ? 'opacity-100 text-[#465BFE]'
                   : isHovered
                     ? 'opacity-100 text-[#a1a1a1] hover:text-[#ededed]'
                     : 'opacity-0'
@@ -889,7 +889,7 @@ export function TokenNodeCard({
                   }
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="bg-transparent text-center text-[#ededed] text-sm rounded-lg px-3 py-1.5 outline-none w-full max-w-[180px] border-none focus:bg-[#1a1a1a] transition-colors selection:bg-[#6b8598]/30"
+                className="bg-transparent text-center text-[#ededed] text-sm rounded-lg px-3 py-1.5 outline-none w-full max-w-[180px] border-none focus:bg-[#1a1a1a] transition-colors selection:bg-[#465BFE]/30"
                 maxLength={50}
               />
             ) : (
@@ -927,8 +927,8 @@ export function TokenNodeCard({
               <Crown
                 className={`h-3 w-3 shrink-0 transition-all ${
                   hasAnyTokenChanges
-                    ? 'text-[#6b8598] fill-[#6b8598]'
-                    : 'text-[#d4aa55] fill-[#d4aa55]'
+                    ? 'text-[#465BFE] fill-[#465BFE]'
+                    : 'text-[#FBBF24] fill-[#FBBF24]'
                 }`}
               />
               <Switch
@@ -972,11 +972,11 @@ export function TokenNodeCard({
               <div className="relative group/tokenfield">
                 {hasAdvancedTokenAssignment && (
                   <div className="absolute inset-0 z-10 flex items-center rounded-[10px] pointer-events-none px-2.5"
-                    style={{ background: 'rgba(10,10,10,0.7)', border: '1px solid rgba(106,179,243,0.2)' }}>
+                    style={{ background: 'rgba(10,10,10,0.7)', border: 'none' }}>
                     {advancedTokenOutput ? (
                       advancedTokenOutput.type === 'error' ? (
-                        <span className="text-[9px] tracking-wide text-red-400/90 select-none px-1.5 py-0.5 rounded truncate w-full"
-                          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+                        <span className="text-[9px] tracking-wide text-[#FF4D6A]/90 select-none px-1.5 py-0.5 rounded truncate w-full"
+                          style={{ background: 'rgba(255,77,106,0.08)', border: 'none' }}
                           title={advancedTokenOutput.label}>
                           {advancedTokenOutput.label}
                         </span>
@@ -991,11 +991,11 @@ export function TokenNodeCard({
                           {advancedTokenOutput.type === 'tokenRef' && (
                             advancedTokenOutput.cssColor ? (
                               <span
-                                className="w-[14px] h-[14px] rounded-[4px] shrink-0 ring-1 ring-amber-500/30"
+                                className="w-[14px] h-[14px] rounded-[4px] shrink-0 ring-1 ring-[#FBBF24]/30"
                                 style={{ backgroundColor: advancedTokenOutput.cssColor }}
                               />
                             ) : (
-                              <Tag className="w-3.5 h-3.5 shrink-0 text-amber-500/60" />
+                              <Tag className="w-3.5 h-3.5 shrink-0 text-[#FBBF24]/60" />
                             )
                           )}
                           <span className="text-[10px] text-[#b0b0b0] select-none truncate min-w-0 flex-1 font-mono"
@@ -1005,8 +1005,8 @@ export function TokenNodeCard({
                         </div>
                       )
                     ) : (
-                      <span className="text-[9px] tracking-wide uppercase text-[#6AB3F3]/50 select-none px-1.5 py-0.5 rounded mx-auto"
-                        style={{ background: 'rgba(106,179,243,0.05)', border: '1px solid rgba(106,179,243,0.1)' }}>
+                      <span className="text-[9px] tracking-wide uppercase text-[#465BFE]/50 select-none px-1.5 py-0.5 rounded mx-auto"
+                        style={{ background: 'rgba(70,91,254,0.05)', border: 'none' }}>
                         No output
                       </span>
                     )}
@@ -1027,7 +1027,7 @@ export function TokenNodeCard({
                         "w-full flex items-center gap-2.5 h-9 px-3 rounded-[10px] transition-all text-xs outline-none",
                         hasAdvancedTokenAssignment ? "cursor-default opacity-50" : "cursor-pointer",
                         assignedToken
-                          ? "bg-[#161616] hover:bg-[#1c1c1c] border border-[#252525] hover:border-[#333]"
+                          ? "bg-[#161616] hover:bg-[#1c1c1c] border border-[#1a1a1a] hover:bg-[#1a1a1a]"
                           : "bg-transparent border border-dashed border-[#2a2a2a] hover:border-[#444] hover:bg-[#ffffff]/[0.02]"
                       )}
                       onMouseDown={(e) => e.stopPropagation()}
@@ -1038,7 +1038,7 @@ export function TokenNodeCard({
                           {isAssignedOwnedByTokenNode ? (
                             <Tag className="size-3.5 shrink-0 text-[#666]" />
                           ) : _isEmpty0 ? (
-                            <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-dashed border-[#333] opacity-40" />
+                            <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-dashed border-[#252525] opacity-40" />
                           ) : (
                             <div
                               className="w-3.5 h-3.5 rounded-[4px] shrink-0 ring-1 ring-inset ring-white/[0.08]"
@@ -1050,7 +1050,7 @@ export function TokenNodeCard({
                         </>
                       ) : (
                         <>
-                          <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-dashed border-[#333] flex items-center justify-center">
+                          <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-dashed border-[#252525] flex items-center justify-center">
                             <Plus className="h-2 w-2 text-[#444]" />
                           </div>
                           <span className="text-[#555] flex-1 text-left">Assign token...</span>
@@ -1059,7 +1059,7 @@ export function TokenNodeCard({
                     </button>
                   </PopoverTrigger>
               <PopoverContent
-                className="w-[260px] p-0 bg-[#161616] border-[#252525]"
+                className="w-[260px] p-0 bg-[#161616] border-[#1a1a1a]"
                 side="bottom"
                 align="start"
                 onMouseDown={(e) => e.stopPropagation()}
@@ -1304,7 +1304,7 @@ export function TokenNodeCard({
                               )}
                               <span className="truncate flex-1">{token.name}</span>
                               {isCurrentValue && (
-                                <Check className="h-3 w-3 text-[#6b8598] shrink-0" />
+                                <Check className="h-3 w-3 text-[#465BFE] shrink-0" />
                               )}
                               {isUsedElsewhere && (
                                 <div className="w-5 shrink-0" />
@@ -1341,7 +1341,7 @@ export function TokenNodeCard({
                                       "min-w-[20px] h-[20px] rounded-full flex items-center justify-center",
                                       "text-[10px] tabular-nums transition-colors cursor-pointer",
                                       isUsagePopoverOpen
-                                        ? "bg-[#6b8598]/25 text-[#8ea3b4]"
+                                        ? "bg-[#465BFE]/25 text-[#7B8FFF]"
                                         : "bg-[#ffffff]/[0.06] text-[#777] hover:bg-[#ffffff]/[0.12] hover:text-[#aaa]"
                                     )}
                                     onPointerDown={(e) => e.stopPropagation()}
@@ -1354,7 +1354,7 @@ export function TokenNodeCard({
                                   side="right"
                                   align="start"
                                   sideOffset={12}
-                                  className="w-[200px] p-0 bg-[#1a1a1a] border-[#333] shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+                                  className="w-[200px] p-0 bg-[#1a1a1a] border-[#252525] shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
                                   onOpenAutoFocus={(e) => e.preventDefault()}
                                   onCloseAutoFocus={(e) => e.preventDefault()}
                                   onPointerDown={(e) => e.stopPropagation()}
@@ -1554,7 +1554,7 @@ export function TokenNodeCard({
             {assignedToken && (
               <Tip label="Unassign" side="top">
                 <button
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-md opacity-0 group-hover/tokenfield:opacity-100 transition-all hover:bg-red-500/10 z-10"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-md opacity-0 group-hover/tokenfield:opacity-100 transition-all hover:bg-[#FF4D6A]/10 z-10"
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -1587,7 +1587,7 @@ export function TokenNodeCard({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <X className="h-3 w-3 text-[#555] hover:text-red-400 transition-colors" />
+                  <X className="h-3 w-3 text-[#555] hover:text-[#FF4D6A] transition-colors" />
                 </button>
               </Tip>
             )}
@@ -1609,7 +1609,7 @@ export function TokenNodeCard({
             className="flex items-center justify-between px-4 py-[8px] rounded-[16px] mt-[2px] transition-opacity"
             style={{
               backgroundColor: '#0E0E0E',
-              border: `1px solid ${isDormant ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)'}`,
+              border: 'none',
               width: `${nodeWidth}px`,
               opacity: isVisible ? (isDormant ? 0.5 : 1) : 0,
               pointerEvents: isVisible ? undefined : 'none',
@@ -1624,9 +1624,9 @@ export function TokenNodeCard({
                 <span
                   className="text-[9px] tracking-wide uppercase px-1.5 h-[16px] flex items-center justify-center rounded select-none"
                   style={{
-                    color: '#b29256',
-                    backgroundColor: 'rgba(229,163,54,0.12)',
-                    border: '1px solid rgba(229,163,54,0.25)',
+                    color: '#FD7DEE',
+                    backgroundColor: 'rgba(253,125,238,0.12)',
+                    border: 'none',
                   }}
                 >
                   TOKEN
@@ -1646,9 +1646,9 @@ export function TokenNodeCard({
                         key={chKey}
                         className="text-[9px] font-mono w-[16px] h-[16px] flex items-center justify-center rounded select-none"
                         style={{
-                          color: '#6aab8a',
-                          backgroundColor: 'rgba(106,171,138,0.12)',
-                          border: '1px solid rgba(106,171,138,0.25)',
+                          color: '#2BBD68',
+                          backgroundColor: 'rgba(43,189,104,0.12)',
+                          border: 'none',
                         }}
                       >
                         {label}
