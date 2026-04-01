@@ -27,7 +27,7 @@ import type {
   Theme,
   NodeAdvancedLogic,
   TokenType,
-} from '../components/types';
+} from '../types';
 
 import {
   isTokenHiddenInTheme,

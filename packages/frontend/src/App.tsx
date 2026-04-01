@@ -1,18 +1,18 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { ColorCanvas } from './components/ColorCanvas';
-import { TokensPanel } from './components/TokensPanel';
-import { TokenTablePopup } from './components/TokenTablePopup';
-import { DevModePanel } from './components/DevModePanel';
-import { ShortcutsPanel } from './components/ShortcutsPanel';
-import { ProjectsPage } from './components/ProjectsPage';
-import { CodePreview } from './components/CodePreview';
-import { MultiPageExport } from './components/MultiPageExport';
-import { CommandPalette } from './components/CommandPalette';
-import { ColorNode, DesignToken, TokenProject, TokenGroup, CanvasState, Page, Theme, NodeAdvancedLogic, ExpressionToken, ConditionRow, ChannelLogic, TokenAssignmentLogic, DevConfig, createDefaultDevConfig } from './components/types';
+import { ColorCanvas } from './components/canvas/ColorCanvas';
+import { TokensPanel } from './components/tokens/TokensPanel';
+import { TokenTablePopup } from './components/tokens/TokenTablePopup';
+import { DevModePanel } from './pages/DevModePanel';
+import { ShortcutsPanel } from './components/layout/ShortcutsPanel';
+import { ProjectsPage } from './pages/ProjectsPage';
+import { CodePreview } from './pages/CodePreview';
+import { MultiPageExport } from './pages/MultiPageExport';
+import { CommandPalette } from './components/canvas/CommandPalette';
+import { ColorNode, DesignToken, TokenProject, TokenGroup, CanvasState, Page, Theme, NodeAdvancedLogic, ExpressionToken, ConditionRow, ChannelLogic, TokenAssignmentLogic, DevConfig, createDefaultDevConfig } from './types';
 import { Button } from './components/ui/button';
 import { Plus, Share2, Download, Upload, Copy, Palette, Library, ChevronDown, Edit2, Trash2, RotateCcw, ArrowLeft, Search, LayoutGrid, Code, Workflow, RefreshCw, Type, Wand2, Film, Grid, Crown, CircleDot, Ruler, Table, SwatchBook, Undo2, Redo2, Maximize, Locate, Lightbulb, RotateCw, Eye, EyeOff, Tag, Command, BookOpen, Lock, Sparkles, Terminal, LogIn, Globe, Shuffle } from 'lucide-react';
-import { AskAIChat } from './components/AskAIChat';
-import { AISettingsPopup } from './components/AISettingsPopup';
+import { AskAIChat } from './components/ai/AskAIChat';
+import { AISettingsPopup } from './components/ai/AISettingsPopup';
 import {
   Conversation, loadCloudConversations, saveCloudConversations,
   AISettings, ContextToggles,
@@ -24,8 +24,8 @@ import {
 import type { ContextTier } from './utils/ai-context-manager';
 import { buildProjectContext } from './utils/ai-project-context';
 import { isNodeHiddenInTheme } from './utils/visibility';
-import { getAutoAssignSuffixValue } from './components/AutoAssignTokenMenu';
-import { useUndoRedo, UndoableState } from './hooks/useUndoRedo';
+import { getAutoAssignSuffixValue } from './components/canvas/AutoAssignTokenMenu';
+import { useUndoRedo, UndoableState } from './store/useUndoRedo';
 import {
   Dialog,
   DialogContent,
@@ -72,7 +72,7 @@ import {
 } from './utils/app-helpers';
 
 // ── Cloud sync & auth ──
-import { AuthPage } from './components/AuthPage';
+import { AuthPage } from './pages/AuthPage';
 import { getSupabaseClient, SERVER_BASE } from './utils/supabase/client';
 import { publicAnonKey } from './utils/supabase/info';
 import { decryptPAT } from './utils/crypto';
@@ -99,8 +99,8 @@ import { generateCSSVariables, generateDTCGJSON, generateTailwindConfig, generat
 import { getBuiltInTemplates, type SampleTemplate } from './utils/sample-templates';
 
 // ── Community ──
-import { CommunityPage } from './components/CommunityPage';
-import { PublishPopup } from './components/PublishPopup';
+import { CommunityPage } from './pages/CommunityPage';
+import { PublishPopup } from './pages/PublishPopup';
 import { fetchCommunityProject, type CommunityProjectDetail } from './utils/community-api';
 
 // ── Routing ──
@@ -10932,8 +10932,8 @@ export function AppShell() {
   // Auth gate — show auth page if still checking or not authenticated and user hasn't skipped
   if (authChecking) {
     return (
-      <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-[#555] text-[13px]">Loading…</div>
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="text-dim text-[13px]">Loading…</div>
       </div>
     );
   }
@@ -10952,10 +10952,10 @@ export function AppShell() {
 
     if (isSampleProjectPath || (isHomePath && hasNoLocalProjects)) {
       return (
-        <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="h-screen bg-background flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
-            <div className="text-[20px] font-semibold text-white tracking-tight">0<span className="text-[#555]">colors</span></div>
-            <div className="text-[#555] text-[13px]">Loading templates…</div>
+            <div className="text-[20px] font-semibold text-white tracking-tight">0<span className="text-dim">colors</span></div>
+            <div className="text-dim text-[13px]">Loading templates…</div>
           </div>
         </div>
       );
@@ -11036,7 +11036,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="h-screen flex bg-[#000] p-1.5 gap-1.5 overflow-hidden">
+    <div className="h-screen flex bg-background p-1.5 gap-1.5 overflow-hidden">
       <Toaster
         position="bottom-right"
         theme="dark"
@@ -11045,7 +11045,7 @@ export function AppShell() {
             background: 'rgba(26, 26, 26, 0.95)',
             backdropFilter: 'blur(12px)',
             border: 'none',
-            color: '#ededed',
+            color: 'var(--foreground)',
             boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
             borderRadius: '8px',
             fontSize: '13px',
@@ -11097,14 +11097,14 @@ export function AppShell() {
       {/* Right Column - Header + Canvas as separate islands */}
       <div className="flex-1 flex flex-col gap-2 min-h-0">
         {/* Top Bar - Floating Island */}
-        <div className="shrink-0 relative bg-[#0a0a0a] rounded-xl px-3 h-12 flex items-center justify-between select-none">
+        <div className="shrink-0 relative bg-background rounded-xl px-3 h-12 flex items-center justify-between select-none">
           <>
             {/* Left: View Mode Switcher + Search */}
             <div className="flex items-center gap-3">
               {viewMode === 'export' ? (
                 <button
                   onClick={() => setViewMode('canvas')}
-                  className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md text-[11px] text-[#555] hover:text-[#aaa] transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md text-[11px] text-dim hover:text-muted-foreground transition-colors cursor-pointer"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   <span>Back</span>
@@ -11112,13 +11112,13 @@ export function AppShell() {
               ) : (
                 <>
                   {/* View Switcher */}
-                  <div className="flex p-1 bg-[#111] rounded-lg">
+                  <div className="flex p-1 bg-card rounded-lg">
                     <Tip label="Canvas View" side="bottom">
                       <button
                         onClick={() => setViewMode('canvas')}
                         className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'canvas'
-                            ? 'bg-[#333] text-[#ededed] shadow-sm'
-                            : 'text-[#666] hover:text-[#a1a1a1]'
+                            ? 'bg-border text-foreground shadow-sm'
+                            : 'text-faint hover:text-muted-foreground'
                           }`}
                       >
                         <Workflow className="h-4 w-4" />
@@ -11128,8 +11128,8 @@ export function AppShell() {
                       <button
                         onClick={() => setViewMode('code')}
                         className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'code'
-                            ? 'bg-[#333] text-[#ededed] shadow-sm'
-                            : 'text-[#666] hover:text-[#a1a1a1]'
+                            ? 'bg-border text-foreground shadow-sm'
+                            : 'text-faint hover:text-muted-foreground'
                           }`}
                       >
                         <Code className="h-4 w-4" />
@@ -11141,7 +11141,7 @@ export function AppShell() {
                   <Tip label="Export Tokens" side="bottom">
                     <button
                       onClick={() => setViewMode('export')}
-                      className="w-8 h-8 rounded-md flex items-center justify-center text-[#666] hover:text-[#a1a1a1] transition-all"
+                      className="w-8 h-8 rounded-md flex items-center justify-center text-faint hover:text-muted-foreground transition-all"
                     >
                       <Download className="h-4 w-4" />
                     </button>
@@ -11157,8 +11157,8 @@ export function AppShell() {
                         <button
                           onClick={() => setShowPublishPopup(activeProjectId)}
                           className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${isPublished
-                              ? 'text-[#465BFE] hover:text-[#7B8FFF]'
-                              : 'text-[#666] hover:text-[#465BFE]'
+                              ? 'text-brand hover:text-[#7B8FFF]'
+                              : 'text-faint hover:text-brand'
                             }`}
                         >
                           <Globe className="h-4 w-4" />
@@ -11173,7 +11173,7 @@ export function AppShell() {
             {/* Center: Page Selector */}
             {viewMode !== 'export' && (
               <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent transition-all">
+                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg border border-transparent transition-all">
                   {/* Text Area - Handles Double Click for Rename */}
                   <div
                     className="px-2 h-full flex items-center cursor-default select-none max-w-[200px]"
@@ -11225,12 +11225,12 @@ export function AppShell() {
                   {/* Dropdown Trigger - Only Icon */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
+                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-elevated text-faint hover:text-foreground transition-colors outline-none cursor-pointer">
                         <ChevronDown className="h-3.5 w-3.5 opacity-50" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" sideOffset={8} className="w-64 bg-[#111] p-1 shadow-lg z-[60] ml-[-60px]">
-                      <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
+                    <DropdownMenuContent align="start" sideOffset={8} className="w-64 bg-card p-1 shadow-lg z-[60] ml-[-60px]">
+                      <div className="px-2 py-1.5 text-xs font-medium text-faint uppercase tracking-wider">
                         Pages
                       </div>
                       {pages
@@ -11244,9 +11244,9 @@ export function AppShell() {
                                 handleSwitchPage(page.id);
                               }
                             }}
-                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activePageId === page.id
-                                ? 'bg-[#141820] text-[#ededed]'
-                                : 'text-[#878787]'
+                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-secondary focus:text-foreground ${activePageId === page.id
+                                ? 'bg-[#141820] text-foreground'
+                                : 'text-subtle'
                               } group mb-0.5`}
                           >
                             <div className="flex items-center gap-2 overflow-hidden flex-1">
@@ -11305,7 +11305,7 @@ export function AppShell() {
                                             handleDeletePage(page.id);
                                           }
                                         }}
-                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#FF4D6A] transition-colors"
+                                        className="p-1 hover:bg-elevated rounded text-faint hover:text-destructive transition-colors"
                                       >
                                         <Trash2 className="h-3 w-3" />
                                       </div>
@@ -11318,10 +11318,10 @@ export function AppShell() {
                         ))}
                       {!isSampleMode && (
                         <>
-                          <div className="h-[1px] bg-[#252525] my-1" />
+                          <div className="h-[1px] bg-elevated my-1" />
                           <DropdownMenuItem
                             onClick={handleCreatePage}
-                            className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
+                            className="flex items-center gap-2 px-2 py-2 text-subtle focus:text-foreground focus:bg-secondary rounded-md cursor-pointer"
                           >
                             <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed">
                               <Plus className="h-3 w-3" />
@@ -11338,7 +11338,7 @@ export function AppShell() {
 
             {viewMode === 'export' && (
               <div className="absolute left-1/2 transform -translate-x-1/2">
-                <span className="text-[13px] text-[#777] tracking-wide">Multi-Page Token Export</span>
+                <span className="text-[13px] text-faint tracking-wide">Multi-Page Token Export</span>
               </div>
             )}
 
@@ -11349,20 +11349,20 @@ export function AppShell() {
                 <Tip label="Token Overview Table" side="bottom">
                   <button
                     onClick={() => setShowTokenTable(prev => !prev)}
-                    className={`flex items-center gap-2 h-9 px-3 rounded-lg border transition-all cursor-pointer ${showTokenTable ? 'border-transparent bg-[#1a1a1a] text-[#ededed]' : 'border-transparent hover:bg-[#1a1a1a] text-[#999] hover:text-[#ededed]'}`}
+                    className={`flex items-center gap-2 h-9 px-3 rounded-lg border transition-all cursor-pointer ${showTokenTable ? 'border-transparent bg-secondary text-foreground' : 'border-transparent hover:bg-secondary text-subtle hover:text-foreground'}`}
                   >
                     <Table className="h-4 w-4" />
                     <span className="text-[13px]">Token Table</span>
                   </button>
                 </Tip>
                 {/* Dev Mode toggle — moved to bottom toolbar */}
-                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#1a1a1a] rounded-lg border border-transparent transition-all">
+                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg border border-transparent transition-all">
                   {/* Theme Name Area - Handles Double Click */}
                   <div className="flex items-center px-2 h-full gap-2 cursor-default select-none max-w-[200px]">
                     {themes.find(t => t.id === activeThemeId)?.isPrimary ? (
-                      <Crown className="h-3.5 w-3.5 text-[#FBBF24]/80 fill-[#FBBF24]/80 shrink-0" />
+                      <Crown className="h-3.5 w-3.5 text-warning/80 fill-warning/80 shrink-0" />
                     ) : (
-                      <SwatchBook className="h-3.5 w-3.5 text-[#777] shrink-0" />
+                      <SwatchBook className="h-3.5 w-3.5 text-faint shrink-0" />
                     )}
 
                     <div
@@ -11416,12 +11416,12 @@ export function AppShell() {
                   {/* Dropdown Trigger - Only Icon */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-[#252525] text-[#666] hover:text-[#ededed] transition-colors outline-none cursor-pointer">
+                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-elevated text-faint hover:text-foreground transition-colors outline-none cursor-pointer">
                         <ChevronDown className="h-3.5 w-3.5 opacity-50" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-[#111] p-1 shadow-lg z-[60]">
-                      <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-card p-1 shadow-lg z-[60]">
+                      <div className="px-2 py-1.5 text-xs font-medium text-faint uppercase tracking-wider">
                         Themes
                       </div>
                       {themes
@@ -11435,9 +11435,9 @@ export function AppShell() {
                                 handleSwitchTheme(theme.id);
                               }
                             }}
-                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activeThemeId === theme.id
-                                ? 'bg-[#141820] text-[#ededed]'
-                                : 'text-[#878787]'
+                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-secondary focus:text-foreground ${activeThemeId === theme.id
+                                ? 'bg-[#141820] text-foreground'
+                                : 'text-subtle'
                               } group mb-0.5`}
                           >
                             <div className="flex items-center gap-2 overflow-hidden flex-1">
@@ -11447,9 +11447,9 @@ export function AppShell() {
                                 title={theme.isPrimary ? "Primary Theme" : ""}
                               >
                                 {theme.isPrimary ? (
-                                  <Crown className="h-3.5 w-3.5 text-[#FBBF24] flex-shrink-0" />
+                                  <Crown className="h-3.5 w-3.5 text-warning flex-shrink-0" />
                                 ) : (
-                                  <SwatchBook className={`h-3.5 w-3.5 flex-shrink-0 ${activeThemeId === theme.id ? 'text-[#888]' : 'text-[#555]'
+                                  <SwatchBook className={`h-3.5 w-3.5 flex-shrink-0 ${activeThemeId === theme.id ? 'text-subtle' : 'text-dim'
                                     }`} />
                                 )}
                               </div>
@@ -11509,7 +11509,7 @@ export function AppShell() {
                                             handleDeleteTheme(theme.id);
                                           }
                                         }}
-                                        className="p-1 hover:bg-[#252525] rounded text-[#666] hover:text-[#FF4D6A] transition-colors"
+                                        className="p-1 hover:bg-elevated rounded text-faint hover:text-destructive transition-colors"
                                       >
                                         <Trash2 className="h-3 w-3" />
                                       </div>
@@ -11517,7 +11517,7 @@ export function AppShell() {
                                   )}
                                 </div>
                                 {index < 9 && (
-                                  <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-[#555] bg-[#161616] border border-[#262626]" style={{ fontFamily: 'inherit' }}>
+                                  <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-dim bg-secondary border border-elevated" style={{ fontFamily: 'inherit' }}>
                                     {index + 1}
                                   </kbd>
                                 )}
@@ -11525,7 +11525,7 @@ export function AppShell() {
                             )}
                             {editingThemeId !== theme.id && index < 9 && (
                               <div className="flex items-center gap-1">
-                                <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-[#555] bg-[#161616] border border-[#262626]" style={{ fontFamily: 'inherit' }}>
+                                <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-dim bg-secondary border border-elevated" style={{ fontFamily: 'inherit' }}>
                                   {index + 1}
                                 </kbd>
                               </div>
@@ -11534,10 +11534,10 @@ export function AppShell() {
                         ))}
                       {!isSampleMode && (
                         <>
-                          <div className="h-[1px] bg-[#252525] my-1" />
+                          <div className="h-[1px] bg-elevated my-1" />
                           <DropdownMenuItem
                             onClick={handleCreateTheme}
-                            className="flex items-center gap-2 px-2 py-2 text-[#878787] focus:text-[#ededed] focus:bg-[#1a1a1a] rounded-md cursor-pointer"
+                            className="flex items-center gap-2 px-2 py-2 text-subtle focus:text-foreground focus:bg-secondary rounded-md cursor-pointer"
                           >
                             <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed">
                               <Plus className="h-3 w-3" />
@@ -11555,7 +11555,7 @@ export function AppShell() {
         </div>
 
         {/* Canvas Area - Floating Island */}
-        <div className="flex-1 relative rounded-xl overflow-hidden bg-[#000] min-h-0">
+        <div className="flex-1 relative rounded-xl overflow-hidden bg-background min-h-0">
 
 
           {/* Top-right canvas area: Sign In button + Template Switcher */}
@@ -11564,7 +11564,7 @@ export function AppShell() {
               {/* Sign In / Sign Up — shown for non-authenticated users on ANY project type */}
               {!authSession && (
                 <button
-                  className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md border border-[#1e2b33] hover:border-[#283841] text-[#465BFE] hover:text-[#7B8FFF] transition-all cursor-pointer shadow-lg"
+                  className="flex items-center gap-2 h-8 px-3 rounded-lg bg-card/90 backdrop-blur-md border border-[#1e2b33] hover:border-[#283841] text-brand hover:text-[#7B8FFF] transition-all cursor-pointer shadow-lg"
                   onClick={() => setShowAuthModal(true)}
                 >
                   <LogIn className="h-3.5 w-3.5" />
@@ -11575,28 +11575,28 @@ export function AppShell() {
               {isSampleMode && !isCommunityMode && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#111]/90 backdrop-blur-md hover:bg-[#1a1a1a] text-[#ededed] transition-all cursor-pointer shadow-lg">
-                      <BookOpen className="h-3.5 w-3.5 text-[#465BFE]" />
+                    <button className="flex items-center gap-2 h-8 px-3 rounded-lg bg-card/90 backdrop-blur-md hover:bg-secondary text-foreground transition-all cursor-pointer shadow-lg">
+                      <BookOpen className="h-3.5 w-3.5 text-brand" />
                       <span className="text-[12px] max-w-[160px] truncate">
                         {sampleTemplates[activeSampleIdx]?.name || 'Template'}
                       </span>
                       {sampleTemplates.length > 1 && (
-                        <span className="text-[10px] text-[#555] tabular-nums">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
+                        <span className="text-[10px] text-dim tabular-nums">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
                       )}
-                      <ChevronDown className="h-3 w-3 text-[#666]" />
+                      <ChevronDown className="h-3 w-3 text-faint" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-[#111] p-1 shadow-lg" style={{ zIndex: 100002 }}>
+                  <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-card p-1 shadow-lg" style={{ zIndex: 100002 }}>
                     <div className="px-2 py-1.5 flex items-center justify-between">
-                      <span className="text-xs font-medium text-[#666] uppercase tracking-wider">Templates</span>
-                      <span className="text-[10px] text-[#555] tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
+                      <span className="text-xs font-medium text-faint uppercase tracking-wider">Templates</span>
+                      <span className="text-[10px] text-dim tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
                     </div>
                     {sampleTemplates.length >= 5 && (
                       <div className="px-1.5 pb-1.5">
                         <div className="relative">
-                          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#555]" />
+                          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-dim" />
                           <input
-                            className="w-full h-7 pl-7 pr-2 rounded-md bg-[#0a0a0a] text-[12px] text-[#ededed] placeholder:text-[#444] outline-none focus:bg-[#1a1a1a] transition-colors"
+                            className="w-full h-7 pl-7 pr-2 rounded-md bg-background text-[12px] text-foreground placeholder:text-ghost outline-none focus:bg-secondary transition-colors"
                             placeholder="Search templates…"
                             value={sampleTemplateSearch}
                             onChange={(e) => setSampleTemplateSearch(e.target.value)}
@@ -11609,30 +11609,30 @@ export function AppShell() {
                     )}
                     <div className="overflow-y-auto" style={{ maxHeight: '280px' }}>
                       {filteredSampleTemplates.length === 0 ? (
-                        <div className="px-3 py-4 text-center text-[11px] text-[#555]">No templates match "{sampleTemplateSearch}"</div>
+                        <div className="px-3 py-4 text-center text-[11px] text-dim">No templates match "{sampleTemplateSearch}"</div>
                       ) : (
                         filteredSampleTemplates.map((t) => (
                           <DropdownMenuItem
                             key={`${t.projectId}-${t._origIdx}`}
                             onClick={() => handleSwitchSampleTemplate(t._origIdx)}
-                            className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-[#1a1a1a] focus:text-[#ededed] ${activeSampleIdx === t._origIdx
-                                ? 'bg-[#141820] text-[#ededed]'
-                                : 'text-[#878787]'
+                            className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-secondary focus:text-foreground ${activeSampleIdx === t._origIdx
+                                ? 'bg-[#141820] text-foreground'
+                                : 'text-subtle'
                               } mb-0.5`}
                           >
                             <div
                               className="w-3.5 h-3.5 rounded-full shrink-0 border"
                               style={{
                                 background: `hsl(${t.folderColor}, 60%, 45%)`,
-                                borderColor: activeSampleIdx === t._origIdx ? '#465BFE' : 'transparent',
+                                borderColor: activeSampleIdx === t._origIdx ? 'var(--brand)' : 'transparent',
                               }}
                             />
                             <div className="flex flex-col flex-1 min-w-0">
                               <span className="truncate text-[12px]">{t.name}</span>
-                              <span className="truncate text-[10px] text-[#555]">{t.description}</span>
+                              <span className="truncate text-[10px] text-dim">{t.description}</span>
                             </div>
                             {activeSampleIdx === t._origIdx && (
-                              <span className="ml-auto text-[10px] text-[#465BFE] font-medium shrink-0">Active</span>
+                              <span className="ml-auto text-[10px] text-brand font-medium shrink-0">Active</span>
                             )}
                           </DropdownMenuItem>
                         ))
@@ -11646,14 +11646,14 @@ export function AppShell() {
 
           {isSampleMode && (
             <div className={`absolute ${viewMode === 'canvas' && isViewingPrimaryTheme ? 'bottom-[5rem]' : 'bottom-6'} left-1/2 -translate-x-1/2 pointer-events-auto`} style={{ zIndex: 100000 }}>
-              <div className="flex items-center gap-4 bg-[#111]/95 backdrop-blur-md rounded-full px-4 py-2 shadow-lg"
+              <div className="flex items-center gap-4 bg-card/95 backdrop-blur-md rounded-full px-4 py-2 shadow-lg"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className={`flex items-center justify-center w-5 h-5 rounded-md ${isCommunityMode ? 'bg-[#465BFE]/10' : 'bg-[#465BFE]/10'}`}>
-                    {isCommunityMode ? <Globe className="h-3 w-3 text-[#465BFE]" /> : <Lock className="h-3 w-3 text-[#465BFE]" />}
+                  <div className={`flex items-center justify-center w-5 h-5 rounded-md ${isCommunityMode ? 'bg-brand/10' : 'bg-brand/10'}`}>
+                    {isCommunityMode ? <Globe className="h-3 w-3 text-brand" /> : <Lock className="h-3 w-3 text-brand" />}
                   </div>
-                  <span className="text-[12px] text-[#888] whitespace-nowrap">
+                  <span className="text-[12px] text-subtle whitespace-nowrap">
                     {isCommunityMode
                       ? `Community project${(window as any).__communityProjectMeta?.userName ? ` by ${(window as any).__communityProjectMeta.userName}` : ''}`
                       : 'You are viewing a read-only sample project'
@@ -11664,36 +11664,36 @@ export function AppShell() {
                 {(!isCommunityMode || (window as any).__communityProjectMeta?.allowRemix) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1.5 h-7 px-3 rounded-full bg-[#465BFE]/10 border border-[#465BFE]/20 hover:bg-[#465BFE]/20 text-[#465BFE] transition-all cursor-pointer text-[12px] font-medium">
+                      <button className="flex items-center gap-1.5 h-7 px-3 rounded-full bg-brand/10 border border-brand/20 hover:bg-brand/20 text-brand transition-all cursor-pointer text-[12px] font-medium">
                         {isCommunityMode ? <Shuffle className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                         <span>{isCommunityMode ? 'Remix' : 'Duplicate'}</span>
                         <ChevronDown className="h-3 w-3 opacity-60" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-[#111] p-1 shadow-lg" style={{ zIndex: 100001 }}>
-                      <div className="px-2 py-1.5 text-xs font-medium text-[#666] uppercase tracking-wider">
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-card p-1 shadow-lg" style={{ zIndex: 100001 }}>
+                      <div className="px-2 py-1.5 text-xs font-medium text-faint uppercase tracking-wider">
                         {isCommunityMode ? 'Remix as' : 'Duplicate as'}
                       </div>
                       {!!authSession && (
                         <DropdownMenuItem
                           onClick={() => handleDuplicateSampleProject('cloud')}
-                          className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
+                          className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-foreground focus:bg-secondary focus:text-foreground"
                         >
-                          <RefreshCw className="h-3.5 w-3.5 text-[#FD7DEE]" />
+                          <RefreshCw className="h-3.5 w-3.5 text-brand-pink" />
                           <div className="flex flex-col">
                             <span className="text-[13px]">Cloud Project</span>
-                            <span className="text-[11px] text-[#666]">Synced to Supabase</span>
+                            <span className="text-[11px] text-faint">Synced to Supabase</span>
                           </div>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
                         onClick={() => handleDuplicateSampleProject('local')}
-                        className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-[#ededed] focus:bg-[#1a1a1a] focus:text-[#ededed]"
+                        className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-foreground focus:bg-secondary focus:text-foreground"
                       >
                         <Download className="h-3.5 w-3.5 text-[#8a9b77]" />
                         <div className="flex flex-col">
                           <span className="text-[13px]">Local Project</span>
-                          <span className="text-[11px] text-[#666]">Saved to browser storage</span>
+                          <span className="text-[11px] text-faint">Saved to browser storage</span>
                         </div>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -11720,16 +11720,16 @@ export function AppShell() {
                 }}
               >
                 <button
-                  className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                  className="pointer-events-auto group flex items-center gap-2.5 bg-secondary backdrop-blur-xl border border-hairline rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-elevated transition-all duration-200 cursor-pointer whitespace-nowrap"
                   style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                   onClick={handleTokenNavGoBack}
                   onMouseEnter={handleGoBackMouseEnter}
                   onMouseLeave={handleGoBackMouseLeave}
                 >
-                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#465BFE]/15 shrink-0">
-                    <ArrowLeft size={13} className="text-[#465BFE]" />
+                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-brand/15 shrink-0">
+                    <ArrowLeft size={13} className="text-brand" />
                   </div>
-                  <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
+                  <span className="text-[13px] text-subtle group-hover:text-foreground transition-colors">
                     Go back
                   </span>
                 </button>
@@ -11745,14 +11745,14 @@ export function AppShell() {
                 style={{ animation: 'fadeSlideUp 0.25s ease-out' }}
               >
                 <button
-                  className="pointer-events-auto group flex items-center gap-2.5 bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-[#222] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                  className="pointer-events-auto group flex items-center gap-2.5 bg-secondary backdrop-blur-xl border border-hairline rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-elevated transition-all duration-200 cursor-pointer whitespace-nowrap"
                   style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                   onClick={handleRestoreTokens}
                 >
-                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#465BFE]/15 shrink-0">
-                    <RotateCw size={13} className="text-[#465BFE]" />
+                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-brand/15 shrink-0">
+                    <RotateCw size={13} className="text-brand" />
                   </div>
-                  <span className="text-[13px] text-[#999] group-hover:text-[#ccc] transition-colors">
+                  <span className="text-[13px] text-subtle group-hover:text-foreground transition-colors">
                     Restore assigned tokens
                   </span>
                 </button>
@@ -11775,25 +11775,25 @@ export function AppShell() {
                 style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
               >
                 <div
-                  className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
+                  className="pointer-events-auto flex items-center bg-secondary backdrop-blur-xl border border-hairline rounded-2xl h-11 pl-1 pr-1 gap-0"
                   style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                 >
                   {/* Selection count label */}
-                  <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
+                  <span className="text-[13px] text-faint px-3 select-none tabular-nums whitespace-nowrap">
                     {selectedNodeIds.length} selected
                   </span>
 
                   {/* Divider */}
-                  <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+                  <div className="w-px h-5 bg-hairline" />
 
                   {/* Visibility toggle */}
                   <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
                     <button
                       className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixed
-                          ? 'text-[#444] cursor-not-allowed'
+                          ? 'text-ghost cursor-not-allowed'
                           : allHidden
-                            ? 'text-[#465BFE] hover:bg-[#465BFE]/10'
-                            : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
+                            ? 'text-brand hover:bg-brand/10'
+                            : 'text-faint hover:text-foreground hover:bg-hairline'
                         }`}
                       disabled={mixed}
                       onClick={() => {
@@ -11817,7 +11817,7 @@ export function AppShell() {
                   {/* Duplicate */}
                   <Tip label="Duplicate" side="top">
                     <button
-                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05] transition-all"
+                      className="flex items-center justify-center h-9 w-9 rounded-xl text-faint hover:text-foreground hover:bg-hairline transition-all"
                       onClick={() => {
                         if (selectedNodeIds.length > 1) {
                           duplicateNode(selectedNodeIds);
@@ -11833,7 +11833,7 @@ export function AppShell() {
                   {/* Delete */}
                   <Tip label="Delete" side="top">
                     <button
-                      className="flex items-center justify-center h-9 w-9 rounded-xl text-[#777] hover:text-[#FF4D6A] hover:bg-[#FF4D6A]/[0.08] transition-all"
+                      className="flex items-center justify-center h-9 w-9 rounded-xl text-faint hover:text-destructive hover:bg-destructive/[0.08] transition-all"
                       onClick={() => {
                         selectedNodeIds.forEach(nodeId => deleteNode(nodeId));
                         setSelectedNodeIds([]);
@@ -11871,31 +11871,31 @@ export function AppShell() {
                 style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
               >
                 <div
-                  className="pointer-events-auto flex items-center bg-[#1c1c1c] backdrop-blur-xl border border-[#ffffff]/[0.08] rounded-2xl h-11 pl-1 pr-1 gap-0"
+                  className="pointer-events-auto flex items-center bg-secondary backdrop-blur-xl border border-hairline rounded-2xl h-11 pl-1 pr-1 gap-0"
                   style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                 >
                   {/* Selection count label */}
-                  <span className="text-[13px] text-[#777] px-3 select-none tabular-nums whitespace-nowrap">
+                  <span className="text-[13px] text-faint px-3 select-none tabular-nums whitespace-nowrap">
                     {selectedNodeIds.length} selected
                   </span>
 
                   {/* Divider */}
-                  <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+                  <div className="w-px h-5 bg-hairline" />
 
                   {/* Inheritance toggle */}
                   <Tip label={allInherited ? 'Unlink all from primary' : allNotInherited ? 'Link all to primary' : 'Mixed inheritance'} side="top">
                     <div
-                      className={`flex items-center gap-1.5 h-9 px-2 rounded-xl transition-all ${mixedInheritance ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-[#ffffff]/[0.05]'
+                      className={`flex items-center gap-1.5 h-9 px-2 rounded-xl transition-all ${mixedInheritance ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-hairline'
                         }`}
                     >
                       <Crown
                         className={`h-3 w-3 shrink-0 transition-all ${mixedInheritance
-                            ? 'text-[#555] fill-none'
+                            ? 'text-dim fill-none'
                             : allInherited
-                              ? 'text-[#FBBF24] fill-[#FBBF24]'
+                              ? 'text-warning fill-warning'
                               : allNotInherited
-                                ? 'text-[#465BFE] fill-[#465BFE]'
-                                : 'text-[#555] fill-none'
+                                ? 'text-brand fill-brand'
+                                : 'text-dim fill-none'
                           }`}
                       />
                       <Switch
@@ -11943,22 +11943,22 @@ export function AppShell() {
                             }
                           }));
                         }}
-                        className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-[#333] dark:data-[state=unchecked]:bg-[#333] h-[16px] w-[30px] shrink-0"
+                        className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-border dark:data-[state=unchecked]:bg-border h-[16px] w-[30px] shrink-0"
                       />
                     </div>
                   </Tip>
 
                   {/* Divider */}
-                  <div className="w-px h-5 bg-[#ffffff]/[0.07]" />
+                  <div className="w-px h-5 bg-hairline" />
 
                   {/* Visibility toggle */}
                   <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
                     <button
                       className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixedVisibility
-                          ? 'text-[#444] cursor-not-allowed'
+                          ? 'text-ghost cursor-not-allowed'
                           : allHidden
-                            ? 'text-[#465BFE] hover:bg-[#465BFE]/10'
-                            : 'text-[#777] hover:text-[#ccc] hover:bg-[#ffffff]/[0.05]'
+                            ? 'text-brand hover:bg-brand/10'
+                            : 'text-faint hover:text-foreground hover:bg-hairline'
                         }`}
                       disabled={mixedVisibility}
                       onClick={() => {
@@ -11988,14 +11988,14 @@ export function AppShell() {
             <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 z-[51] pointer-events-none">
               {/* Ask AI Island (leftmost) */}
               <div
-                className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Ask AI" side="top">
                   <button
                     className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                        ? 'text-[#FD7DEE] bg-[#FD7DEE]/10'
-                        : 'text-[#a1a1a1] hover:text-[#FD7DEE] hover:bg-[#252525]'
+                        ? 'text-brand-pink bg-brand-pink/10'
+                        : 'text-muted-foreground hover:text-brand-pink hover:bg-elevated'
                       }`}
                     onClick={() => {
                       const activeProject = projects.find(p => p.id === activeProjectId);
@@ -12018,7 +12018,7 @@ export function AppShell() {
 
               {/* Sign In button moved to top-right of canvas (near template switcher) */}
 
-              <div className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+              <div className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 {/* Node tool with dropdown */}
@@ -12026,35 +12026,35 @@ export function AppShell() {
                   <Tip label="Add Color Node" side="top">
                     <DropdownMenuTrigger asChild>
                       <button
-                        className="flex items-center gap-0.5 h-9 pl-2.5 pr-1.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all group"
+                        className="flex items-center gap-0.5 h-9 pl-2.5 pr-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all group"
                       >
                         <Workflow className="h-[18px] w-[18px]" />
                         <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-80" />
                       </button>
                     </DropdownMenuTrigger>
                   </Tip>
-                  <DropdownMenuContent align="center" sideOffset={12} className="w-[140px] bg-[#111]">
+                  <DropdownMenuContent align="center" sideOffset={12} className="w-[140px] bg-card">
                     <DropdownMenuItem
                       onClick={() => addRootNode('hsl')}
-                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                      className="text-foreground focus:bg-elevated focus:text-foreground cursor-pointer"
                     >
                       HSL
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => addRootNode('rgb')}
-                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                      className="text-foreground focus:bg-elevated focus:text-foreground cursor-pointer"
                     >
                       RGB
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => addRootNode('oklch')}
-                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                      className="text-foreground focus:bg-elevated focus:text-foreground cursor-pointer"
                     >
                       OKLCH
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => addRootNode('hct')}
-                      className="text-[#ededed] focus:bg-[#252525] focus:text-[#ededed] cursor-pointer"
+                      className="text-foreground focus:bg-elevated focus:text-foreground cursor-pointer"
                     >
                       HCT
                     </DropdownMenuItem>
@@ -12064,7 +12064,7 @@ export function AppShell() {
                 {/* Palette tool */}
                 <Tip label="Add Palette" side="top">
                   <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
                     onClick={addPaletteNode}
                   >
                     <Palette className="h-[18px] w-[18px]" />
@@ -12074,7 +12074,7 @@ export function AppShell() {
                 {/* Token Node tool */}
                 <Tip label="Add Token Node" side="top">
                   <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
                     onClick={addTokenNode}
                   >
                     <Tag className="h-[18px] w-[18px]" />
@@ -12083,7 +12083,7 @@ export function AppShell() {
 
                 {/* Spacing tool — hidden for now, will implement later */}
                 {/* <button 
-              className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+              className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
               onClick={addSpacingNode}
               title="Add spacing node"
             >
@@ -12092,7 +12092,7 @@ export function AppShell() {
 
                 {/* Reset tool — hidden for now */}
                 {/* <button 
-              className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+              className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
               onClick={resetToDefaults}
               title="Reset to default data"
             >
@@ -12102,13 +12102,13 @@ export function AppShell() {
 
               {/* Companion bar — View controls */}
               <div
-                className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 {/* Fit all nodes */}
                 <Tip label="Zoom to Fit" side="top">
                   <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
                     onClick={() => window.dispatchEvent(new Event('canvasFitAll'))}
                   >
                     <Maximize className="h-[18px] w-[18px]" />
@@ -12118,7 +12118,7 @@ export function AppShell() {
                 {/* Reset view */}
                 <Tip label="Reset View" side="top">
                   <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
                     onClick={() => window.dispatchEvent(new Event('canvasResetView'))}
                   >
                     <Locate className="h-[18px] w-[18px]" />
@@ -12131,14 +12131,14 @@ export function AppShell() {
                 const proj = projects.find(p => p.id === activeProjectId);
                 return proj?.isCloud ? (
                   <div
-                    className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                    className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                     style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
                   >
                     <Tip label="Dev Mode — Code Sync & Webhooks" side="top">
                       <button
                         className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showDevMode
-                            ? 'text-[#2BBD68] bg-[#2BBD68]/10'
-                            : 'text-[#a1a1a1] hover:text-[#2BBD68] hover:bg-[#252525]'
+                            ? 'text-success bg-success/10'
+                            : 'text-muted-foreground hover:text-success hover:bg-elevated'
                           }`}
                         onClick={() => setShowDevMode(prev => !prev)}
                       >
@@ -12152,30 +12152,30 @@ export function AppShell() {
 
               {/* Actions (⌘K) Island */}
               <div
-                className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Actions (⌘K)" side="top">
                   <button
-                    className="flex items-center gap-1.5 h-9 px-2.5 rounded-xl text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] transition-all"
+                    className="flex items-center gap-1.5 h-9 px-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
                     onClick={() => setShowCommandPalette(true)}
                   >
                     <Command className="h-[18px] w-[18px]" />
-                    <span className="text-[11px] text-[#555] tracking-wide">⌘K</span>
+                    <span className="text-[11px] text-dim tracking-wide">⌘K</span>
                   </button>
                 </Tip>
               </div>
 
               {/* Shortcuts & Tips Island */}
               <div
-                className="pointer-events-auto flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Shortcuts & Tips" side="top">
                   <button
                     className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${showShortcuts
-                        ? 'text-[#ededed] bg-[#252525]'
-                        : 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525]'
+                        ? 'text-foreground bg-elevated'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-elevated'
                       }`}
                     onClick={() => setShowShortcuts(prev => !prev)}
                   >
@@ -12190,14 +12190,14 @@ export function AppShell() {
           {viewMode === 'canvas' && !isViewingPrimaryTheme && (
             <div className="absolute bottom-6 right-6 z-[51] pointer-events-auto">
               <div
-                className="flex items-center bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl h-12 px-1.5"
+                className="flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Ask AI" side="top">
                   <button
                     className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                        ? 'text-[#FD7DEE] bg-[#FD7DEE]/10'
-                        : 'text-[#a1a1a1] hover:text-[#FD7DEE] hover:bg-[#252525]'
+                        ? 'text-brand-pink bg-brand-pink/10'
+                        : 'text-muted-foreground hover:text-brand-pink hover:bg-elevated'
                       }`}
                     onClick={() => {
                       const activeProject = projects.find(p => p.id === activeProjectId);
@@ -12227,8 +12227,8 @@ export function AppShell() {
                 <Tip label="Undo" side="top" enabled={canUndo}>
                   <button
                     className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canUndo
-                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 backdrop-blur-sm'
-                        : 'text-[#444] bg-[#111]/50 cursor-default'
+                        ? 'text-muted-foreground hover:text-foreground hover:bg-elevated bg-card/80 backdrop-blur-sm'
+                        : 'text-ghost bg-card/50 cursor-default'
                       }`}
                     onClick={undo}
                     disabled={!canUndo}
@@ -12237,7 +12237,7 @@ export function AppShell() {
                   </button>
                 </Tip>
                 {canUndo && (
-                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/undo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
+                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/undo:opacity-100 transition-opacity duration-150 bg-secondary text-foreground rounded-md px-1.5 py-0.5 tabular-nums"
                     style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
                   >
                     {undoCount}
@@ -12248,8 +12248,8 @@ export function AppShell() {
                 <Tip label="Redo" side="top" enabled={canRedo}>
                   <button
                     className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canRedo
-                        ? 'text-[#a1a1a1] hover:text-[#ededed] hover:bg-[#252525] bg-[#111]/80 backdrop-blur-sm'
-                        : 'text-[#444] bg-[#111]/50 cursor-default'
+                        ? 'text-muted-foreground hover:text-foreground hover:bg-elevated bg-card/80 backdrop-blur-sm'
+                        : 'text-ghost bg-card/50 cursor-default'
                       }`}
                     onClick={redo}
                     disabled={!canRedo}
@@ -12258,7 +12258,7 @@ export function AppShell() {
                   </button>
                 </Tip>
                 {canRedo && (
-                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/redo:opacity-100 transition-opacity duration-150 bg-[#1a1a1a] text-[#ededed] rounded-md px-1.5 py-0.5 tabular-nums"
+                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/redo:opacity-100 transition-opacity duration-150 bg-secondary text-foreground rounded-md px-1.5 py-0.5 tabular-nums"
                     style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
                   >
                     {redoCount}
@@ -12372,9 +12372,9 @@ export function AppShell() {
             {/* Bottom-left hint for O key visibility toggle (non-primary themes, canvas mode only) */}
             {viewMode === 'canvas' && !isViewingPrimaryTheme && (
               <div className={`absolute top-4 left-4 z-[52] pointer-events-none select-none transition-opacity duration-200 ${showAllVisible ? 'opacity-100' : 'opacity-80'}`}>
-                <div className="flex items-center gap-2 bg-[#161616]/90 backdrop-blur-sm rounded-lg px-3 py-2">
-                  <kbd className="text-[11px] text-[#a1a1a1] bg-[#252525] border border-[#444] rounded px-1.5 py-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>O</kbd>
-                  <span className="text-[11px] text-[#888]">
+                <div className="flex items-center gap-2 bg-secondary/90 backdrop-blur-sm rounded-lg px-3 py-2">
+                  <kbd className="text-[11px] text-muted-foreground bg-elevated border border-border rounded px-1.5 py-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>O</kbd>
+                  <span className="text-[11px] text-subtle">
                     {showAllVisible ? 'press O \u2014 restore to default' : 'press O \u2014 make it visible'}
                   </span>
                 </div>

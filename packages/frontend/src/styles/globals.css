@@ -63,6 +63,29 @@
   --sidebar-accent-foreground: #ededed;
   --sidebar-border: #333333;
   --sidebar-ring: #454545;
+
+  /* ─── Extended Surface Scale ─── */
+  --elevated: #252525;
+  --inset: #0F0F0F;
+
+  /* ─── Extended Text Grays ─── */
+  --subtle: #888888;
+  --faint: #666666;
+  --dim: #555555;
+  --ghost: #444444;
+
+  /* ─── Extended Borders ─── */
+  --line: #222222;
+  --hairline: rgba(255, 255, 255, 0.06);
+
+  /* ─── Brand Colors ─── */
+  --brand: #465BFE;
+  --brand-pink: #FD7DEE;
+
+  /* ─── Status Colors ─── */
+  --success: #2BBD68;
+  --warning: #FBBF24;
+  --info: #7C66DC;
 }
 
 .dark {
@@ -100,6 +123,21 @@
   --sidebar-accent-foreground: #ededed;
   --sidebar-border: #333333;
   --sidebar-ring: #454545;
+
+  /* ─── Extended (same as :root — dark-only app) ─── */
+  --elevated: #252525;
+  --inset: #0F0F0F;
+  --subtle: #888888;
+  --faint: #666666;
+  --dim: #555555;
+  --ghost: #444444;
+  --line: #222222;
+  --hairline: rgba(255, 255, 255, 0.06);
+  --brand: #465BFE;
+  --brand-pink: #FD7DEE;
+  --success: #2BBD68;
+  --warning: #FBBF24;
+  --info: #7C66DC;
 }
 
 @theme inline {
@@ -141,6 +179,29 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ─── Extended Surface Scale ─── */
+  --color-elevated: var(--elevated);
+  --color-inset: var(--inset);
+
+  /* ─── Extended Text Grays ─── */
+  --color-subtle: var(--subtle);
+  --color-faint: var(--faint);
+  --color-dim: var(--dim);
+  --color-ghost: var(--ghost);
+
+  /* ─── Extended Borders ─── */
+  --color-line: var(--line);
+  --color-hairline: var(--hairline);
+
+  /* ─── Brand Colors ─── */
+  --color-brand: var(--brand);
+  --color-brand-pink: var(--brand-pink);
+
+  /* ─── Status Colors ─── */
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
 }
 
 @layer base {
@@ -218,20 +279,20 @@
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] svg {
-  color: #2BBD68 !important;
+  color: var(--success) !important;
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] svg {
-  color: #FF4D6A !important;
+  color: var(--destructive) !important;
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="success"],
 [data-sonner-toaster] [data-sonner-toast][data-type="error"],
 [data-sonner-toaster] [data-sonner-toast][data-type="info"],
 [data-sonner-toaster] [data-sonner-toast][data-type="warning"] {
-  background: rgba(26, 26, 26, 0.95) !important;
+  background: color-mix(in srgb, var(--secondary) 95%, transparent) !important;
   border-color: transparent !important;
-  color: #ededed !important;
+  color: var(--foreground) !important;
 }
 
 /* ── Diamond Slider Thumb ──────────────────────────────────────────────

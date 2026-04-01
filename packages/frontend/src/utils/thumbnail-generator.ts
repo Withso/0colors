@@ -5,7 +5,7 @@
  * connecting parent→child relationships, then exports as a WebP data URL.
  */
 
-import type { ColorNode } from '../components/types';
+import type { ColorNode } from '../types';
 
 interface ThumbnailOptions {
   width?: number;

@@ -20,7 +20,7 @@
 
 import { SERVER_BASE } from './client';
 import { publicAnonKey } from './info';
-import type { ColorNode, DesignToken, TokenProject, TokenGroup, Page, Theme, CanvasState, NodeAdvancedLogic } from '../../components/types';
+import type { ColorNode, DesignToken, TokenProject, TokenGroup, Page, Theme, CanvasState, NodeAdvancedLogic } from '../../types';
 import type { ProjectComputedTokens } from '../computed-tokens';
 
 // ── Types ──

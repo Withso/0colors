@@ -4,7 +4,7 @@
 // to inject into the AI system prompt so it has full awareness.
 // ═══════════════════════════════════════════════════════════════════
 
-import { ColorNode, DesignToken, TokenGroup, TokenProject, Page, Theme, NodeAdvancedLogic } from '../components/types';
+import { ColorNode, DesignToken, TokenGroup, TokenProject, Page, Theme, NodeAdvancedLogic } from '../types';
 
 // Helper to get computed CSS color from HSL
 function hslToHex(h: number, s: number, l: number): string {

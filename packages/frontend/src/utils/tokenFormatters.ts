@@ -1,4 +1,4 @@
-import { DesignToken, ColorNode, TokenGroup, NodeAdvancedLogic } from '../components/types';
+import { DesignToken, ColorNode, TokenGroup, NodeAdvancedLogic } from '../types';
 import { hslToRgb, hslToOklch, oklchToSrgb } from './color-conversions';
 import { evaluateAllTokenAssignments, TokenAssignExportResult, TokenColor } from './advanced-logic-engine';
 

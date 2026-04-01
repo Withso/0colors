@@ -1,4 +1,4 @@
-import { ColorNode, DesignToken } from '../components/types';
+import { ColorNode, DesignToken } from '../types';
 
 /**
  * Node / Token Visibility System

@@ -2,7 +2,7 @@
 // Extracted helpers from App.tsx to reduce bundle size
 // ═══════════════════════════════════════════════════════════════
 
-import { ColorNode, DesignToken, TokenGroup } from '../components/types';
+import { ColorNode, DesignToken, TokenGroup } from '../types';
 import { hslToRgb, rgbToHex, rgbToHsl, hslToOklch as hslToOklchBase, oklchToHsl } from './color-conversions';
 import { hctToRgb, rgbToHct } from './hct-utils';
 import { migrateToLatest, CURRENT_SCHEMA_VERSION } from './migrations';

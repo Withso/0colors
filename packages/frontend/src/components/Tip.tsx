@@ -51,7 +51,7 @@ export function Tip({
             className={`
               z-[200] px-2.5 py-1.5 rounded-lg
               text-[12px] tracking-[-0.01em]
-              text-[#ededed] bg-[#1a1a1a]/95 backdrop-blur-md
+              text-foreground bg-secondary/95 backdrop-blur-md
               border border-[#ffffff]/[0.08]
               shadow-[0_4px_16px_rgba(0,0,0,0.45)]
               animate-in fade-in-0 zoom-in-95

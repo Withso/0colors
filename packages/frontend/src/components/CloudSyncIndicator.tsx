@@ -70,7 +70,7 @@ export function CloudSyncIndicator({
       <TooltipPrimitive.Provider delayDuration={300}>
         <TooltipPrimitive.Root>
           <TooltipPrimitive.Trigger asChild>
-            <div className="h-7 w-7 flex items-center justify-center rounded text-[#444]">
+            <div className="h-7 w-7 flex items-center justify-center rounded text-ghost">
               <CloudOff className="h-4 w-4" />
             </div>
           </TooltipPrimitive.Trigger>
@@ -78,11 +78,11 @@ export function CloudSyncIndicator({
             <TooltipPrimitive.Content
               side="bottom"
               sideOffset={6}
-              className="z-[200] px-3 py-2 rounded-lg text-[12px] tracking-[-0.01em] text-[#ededed] bg-[#1a1a1a]/95 backdrop-blur-md border border-[#ffffff]/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.45)] animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 select-none"
+              className="z-[200] px-3 py-2 rounded-lg text-[12px] tracking-[-0.01em] text-foreground bg-secondary/95 backdrop-blur-md border border-[#ffffff]/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.45)] animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 select-none"
             >
               <div className="flex flex-col gap-1">
-                <span className="text-[#888]">Local project</span>
-                <span className="text-[#555] text-[11px]">Not synced to cloud</span>
+                <span className="text-subtle">Local project</span>
+                <span className="text-dim text-[11px]">Not synced to cloud</span>
               </div>
             </TooltipPrimitive.Content>
           </TooltipPrimitive.Portal>
@@ -100,25 +100,25 @@ export function CloudSyncIndicator({
 
     switch (effectiveStatus) {
       case 'syncing':
-        lines.push({ label: 'Status', value: 'Syncing...', color: '#465BFE' });
+        lines.push({ label: 'Status', value: 'Syncing...', color: 'var(--brand)' });
         break;
       case 'synced':
-        lines.push({ label: 'Status', value: 'All changes saved', color: '#2BBD68' });
+        lines.push({ label: 'Status', value: 'All changes saved', color: 'var(--success)' });
         break;
       case 'error':
-        lines.push({ label: 'Status', value: 'Sync failed', color: '#FF4D6A' });
+        lines.push({ label: 'Status', value: 'Sync failed', color: 'var(--destructive)' });
         if (lastError) {
-          lines.push({ label: 'Error', value: lastError.length > 50 ? lastError.slice(0, 50) + '...' : lastError, color: '#FF4D6A' });
+          lines.push({ label: 'Error', value: lastError.length > 50 ? lastError.slice(0, 50) + '...' : lastError, color: 'var(--destructive)' });
         }
         break;
       case 'dirty':
-        lines.push({ label: 'Status', value: `Unsaved changes${dirtyCount > 1 ? ` (${dirtyCount} projects)` : ''}`, color: '#FBBF24' });
+        lines.push({ label: 'Status', value: `Unsaved changes${dirtyCount > 1 ? ` (${dirtyCount} projects)` : ''}`, color: 'var(--warning)' });
         break;
       case 'offline':
-        lines.push({ label: 'Status', value: 'Offline — will sync when online', color: '#FBBF24' });
+        lines.push({ label: 'Status', value: 'Offline — will sync when online', color: 'var(--warning)' });
         break;
       default: // idle
-        lines.push({ label: 'Status', value: 'Up to date', color: '#2BBD68' });
+        lines.push({ label: 'Status', value: 'Up to date', color: 'var(--success)' });
         break;
     }
 
@@ -142,7 +142,7 @@ export function CloudSyncIndicator({
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
             <div className="absolute -bottom-0.5 -right-0.5">
-              <Loader2 className="h-2.5 w-2.5 text-[#465BFE] animate-spin" />
+              <Loader2 className="h-2.5 w-2.5 text-brand animate-spin" />
             </div>
           </div>
         );
@@ -150,8 +150,8 @@ export function CloudSyncIndicator({
         return (
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
-            <div className="absolute -bottom-0.5 -right-0.5 bg-[#111111] rounded-full">
-              <Check className="h-2.5 w-2.5 text-[#2BBD68]" strokeWidth={3} />
+            <div className="absolute -bottom-0.5 -right-0.5 bg-card rounded-full">
+              <Check className="h-2.5 w-2.5 text-success" strokeWidth={3} />
             </div>
           </div>
         );
@@ -159,8 +159,8 @@ export function CloudSyncIndicator({
         return (
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
-            <div className="absolute -bottom-0.5 -right-0.5 bg-[#111111] rounded-full">
-              <AlertTriangle className="h-2.5 w-2.5 text-[#FF4D6A]" strokeWidth={3} />
+            <div className="absolute -bottom-0.5 -right-0.5 bg-card rounded-full">
+              <AlertTriangle className="h-2.5 w-2.5 text-destructive" strokeWidth={3} />
             </div>
           </div>
         );
@@ -168,15 +168,15 @@ export function CloudSyncIndicator({
         return (
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
-            <div className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#FBBF24]" />
+            <div className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-warning" />
           </div>
         );
       case 'offline':
         return (
           <div className="relative">
-            <Cloud className="h-4 w-4 text-[#888]" />
-            <div className="absolute -bottom-0.5 -right-0.5 bg-[#111111] rounded-full">
-              <WifiOff className="h-2.5 w-2.5 text-[#FBBF24]" strokeWidth={3} />
+            <Cloud className="h-4 w-4 text-subtle" />
+            <div className="absolute -bottom-0.5 -right-0.5 bg-card rounded-full">
+              <WifiOff className="h-2.5 w-2.5 text-warning" strokeWidth={3} />
             </div>
           </div>
         );
@@ -206,20 +206,20 @@ export function CloudSyncIndicator({
           <TooltipPrimitive.Content
             side="bottom"
             sideOffset={6}
-            className="z-[200] px-3 py-2.5 rounded-lg text-[12px] tracking-[-0.01em] text-[#ededed] bg-[#1a1a1a]/95 backdrop-blur-md border border-[#ffffff]/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.45)] animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 select-none max-w-[220px]"
+            className="z-[200] px-3 py-2.5 rounded-lg text-[12px] tracking-[-0.01em] text-foreground bg-secondary/95 backdrop-blur-md border border-[#ffffff]/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.45)] animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 select-none max-w-[220px]"
           >
             <div className="flex flex-col gap-1.5">
               {tooltipLines.map((line, i) => (
                 line.label ? (
                   <div key={i} className="flex items-center justify-between gap-3">
-                    <span className="text-[#666] text-[11px]">{line.label}</span>
-                    <span className="text-[11px] text-right" style={{ color: line.color || '#ededed' }}>
+                    <span className="text-faint text-[11px]">{line.label}</span>
+                    <span className="text-[11px] text-right" style={{ color: line.color || 'var(--foreground)' }}>
                       {line.value}
                     </span>
                   </div>
                 ) : (
-                  <div key={i} className="border-t border-[#ffffff]/[0.06] pt-1.5 mt-0.5">
-                    <span className="text-[11px]" style={{ color: line.color || '#888' }}>
+                  <div key={i} className="border-t border-hairline pt-1.5 mt-0.5">
+                    <span className="text-[11px]" style={{ color: line.color || 'var(--subtle)' }}>
                       {line.value}
                     </span>
                   </div>

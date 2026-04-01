@@ -6255,6 +6255,55 @@
   }
 }
 
+/* ─── Extended Design Tokens ─── */
+.bg-elevated { background-color: var(--elevated); }
+.bg-inset { background-color: var(--inset); }
+.bg-hairline { background-color: var(--hairline); }
+.bg-brand { background-color: var(--brand); }
+.bg-brand\/10 { background-color: color-mix(in srgb, var(--brand) 10%, transparent); }
+.bg-brand\/20 { background-color: color-mix(in srgb, var(--brand) 20%, transparent); }
+.bg-brand-pink { background-color: var(--brand-pink); }
+.bg-success { background-color: var(--success); }
+.bg-warning { background-color: var(--warning); }
+.bg-info { background-color: var(--info); }
+
+.text-foreground { color: var(--foreground); }
+.text-subtle { color: var(--subtle); }
+.text-faint { color: var(--faint); }
+.text-dim { color: var(--dim); }
+.text-ghost { color: var(--ghost); }
+.text-brand { color: var(--brand); }
+.text-brand-pink { color: var(--brand-pink); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-info { color: var(--info); }
+
+.border-elevated { border-color: var(--elevated); }
+.border-line { border-color: var(--line); }
+.border-hairline { border-color: var(--hairline); }
+.border-brand { border-color: var(--brand); }
+.border-brand\/20 { border-color: color-mix(in srgb, var(--brand) 20%, transparent); }
+.border-brand\/30 { border-color: color-mix(in srgb, var(--brand) 30%, transparent); }
+.border-success { border-color: var(--success); }
+
+.fill-brand { fill: var(--brand); }
+.fill-warning { fill: var(--warning); }
+.fill-success { fill: var(--success); }
+
+.hover\:bg-elevated:hover { background-color: var(--elevated); }
+.hover\:bg-brand:hover { background-color: var(--brand); }
+.hover\:text-foreground:hover { color: var(--foreground); }
+.hover\:text-brand:hover { color: var(--brand); }
+.hover\:text-brand-pink:hover { color: var(--brand-pink); }
+.hover\:border-brand:hover { border-color: var(--brand); }
+
+.focus\:border-brand:focus { border-color: var(--brand); }
+.focus\:border-brand\/30:focus { border-color: color-mix(in srgb, var(--brand) 30%, transparent); }
+.focus\:bg-hairline:focus { background-color: var(--hairline); }
+
+.placeholder-ghost::placeholder { color: var(--ghost); }
+.placeholder-dim::placeholder { color: var(--dim); }
+
 :root {
   --moonstone-50: #E8EBFF;
   --moonstone-100: #D0D6FF;
@@ -6591,6 +6640,19 @@
   --sidebar-accent-foreground: #ededed;
   --sidebar-border: #333;
   --sidebar-ring: #454545;
+  --elevated: #252525;
+  --inset: #0F0F0F;
+  --subtle: #888888;
+  --faint: #666666;
+  --dim: #555555;
+  --ghost: #444444;
+  --line: #222222;
+  --hairline: rgba(255, 255, 255, 0.06);
+  --brand: #465BFE;
+  --brand-pink: #FD7DEE;
+  --success: #2BBD68;
+  --warning: #FBBF24;
+  --info: #7C66DC;
 }
 
 .dark {

@@ -12,7 +12,7 @@ import {
   TokenAssignmentLogic,
   DesignToken,
   NodeAdvancedLogic,
-} from '../components/types';
+} from '../types';
 
 import { hslToRgb, hslToOklch } from './color-conversions';
 import { rgbToHct } from './hct-utils';

@@ -9,7 +9,7 @@
  * /templates endpoint (future) — those get merged with these built-ins.
  */
 
-import type { ColorNode, DesignToken, TokenProject, TokenGroup, Page, Theme, CanvasState } from '../components/types';
+import type { ColorNode, DesignToken, TokenProject, TokenGroup, Page, Theme, CanvasState } from '../types';
 
 export interface SampleTemplate {
   id: string;

@@ -37,7 +37,7 @@ import type {
   CanvasState,
   NodeAdvancedLogic,
   TokenProject,
-} from '../components/types';
+} from '../types';
 
 // ═══════════════════════════════════════════════════════════════════
 // Schema Version — bump this for every data-structure change

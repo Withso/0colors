@@ -3,11 +3,11 @@ import { useMemo, useRef, useState, useCallback } from 'react';
 // ───── Geist-inspired syntax color palette ─────
 const COLORS = {
   // Base
-  bg: '#0a0a0a',
-  gutterBg: '#0a0a0a',
+  bg: 'var(--background)',
+  gutterBg: 'var(--background)',
   gutterBorder: '#141414',
-  lineNumber: '#444',
-  lineNumberActive: '#666',
+  lineNumber: 'var(--ghost)',
+  lineNumberActive: 'var(--faint)',
   lineHighlight: 'rgba(255,255,255,0.03)',
   text: '#abb2bf',
 

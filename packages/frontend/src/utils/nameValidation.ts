@@ -1,4 +1,4 @@
-import type { DesignToken, ColorNode } from '../components/types';
+import type { DesignToken, ColorNode } from '../types';
 
 // ─── Token Name Uniqueness ─────────────────────────────────────
 
