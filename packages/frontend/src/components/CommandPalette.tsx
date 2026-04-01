@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Search, Palette, Tag, Workflow, Plus, FileText, ArrowRight, Layers, Hash, CircleDot, Link, Ruler, Star, Clock, X } from 'lucide-react';
+import { Search, Palette, Tag, Workflow, Plus, FileText, Layers, Hash, CircleDot, Link, Ruler, Star, Clock, X } from 'lucide-react';
 import { ColorNode, DesignToken, TokenGroup, Page, Theme } from './types';
 import { hslToRgb, rgbToHex } from '../utils/color-conversions';
 import { hctToHex } from '../utils/hct-utils';
+
+/** Fixed width per layout pass: square cap on large screens (matches panel height), fluid 40vw with floor, never wider than viewport padding. */
+const CMDK_PANEL_WIDTH = 'min(440px, calc(100vw - 2rem), max(280px, 40vw))';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -565,8 +568,8 @@ export function CommandPalette({
 
   // ── Icon Renderer ─────────────────────────────────────────────────────
   const renderIcon = (r: SearchResult) => {
-    if (r.hexColor) return <div className="w-5 h-5 rounded-md shrink-0 border border-white/10" style={{ backgroundColor: r.hexColor }} />;
-    const cls = "w-4 h-4 text-[#555] shrink-0";
+    if (r.hexColor) return <div className="w-3 h-3 rounded-[3px] shrink-0" style={{ backgroundColor: r.hexColor }} />;
+    const cls = "w-3.5 h-3.5 text-[#555] shrink-0";
     switch (r.icon) {
       case 'color-node': return <CircleDot className={cls} />;
       case 'palette': return <Palette className={cls} />;
@@ -587,19 +590,26 @@ export function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-start justify-center pt-[15vh]"
-      style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
       onClick={handleBackdropClick}
       onKeyDown={handleKeyDown}
     >
       <div
-        className="w-full max-w-[600px] bg-[#0a0a0a] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
-        style={{ maxHeight: '62vh', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 24px 68px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4)', animation: 'cmdkSlideIn 0.15s ease-out' }}
+        className="box-border flex shrink-0 grow-0 flex-col overflow-hidden rounded-xl bg-[#0a0a0a] shadow-2xl"
+        style={{
+          width: CMDK_PANEL_WIDTH,
+          minWidth: CMDK_PANEL_WIDTH,
+          maxWidth: CMDK_PANEL_WIDTH,
+          flex: `0 0 ${CMDK_PANEL_WIDTH}`,
+          height: '440px',
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.06), 0 24px 68px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4)',
+          animation: 'cmdkSlideIn 0.15s ease-out',
+        }}
       >
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 h-[52px] border-b border-[#141414]">
-          <Search className="w-4 h-4 text-[#444] shrink-0" />
-          <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search nodes, tokens, palettes, or type an action..." className="flex-1 bg-transparent text-[#ededed] text-[13px] placeholder:text-[#444] outline-none" autoComplete="off" autoCorrect="off" spellCheck={false} />
+        <div className="flex items-center gap-2.5 px-3.5 h-[42px] border-b border-[#1a1a1a]">
+          <Search className="w-[14px] h-[14px] text-[#555] shrink-0" />
+          <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search nodes, tokens, palettes, or type an action..." className="flex-1 bg-transparent text-[#ededed] text-[13px] placeholder:text-[#555] outline-none" autoComplete="off" autoCorrect="off" spellCheck={false} />
           {query && (
             <span className="text-[11px] text-[#444] tabular-nums shrink-0">
               {dataResultCount > 0 ? `${dataResultCount} result${dataResultCount !== 1 ? 's' : ''}` : 'No results'}
@@ -608,10 +618,10 @@ export function CommandPalette({
         </div>
 
         {/* Results */}
-        <div ref={listRef} className="flex-1 overflow-y-auto overscroll-contain py-1.5" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
+        <div ref={listRef} className="flex-1 overflow-y-auto overscroll-contain py-1" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
           {groupedResults.length === 0 && query.trim() && (
             <div className="flex flex-col items-center justify-center py-12 gap-2">
-              <Search className="w-8 h-8 text-[#2a2a2a]" />
+              <Search className="w-6 h-6 text-[#2a2a2a]" />
               <span className="text-[13px] text-[#444]">No results for "{query}"</span>
               <span className="text-[11px] text-[#333]">Try a node name, token name, hex value, or color space</span>
             </div>
@@ -619,17 +629,17 @@ export function CommandPalette({
 
           {groupedResults.map(grp => (
             <div key={grp.category}>
-              <div className="px-4 pt-2.5 pb-1 flex items-center justify-between">
+              <div className="px-3.5 pt-2 pb-0.5 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  {grp.category === 'pinned' && <Star className="w-3 h-3 text-[#555]" />}
-                  {grp.category === 'recent' && <Clock className="w-3 h-3 text-[#555]" />}
-                  <span className="text-[11px] text-[#444] tracking-wide">{grp.label}</span>
+                  {grp.category === 'pinned' && <Star className="w-2.5 h-2.5 text-[#444]" />}
+                  {grp.category === 'recent' && <Clock className="w-2.5 h-2.5 text-[#444]" />}
+                  <span className="text-[11px] text-[#444] font-medium">{grp.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-[#333] tabular-nums">{grp.results.length}</span>
+                  <span className="text-[11px] text-[#333] tabular-nums">{grp.results.length}</span>
                   {grp.canClear && (
                     <button onClick={clearRecent} className="text-[10px] text-[#333] hover:text-[#666] transition-colors cursor-pointer" title="Clear recent">
-                      <X className="w-3 h-3" />
+                      <X className="w-2.5 h-2.5" />
                     </button>
                   )}
                 </div>
@@ -644,28 +654,28 @@ export function CommandPalette({
                   <div
                     key={`${grp.category}-${result.id}`}
                     ref={el => { if (el) itemRefs.current.set(ci, el); }}
-                    className={`group/row mx-1.5 px-3 py-2 rounded-lg flex items-center gap-3 cursor-pointer transition-colors ${sel ? 'bg-[#1a1a1a]' : 'hover:bg-[#111]'}`}
+                    className={`group/row mx-1.5 px-2.5 py-[5px] rounded-lg flex items-center gap-2.5 cursor-pointer transition-colors ${sel ? 'bg-[#1a1a1a]' : 'hover:bg-[#111]'}`}
                     onClick={() => executeResult(result)}
                     onMouseEnter={() => setSelectedIndex(ci)}
                   >
-                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#111] border border-[#1f1f1f] shrink-0">
+                    <div className="flex items-center justify-center w-[22px] h-[22px] rounded-md bg-[#161616] shrink-0">
                       {renderIcon(result)}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={`text-[13px] truncate ${sel ? 'text-[#ededed]' : 'text-[#a1a1a1]'}`}>
+                        <span className={`text-[13px] truncate ${sel ? 'text-[#ededed]' : 'text-[#999]'}`}>
                           {result.title}
                         </span>
                         {result.colorSpace && (
-                          <span className="text-[10px] text-[#333] px-1.5 py-0.5 rounded bg-[#161616] border border-[#1f1f1f] shrink-0">{result.colorSpace}</span>
+                          <span className="text-[10px] text-[#444] px-1 py-px rounded bg-[#141414] shrink-0">{result.colorSpace}</span>
                         )}
                       </div>
-                      <div className="text-[11px] text-[#3a3a3a] truncate mt-0.5">{result.subtitle}</div>
+                      <div className="text-[11px] text-[#444] truncate">{result.subtitle}</div>
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                      {/* Pin button — visible when pinned, selected, or row hovered */}
+                      <span className="text-[11px] text-[#2a2a2a] w-[76px] text-right truncate hidden sm:block">{result.locationHint}</span>
                       <button
                         onClick={(e) => { e.stopPropagation(); togglePin(result.id); }}
                         className={`w-5 h-5 flex items-center justify-center rounded transition-all cursor-pointer ${
@@ -677,14 +687,8 @@ export function CommandPalette({
                         }`}
                         title={isPinned ? 'Unpin' : 'Pin (⌘↵)'}
                       >
-                        <Star className={`w-3 h-3 ${isPinned ? 'fill-[#FBBF24]' : ''}`} />
+                        <Star className={`w-2.5 h-2.5 ${isPinned ? 'fill-[#FBBF24]' : ''}`} />
                       </button>
-                      <span className="text-[10px] text-[#2a2a2a] max-w-[100px] truncate hidden sm:block">{result.locationHint}</span>
-                      {sel && (
-                        <div className="flex items-center justify-center w-5 h-5 rounded bg-[#1f1f1f]">
-                          <ArrowRight className="w-3 h-3 text-[#555]" />
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -694,29 +698,29 @@ export function CommandPalette({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 h-[38px] border-t border-[#141414] bg-[#080808]">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">↑</kbd>
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">↓</kbd>
+        <div className="flex items-center justify-between px-3.5 min-h-[42px] py-2 border-t border-[#1a1a1a] bg-[#080808]">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="flex items-center gap-0.5">
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#151515] text-[10px] text-[#444]">↑</kbd>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#151515] text-[10px] text-[#444]">↓</kbd>
               <span className="text-[10px] text-[#333] ml-0.5">Navigate</span>
             </div>
-            <div className="flex items-center gap-1">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">↵</kbd>
+            <div className="flex items-center gap-0.5">
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#151515] text-[10px] text-[#444]">↵</kbd>
               <span className="text-[10px] text-[#333] ml-0.5">Open</span>
             </div>
-            <div className="flex items-center gap-1">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">⌘↵</kbd>
+            <div className="flex items-center gap-0.5">
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#151515] text-[10px] text-[#444]">⌘↵</kbd>
               <span className="text-[10px] text-[#333] ml-0.5">Pin</span>
             </div>
-            <div className="flex items-center gap-1">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">Esc</kbd>
+            <div className="flex items-center gap-0.5">
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#151515] text-[10px] text-[#444]">Esc</kbd>
               <span className="text-[10px] text-[#333] ml-0.5">Close</span>
             </div>
           </div>
-          <div className="flex items-center gap-0.5">
-            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">⌘</kbd>
-            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#1a1a1a] text-[10px] text-[#444]">K</kbd>
+          <div className="flex items-center gap-0.5 shrink-0">
+            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#151515] text-[10px] text-[#444]">⌘</kbd>
+            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-[#151515] text-[10px] text-[#444]">K</kbd>
           </div>
         </div>
       </div>

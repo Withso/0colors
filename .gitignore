@@ -26,3 +26,9 @@ npm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Claude Code
+.claude/
+
+# Factory
+.factory/
