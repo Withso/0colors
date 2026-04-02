@@ -23,9 +23,11 @@ import { ImageWithFallback } from '../components/ImageWithFallback';
 import { copyTextToClipboard } from '../utils/clipboard';
 
 interface CommunityPageProps {
-  onBack: () => void;
+  onBack?: () => void;
   onOpenProject: (slug: string) => void;
   onRemixProject: (slug: string) => void;
+  /** When true, renders a compact version suitable for embedding in a sidebar layout. */
+  inline?: boolean;
 }
 
 function DescriptionPopup({
@@ -55,7 +57,7 @@ function DescriptionPopup({
         className="w-full max-w-[500px] rounded-2xl bg-card shadow-2xl p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-[16px] font-semibold text-foreground mb-3">{title}</h3>
+        <h3 className="text-[14px] font-semibold text-foreground mb-3">{title}</h3>
         <p className="text-[13px] text-muted-foreground leading-relaxed whitespace-pre-wrap">{description}</p>
         <div className="flex justify-end mt-5">
           <button
@@ -163,7 +165,7 @@ function ProjectCard({
                   e.stopPropagation();
                   onRemix();
                 }}
-                className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-[#465BFE]/10 border border-[#465BFE]/20 text-[#465BFE] text-[11px] font-medium hover:bg-[#465BFE]/20 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-brand/10 border border-brand/20 text-brand text-[11px] font-medium hover:bg-brand/20 transition-colors cursor-pointer"
               >
                 <Shuffle className="h-3 w-3" />
                 Remix
@@ -177,7 +179,7 @@ function ProjectCard({
               Share
             </button>
             <div className="flex-1" />
-            <span className="text-[10px] text-ghost">
+            <span className="text-[11px] text-ghost">
               {project.nodeCount} node{project.nodeCount !== 1 ? 's' : ''}
             </span>
           </div>
@@ -195,7 +197,7 @@ function ProjectCard({
   );
 }
 
-export function CommunityPage({ onBack, onOpenProject, onRemixProject }: CommunityPageProps) {
+export function CommunityPage({ onBack, onOpenProject, onRemixProject, inline = false }: CommunityPageProps) {
   const [projects, setProjects] = useState<CommunityProjectMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -224,6 +226,75 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject }: Communi
     );
   }, [projects, search]);
 
+  /* ---------- Shared grid / loading / empty content ---------- */
+  const gridContent = (
+    <div className={inline ? 'px-8 pb-16' : 'max-w-[1100px] mx-auto px-8 pb-16'}>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 text-dim animate-spin" />
+        </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="w-16 h-16 rounded-2xl bg-card border border-[#141414] flex items-center justify-center mb-4">
+            <Sparkles className="h-7 w-7 text-[#222]" />
+          </div>
+          <h3 className="text-[14px] text-dim font-medium mb-1">
+            {search ? 'No matching projects' : 'No community projects yet'}
+          </h3>
+          <p className="text-[12px] text-ghost">
+            {search ? 'Try a different search term' : 'Be the first to publish a project!'}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mb-5">
+            <span className="text-[12px] text-ghost">
+              {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            {filteredProjects.map((project) => (
+              <ProjectCard
+                key={project.projectId}
+                project={project}
+                onOpen={() => onOpenProject(project.slug)}
+                onRemix={() => onRemixProject(project.slug)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  /* ---------- Inline mode: compact header, no hero, no full-page wrapper ---------- */
+  if (inline) {
+    return (
+      <div className="flex-1">
+        {/* Compact header */}
+        <div className="px-8 pt-6 pb-4">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-[20px] font-semibold text-foreground">Community</h1>
+          </div>
+          <div className="relative max-w-[400px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ghost" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search projects..."
+              className="w-full h-10 pl-10 pr-4 rounded-xl bg-card/80 text-[13px] text-foreground placeholder-ghost outline-none focus:border-brand/30 transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Projects grid */}
+        {gridContent}
+      </div>
+    );
+  }
+
+  /* ---------- Full-page mode (default): unchanged behaviour ---------- */
   return (
     <div className="h-screen bg-background text-white overflow-auto">
       {/* Hero Banner */}
@@ -254,7 +325,7 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject }: Communi
               All Projects
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-[22px] text-foreground">
+              <span className="text-[20px] text-foreground">
                 0<span className="text-faint">colors</span>
               </span>
             </div>
@@ -267,7 +338,7 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject }: Communi
                 <Globe className="h-5 w-5 text-brand" />
               </div>
             </div>
-            <h1 className="text-[28px] font-bold text-foreground mb-2">
+            <h1 className="text-[20px] font-bold text-foreground mb-2">
               Community
             </h1>
             <p className="text-[14px] text-faint leading-relaxed">
@@ -292,43 +363,7 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject }: Communi
       </div>
 
       {/* Projects Grid */}
-      <div className="max-w-[1100px] mx-auto px-8 pb-16">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-6 w-6 text-dim animate-spin" />
-          </div>
-        ) : filteredProjects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-card border border-[#141414] flex items-center justify-center mb-4">
-              <Sparkles className="h-7 w-7 text-[#222]" />
-            </div>
-            <h3 className="text-[15px] text-dim font-medium mb-1">
-              {search ? 'No matching projects' : 'No community projects yet'}
-            </h3>
-            <p className="text-[12px] text-ghost">
-              {search ? 'Try a different search term' : 'Be the first to publish a project!'}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-5">
-              <span className="text-[12px] text-ghost">
-                {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-6">
-              {filteredProjects.map((project) => (
-                <ProjectCard
-                  key={project.projectId}
-                  project={project}
-                  onOpen={() => onOpenProject(project.slug)}
-                  onRemix={() => onRemixProject(project.slug)}
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+      {gridContent}
     </div>
   );
 }

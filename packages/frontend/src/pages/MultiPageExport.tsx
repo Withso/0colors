@@ -250,10 +250,10 @@ export function MultiPageExport({
           {selectedFormat === 'figma' && selectedThemeIds.size > 0 && (
             <>
               <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
-              <span className="text-[10px] text-dim shrink-0">Preview:</span>
+              <span className="text-[11px] text-dim shrink-0">Preview:</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 h-[24px] px-2 rounded bg-[#141414] border border-[#181818] hover:bg-secondary text-[10px] text-faint hover:text-muted-foreground transition-colors outline-none cursor-pointer max-w-[140px]">
+                  <button className="flex items-center gap-1 h-[24px] px-2 rounded bg-[#141414] border border-[#181818] hover:bg-secondary text-[11px] text-faint hover:text-muted-foreground transition-colors outline-none cursor-pointer max-w-[140px]">
                     <span className="truncate" title={projectThemes.find(t => t.id === previewThemeId)?.name || 'Select'}>{projectThemes.find(t => t.id === previewThemeId)?.name || 'Select'}</span>
                     <ChevronDown className="h-2.5 w-2.5 opacity-40 shrink-0" />
                   </button>
@@ -268,7 +268,7 @@ export function MultiPageExport({
                       <span className={`truncate ${theme.id === previewThemeId ? 'text-foreground' : 'text-subtle'}`} title={theme.name}>
                         {theme.name}
                       </span>
-                      {theme.isPrimary && <span className="ml-2 text-[10px] text-ghost">(Primary)</span>}
+                      {theme.isPrimary && <span className="ml-2 text-[11px] text-ghost">(Primary)</span>}
                       {theme.id === previewThemeId && <Check className="h-3 w-3 text-dim ml-auto" />}
                     </DropdownMenuItem>
                   ))}
@@ -301,7 +301,7 @@ export function MultiPageExport({
                     <span className={fmt === selectedFormat ? 'text-foreground' : 'text-subtle'}>
                       {formatLabels[fmt]}
                     </span>
-                    <span className="text-[10px] text-ghost">{formatDescriptions[fmt]}</span>
+                    <span className="text-[11px] text-ghost">{formatDescriptions[fmt]}</span>
                   </div>
                   {fmt === selectedFormat && <Check className="h-3 w-3 text-dim" />}
                 </DropdownMenuItem>
@@ -354,12 +354,12 @@ export function MultiPageExport({
                 <span className="text-[11px] text-faint uppercase tracking-widest">Pages</span>
                 <button
                   onClick={toggleAllPages}
-                  className="text-[10px] text-dim hover:text-subtle transition-colors cursor-pointer"
+                  className="text-[11px] text-dim hover:text-subtle transition-colors cursor-pointer"
                 >
                   {selectedPageIds.size === projectPages.length ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
-              <span className="text-[10px] text-ghost tabular-nums">
+              <span className="text-[11px] text-ghost tabular-nums">
                 {selectedPageIds.size} of {projectPages.length} selected
               </span>
             </div>
@@ -392,12 +392,12 @@ export function MultiPageExport({
                 <span className="text-[11px] text-faint uppercase tracking-widest">Themes</span>
                 <button
                   onClick={toggleAllThemes}
-                  className="text-[10px] text-dim hover:text-subtle transition-colors cursor-pointer"
+                  className="text-[11px] text-dim hover:text-subtle transition-colors cursor-pointer"
                 >
                   {selectedThemeIds.size === projectThemes.length ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
-              <span className="text-[10px] text-ghost tabular-nums">
+              <span className="text-[11px] text-ghost tabular-nums">
                 {selectedThemeIds.size} of {projectThemes.length} selected
               </span>
             </div>
@@ -418,7 +418,7 @@ export function MultiPageExport({
                     selectedThemeIds.has(theme.id) ? 'text-subtle' : 'text-ghost'
                   }`} title={theme.name}>{theme.name}</span>
                   {theme.isPrimary && (
-                    <span className="text-[10px] text-ghost">(Primary)</span>
+                    <span className="text-[11px] text-ghost">(Primary)</span>
                   )}
                 </div>
               ))}
@@ -434,7 +434,7 @@ export function MultiPageExport({
                     <Hash className="h-3 w-3 text-dim" />
                     <span className="text-[11px] text-faint uppercase tracking-widest">Show as Hex</span>
                   </div>
-                  <span className="text-[10px] text-ghost">
+                  <span className="text-[11px] text-ghost">
                     Convert color spaces to hex
                   </span>
                 </div>
@@ -506,11 +506,11 @@ export function MultiPageExport({
             className="flex items-center justify-between px-5 h-[30px] shrink-0 select-none"
             style={{ borderTop: '1px solid #141414' }}
           >
-            <span className="text-[10px] text-ghost tabular-nums">
+            <span className="text-[11px] text-ghost tabular-nums">
               {!isDisabled && <>{lineCount} line{lineCount !== 1 ? 's' : ''} {'\u00b7'} </>}
               {formatLabels[selectedFormat]}
             </span>
-            <span className="text-[10px] text-ghost uppercase tracking-wider">
+            <span className="text-[11px] text-ghost uppercase tracking-wider">
               Read-only
             </span>
           </div>

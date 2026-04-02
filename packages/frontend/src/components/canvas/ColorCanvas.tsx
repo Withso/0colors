@@ -387,7 +387,7 @@ function NodeReferenceLabel({
                 ? <ToggleRight className="w-3.5 h-3.5" />
                 : <ToggleLeft className="w-3.5 h-3.5" />
               }
-              <span className="text-[9px] tracking-wider uppercase select-none">
+              <span className="text-[11px] tracking-wider uppercase select-none">
                 Prefix
               </span>
             </button>

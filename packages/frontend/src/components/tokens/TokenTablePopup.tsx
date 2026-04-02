@@ -109,8 +109,8 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
         <div className="h-px bg-hairline mx-2" />
         <div className="px-3 pt-1.5 pb-1.5">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[10px] text-faint uppercase tracking-wide shrink-0">VAR</span>
-            <span className="text-[10px] font-mono text-subtle truncate">--{data.name.toLowerCase().replace(/\s+/g, '-')}</span>
+            <span className="text-[11px] text-faint uppercase tracking-wide shrink-0">VAR</span>
+            <span className="text-[11px] font-mono text-subtle truncate">--{data.name.toLowerCase().replace(/\s+/g, '-')}</span>
           </div>
         </div>
         {/* Computed expression result — shown when advanced logic is active */}
@@ -119,13 +119,13 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
             <div className="h-px bg-hairline mx-2" />
             <div className="px-3 pt-2 pb-1.5">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[10px] text-warning/80 uppercase tracking-wide">Computed</span>
+                <span className="text-[11px] text-warning/80 uppercase tracking-wide">Computed</span>
               </div>
               <div className="flex items-center gap-2 mb-1.5">
                 <div className="w-3 h-3 rounded-[3px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: data.computed.cssColor }} />
-                <span className="text-[10px] font-mono text-muted-foreground truncate">{data.computed.nativeValue}</span>
+                <span className="text-[11px] font-mono text-muted-foreground truncate">{data.computed.nativeValue}</span>
               </div>
-              <div className="text-[10px] font-mono text-faint truncate" title={data.computed.expressionText}>
+              <div className="text-[11px] font-mono text-faint truncate" title={data.computed.expressionText}>
                 {data.computed.expressionText}
               </div>
             </div>
@@ -137,7 +137,7 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
             <div className="h-px bg-hairline mx-2" />
             <div className="px-3 pt-2 pb-1.5">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[10px] text-dim uppercase tracking-wide">Value</span>
+                <span className="text-[11px] text-dim uppercase tracking-wide">Value</span>
                 <Link2 className="w-2.5 h-2.5 text-dim" />
               </div>
               <div className="flex items-center gap-2">
@@ -158,20 +158,20 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
                 <div className="px-3 pt-1.5 pb-2.5 space-y-1">
                   {vtShowSpace && (
                     <div className="flex items-center justify-between gap-4">
-                      <span className="text-[10px] text-faint uppercase tracking-wide">{data.valueRef.spaceName}</span>
-                      <span className="text-[10px] font-mono text-subtle">{data.valueRef.spaceValue}</span>
+                      <span className="text-[11px] text-faint uppercase tracking-wide">{data.valueRef.spaceName}</span>
+                      <span className="text-[11px] font-mono text-subtle">{data.valueRef.spaceValue}</span>
                     </div>
                   )}
                   {data.valueRef.hex && (
                     <div className="flex items-center justify-between gap-4">
-                      <span className="text-[10px] text-faint uppercase tracking-wide">HEX</span>
-                      <span className="text-[10px] font-mono text-subtle">{data.valueRef.hex}</span>
+                      <span className="text-[11px] text-faint uppercase tracking-wide">HEX</span>
+                      <span className="text-[11px] font-mono text-subtle">{data.valueRef.hex}</span>
                     </div>
                   )}
                   {data.valueRef.alpha !== undefined && data.valueRef.alpha < 100 && (
                     <div className="flex items-center justify-between gap-4">
-                      <span className="text-[10px] text-faint uppercase tracking-wide">ALPHA</span>
-                      <span className="text-[10px] font-mono text-subtle">{Math.round(data.valueRef.alpha)}%</span>
+                      <span className="text-[11px] text-faint uppercase tracking-wide">ALPHA</span>
+                      <span className="text-[11px] font-mono text-subtle">{Math.round(data.valueRef.alpha)}%</span>
                     </div>
                   )}
                 </div>
@@ -182,7 +182,7 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
           <>
             <div className="h-px bg-hairline mx-2" />
             <div className="px-3 pt-2 pb-2.5">
-              <span className="text-[10px] text-dim italic">No value assigned</span>
+              <span className="text-[11px] text-dim italic">No value assigned</span>
             </div>
           </>
         )}
@@ -211,20 +211,20 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
           <div className="px-3 pt-2 pb-2.5 space-y-1">
             {showSpace && (
               <div className="flex items-center justify-between gap-4">
-                <span className="text-[10px] text-faint uppercase tracking-wide">{data.spaceName}</span>
-                <span className="text-[10px] font-mono text-subtle">{data.spaceValue}</span>
+                <span className="text-[11px] text-faint uppercase tracking-wide">{data.spaceName}</span>
+                <span className="text-[11px] font-mono text-subtle">{data.spaceValue}</span>
               </div>
             )}
             {data.hex && (
               <div className="flex items-center justify-between gap-4">
-                <span className="text-[10px] text-faint uppercase tracking-wide">HEX</span>
-                <span className="text-[10px] font-mono text-subtle">{data.hex}</span>
+                <span className="text-[11px] text-faint uppercase tracking-wide">HEX</span>
+                <span className="text-[11px] font-mono text-subtle">{data.hex}</span>
               </div>
             )}
             {data.alpha !== undefined && data.alpha < 100 && (
               <div className="flex items-center justify-between gap-4">
-                <span className="text-[10px] text-faint uppercase tracking-wide">ALPHA</span>
-                <span className="text-[10px] font-mono text-subtle">{Math.round(data.alpha)}%</span>
+                <span className="text-[11px] text-faint uppercase tracking-wide">ALPHA</span>
+                <span className="text-[11px] font-mono text-subtle">{Math.round(data.alpha)}%</span>
               </div>
             )}
           </div>
@@ -1697,7 +1697,7 @@ export function TokenTablePopup({
             for (const [, themeMap] of computedTokensByTheme) {
               if (themeMap.has(token.id)) {
                 return (
-                  <span className="text-[9px] font-mono text-warning/70 px-1 py-px rounded bg-warning/[0.08] shrink-0 uppercase tracking-wider">
+                  <span className="text-[11px] font-mono text-warning/70 px-1 py-px rounded bg-warning/[0.08] shrink-0 uppercase tracking-wider">
                     logic
                   </span>
                 );
@@ -1784,7 +1784,7 @@ export function TokenTablePopup({
               </div>
               {isTokenNodeGrp && <Tag className="size-[11px] text-dim shrink-0" />}
               <span className="text-[12px] text-subtle truncate" title={displayName}>{displayName}</span>
-              <span className="text-[10px] text-ghost ml-1">{groupTokens.length}</span>
+              <span className="text-[11px] text-ghost ml-1">{groupTokens.length}</span>
             </div>
           </td>
         </tr>
@@ -1893,7 +1893,7 @@ export function TokenTablePopup({
               >
                 Tokens
                 {(regularGroups.length + ungroupedTokens.length) > 0 && (
-                  <span className={`ml-1.5 text-[10px] ${tableViewFilter === 'tokens' ? 'text-faint' : 'text-ghost'}`}>
+                  <span className={`ml-1.5 text-[11px] ${tableViewFilter === 'tokens' ? 'text-faint' : 'text-ghost'}`}>
                     {regularGroups.length + ungroupedTokens.length}
                   </span>
                 )}
@@ -1909,7 +1909,7 @@ export function TokenTablePopup({
               >
                 Color Palettes
                 {paletteEntries.length > 0 && (
-                  <span className={`ml-1.5 text-[10px] ${tableViewFilter === 'palettes' ? 'text-faint' : 'text-ghost'}`}>
+                  <span className={`ml-1.5 text-[11px] ${tableViewFilter === 'palettes' ? 'text-faint' : 'text-ghost'}`}>
                     {paletteEntries.length}
                   </span>
                 )}
@@ -2075,7 +2075,7 @@ export function TokenTablePopup({
                             : <ChevronRight className="h-3 w-3 text-ghost" />}
                         </div>
                         <span className="text-[12px] text-subtle">Others</span>
-                        <span className="text-[10px] text-ghost ml-1">{displayUngrouped.length}</span>
+                        <span className="text-[11px] text-ghost ml-1">{displayUngrouped.length}</span>
                       </div>
                     </td>
                   </tr>
@@ -2098,7 +2098,7 @@ export function TokenTablePopup({
               {logicFilter !== 'all' && (
                 <button
                   onClick={() => setLogicFilter('all')}
-                  className="text-[10px] text-dim hover:text-subtle underline cursor-pointer transition-colors"
+                  className="text-[11px] text-dim hover:text-subtle underline cursor-pointer transition-colors"
                 >
                   Clear filter
                 </button>
@@ -2114,7 +2114,7 @@ export function TokenTablePopup({
           style={{ borderTop: '1px solid #141414' }}
         >
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-ghost tabular-nums">
+            <span className="text-[11px] text-ghost tabular-nums">
               {activeTokenIds.size} token{activeTokenIds.size !== 1 ? 's' : ''}
               {' \u00b7 '}
               {allGroups.length + (ungroupedTokens.length > 0 ? 1 : 0)} group{(allGroups.length + (ungroupedTokens.length > 0 ? 1 : 0)) !== 1 ? 's' : ''}
@@ -2133,14 +2133,14 @@ export function TokenTablePopup({
               <Tip label="Back to Previous View" side="top">
               <button
                 onClick={handleGoBack}
-                className="flex items-center gap-1 h-[20px] px-2 rounded bg-secondary border border-line hover:border-brand/40 hover:bg-[#131c22] text-[10px] text-dim hover:text-[#7B8FFF] transition-colors cursor-pointer"
+                className="flex items-center gap-1 h-[20px] px-2 rounded bg-secondary border border-line hover:border-brand/40 hover:bg-[#131c22] text-[11px] text-dim hover:text-[#7B8FFF] transition-colors cursor-pointer"
               >
                 <Undo2 className="h-2.5 w-2.5" />
                 <span>Back</span>
               </button>
               </Tip>
             )}
-            <span className="text-[10px] text-ghost uppercase tracking-wider">Read-only</span>
+            <span className="text-[11px] text-ghost uppercase tracking-wider">Read-only</span>
           </div>
         </div>
       </div>

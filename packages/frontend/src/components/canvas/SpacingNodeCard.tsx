@@ -257,7 +257,7 @@ export function SpacingNodeCard({
 
           {/* Header with Icon and Name */}
           <div className="flex items-center gap-2 mb-3">
-            <Ruler className="h-4 w-4 text-brand-pink" />
+            <Ruler className="h-4 w-4 text-ai" />
             <Input
               value={node.spacingName}
               onChange={(e) => handleNameChange(e.target.value)}
@@ -407,7 +407,7 @@ export function SpacingNodeCard({
                               >
                                 <div className={cn("flex items-center gap-2 flex-1 min-w-0 px-[8px] rounded-[10px] py-[2px]", isCurrentlyAssigned ? "bg-[#ffffff]/[0.08]" : isAssignedToOther ? "bg-[#3548CC]" : "")}>
                                   <div
-                                    className="w-3 h-3 rounded-full bg-brand-pink shrink-0"
+                                    className="w-3 h-3 rounded-full bg-ai shrink-0"
                                   />
                                   <div className="flex flex-col min-w-0 flex-1">
                                     <span className={cn("truncate text-foreground group-hover:text-white transition-colors", isCurrentlyAssigned && "text-white font-medium")}>{token.name}</span>
@@ -461,7 +461,7 @@ export function SpacingNodeCard({
                               >
                                 <div className={cn("flex items-center gap-2 flex-1 min-w-0 px-[8px] rounded-[10px] py-[2px]", isCurrentlyAssigned ? "bg-[#ffffff]/[0.08]" : isAssignedToOther ? "bg-[#3548CC]" : "")}>
                                   <div
-                                    className="w-3 h-3 rounded-full bg-brand-pink shrink-0"
+                                    className="w-3 h-3 rounded-full bg-ai shrink-0"
                                   />
                                   <div className="flex flex-col min-w-0 flex-1">
                                     <span className={cn("truncate text-foreground group-hover:text-white transition-colors", isCurrentlyAssigned && "text-white font-medium")}>{token.name}</span>

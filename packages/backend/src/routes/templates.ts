@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { kvGet, kvMget } from '../db.js';
-import { requireAuth, isTemplateAdmin, normalizeMeta } from '../middleware/auth.js';
+import { getUser, getAppSetting, getProjectsByIds } from '../db.js';
+import { requireAuth, isTemplateAdmin, normalizeUserToMeta } from '../middleware/auth.js';
 
 const router = new Hono();
 
@@ -9,33 +9,36 @@ const router = new Hono();
 // ---------------------------------------------------------------------------
 router.get('/templates', async (c) => {
     try {
-        // Get template admin user ID from app config (strip JSONB quotes)
-        const templateAdminIdRaw = await kvGet('app:template_admin_user_id');
+        // Get template admin user ID from app settings
+        const templateAdminIdRaw = await getAppSetting('template_admin_user_id');
         if (!templateAdminIdRaw) {
             return c.json({ templates: [] });
         }
         const templateAdminId = String(templateAdminIdRaw).replace(/^"|"$/g, '');
 
-        // Load template admin's meta to get their cloud projects
-        const rawMeta = await kvGet(`user:${templateAdminId}:meta`);
-        const meta = normalizeMeta(rawMeta);
+        // Load template admin's user record to get their cloud projects
+        const adminUser = await getUser(templateAdminId);
+        const meta = normalizeUserToMeta(adminUser);
         const projectIds: string[] = meta.cloudProjectIds;
 
         if (projectIds.length === 0) {
             return c.json({ templates: [] });
         }
 
-        // Batch load all snapshots
-        const snapshotKeys = projectIds.map(id => `project:${id}:snapshot`);
-        const snapshots = await kvMget(snapshotKeys);
+        // Batch load all project snapshots
+        const projectRows = await getProjectsByIds(projectIds);
+        const snapshotMap = new Map(projectRows.map(p => [p.id, p.snapshot]));
 
-        // Filter for projects with isTemplate flag (check snapshot.isTemplate or snapshot.project.isTemplate)
+        // Filter for projects with isTemplate flag
         const templates = projectIds
-            .map((id, idx) => ({
-                projectId: id,
-                name: snapshots[idx]?.project?.name ?? snapshots[idx]?.name ?? 'Untitled',
-                snapshot: snapshots[idx],
-            }))
+            .map(id => {
+                const snap = snapshotMap.get(id);
+                return {
+                    projectId: id,
+                    name: snap?.project?.name ?? snap?.name ?? 'Untitled',
+                    snapshot: snap,
+                };
+            })
             .filter(p => p.snapshot?.isTemplate === true || p.snapshot?.project?.isTemplate === true);
 
         return c.json({ templates });

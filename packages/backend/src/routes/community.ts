@@ -1,5 +1,10 @@
 import { Hono } from 'hono';
-import { kvGet, kvSet, kvDel, kvGetByPrefix } from '../db.js';
+import {
+    getProjectOwner, getCommunityMeta, getCommunityBySlug,
+    checkSlugExists, createCommunityPublication, updateCommunityPublication,
+    deleteCommunityPublication, listCommunityPublications,
+    getCommunityThumbnail, getCommunitySnapshot,
+} from '../db.js';
 import { getAuthUserWithName } from '../auth.js';
 
 const router = new Hono();
@@ -23,8 +28,8 @@ async function getUniqueSlug(title: string, excludeProjectId?: string): Promise<
     let counter = 1;
 
     while (true) {
-        const existing = await kvGet(`community:slug:${slug}`);
-        if (!existing || (excludeProjectId && existing.projectId === excludeProjectId)) {
+        const exists = await checkSlugExists(slug, excludeProjectId);
+        if (!exists) {
             return slug;
         }
         counter++;
@@ -67,13 +72,13 @@ router.post('/community/publish', async (c) => {
         }
 
         // Verify ownership
-        const owner = await kvGet(`project:${projectId}:owner`);
+        const owner = await getProjectOwner(projectId);
         if (owner !== userId) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
         // Check if already published
-        const existingMeta = await kvGet(`community:meta:${projectId}`);
+        const existingMeta = await getCommunityMeta(projectId);
         if (existingMeta) {
             return c.json({ error: 'Project is already published. Use PUT to update.' }, 409);
         }
@@ -85,31 +90,25 @@ router.post('/community/publish', async (c) => {
         const nodeCount = Array.isArray(snapshot.nodes) ? snapshot.nodes.length : 0;
         const tokenCount = Array.isArray(snapshot.tokens) ? snapshot.tokens.length : 0;
 
-        const now = new Date().toISOString();
-        const meta = {
-            projectId,
+        // Store thumbnail (strip data URL prefix if present)
+        let thumbnail: string | undefined;
+        if (thumbnailDataUrl) {
+            thumbnail = thumbnailDataUrl.replace(/^data:image\/\w+;base64,/, '');
+        }
+
+        await createCommunityPublication({
+            project_id: projectId,
             slug,
             title,
             description: description || '',
-            allowRemix: allowRemix !== false,
-            userId,
-            userName,
-            publishedAt: now,
-            updatedAt: now,
-            nodeCount,
-            tokenCount,
-        };
-
-        // Store all KV entries
-        await kvSet(`community:meta:${projectId}`, meta);
-        await kvSet(`community:snapshot:${projectId}`, snapshot);
-        await kvSet(`community:slug:${slug}`, { projectId });
-
-        // Store thumbnail (strip data URL prefix if present)
-        if (thumbnailDataUrl) {
-            const base64Data = thumbnailDataUrl.replace(/^data:image\/\w+;base64,/, '');
-            await kvSet(`community:thumbnail:${projectId}`, base64Data);
-        }
+            allow_remix: allowRemix !== false,
+            user_id: userId,
+            user_name: userName,
+            snapshot,
+            thumbnail,
+            node_count: nodeCount,
+            token_count: tokenCount,
+        });
 
         invalidateCommunityListCache();
         return c.json({ slug });
@@ -129,11 +128,11 @@ router.put('/community/:projectId', async (c) => {
         const { userId } = user;
 
         const projectId = c.req.param('projectId');
-        const existingMeta = await kvGet(`community:meta:${projectId}`);
+        const existingMeta = await getCommunityMeta(projectId);
         if (!existingMeta) {
             return c.json({ error: 'Project is not published' }, 404);
         }
-        if (existingMeta.userId !== userId) {
+        if (existingMeta.user_id !== userId) {
             return c.json({ error: 'Not the publisher of this project' }, 403);
         }
 
@@ -148,45 +147,35 @@ router.put('/community/:projectId', async (c) => {
             return c.json({ error: 'Description must be 0-500 characters' }, 400);
         }
 
-        let currentSlug = existingMeta.slug;
+        const updateData: any = {};
 
         // If title changed, regenerate slug
         if (title && title !== existingMeta.title) {
             const newSlug = await getUniqueSlug(title, projectId);
-            if (newSlug !== currentSlug) {
-                // Delete old slug mapping, create new one
-                await kvDel(`community:slug:${currentSlug}`);
-                await kvSet(`community:slug:${newSlug}`, { projectId });
-                currentSlug = newSlug;
-            }
+            updateData.slug = newSlug;
+            updateData.title = title;
+        } else if (title !== undefined) {
+            updateData.title = title;
         }
 
-        // Merge updates into meta
-        const updatedMeta = {
-            ...existingMeta,
-            ...(title !== undefined && { title }),
-            ...(description !== undefined && { description }),
-            ...(allowRemix !== undefined && { allowRemix }),
-            slug: currentSlug,
-            updatedAt: new Date().toISOString(),
-        };
+        if (description !== undefined) updateData.description = description;
+        if (allowRemix !== undefined) updateData.allow_remix = allowRemix;
 
-        // Update node/token counts if snapshot provided
+        // Update snapshot if provided
         if (snapshot) {
-            updatedMeta.nodeCount = Array.isArray(snapshot.nodes) ? snapshot.nodes.length : existingMeta.nodeCount;
-            updatedMeta.tokenCount = Array.isArray(snapshot.tokens) ? snapshot.tokens.length : existingMeta.tokenCount;
-            await kvSet(`community:snapshot:${projectId}`, snapshot);
+            updateData.snapshot = snapshot;
+            updateData.node_count = Array.isArray(snapshot.nodes) ? snapshot.nodes.length : existingMeta.node_count;
+            updateData.token_count = Array.isArray(snapshot.tokens) ? snapshot.tokens.length : existingMeta.token_count;
         }
-
-        await kvSet(`community:meta:${projectId}`, updatedMeta);
 
         if (thumbnailDataUrl) {
-            const base64Data = thumbnailDataUrl.replace(/^data:image\/\w+;base64,/, '');
-            await kvSet(`community:thumbnail:${projectId}`, base64Data);
+            updateData.thumbnail = thumbnailDataUrl.replace(/^data:image\/\w+;base64,/, '');
         }
 
+        await updateCommunityPublication(projectId, updateData);
+
         invalidateCommunityListCache();
-        return c.json({ ok: true, slug: currentSlug });
+        return c.json({ ok: true, slug: updateData.slug || existingMeta.slug });
     } catch (err: any) {
         console.error('[community/update] Error:', err);
         return c.json({ error: err.message || 'Internal server error' }, 500);
@@ -203,19 +192,15 @@ router.delete('/community/:projectId', async (c) => {
         const { userId } = user;
 
         const projectId = c.req.param('projectId');
-        const existingMeta = await kvGet(`community:meta:${projectId}`);
+        const existingMeta = await getCommunityMeta(projectId);
         if (!existingMeta) {
             return c.json({ error: 'Project is not published' }, 404);
         }
-        if (existingMeta.userId !== userId) {
+        if (existingMeta.user_id !== userId) {
             return c.json({ error: 'Not the publisher of this project' }, 403);
         }
 
-        // Delete all community KV keys
-        await kvDel(`community:meta:${projectId}`);
-        await kvDel(`community:snapshot:${projectId}`);
-        await kvDel(`community:thumbnail:${projectId}`);
-        await kvDel(`community:slug:${existingMeta.slug}`);
+        await deleteCommunityPublication(projectId);
 
         invalidateCommunityListCache();
         return c.json({ ok: true });
@@ -241,30 +226,22 @@ router.get('/community', async (c) => {
             return c.json(listCache.data);
         }
 
-        const metas = await kvGetByPrefix('community:meta:');
+        const metas = await listCommunityPublications();
 
-        const projects = metas
-            .map(m => m.value)
-            .filter(Boolean)
-            .sort((a: any, b: any) => {
-                const dateA = new Date(a.publishedAt || 0).getTime();
-                const dateB = new Date(b.publishedAt || 0).getTime();
-                return dateB - dateA; // newest first
-            })
-            .map((meta: any) => ({
-                projectId: meta.projectId,
-                slug: meta.slug,
-                title: meta.title,
-                description: meta.description,
-                allowRemix: meta.allowRemix,
-                thumbnailUrl: `/api/community/thumbnail/${meta.projectId}`,
-                userName: meta.userName,
-                userId: meta.userId,
-                publishedAt: meta.publishedAt,
-                updatedAt: meta.updatedAt,
-                nodeCount: meta.nodeCount,
-                tokenCount: meta.tokenCount,
-            }));
+        const projects = metas.map((meta: any) => ({
+            projectId: meta.project_id,
+            slug: meta.slug,
+            title: meta.title,
+            description: meta.description,
+            allowRemix: meta.allow_remix,
+            thumbnailUrl: `/api/community/thumbnail/${meta.project_id}`,
+            userName: meta.user_name,
+            userId: meta.user_id,
+            publishedAt: meta.published_at,
+            updatedAt: meta.updated_at,
+            nodeCount: meta.node_count,
+            tokenCount: meta.token_count,
+        }));
 
         const response = { projects };
 
@@ -284,35 +261,25 @@ router.get('/community', async (c) => {
 router.get('/community/project/:slug', async (c) => {
     try {
         const slug = c.req.param('slug');
-        const slugEntry = await kvGet(`community:slug:${slug}`);
-        if (!slugEntry?.projectId) {
-            return c.json({ error: 'Project not found' }, 404);
-        }
-
-        const projectId = slugEntry.projectId;
-        const [meta, snapshot] = await Promise.all([
-            kvGet(`community:meta:${projectId}`),
-            kvGet(`community:snapshot:${projectId}`),
-        ]);
-
-        if (!meta) {
+        const publication = await getCommunityBySlug(slug);
+        if (!publication) {
             return c.json({ error: 'Project not found' }, 404);
         }
 
         return c.json({
-            projectId: meta.projectId,
-            slug: meta.slug,
-            title: meta.title,
-            description: meta.description,
-            allowRemix: meta.allowRemix,
-            thumbnailUrl: `/api/community/thumbnail/${meta.projectId}`,
-            userName: meta.userName,
-            userId: meta.userId,
-            publishedAt: meta.publishedAt,
-            updatedAt: meta.updatedAt,
-            nodeCount: meta.nodeCount,
-            tokenCount: meta.tokenCount,
-            snapshot: snapshot ?? null,
+            projectId: publication.project_id,
+            slug: publication.slug,
+            title: publication.title,
+            description: publication.description,
+            allowRemix: publication.allow_remix,
+            thumbnailUrl: `/api/community/thumbnail/${publication.project_id}`,
+            userName: publication.user_name,
+            userId: publication.user_id,
+            publishedAt: publication.published_at,
+            updatedAt: publication.updated_at,
+            nodeCount: publication.node_count,
+            tokenCount: publication.token_count,
+            snapshot: publication.snapshot ?? null,
         });
     } catch (err: any) {
         console.error('[community/project] Error:', err);
@@ -330,13 +297,26 @@ router.get('/community/status/:projectId', async (c) => {
         const { userId } = user;
 
         const projectId = c.req.param('projectId');
-        const meta = await kvGet(`community:meta:${projectId}`);
+        const meta = await getCommunityMeta(projectId);
 
-        if (!meta || meta.userId !== userId) {
+        if (!meta || meta.user_id !== userId) {
             return c.json({ error: 'Not published or not the publisher' }, 404);
         }
 
-        return c.json(meta);
+        // Return in camelCase format for frontend compatibility
+        return c.json({
+            projectId: meta.project_id,
+            slug: meta.slug,
+            title: meta.title,
+            description: meta.description,
+            allowRemix: meta.allow_remix,
+            userId: meta.user_id,
+            userName: meta.user_name,
+            publishedAt: meta.published_at,
+            updatedAt: meta.updated_at,
+            nodeCount: meta.node_count,
+            tokenCount: meta.token_count,
+        });
     } catch (err: any) {
         console.error('[community/status] Error:', err);
         return c.json({ error: err.message || 'Internal server error' }, 500);
@@ -349,7 +329,7 @@ router.get('/community/status/:projectId', async (c) => {
 router.get('/community/thumbnail/:projectId', async (c) => {
     try {
         const projectId = c.req.param('projectId');
-        const thumbnailData = await kvGet(`community:thumbnail:${projectId}`);
+        const thumbnailData = await getCommunityThumbnail(projectId);
 
         if (!thumbnailData) {
             return c.body(null, 404);

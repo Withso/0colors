@@ -151,7 +151,7 @@ export function CloudSyncIndicator({
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
             <div className="absolute -bottom-0.5 -right-0.5 bg-card rounded-full">
-              <Check className="h-2.5 w-2.5 text-success" strokeWidth={3} />
+              <Check className="h-2.5 w-2.5 text-success" />
             </div>
           </div>
         );
@@ -160,7 +160,7 @@ export function CloudSyncIndicator({
           <div className="relative">
             <Cloud className="h-4 w-4 text-white" />
             <div className="absolute -bottom-0.5 -right-0.5 bg-card rounded-full">
-              <AlertTriangle className="h-2.5 w-2.5 text-destructive" strokeWidth={3} />
+              <AlertTriangle className="h-2.5 w-2.5 text-destructive" />
             </div>
           </div>
         );
@@ -176,7 +176,7 @@ export function CloudSyncIndicator({
           <div className="relative">
             <Cloud className="h-4 w-4 text-subtle" />
             <div className="absolute -bottom-0.5 -right-0.5 bg-card rounded-full">
-              <WifiOff className="h-2.5 w-2.5 text-warning" strokeWidth={3} />
+              <WifiOff className="h-2.5 w-2.5 text-warning" />
             </div>
           </div>
         );

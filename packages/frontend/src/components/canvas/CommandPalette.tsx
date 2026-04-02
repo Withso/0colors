@@ -638,7 +638,7 @@ export function CommandPalette({
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] text-ghost tabular-nums">{grp.results.length}</span>
                   {grp.canClear && (
-                    <button onClick={clearRecent} className="text-[10px] text-ghost hover:text-faint transition-colors cursor-pointer" title="Clear recent">
+                    <button onClick={clearRecent} className="text-[11px] text-ghost hover:text-faint transition-colors cursor-pointer" title="Clear recent">
                       <X className="w-2.5 h-2.5" />
                     </button>
                   )}
@@ -668,7 +668,7 @@ export function CommandPalette({
                           {result.title}
                         </span>
                         {result.colorSpace && (
-                          <span className="text-[10px] text-ghost px-1 py-px rounded bg-[#141414] shrink-0">{result.colorSpace}</span>
+                          <span className="text-[11px] text-ghost px-1 py-px rounded bg-[#141414] shrink-0">{result.colorSpace}</span>
                         )}
                       </div>
                       <div className="text-[11px] text-ghost truncate">{result.subtitle}</div>
@@ -701,26 +701,26 @@ export function CommandPalette({
         <div className="flex items-center justify-between px-3.5 min-h-[42px] py-2 border-t border-secondary bg-background">
           <div className="flex items-center gap-2.5 flex-wrap">
             <div className="flex items-center gap-0.5">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[10px] text-ghost">↑</kbd>
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[10px] text-ghost">↓</kbd>
-              <span className="text-[10px] text-ghost ml-0.5">Navigate</span>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">↑</kbd>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">↓</kbd>
+              <span className="text-[11px] text-ghost ml-0.5">Navigate</span>
             </div>
             <div className="flex items-center gap-0.5">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[10px] text-ghost">↵</kbd>
-              <span className="text-[10px] text-ghost ml-0.5">Open</span>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">↵</kbd>
+              <span className="text-[11px] text-ghost ml-0.5">Open</span>
             </div>
             <div className="flex items-center gap-0.5">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[10px] text-ghost">⌘↵</kbd>
-              <span className="text-[10px] text-ghost ml-0.5">Pin</span>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">⌘↵</kbd>
+              <span className="text-[11px] text-ghost ml-0.5">Pin</span>
             </div>
             <div className="flex items-center gap-0.5">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[10px] text-ghost">Esc</kbd>
-              <span className="text-[10px] text-ghost ml-0.5">Close</span>
+              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">Esc</kbd>
+              <span className="text-[11px] text-ghost ml-0.5">Close</span>
             </div>
           </div>
           <div className="flex items-center gap-0.5 shrink-0">
-            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[10px] text-ghost">⌘</kbd>
-            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[10px] text-ghost">K</kbd>
+            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">⌘</kbd>
+            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">K</kbd>
           </div>
         </div>
       </div>

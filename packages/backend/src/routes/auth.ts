@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
-import { createUser } from '../auth.js';
-import { kvGet, kvSet } from '../db.js';
+import { createUser as supabaseCreateUser } from '../auth.js';
+import { getUser, createUser } from '../db.js';
 import { CLOUD_PROJECT_LIMIT } from '../constants.js';
-import { requireAuth, getUserRole, isTemplateAdmin, normalizeMeta } from '../middleware/auth.js';
+import { requireAuth, getUserRole, isTemplateAdmin, normalizeUserToMeta } from '../middleware/auth.js';
 
 const router = new Hono();
 
@@ -18,7 +18,7 @@ router.post('/signup', async (c) => {
             return c.json({ error: 'Email and password are required' }, 400);
         }
 
-        const { data, error } = await createUser(email, password, name ?? '');
+        const { data, error } = await supabaseCreateUser(email, password, name ?? '');
         if (error) {
             console.error('[signup] Supabase createUser error:', error.message);
             return c.json({ error: error.message }, 400);
@@ -26,12 +26,11 @@ router.post('/signup', async (c) => {
 
         const userId = data.user?.id;
         if (userId) {
-            await kvSet(`user:${userId}:meta`, {
+            await createUser(userId, {
                 email,
                 name: name || email.split('@')[0],
-                createdAt: Date.now(),
-                cloudProjectIds: [],
                 role: 'user',
+                cloud_project_ids: [],
             });
         }
 
@@ -50,8 +49,8 @@ router.get('/cloud-meta', async (c) => {
         const userId = await requireAuth(c);
         if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
-        const rawMeta = await kvGet(`user:${userId}:meta`);
-        const meta = normalizeMeta(rawMeta);
+        const user = await getUser(userId);
+        const meta = normalizeUserToMeta(user);
         const role = await getUserRole(userId);
         const tplAdmin = await isTemplateAdmin(userId);
 

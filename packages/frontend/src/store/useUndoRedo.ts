@@ -47,6 +47,20 @@ export interface UseUndoRedoReturn {
    * distinct undo entry.
    */
   flush: () => void;
+  /**
+   * Pause undo tracking. Flushes any pending batch first, then suppresses
+   * new undo entries until resume() is called. All state changes during
+   * the paused window are accumulated as one batch.
+   * Use for AI Build Mode: pause → execute all tool calls → resume.
+   */
+  pause: () => void;
+  /**
+   * Resume undo tracking after a pause(). The accumulated state changes
+   * since pause() are committed as a single undo entry.
+   */
+  resume: () => void;
+  /** Whether undo tracking is currently paused. */
+  isPaused: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -123,6 +137,11 @@ export function useUndoRedo(
   const isSettlingRef = useRef(false);
   const settlingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // --- Pause support (for AI Build Mode batch operations) ---
+  const isPausedRef = useRef(false);
+  const pauseStartRef = useRef<UndoableState | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
   // Keep latest state ref in sync every render.
   latestStateRef.current = state;
 
@@ -146,6 +165,11 @@ export function useUndoRedo(
     // side-effect state changes into the baseline.
     if (isSettlingRef.current) {
       lastCommittedRef.current = state;
+      return;
+    }
+
+    // While paused, skip debounce — changes accumulate silently.
+    if (isPausedRef.current) {
       return;
     }
 
@@ -294,5 +318,41 @@ export function useUndoRedo(
     };
   }, []);
 
-  return { undo, redo, canUndo, canRedo, undoCount, redoCount, flush };
+  // ------------------------------------------------------------------
+  // pause / resume  (AI Build Mode batch support)
+  // ------------------------------------------------------------------
+  const pause = useCallback(() => {
+    if (isPausedRef.current) return;
+    // Flush any pending batch so prior user work is its own entry
+    flush();
+    // Record the state at pause time — this becomes the "before" snapshot
+    pauseStartRef.current = latestStateRef.current;
+    lastCommittedRef.current = latestStateRef.current;
+    isPausedRef.current = true;
+    setIsPaused(true);
+  }, [flush]);
+
+  const resume = useCallback(() => {
+    if (!isPausedRef.current) return;
+    isPausedRef.current = false;
+    setIsPaused(false);
+    // Commit all changes since pause as a single undo entry
+    const beforeState = pauseStartRef.current;
+    const currentState = latestStateRef.current;
+    if (beforeState && stateChanged(beforeState, currentState)) {
+      undoStackRef.current.push(beforeState);
+      while (undoStackRef.current.length > maxHistory) {
+        undoStackRef.current.shift();
+      }
+      redoStackRef.current = [];
+      setCanUndo(true);
+      setCanRedo(false);
+      setUndoCount(undoStackRef.current.length);
+      setRedoCount(0);
+    }
+    lastCommittedRef.current = currentState;
+    pauseStartRef.current = null;
+  }, [maxHistory]);
+
+  return { undo, redo, canUndo, canRedo, undoCount, redoCount, flush, pause, resume, isPaused };
 }

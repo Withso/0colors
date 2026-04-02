@@ -1,17 +1,25 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Send, Plus, Menu, Trash2, MessageSquare, Settings, Sparkles, StopCircle, Copy, Check, ArrowDown, PanelRight, Maximize2, Move, Download } from 'lucide-react';
+import { X, Send, Plus, Menu, Trash2, MessageSquare, Settings, Sparkles, StopCircle, Copy, Check, ArrowDown, PanelRight, Maximize2, Move, Download, ChevronDown, Hammer, Diamond } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Conversation, ConversationMessage, generateId, generateConversationTitle,
-  loadAISettings, getActiveProvider, isProviderConfigured, streamChat, ChatMessage, AISettings,
+  loadAISettings, getActiveProvider, isProviderConfigured, streamChat, ChatMessage,
+  AISettingsV2, ServiceId, SERVICE_DEFINITIONS, SERVICE_MAP,
+  getActiveServiceConfig, getConfiguredServices, buildLegacyConfig, saveAISettings,
   loadContextTier, loadContextToggles, ContextToggles,
   MAX_CONVERSATIONS, MAX_MESSAGES_PER_CONVERSATION,
 } from '../../utils/ai-provider';
+type AISettings = AISettingsV2;
 import type { ContextTier } from '../../utils/ai-context-manager';
 import { AISettingsPopup } from './AISettingsPopup';
+import { PendingActionsCard, ExecutedActionsSummary, BuildModeBadge } from './BuildActionPreview';
 import { copyTextToClipboard } from '../../utils/clipboard';
 import { prepareAPIMessages } from '../../utils/ai-context-manager';
+import { runBuildConversation, type BuildLoopCallbacks } from '../../utils/ai-build-loop';
+import { describeToolCall, type ToolCall, type ToolResult } from '../../utils/ai-build-tools';
+import type { BuildMessage } from '../../utils/ai-build-stream';
+import type { MutationContext } from '../../utils/ai-build-executor';
 import { toast } from 'sonner';
 
 // ── Constants ───────────────────────────────────────────────────
@@ -76,6 +84,8 @@ function defaultPosition(h: number): { x: number; y: number } {
 }
 
 // ── Props ───────────────────────────────────────────────────────
+type AIMode = 'ask' | 'build';
+
 interface AskAIChatProps {
   isOpen: boolean;
   onClose: () => void;
@@ -87,6 +97,11 @@ interface AskAIChatProps {
   isDocked: boolean;
   onDockChange: (docked: boolean) => void;
   onSettingsSaved?: (settings: AISettings, contextTier: ContextTier, contextToggles: ContextToggles) => void;
+  /** Mutation context for Build Mode — if not provided, Build Mode is disabled */
+  mutationContext?: MutationContext;
+  /** Pause/resume undo tracking for Build Mode batch operations */
+  onPauseUndo?: () => void;
+  onResumeUndo?: () => void;
 }
 
 // ── Markdown-lite renderer (no deps) ────────────────────────────
@@ -181,7 +196,7 @@ function ErrorBubble({ error }: { error: StructuredError }) {
             <span className="text-[11px] font-medium" style={{ color }}>
               {error.title}
             </span>
-            <span className="text-[9px] px-1.5 py-[1px] rounded font-mono"
+            <span className="text-[11px] px-1.5 py-[1px] rounded font-mono"
               style={{ background: `${color}12`, color: `${color}` }}
             >
               {error.code || error.errorCode}
@@ -195,7 +210,7 @@ function ErrorBubble({ error }: { error: StructuredError }) {
           {error.message}
         </p>
         {error.suggestion && (
-          <p className="text-[10px] leading-relaxed" style={{ color: `${color}90` }}>
+          <p className="text-[11px] leading-relaxed" style={{ color: `${color}90` }}>
             {error.suggestion}
           </p>
         )}
@@ -292,6 +307,8 @@ export function AskAIChat({
   projectContext,
   isDocked, onDockChange,
   onSettingsSaved,
+  mutationContext,
+  onPauseUndo, onResumeUndo,
 }: AskAIChatProps) {
   // ── State ─────────────────────────────────────────────────────
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
@@ -303,6 +320,17 @@ export function AskAIChat({
   const [height, setHeight] = useState(loadHeight);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [aiSettings, setAISettings] = useState<AISettings>(loadAISettings);
+  const [showModelPicker, setShowModelPicker] = useState(false);
+  const modelPickerRef = useRef<HTMLDivElement>(null);
+
+  // ── Build Mode state ──
+  const [aiMode, setAIMode] = useState<AIMode>(() => {
+    try { return (localStorage.getItem('0colors-ai-mode') as AIMode) || 'ask'; } catch { return 'ask'; }
+  });
+  const [pendingToolCalls, setPendingToolCalls] = useState<{ toolCalls: ToolCall[]; descriptions: string[] } | null>(null);
+  const [executedActions, setExecutedActions] = useState<{ description: string; result: ToolResult }[]>([]);
+  const pendingResolveRef = useRef<((decision: 'apply' | 'skip' | 'cancel') => void) | null>(null);
+  const buildModeAvailable = !!mutationContext;
   const [position, setPosition] = useState<{ x: number; y: number }>(
     () => {
       const saved = loadPosition();
@@ -326,6 +354,23 @@ export function AskAIChat({
   // Keep refs in sync
   useEffect(() => { positionRef.current = position; }, [position]);
   useEffect(() => { heightRef.current = height; }, [height]);
+
+  // Persist AI mode
+  useEffect(() => {
+    try { localStorage.setItem('0colors-ai-mode', aiMode); } catch {}
+  }, [aiMode]);
+
+  // Close model picker on outside click
+  useEffect(() => {
+    if (!showModelPicker) return;
+    const onClick = (e: MouseEvent) => {
+      if (modelPickerRef.current && !modelPickerRef.current.contains(e.target as Node)) {
+        setShowModelPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [showModelPicker]);
 
   // ── Clamp position on open + on window resize ─────────────────
   useEffect(() => {
@@ -503,11 +548,12 @@ export function AskAIChat({
     const trimmed = input.trim();
     if (!trimmed || isStreaming) return;
 
-    const provider = getActiveProvider(aiSettings);
-    if (!isProviderConfigured(aiSettings)) {
+    const activeService = getActiveServiceConfig(aiSettings);
+    if (!activeService) {
       setShowSettings(true);
       return;
     }
+    const provider = buildLegacyConfig(activeService.definition, activeService.config);
 
     // Create conversation if none active
     let convId = activeConvId;
@@ -633,6 +679,158 @@ export function AskAIChat({
     }, abortCtrl.signal, prepared.maxResponseTokens);
   }, [input, isStreaming, activeConvId, conversations, onConversationsChange, aiSettings, projectContext]);
 
+  // ── Send message (Build Mode) ────────────────────────────────
+  const sendBuildMessage = useCallback(async () => {
+    const trimmed = input.trim();
+    if (!trimmed || isStreaming || !mutationContext) return;
+
+    const activeService = getActiveServiceConfig(aiSettings);
+    if (!activeService) { setShowSettings(true); return; }
+    const provider = buildLegacyConfig(activeService.definition, activeService.config);
+
+    // Create conversation if none active
+    let convId = activeConvId;
+    let updatedConvs = [...conversations];
+    if (!convId) {
+      const newConv: Conversation = {
+        id: generateId(), title: generateConversationTitle(trimmed),
+        messages: [], createdAt: Date.now(), updatedAt: Date.now(),
+      };
+      updatedConvs = [newConv, ...updatedConvs];
+      convId = newConv.id;
+      setActiveConvId(convId);
+    }
+
+    // Add user message
+    const userMsg: ConversationMessage = { id: generateId(), role: 'user', content: trimmed, timestamp: Date.now() };
+    updatedConvs = updatedConvs.map(c => {
+      if (c.id !== convId) return c;
+      const isFirst = c.messages.length === 0;
+      return { ...c, messages: [...c.messages, userMsg], title: isFirst ? generateConversationTitle(trimmed) : c.title, updatedAt: Date.now() };
+    });
+    onConversationsChange(updatedConvs);
+    setInput('');
+    setIsStreaming(true);
+    setStreamingText('');
+    setExecutedActions([]);
+
+    // Build messages for the API
+    const conv = updatedConvs.find(c => c.id === convId)!;
+    const conversationMsgs: ChatMessage[] = conv.messages.map(m => ({ role: m.role, content: m.content }));
+    const prepared = prepareAPIMessages({
+      projectContext: projectContext || '',
+      conversationMessages: conversationMsgs,
+      tier: loadContextTier(),
+      toggles: loadContextToggles(),
+    });
+
+    // Add Build Mode instruction to system prompt
+    const buildSystemPrompt = prepared.messages[0]?.content
+      ? prepared.messages[0].content + '\n\nYou are in BUILD MODE. You can create and modify the user\'s design system using the provided tools. Explain what you plan to do, then use tools to execute. Be precise with color values and naming.'
+      : 'You are in BUILD MODE for 0colors. Use the provided tools to create and modify the design system.';
+
+    const buildMessages: BuildMessage[] = [
+      { role: 'system', content: buildSystemPrompt },
+      ...prepared.messages.slice(1).map(m => ({ role: m.role as any, content: m.content })),
+    ];
+
+    const abortCtrl = new AbortController();
+    abortRef.current = abortCtrl;
+    let fullResponse = '';
+
+    // Pause undo tracking for batch
+    onPauseUndo?.();
+
+    const loopCallbacks: BuildLoopCallbacks = {
+      onToken: (token) => {
+        fullResponse += token;
+        setStreamingText(fullResponse);
+      },
+      onToolCallStart: (id, name) => {
+        console.log(`[Build] Tool call started: ${name} (${id})`);
+      },
+      onToolCallsPending: (toolCalls, descriptions) => {
+        setPendingToolCalls({ toolCalls, descriptions });
+      },
+      onToolCallExecuted: (toolCall, result) => {
+        const desc = describeToolCall(toolCall.name, toolCall.arguments);
+        setExecutedActions(prev => [...prev, { description: desc, result }]);
+      },
+      onTurnComplete: (text, results) => {
+        setPendingToolCalls(null);
+      },
+      onDone: (text) => {
+        // Resume undo (commits all AI mutations as one batch)
+        onResumeUndo?.();
+        // Save assistant response
+        const assistantMsg: ConversationMessage = { id: generateId(), role: 'assistant', content: text, timestamp: Date.now() };
+        onConversationsChange(prev =>
+          (Array.isArray(prev) ? prev : updatedConvs).map(c => {
+            if (c.id !== convId) return c;
+            return { ...c, messages: [...c.messages, assistantMsg], updatedAt: Date.now() };
+          }),
+        );
+        setIsStreaming(false);
+        setStreamingText('');
+        setPendingToolCalls(null);
+        abortRef.current = null;
+      },
+      onError: (error) => {
+        onResumeUndo?.();
+        const errorMsg: ConversationMessage = { id: generateId(), role: 'assistant', content: `Build error: ${error}`, timestamp: Date.now() };
+        onConversationsChange(prev =>
+          (Array.isArray(prev) ? prev : updatedConvs).map(c => {
+            if (c.id !== convId) return c;
+            return { ...c, messages: [...c.messages, errorMsg], updatedAt: Date.now() };
+          }),
+        );
+        setIsStreaming(false);
+        setStreamingText('');
+        setPendingToolCalls(null);
+        abortRef.current = null;
+      },
+      onRetry: (waitSeconds, attempt, maxAttempts) => {
+        setStreamingText(`\u23f3 Rate limited — retrying in ${waitSeconds}s (attempt ${attempt}/${maxAttempts})...`);
+      },
+      onRequestConfirmation: (toolCalls, descriptions) => {
+        return new Promise<'apply' | 'skip' | 'cancel'>((resolve) => {
+          setPendingToolCalls({ toolCalls, descriptions });
+          pendingResolveRef.current = resolve;
+        });
+      },
+      onRefreshContext: () => {
+        return mutationContext.getCurrentProjectContext();
+      },
+    };
+
+    try {
+      await runBuildConversation(buildMessages, provider, mutationContext, loopCallbacks, abortCtrl.signal, prepared.maxResponseTokens);
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') {
+        onResumeUndo?.();
+        loopCallbacks.onError(err?.message || 'Unknown build error');
+      }
+    }
+  }, [input, isStreaming, activeConvId, conversations, onConversationsChange, aiSettings, projectContext, mutationContext, onPauseUndo, onResumeUndo]);
+
+  // ── Handle Build Mode confirmation ────────────────────────────
+  const handleBuildApply = useCallback(() => {
+    pendingResolveRef.current?.('apply');
+    pendingResolveRef.current = null;
+  }, []);
+
+  const handleBuildSkip = useCallback(() => {
+    pendingResolveRef.current?.('skip');
+    pendingResolveRef.current = null;
+    setPendingToolCalls(null);
+  }, []);
+
+  const handleBuildCancel = useCallback(() => {
+    pendingResolveRef.current?.('cancel');
+    pendingResolveRef.current = null;
+    setPendingToolCalls(null);
+  }, []);
+
   // ── Stop streaming ────────────────────────────────────────────
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort();
@@ -657,9 +855,10 @@ export function AskAIChat({
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      if (aiMode === 'build') sendBuildMessage();
+      else sendMessage();
     }
-  }, [sendMessage]);
+  }, [sendMessage, sendBuildMessage, aiMode]);
 
   // ── Access check ──────────────────────────────────────────────
   const hasAccess = isCloudProject || isTemplate;
@@ -685,8 +884,9 @@ export function AskAIChat({
         <Menu size={14} />
       </button>
       <div className="flex items-center gap-1.5">
-        <Sparkles size={13} className="text-brand-pink" />
-        <span className="text-[13px] text-foreground">Ask AI</span>
+        <Sparkles size={13} className="text-ai" />
+        <span className="text-[13px] text-foreground">{aiMode === 'build' ? 'Build AI' : 'Ask AI'}</span>
+        {aiMode === 'build' && <BuildModeBadge />}
       </div>
     </div>
   );
@@ -704,7 +904,7 @@ export function AskAIChat({
       <button
         onClick={(e) => { e.stopPropagation(); toggleDock(); }}
         className="p-1.5 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
-        style={{ color: isDocked ? '#FD7DEE' : '#555' }}
+        style={{ color: isDocked ? 'var(--ai)' : '#555' }}
         title={isDocked ? 'Undock (floating popup)' : 'Dock to right panel'}
       >
         {isDocked ? <Maximize2 size={14} /> : <PanelRight size={14} />}
@@ -753,8 +953,8 @@ export function AskAIChat({
                   <MessageSquare size={13} style={{ color: 'var(--faint)' }} />
                   <span className="text-[12px] text-subtle">Conversations</span>
                   {conversations.length > 0 && (
-                    <span className="text-[9px] bg-white/[0.04] px-1.5 py-0.5 rounded-full"
-                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? '#FD7DEE' : '#444' }}
+                    <span className="text-[11px] bg-white/[0.04] px-1.5 py-0.5 rounded-full"
+                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? 'var(--ai)' : '#444' }}
                       title={`${conversations.length} of ${MAX_CONVERSATIONS} max conversations`}
                     >
                       {conversations.length}/{MAX_CONVERSATIONS}
@@ -765,9 +965,9 @@ export function AskAIChat({
                   onClick={startNewConversation}
                   className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[11px] cursor-pointer transition-colors"
                   style={{
-                    background: 'rgba(253,125,238,0.1)',
-                    color: '#FD7DEE',
-                    border: '1px solid rgba(253,125,238,0.15)',
+                    background: 'rgba(139,143,255,0.1)',
+                    color: 'var(--ai)',
+                    border: '1px solid rgba(139,143,255,0.15)',
                   }}
                 >
                   <Plus size={12} />
@@ -781,7 +981,7 @@ export function AskAIChat({
                   <div className="flex flex-col items-center justify-center h-full text-center px-6">
                     <MessageSquare size={24} className="text-[#222] mb-3" />
                     <p className="text-[12px] text-dim mb-1">No conversations yet</p>
-                    <p className="text-[10px] text-ghost">
+                    <p className="text-[11px] text-ghost">
                       Start a new chat to begin exploring with AI.
                     </p>
                   </div>
@@ -800,15 +1000,15 @@ export function AskAIChat({
                           key={conv.id}
                           className="group flex items-start gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-all"
                           style={{
-                            background: isActive ? 'rgba(253,125,238,0.08)' : 'transparent',
-                            border: `1px solid ${isActive ? 'rgba(253,125,238,0.12)' : 'transparent'}`,
+                            background: isActive ? 'rgba(139,143,255,0.08)' : 'transparent',
+                            border: `1px solid ${isActive ? 'rgba(139,143,255,0.12)' : 'transparent'}`,
                           }}
                           onClick={() => { setActiveConvId(conv.id); setShowSidebar(false); }}
                           onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
                           onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; } }}
                         >
                           <div className="shrink-0 mt-0.5">
-                            <MessageSquare size={12} style={{ color: isActive ? '#FD7DEE' : 'var(--ghost)' }} />
+                            <MessageSquare size={12} style={{ color: isActive ? 'var(--ai)' : 'var(--ghost)' }} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
@@ -834,18 +1034,18 @@ export function AskAIChat({
                                 </button>
                               </div>
                             </div>
-                            <p className="text-[10px] truncate mt-0.5" style={{ color: 'var(--dim)' }}>
+                            <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--dim)' }}>
                               {preview}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[9px]" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? '#FD7DEE' : '#333' }}
+                              <span className="text-[11px]" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? 'var(--ai)' : '#333' }}
                                 title={msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5 ? `${msgCount}/${MAX_MESSAGES_PER_CONVERSATION} max messages` : undefined}
                               >
                                 {msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5
                                   ? `${msgCount}/${MAX_MESSAGES_PER_CONVERSATION} msgs`
                                   : `${msgCount} message${msgCount !== 1 ? 's' : ''}`}
                               </span>
-                              <span className="text-[9px]" style={{ color: 'var(--ghost)' }}>
+                              <span className="text-[11px]" style={{ color: 'var(--ghost)' }}>
                                 {timeAgo(conv.updatedAt)}
                               </span>
                             </div>
@@ -876,24 +1076,24 @@ export function AskAIChat({
                   <div className="flex flex-col items-center justify-center h-full text-center px-4">
                     <Sparkles size={28} className="text-ghost mb-3" />
                     <p className="text-[13px] text-faint mb-1">Ask AI is available for Cloud and Template projects</p>
-                    <p className="text-[10px] text-ghost">Switch to a Cloud project or open a Template to use Ask AI.</p>
+                    <p className="text-[11px] text-ghost">Switch to a Cloud project or open a Template to use Ask AI.</p>
                   </div>
                 ) : !activeConversation || activeConversation.messages.length === 0 ? (
                   /* ── Empty state ── */
                   <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                    <Sparkles size={28} className="text-[#FD7DEE]/30 mb-3" />
+                    <Sparkles size={28} className="text-ai/30 mb-3" />
                     <p className="text-[13px] text-faint mb-1">Ask anything about 0colors</p>
-                    <p className="text-[10px] text-ghost leading-relaxed">
+                    <p className="text-[11px] text-ghost leading-relaxed">
                       How to create palettes, use advanced logic,<br />
                       set up themes, build token systems, and more.
                     </p>
-                    <p className="text-[9px] text-ghost mt-3 leading-relaxed max-w-[260px]">
+                    <p className="text-[11px] text-ghost mt-3 leading-relaxed max-w-[260px]">
                       The AI has full context of your current project — nodes, tokens, themes, logic, and more.
                     </p>
-                    {!isProviderConfigured(aiSettings) && (
+                    {!getActiveServiceConfig(aiSettings) && (
                       <button
                         onClick={() => setShowSettings(true)}
-                        className="mt-3 text-[10px] text-[#FD7DEE] hover:underline cursor-pointer"
+                        className="mt-3 text-[11px] text-ai hover:underline cursor-pointer"
                       >
                         Configure your AI provider first
                       </button>
@@ -948,7 +1148,7 @@ export function AskAIChat({
                         >
                           <div className="text-[12px] leading-[1.6] text-muted-foreground whitespace-pre-wrap break-words">
                             {renderContent(streamingText)}
-                            <span className="inline-block w-1.5 h-3.5 bg-[#FD7DEE] ml-0.5 animate-pulse rounded-sm" />
+                            <span className="inline-block w-1.5 h-3.5 bg-ai ml-0.5 animate-pulse rounded-sm" />
                           </div>
                         </div>
                       </div>
@@ -960,12 +1160,27 @@ export function AskAIChat({
                           style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
                         >
                           <div className="flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#FD7DEE] animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#FD7DEE] animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#FD7DEE] animate-bounce" style={{ animationDelay: '300ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-ai animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-ai animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-ai animate-bounce" style={{ animationDelay: '300ms' }} />
                           </div>
                         </div>
                       </div>
+                    )}
+                    {/* Build Mode: executed actions summary */}
+                    {aiMode === 'build' && executedActions.length > 0 && (
+                      <ExecutedActionsSummary actions={executedActions} />
+                    )}
+                    {/* Build Mode: pending actions preview */}
+                    {pendingToolCalls && (
+                      <PendingActionsCard
+                        toolCalls={pendingToolCalls.toolCalls}
+                        descriptions={pendingToolCalls.descriptions}
+                        onApply={handleBuildApply}
+                        onSkip={handleBuildSkip}
+                        onCancel={handleBuildCancel}
+                        disabled={!isStreaming}
+                      />
                     )}
                     <div ref={messagesEndRef} />
                   </>
@@ -987,21 +1202,21 @@ export function AskAIChat({
               {hasAccess && activeConversation && activeConversation.messages.length >= MAX_MESSAGES_PER_CONVERSATION && !isStreaming && (
                 <div className="shrink-0 mx-3 mb-1 rounded-lg px-3 py-2 flex items-center gap-2.5"
                   style={{
-                    background: 'rgba(253,125,238,0.06)',
-                    border: '1px solid rgba(253,125,238,0.12)',
+                    background: 'rgba(139,143,255,0.06)',
+                    border: '1px solid rgba(139,143,255,0.12)',
                   }}
                 >
-                  <MessageSquare size={13} style={{ color: '#FD7DEE', flexShrink: 0 }} />
+                  <MessageSquare size={13} style={{ color: 'var(--ai)', flexShrink: 0 }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-[#FD7DEE] leading-tight">
+                    <p className="text-[11px] text-ai leading-tight">
                       Conversation full ({activeConversation.messages.length}/{MAX_MESSAGES_PER_CONVERSATION}). Older messages will be trimmed.
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={() => exportConversation(activeConversation)}
-                      className="flex items-center gap-1 h-6 px-2 rounded-md text-[9px] cursor-pointer transition-colors"
-                      style={{ background: 'rgba(253,125,238,0.1)', color: '#FD7DEE', border: '1px solid rgba(253,125,238,0.15)' }}
+                      className="flex items-center gap-1 h-6 px-2 rounded-md text-[11px] cursor-pointer transition-colors"
+                      style={{ background: 'rgba(139,143,255,0.1)', color: 'var(--ai)', border: '1px solid rgba(139,143,255,0.15)' }}
                       title="Export this conversation before starting a new one"
                     >
                       <Download size={9} />
@@ -1009,8 +1224,8 @@ export function AskAIChat({
                     </button>
                     <button
                       onClick={startNewConversation}
-                      className="flex items-center gap-1 h-6 px-2 rounded-md text-[9px] cursor-pointer transition-colors"
-                      style={{ background: 'rgba(253,125,238,0.15)', color: '#FD7DEE', border: '1px solid rgba(253,125,238,0.2)' }}
+                      className="flex items-center gap-1 h-6 px-2 rounded-md text-[11px] cursor-pointer transition-colors"
+                      style={{ background: 'rgba(139,143,255,0.15)', color: 'var(--ai)', border: '1px solid rgba(139,143,255,0.2)' }}
                     >
                       <Plus size={9} />
                       New Chat
@@ -1022,7 +1237,7 @@ export function AskAIChat({
               {/* ── Input area ── */}
               {hasAccess && (
                 <div className="shrink-0 px-3 pb-3 pt-1">
-                  <div className="rounded-xl overflow-hidden"
+                  <div className="rounded-xl"
                     style={{
                       background: 'rgba(255,255,255,0.03)',
                       border: '1px solid rgba(255,255,255,0.06)',
@@ -1037,15 +1252,126 @@ export function AskAIChat({
                         }
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={isStreaming ? 'AI is responding...' : 'Ask about 0colors...'}
+                      placeholder={isStreaming ? 'AI is responding...' : (aiMode === 'build' ? 'Describe what to build...' : 'Ask about 0colors...')}
                       disabled={isStreaming}
                       className="w-full px-3 pt-2.5 pb-1 text-[12px] text-foreground placeholder:text-ghost bg-transparent outline-none resize-none"
                       style={{ minHeight: TEXTAREA_MIN_H, maxHeight: TEXTAREA_MAX_H }}
                     />
                     <div className="flex items-center justify-between px-2.5 pb-2">
                       <div className="flex items-center gap-2">
+                        {/* Mode toggle */}
+                        {buildModeAvailable && (
+                          <>
+                            <button
+                              onClick={() => setAIMode('ask')}
+                              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium cursor-pointer transition-all"
+                              style={{
+                                background: aiMode === 'ask' ? 'rgba(139,143,255,0.15)' : 'transparent',
+                                color: aiMode === 'ask' ? '#8B8FFF' : 'var(--ghost)',
+                                border: aiMode === 'ask' ? '1px solid rgba(139,143,255,0.25)' : '1px solid transparent',
+                              }}
+                            >
+                              <Sparkles size={10} />
+                              Ask
+                            </button>
+                            <button
+                              onClick={() => setAIMode('build')}
+                              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium cursor-pointer transition-all"
+                              style={{
+                                background: aiMode === 'build' ? 'rgba(255,160,50,0.15)' : 'transparent',
+                                color: aiMode === 'build' ? '#FFA032' : 'var(--ghost)',
+                                border: aiMode === 'build' ? '1px solid rgba(255,160,50,0.25)' : '1px solid transparent',
+                              }}
+                            >
+                              <Hammer size={10} />
+                              Build
+                            </button>
+                          </>
+                        )}
+                        {/* Model picker */}
+                        <div ref={modelPickerRef}>
+                          <button
+                            onClick={() => setShowModelPicker(prev => !prev)}
+                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium cursor-pointer transition-all hover:bg-white/5"
+                            style={{
+                              color: 'var(--subtle)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                            }}
+                          >
+                            <Diamond size={9} style={{ fill: 'currentColor' }} />
+                            {(() => {
+                              const active = getActiveServiceConfig(aiSettings);
+                              if (!active) return 'No model';
+                              const modelLabel = active.definition.models.find(m => m.id === active.config.model)?.label || active.config.model;
+                              return modelLabel.length > 16 ? modelLabel.slice(0, 14) + '...' : modelLabel;
+                            })()}
+                            <ChevronDown size={8} />
+                          </button>
+                          {showModelPicker && createPortal(
+                            <div
+                              className="rounded-lg overflow-y-auto"
+                              style={{
+                                position: 'fixed',
+                                width: '220px',
+                                maxHeight: '280px',
+                                background: 'var(--card)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                                zIndex: 999999,
+                                ...((() => {
+                                  const rect = modelPickerRef.current?.getBoundingClientRect();
+                                  if (!rect) return {};
+                                  return { bottom: window.innerHeight - rect.top + 4, left: rect.left };
+                                })()),
+                              }}
+                            >
+                              {getConfiguredServices(aiSettings).map(({ definition: def, config: cfg }) => (
+                                <div key={def.id}>
+                                  <div className="px-2.5 pt-2 pb-1 text-[9px] uppercase tracking-wider flex items-center gap-1.5"
+                                    style={{ color: 'var(--ghost)' }}
+                                  >
+                                    {def.label}
+                                    {def.hasFreeTier && (
+                                      <span className="text-[8px] px-1 rounded" style={{ background: 'rgba(43,189,104,0.1)', color: '#2BBD68' }}>free</span>
+                                    )}
+                                  </div>
+                                  {def.models.map(model => {
+                                    const isActive = aiSettings.activeModel.serviceId === def.id && aiSettings.activeModel.modelId === model.id;
+                                    return (
+                                      <button
+                                        key={`${def.id}-${model.id}`}
+                                        onClick={() => {
+                                          const newSettings = {
+                                            ...aiSettings,
+                                            activeModel: { serviceId: def.id, modelId: model.id },
+                                          };
+                                          setAISettings(newSettings);
+                                          saveAISettings(newSettings);
+                                          setShowModelPicker(false);
+                                        }}
+                                        className="w-full px-2.5 py-1.5 text-left text-[11px] flex items-center gap-2 cursor-pointer transition-colors hover:bg-white/5"
+                                        style={{ color: isActive ? 'var(--foreground)' : 'var(--subtle)' }}
+                                      >
+                                        <span className="w-1.5 h-1.5 rounded-full shrink-0"
+                                          style={{ background: isActive ? '#8B8FFF' : 'rgba(255,255,255,0.1)' }}
+                                        />
+                                        {model.label}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              ))}
+                              {getConfiguredServices(aiSettings).length === 0 && (
+                                <div className="px-3 py-3 text-[11px] text-ghost text-center">
+                                  No providers configured
+                                </div>
+                              )}
+                            </div>,
+                            document.body,
+                          )}
+                        </div>
                         {charCount > 500 && (
-                          <span className={`text-[9px] ${isOverLimit ? 'text-destructive' : 'text-ghost'}`}>
+                          <span className={`text-[11px] ${isOverLimit ? 'text-destructive' : 'text-ghost'}`}>
                             {charCount.toLocaleString()} / {MAX_INPUT_CHARS.toLocaleString()}
                           </span>
                         )}
@@ -1062,15 +1388,17 @@ export function AskAIChat({
                           </button>
                         ) : (
                           <button
-                            onClick={sendMessage}
+                            onClick={aiMode === 'build' ? sendBuildMessage : sendMessage}
                             disabled={!input.trim() || isOverLimit}
                             className="flex items-center justify-center h-7 w-7 rounded-lg cursor-pointer transition-colors disabled:cursor-default"
                             style={{
-                              background: input.trim() && !isOverLimit ? '#FD7DEE' : 'rgba(255,255,255,0.04)',
+                              background: input.trim() && !isOverLimit
+                                ? (aiMode === 'build' ? '#FFA032' : '#8B8FFF')
+                                : 'rgba(255,255,255,0.04)',
                               color: input.trim() && !isOverLimit ? '#000' : '#333',
                             }}
                           >
-                            <Send size={13} />
+                            {aiMode === 'build' ? <Hammer size={13} /> : <Send size={13} />}
                           </button>
                         )}
                       </div>
@@ -1093,7 +1421,10 @@ export function AskAIChat({
             }}
             projectContext={projectContext}
             currentConversationMessages={activeConversation?.messages}
-            onSettingsSaved={onSettingsSaved}
+            onSettingsSaved={(settings, tier, toggles) => {
+              setAISettings(settings);
+              onSettingsSaved?.(settings, tier!, toggles!);
+            }}
           />
         )}
       </AnimatePresence>

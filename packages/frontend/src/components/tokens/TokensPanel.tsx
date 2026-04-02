@@ -198,8 +198,8 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
         <div className="h-px bg-hairline mx-2" />
         <div className="px-3 pt-1.5 pb-1.5">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[10px] text-faint uppercase tracking-wide shrink-0">VAR</span>
-            <span className="text-[10px] font-mono text-subtle truncate">--{name.toLowerCase().replace(/\s+/g, '-')}</span>
+            <span className="text-[11px] text-faint uppercase tracking-wide shrink-0">VAR</span>
+            <span className="text-[11px] font-mono text-subtle truncate">--{name.toLowerCase().replace(/\s+/g, '-')}</span>
           </div>
         </div>
         {/* Value token reference */}
@@ -208,7 +208,7 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
             <div className="h-px bg-hairline mx-2" />
             <div className="px-3 pt-2 pb-1.5">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[10px] text-dim uppercase tracking-wide">Value</span>
+                <span className="text-[11px] text-dim uppercase tracking-wide">Value</span>
                 <Link2 className="w-2.5 h-2.5 text-dim" />
               </div>
               <div className="flex items-center gap-2">
@@ -229,20 +229,20 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
                 <div className="px-3 pt-1.5 pb-2.5 space-y-1">
                   {valueTokenRef.spaceName && valueTokenRef.spaceValue && (
                     <div className="flex items-center justify-between gap-4">
-                      <span className="text-[10px] text-faint uppercase tracking-wide">{valueTokenRef.spaceName}</span>
-                      <span className="text-[10px] font-mono text-subtle">{valueTokenRef.spaceValue}</span>
+                      <span className="text-[11px] text-faint uppercase tracking-wide">{valueTokenRef.spaceName}</span>
+                      <span className="text-[11px] font-mono text-subtle">{valueTokenRef.spaceValue}</span>
                     </div>
                   )}
                   {valueTokenRef.hex && (
                     <div className="flex items-center justify-between gap-4">
-                      <span className="text-[10px] text-faint uppercase tracking-wide">HEX</span>
-                      <span className="text-[10px] font-mono text-subtle">{valueTokenRef.hex}</span>
+                      <span className="text-[11px] text-faint uppercase tracking-wide">HEX</span>
+                      <span className="text-[11px] font-mono text-subtle">{valueTokenRef.hex}</span>
                     </div>
                   )}
                   {valueTokenRef.alpha !== undefined && valueTokenRef.alpha < 100 && (
                     <div className="flex items-center justify-between gap-4">
-                      <span className="text-[10px] text-faint uppercase tracking-wide">ALPHA</span>
-                      <span className="text-[10px] font-mono text-subtle">{Math.round(valueTokenRef.alpha)}%</span>
+                      <span className="text-[11px] text-faint uppercase tracking-wide">ALPHA</span>
+                      <span className="text-[11px] font-mono text-subtle">{Math.round(valueTokenRef.alpha)}%</span>
                     </div>
                   )}
                 </div>
@@ -253,7 +253,7 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
           <>
             <div className="h-px bg-hairline mx-2" />
             <div className="px-3 pt-2 pb-2.5">
-              <span className="text-[10px] text-dim italic">No value assigned</span>
+              <span className="text-[11px] text-dim italic">No value assigned</span>
             </div>
           </>
         )}
@@ -276,7 +276,7 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
         <>
           <div className="h-px bg-hairline mx-2" />
           <div className="px-3 pt-2 pb-2.5">
-            <span className="text-[10px] text-dim italic">Empty — no color values assigned</span>
+            <span className="text-[11px] text-dim italic">Empty — no color values assigned</span>
           </div>
         </>
       )}
@@ -285,17 +285,17 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
           <div className="h-px bg-hairline mx-2" />
           <div className="px-3 pt-2 pb-2.5 space-y-1">
             <div className="flex items-center justify-between gap-4">
-              <span className="text-[10px] text-faint uppercase tracking-wide">{spaceName}</span>
-              <span className="text-[10px] font-mono text-subtle">{spaceValue}</span>
+              <span className="text-[11px] text-faint uppercase tracking-wide">{spaceName}</span>
+              <span className="text-[11px] font-mono text-subtle">{spaceValue}</span>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <span className="text-[10px] text-faint uppercase tracking-wide">HEX</span>
-              <span className="text-[10px] font-mono text-subtle">{hex}</span>
+              <span className="text-[11px] text-faint uppercase tracking-wide">HEX</span>
+              <span className="text-[11px] font-mono text-subtle">{hex}</span>
             </div>
             {showAlpha && (
               <div className="flex items-center justify-between gap-4">
-                <span className="text-[10px] text-faint uppercase tracking-wide">ALPHA</span>
-                <span className="text-[10px] font-mono text-subtle">{Math.round(alpha)}%</span>
+                <span className="text-[11px] text-faint uppercase tracking-wide">ALPHA</span>
+                <span className="text-[11px] font-mono text-subtle">{Math.round(alpha)}%</span>
               </div>
             )}
           </div>
@@ -2455,11 +2455,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       )}
                       {/* "LOGIC" badge — shown when token has active advanced condition logic */}
                       {tokensWithActiveLogic.has(token.id) ? (
-                        <span className="text-[9px] font-mono text-warning/70 px-1 py-px rounded bg-warning/[0.08] shrink-0 uppercase tracking-wider">
+                        <span className="text-[11px] font-mono text-warning/70 px-1 py-px rounded bg-warning/[0.08] shrink-0 uppercase tracking-wider">
                           logic
                         </span>
                       ) : valueTokenInfo ? (
-                        <span className="text-[10px] font-mono text-dim px-1 py-px rounded bg-[#ffffff]/[0.04] shrink-0">
+                        <span className="text-[11px] font-mono text-dim px-1 py-px rounded bg-[#ffffff]/[0.04] shrink-0">
                           TOKEN
                         </span>
                       ) : null}
@@ -2508,7 +2508,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                           </>
                         ) : nodeType ? (
                           <>
-                            <span className={`text-[10px] font-mono ${badgeTextColor} px-1 py-px rounded ${badgeBgColor} shrink-0`}>
+                            <span className={`text-[11px] font-mono ${badgeTextColor} px-1 py-px rounded ${badgeBgColor} shrink-0`}>
                               {nodeType}
                             </span>
 
@@ -2826,7 +2826,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
               <div className="px-2.5 py-[3px] rounded-md text-[11px] flex items-center gap-1.5 bg-hairline text-foreground">
                 All Results
                 {(filteredRegularGroups.length + filteredUngroupedTokens.length + filteredPaletteEntries.length) > 0 && (
-                  <span className="text-[10px] text-subtle">
+                  <span className="text-[11px] text-subtle">
                     {filteredRegularGroups.length + filteredUngroupedTokens.length + filteredPaletteEntries.length}
                   </span>
                 )}
@@ -2842,7 +2842,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                 >
                   Tokens
                   {(filteredRegularGroups.length + filteredUngroupedTokens.length) > 0 && (
-                    <span className={`text-[10px] ${viewFilter === 'tokens' ? 'text-subtle' : 'text-ghost'}`}>
+                    <span className={`text-[11px] ${viewFilter === 'tokens' ? 'text-subtle' : 'text-ghost'}`}>
                       {filteredRegularGroups.length + filteredUngroupedTokens.length}
                     </span>
                   )}
@@ -2856,7 +2856,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                 >
                   Color Palettes
                   {filteredPaletteEntries.length > 0 && (
-                    <span className={`text-[10px] ${viewFilter === 'palettes' ? 'text-subtle' : 'text-ghost'}`}>
+                    <span className={`text-[11px] ${viewFilter === 'palettes' ? 'text-subtle' : 'text-ghost'}`}>
                       {filteredPaletteEntries.length}
                     </span>
                   )}
@@ -3077,7 +3077,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                               >
                                                 {paletteNode.paletteName || group.name}
                                               </span>
-                                              <span className={`text-[10px] font-mono ${groupBadgeTextA} px-1 py-px rounded ${groupBadgeBgA} shrink-0`}>
+                                              <span className={`text-[11px] font-mono ${groupBadgeTextA} px-1 py-px rounded ${groupBadgeBgA} shrink-0`}>
                                                 {groupColorSpaceA}
                                               </span>
                                               {isPalHiddenA && (
@@ -3380,7 +3380,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                           >
                                             {paletteNode.paletteName || group.name}
                                           </span>
-                                          <span className={`text-[10px] font-mono ${groupBadgeTextB} px-1 py-px rounded ${groupBadgeBgB} shrink-0`}>
+                                          <span className={`text-[11px] font-mono ${groupBadgeTextB} px-1 py-px rounded ${groupBadgeBgB} shrink-0`}>
                                             {groupColorSpaceB}
                                           </span>
                                           {isPalHiddenB && (
@@ -3706,7 +3706,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                         const palFmtC = paletteNode?.paletteColorFormat || 'HEX';
                                         const groupColorSpaceC = palFmtC === 'OKLCH' ? 'OKLCH' : palFmtC === 'RGBA' ? 'RGBA' : 'HSL';
                                         const groupBadgeTextC = anyShadeModifiedC ? 'text-brand' : isPalEntryInherited ? 'text-warning' : 'text-dim';
-                                        const groupBadgeBgC = anyShadeModifiedC ? 'bg-[#465BFE]/[0.12]' : isPalEntryInherited ? 'bg-[#FBBF24]/[0.12]' : 'bg-[#ffffff]/[0.04]';
+                                        const groupBadgeBgC = anyShadeModifiedC ? 'bg-brand/[0.12]' : isPalEntryInherited ? 'bg-warning/[0.12]' : 'bg-[#ffffff]/[0.04]';
 
                                         return (
                                           <div key={entry.id} className={`mb-0.5 min-w-0 w-full ${isPalHiddenC ? 'opacity-[0.4]' : ''}`} style={palEntryInheritedStyle}>
@@ -3732,7 +3732,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                 <div className="flex items-center gap-1 w-full">
                                                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                                     <span className="text-xs text-subtle truncate">{paletteNode.paletteName || entry.name}</span>
-                                                    <span className={`text-[10px] font-mono ${groupBadgeTextC} px-1 py-px rounded ${groupBadgeBgC} shrink-0`}>
+                                                    <span className={`text-[11px] font-mono ${groupBadgeTextC} px-1 py-px rounded ${groupBadgeBgC} shrink-0`}>
                                                       {groupColorSpaceC}
                                                     </span>
                                                     {isPalHiddenC && (
@@ -3972,7 +3972,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                           className={`flex items-center justify-center h-6 w-6 rounded-md transition-all ${mixedTokenVis
                               ? 'text-ghost cursor-not-allowed'
                               : allTokensHidden
-                                ? 'text-brand hover:bg-[#465BFE]/10'
+                                ? 'text-brand hover:bg-brand/10'
                                 : 'text-faint hover:text-foreground hover:bg-[#ffffff]/[0.06]'
                             }`}
                           disabled={mixedTokenVis}
@@ -4017,11 +4017,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                   {/* When mixed selection or all-token-node selection, disable all bulk actions */}
                   {selectionHasMixedTokenNodeTypes ? (
                     <div className="flex items-center justify-center">
-                      <span className="text-[10px] text-dim">Mixed selection — actions disabled</span>
+                      <span className="text-[11px] text-dim">Mixed selection — actions disabled</span>
                     </div>
                   ) : selectionAllTokenNodeTokens ? (
                     <div className="flex items-center justify-center">
-                      <span className="text-[10px] text-dim">Token node variables — managed on canvas</span>
+                      <span className="text-[11px] text-dim">Token node variables — managed on canvas</span>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
@@ -4086,7 +4086,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                               className={`h-8 w-8 p-0 text-xs border-transparent ${mixedTokenVis
                                   ? 'text-ghost cursor-not-allowed bg-secondary'
                                   : allTokensHidden
-                                    ? 'text-brand bg-[#465BFE]/10 border-brand/20 hover:bg-[#465BFE]/15'
+                                    ? 'text-brand bg-brand/10 border-brand/20 hover:bg-brand/15'
                                     : 'text-foreground bg-secondary hover:bg-[#222]'
                                 }`}
                               disabled={mixedTokenVis}

@@ -2574,7 +2574,7 @@ export function ColorNodeCard({
               data-node-id={node.id}
               data-button-type="right-connect"
             >
-              <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} strokeWidth={3} />
+              <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
             </button>
           </div>
         )}
@@ -2698,7 +2698,7 @@ export function ColorNodeCard({
             data-node-id={node.id}
             data-button-type="left-connect"
           >
-            <Plus className={`w-3 h-3 ${isLeftConnectionLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'right' ? 'text-white' : 'text-foreground'}`} strokeWidth={3} />
+            <Plus className={`w-3 h-3 ${isLeftConnectionLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'right' ? 'text-white' : 'text-foreground'}`} />
           </button>
           
           {/* Parent selection popup */}
@@ -2780,7 +2780,7 @@ export function ColorNodeCard({
               data-node-id={node.id}
               data-button-type="right-connect"
             >
-              <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} strokeWidth={3} />
+              <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
             </button>
           )}
 
@@ -2805,7 +2805,7 @@ export function ColorNodeCard({
               }`}
               title={isColorInputDisabled ? "Inherited from primary — unlink to modify" : (node.paletteShadeCount || 10) >= 20 ? "Maximum shades reached (20)" : "Increase shade count"}
             >
-              <Plus className={`w-3 h-3 ${isColorInputDisabled ? 'text-dim' : (node.paletteShadeCount || 10) >= 20 ? 'text-white' : 'text-foreground'}`} strokeWidth={3} />
+              <Plus className={`w-3 h-3 ${isColorInputDisabled ? 'text-dim' : (node.paletteShadeCount || 10) >= 20 ? 'text-white' : 'text-foreground'}`} />
             </button>
           )}
         </div>
@@ -2906,7 +2906,7 @@ export function ColorNodeCard({
         {/* Webhook Input Badge (Option B) — shown when Dev Mode is active */}
         {showDevMode && !isPaletteShade && (
           <button
-            className={`absolute top-2 right-2 z-10 flex items-center gap-1 h-5 px-1.5 rounded-md text-[9px] font-medium transition-all cursor-pointer ${
+            className={`absolute top-2 right-2 z-10 flex items-center gap-1 h-5 px-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
               node.isWebhookInput
                 ? 'bg-warning/90 text-black shadow-md shadow-warning/30'
                 : 'bg-black/30 text-white/60 hover:bg-black/50 hover:text-white/90 backdrop-blur-sm'
@@ -2919,7 +2919,7 @@ export function ColorNodeCard({
             onMouseDown={(e) => e.stopPropagation()}
             title={node.isWebhookInput ? 'Webhook input active — click to disable' : 'Mark as webhook input'}
           >
-            <span className="text-[10px]">{node.isWebhookInput ? '\u26A1' : '\u{1F517}'}</span>
+            <span className="text-[11px]">{node.isWebhookInput ? '\u26A1' : '\u{1F517}'}</span>
             {node.isWebhookInput && <span>Webhook</span>}
           </button>
         )}
@@ -3455,7 +3455,7 @@ export function ColorNodeCard({
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1">
                           <PropertyControls property="Chroma" isDiffEnabled={node.diffOklchC !== false} isLocked={node.lockOklchC === true} onToggleDiff={() => toggleDiff('OklchC')} onToggleLock={() => toggleLock('OklchC')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('oklchC')} {...dp.oklchC} />
-                          <span className="text-[10px] text-subtle" title="Actual range: 0-0.4">(0-{((effectiveColors.oklchC || 0) / 100 * 0.4).toFixed(2)})</span>
+                          <span className="text-[11px] text-subtle" title="Actual range: 0-0.4">(0-{((effectiveColors.oklchC || 0) / 100 * 0.4).toFixed(2)})</span>
                         </div>
                         <div className="flex items-center gap-1">
                           {isChannelAdvanced('oklchC') && (<FxButton nodeId={node.id} channelKey="oklchC" />)}
@@ -3576,7 +3576,7 @@ export function ColorNodeCard({
         <div className="flex flex-col items-center">
           {isOklchOutOfGamut && (
             <span
-              className="text-[9px] tracking-wider uppercase drop-shadow-md leading-none"
+              className="text-[11px] tracking-wider uppercase drop-shadow-md leading-none"
               style={{
                 color: isLightBackground ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
               }}
@@ -3920,7 +3920,7 @@ export function ColorNodeCard({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1">
                     <PropertyControls property="Chroma" isDiffEnabled={node.diffOklchC !== false} isLocked={node.lockOklchC === true} onToggleDiff={() => toggleDiff('OklchC')} onToggleLock={() => toggleLock('OklchC')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('oklchC')} {...dp.oklchC} />
-                    <span className="text-[10px] text-subtle" title="Actual range: 0-0.4">(0-{((effectiveColors.oklchC || 0) / 100 * 0.4).toFixed(2)})</span>
+                    <span className="text-[11px] text-subtle" title="Actual range: 0-0.4">(0-{((effectiveColors.oklchC || 0) / 100 * 0.4).toFixed(2)})</span>
                   </div>
                   <div className="flex items-center gap-1">
                     {isChannelAdvanced('oklchC') && (<FxButton nodeId={node.id} channelKey="oklchC" />)}
@@ -4139,7 +4139,7 @@ export function ColorNodeCard({
                   {pages.length > 0 && (
                     <div className="px-1.5 pt-1.5">
                       <div className="flex items-center rounded-lg bg-[#0e0e0e] p-[3px]">
-                        <span className="shrink-0 px-2 py-[3px] rounded-md text-[10px] bg-elevated text-foreground shadow-sm">
+                        <span className="shrink-0 px-2 py-[3px] rounded-md text-[11px] bg-elevated text-foreground shadow-sm">
                           This page
                         </span>
                       </div>
@@ -4600,7 +4600,7 @@ export function ColorNodeCard({
                 return (
                   <span
                     key={chKey}
-                    className="text-[9px] font-mono w-[16px] h-[16px] flex items-center justify-center rounded select-none"
+                    className="text-[11px] font-mono w-[16px] h-[16px] flex items-center justify-center rounded select-none"
                     style={{
                       color: 'var(--success)',
                       backgroundColor: 'rgba(43,189,104,0.12)',

@@ -81,4 +81,8 @@ export function getSupabaseClient(): SupabaseClient {
 }
 
 // Server base URL for API calls
-export const SERVER_BASE = `https://api-server-production-0064.up.railway.app/api`;
+// Production: https://api-server-production-0064.up.railway.app/api
+// Local dev:  http://localhost:4455/api
+export const SERVER_BASE = import.meta.env.DEV
+    ? `http://localhost:4455/api`
+    : `https://api-server-production-0064.up.railway.app/api`;

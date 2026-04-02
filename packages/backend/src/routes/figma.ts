@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { kvGet, kvMget } from '../db.js';
-import { requireAuth, normalizeMeta } from '../middleware/auth.js';
+import { getUser, getProjectOwner, getProjectSnapshot, getProjectsByIds } from '../db.js';
+import { requireAuth, normalizeUserToMeta } from '../middleware/auth.js';
 
 const router = new Hono();
 
@@ -15,12 +15,12 @@ router.get('/figma-tokens/:projectId', async (c) => {
         const projectId = c.req.param('projectId');
 
         // Verify ownership
-        const owner = await kvGet(`project:${projectId}:owner`);
+        const owner = await getProjectOwner(projectId);
         if (owner !== userId) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
-        const snapshot = await kvGet(`project:${projectId}:snapshot`);
+        const snapshot = await getProjectSnapshot(projectId);
         if (!snapshot) {
             return c.json({ error: 'Project snapshot not found' }, 404);
         }
@@ -52,19 +52,19 @@ router.get('/figma-projects', async (c) => {
         const userId = await requireAuth(c);
         if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
-        const rawMeta = await kvGet(`user:${userId}:meta`);
-        const meta = normalizeMeta(rawMeta);
+        const user = await getUser(userId);
+        const meta = normalizeUserToMeta(user);
         const projectIds: string[] = meta.cloudProjectIds;
 
         if (projectIds.length === 0) {
             return c.json({ projects: [] });
         }
 
-        const snapshotKeys = projectIds.map(id => `project:${id}:snapshot`);
-        const snapshots = await kvMget(snapshotKeys);
+        const projectRows = await getProjectsByIds(projectIds);
+        const snapshotMap = new Map(projectRows.map(p => [p.id, p.snapshot]));
 
-        const projects = projectIds.map((id, idx) => {
-            const snap = snapshots[idx];
+        const projects = projectIds.map(id => {
+            const snap = snapshotMap.get(id);
             if (!snap) return null;
             // Skip sample/template projects
             if (snap.isSample || snap.isTemplate || snap.project?.isSample || snap.project?.isTemplate) return null;

@@ -12,7 +12,8 @@ import { ColorNode, DesignToken, TokenProject, TokenGroup, CanvasState, Page, Th
 import { Button } from './components/ui/button';
 import { Plus, Share2, Download, Upload, Copy, Palette, Library, ChevronDown, Edit2, Trash2, RotateCcw, ArrowLeft, Search, LayoutGrid, Code, Workflow, RefreshCw, Type, Wand2, Film, Grid, Crown, CircleDot, Ruler, Table, SwatchBook, Undo2, Redo2, Maximize, Locate, Lightbulb, RotateCw, Eye, EyeOff, Tag, Command, BookOpen, Lock, Sparkles, Terminal, LogIn, Globe, Shuffle } from 'lucide-react';
 import { AskAIChat } from './components/ai/AskAIChat';
-import { AISettingsPopup } from './components/ai/AISettingsPopup';
+// AISettingsPopup import removed — AI settings now rendered inline in ProjectsPage
+// The showAISettingsPopup state remains for potential canvas-mode AI chat use
 import {
   Conversation, loadCloudConversations, saveCloudConversations,
   AISettings, ContextToggles,
@@ -23,6 +24,7 @@ import {
 } from './utils/ai-provider';
 import type { ContextTier } from './utils/ai-context-manager';
 import { buildProjectContext } from './utils/ai-project-context';
+import type { MutationContext } from './utils/ai-build-executor';
 import { isNodeHiddenInTheme } from './utils/visibility';
 import { getAutoAssignSuffixValue } from './components/canvas/AutoAssignTokenMenu';
 import { useUndoRedo, UndoableState } from './store/useUndoRedo';
@@ -99,7 +101,7 @@ import { generateCSSVariables, generateDTCGJSON, generateTailwindConfig, generat
 import { getBuiltInTemplates, type SampleTemplate } from './utils/sample-templates';
 
 // ── Community ──
-import { CommunityPage } from './pages/CommunityPage';
+// CommunityPage is now rendered inline within ProjectsPage
 import { PublishPopup } from './pages/PublishPopup';
 import { fetchCommunityProject, type CommunityProjectDetail } from './utils/community-api';
 
@@ -505,8 +507,8 @@ export function AppShell() {
     const p = window.location.pathname;
     // If URL already points at a project, sample-project, or community project, start in project view
     if (p.startsWith('/project/') || p.startsWith('/sample-project') || (p.startsWith('/community/') && p !== '/community')) return false;
-    // If viewing /community listing page, also not viewing projects list
-    if (p === '/community') return false;
+    // /community listing page is now a dashboard section (viewingProjects=true)
+    // /settings and /profile are also dashboard sections
     return true;
   });
   const viewingProjectsRef = useRef(viewingProjects);
@@ -521,14 +523,19 @@ export function AppShell() {
     // when val=false, the caller (handleSelectProject) navigates to the project URL
   }, [navigate]);
 
+  // Dashboard section for sidebar navigation
+  const [dashboardSection, setDashboardSection] = useState<'projects' | 'community' | 'ai-settings' | 'profile'>(() => {
+    const p = window.location.pathname;
+    if (p === '/community' || p === '/community/') return 'community';
+    if (p === '/settings') return 'ai-settings';
+    if (p === '/profile') return 'profile';
+    return 'projects';
+  });
+
   // Auth modal state (replaces full-screen auth gate for first-time users)
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // ── Community state ──
-  const [viewingCommunity, setViewingCommunity] = useState(() => {
-    const p = window.location.pathname;
-    return p === '/community' || p === '/community/';
-  });
   const [showPublishPopup, setShowPublishPopup] = useState<string | null>(null); // projectId or null
   const [isCommunityMode, setIsCommunityMode] = useState(() => {
     const p = window.location.pathname;
@@ -1211,16 +1218,33 @@ export function AppShell() {
         viewingProjectsRef.current = true;
         _setViewMode('canvas');
       }
+      setDashboardSection('projects');
       return;
     }
 
-    // ── /community — community listing page ──
+    // ── /community — community listing page (now a dashboard section) ──
     if (path === '/community' || path === '/community/') {
-      _setViewingProjects(false);
-      viewingProjectsRef.current = false;
-      setViewingCommunity(true);
+      _setViewingProjects(true);
+      viewingProjectsRef.current = true;
+      setDashboardSection('community');
       setIsCommunityMode(false);
       setCommunitySlug(null);
+      return;
+    }
+
+    // ── /settings — AI settings dashboard section ──
+    if (path === '/settings') {
+      _setViewingProjects(true);
+      viewingProjectsRef.current = true;
+      setDashboardSection('ai-settings');
+      return;
+    }
+
+    // ── /profile — profile dashboard section ──
+    if (path === '/profile') {
+      _setViewingProjects(true);
+      viewingProjectsRef.current = true;
+      setDashboardSection('profile');
       return;
     }
 
@@ -1230,7 +1254,6 @@ export function AppShell() {
       const slug = communityMatch[1];
       _setViewingProjects(false);
       viewingProjectsRef.current = false;
-      setViewingCommunity(false);
       setIsCommunityMode(true);
       setCommunitySlug(slug);
       _setViewMode('canvas');
@@ -1238,7 +1261,6 @@ export function AppShell() {
     }
 
     // If navigating away from community, clear community state
-    if (viewingCommunity) setViewingCommunity(false);
     if (isCommunityMode) { setIsCommunityMode(false); setCommunitySlug(null); }
 
     // ── /sample-project/:templateSlug — sample mode with specific template ──
@@ -2133,7 +2155,7 @@ export function AppShell() {
           saveAISettings(merged.settings);
           saveContextTier(merged.contextTier);
           saveContextToggles(merged.contextToggles);
-          console.log(`[AI] Cloud settings merged — provider: ${merged.settings.activeProvider}, tier: ${merged.contextTier}`);
+          console.log(`[AI] Cloud settings merged — active: ${merged.settings.activeModel.serviceId}/${merged.settings.activeModel.modelId}, tier: ${merged.contextTier}`);
         } else {
           console.log('[AI] Local settings are up to date (cloud not newer)');
         }
@@ -2687,7 +2709,7 @@ export function AppShell() {
     setAdvancedLogic(snapshot.advancedLogic);
   }, []);
 
-  const { undo, redo, canUndo, canRedo, undoCount, redoCount, flush: flushUndo } = useUndoRedo(
+  const { undo, redo, canUndo, canRedo, undoCount, redoCount, flush: flushUndo, pause: pauseUndo, resume: resumeUndo, isPaused: isUndoPaused } = useUndoRedo(
     undoableState,
     restoreUndoableState,
     { enabled: !isInitialLoad && !isSampleMode, maxHistory: 80, debounceMs: 400 },
@@ -10110,7 +10132,6 @@ export function AppShell() {
     communityLoadedRef.current = false;
     navigate(`/community/${slug}`);
     lastSyncedPathnameRef.current = `/community/${slug}`;
-    setViewingCommunity(false);
     setIsCommunityMode(true);
     setCommunitySlug(slug);
     _setViewingProjects(false);
@@ -10465,7 +10486,7 @@ export function AppShell() {
       forceSyncNow().catch((e) => console.log('☁️ [BackToProjects] Flush failed (will retry):', e));
     }
 
-    // If viewing a community project, go back to community page
+    // If viewing a community project, go back to community section in dashboard
     if (isCommunityMode || activeProjectId?.startsWith('community-')) {
       // Clean up community project data
       setAllNodes(prev => prev.filter(n => !n.projectId.startsWith('community-')));
@@ -10479,14 +10500,15 @@ export function AppShell() {
       setCommunitySlug(null);
       communityLoadedRef.current = false;
       (window as any).__communityProjectMeta = null;
-      setViewingCommunity(true);
-      _setViewingProjects(false);
-      viewingProjectsRef.current = false;
+      setDashboardSection('community');
+      _setViewingProjects(true);
+      viewingProjectsRef.current = true;
       navigate('/community');
       lastSyncedPathnameRef.current = '/community';
       return;
     }
 
+    setDashboardSection('projects');
     _setViewingProjects(true);
     viewingProjectsRef.current = true;
     _setViewMode('canvas');
@@ -10697,6 +10719,122 @@ export function AppShell() {
     setSelectedNodeIds([]);
     setActiveThemeId(newThemeId);
   }, [themes, activeProjectId, tokens, activePageId, activeThemeId, allNodes]);
+
+  // ── Programmatic creation for AI Build Mode ─────────────────────
+  // Defined after all mutation functions to avoid hoisting issues.
+
+  const createNodeProgrammatic = useCallback((params: {
+    type: 'color' | 'palette' | 'spacing' | 'token_prefix' | 'token_child';
+    colorSpace?: 'hsl' | 'rgb' | 'oklch' | 'hct';
+    color?: Record<string, number>;
+    parentId?: string;
+    name?: string;
+    palette?: Record<string, any>;
+    spacing?: { value?: number; unit?: string };
+  }): string => {
+    const { type, colorSpace = 'hsl', color = {}, parentId, name, palette, spacing } = params;
+
+    if (type === 'palette') {
+      addPaletteNode();
+      const paletteId = Date.now().toString();
+      if (palette || color || name) {
+        setTimeout(() => {
+          setAllNodes(prev => {
+            const paletteNode = prev.find(n => n.isPalette && n.projectId === activeProjectId && n.pageId === activePageId);
+            if (!paletteNode) return prev;
+            const updates: Partial<ColorNode> = {};
+            if (color.hue !== undefined) updates.hue = color.hue;
+            if (color.saturation !== undefined) updates.saturation = color.saturation;
+            if (name) { updates.paletteName = name; updates.referenceName = name; updates.referenceNameLocked = true; }
+            if (palette?.shadeCount !== undefined) updates.paletteShadeCount = palette.shadeCount;
+            if (palette?.lightnessStart !== undefined) updates.paletteLightnessStart = palette.lightnessStart;
+            if (palette?.lightnessEnd !== undefined) updates.paletteLightnessEnd = palette.lightnessEnd;
+            if (palette?.curveType) updates.paletteCurveType = palette.curveType;
+            if (palette?.namingPattern) updates.paletteNamingPattern = palette.namingPattern;
+            if (palette?.hueShift !== undefined) updates.paletteHueShift = palette.hueShift;
+            if (palette?.saturationMode) updates.paletteSaturationMode = palette.saturationMode;
+            return prev.map(n => n.id === paletteNode.id ? { ...n, ...updates } : n);
+          });
+        }, 0);
+      }
+      return paletteId;
+    }
+
+    if (type === 'spacing') {
+      addSpacingNode();
+      const spacingId = Date.now().toString();
+      if (spacing || name) {
+        setTimeout(() => {
+          setAllNodes(prev => {
+            const node = prev.find(n => n.isSpacing && n.projectId === activeProjectId && n.pageId === activePageId &&
+              !prev.some(other => other.isSpacing && other.projectId === activeProjectId && other.pageId === activePageId &&
+                other.id !== n.id && Number(other.id) > Number(n.id)));
+            if (!node) return prev;
+            const updates: Partial<ColorNode> = {};
+            if (spacing?.value !== undefined) updates.spacingValue = spacing.value;
+            if (spacing?.unit) updates.spacingUnit = spacing.unit as any;
+            if (name) { updates.spacingName = name; updates.referenceName = name; updates.referenceNameLocked = true; }
+            return prev.map(n => n.id === node.id ? { ...n, ...updates } : n);
+          });
+        }, 0);
+      }
+      return spacingId;
+    }
+
+    if (type === 'token_prefix' || type === 'token_child') {
+      addTokenNode();
+      return Date.now().toString();
+    }
+
+    // Default: color node with full parameter control
+    const hue = color.hue ?? Math.floor(Math.random() * 360);
+    const sat = color.saturation ?? 70;
+    const light = color.lightness ?? 50;
+    const nodeId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+    const newNode: ColorNode = {
+      id: nodeId, colorSpace,
+      hue, saturation: sat, lightness: light, alpha: color.alpha ?? 100,
+      ...(colorSpace === 'rgb' && { red: color.red ?? 128, green: color.green ?? 128, blue: color.blue ?? 128, redOffset: 0, greenOffset: 0, blueOffset: 0 }),
+      ...(colorSpace === 'oklch' && { oklchL: color.oklchL ?? 65, oklchC: color.oklchC ?? 50, oklchH: color.oklchH ?? hue, oklchLOffset: 0, oklchCOffset: 0, oklchHOffset: 0 }),
+      ...(colorSpace === 'hct' && { hctH: color.hctH ?? hue, hctC: color.hctC ?? 50, hctT: color.hctT ?? 50, hctHOffset: 0, hctCOffset: 0, hctTOffset: 0 }),
+      position: { x: 100 + Math.random() * 400, y: 100 + Math.random() * 300 },
+      parentId: parentId || null,
+      hueOffset: 0, saturationOffset: 0, lightnessOffset: 0, alphaOffset: 0,
+      tokenId: null, tokenIds: [], width: 240,
+      projectId: activeProjectId, pageId: activePageId,
+      lockHue: false, lockSaturation: false, lockLightness: false, lockAlpha: false,
+      ...(colorSpace === 'rgb' && { lockRed: false, lockGreen: false, lockBlue: false, diffRed: false, diffGreen: false, diffBlue: false }),
+      ...(colorSpace === 'oklch' && { lockOklchL: false, lockOklchC: false, lockOklchH: false, diffOklchL: false, diffOklchC: false, diffOklchH: false }),
+      ...(colorSpace === 'hct' && { lockHctH: false, lockHctC: false, lockHctT: false, diffHctH: false, diffHctC: false, diffHctT: false }),
+      diffHue: false, diffSaturation: false, diffLightness: false, diffAlpha: false,
+      isExpanded: false,
+      ...(name && { referenceName: name, referenceNameLocked: true }),
+    } as ColorNode;
+
+    setAllNodes(prev => [...prev, newNode]);
+    setSelectedNodeId(nodeId);
+    setSelectedNodeIds([nodeId]);
+    return nodeId;
+  }, [activeProjectId, activePageId, addPaletteNode, addSpacingNode, addTokenNode]);
+
+  const createThemeProgrammatic = useCallback((name?: string): string => {
+    handleCreateTheme();
+    const themeId = `theme-${Date.now()}`;
+    if (name) {
+      setTimeout(() => { setThemes(prev => prev.map(t => t.id === themeId ? { ...t, name } : t)); }, 0);
+    }
+    return themeId;
+  }, [handleCreateTheme]);
+
+  const createPageProgrammatic = useCallback((name?: string): string => {
+    handleCreatePage();
+    const pageId = `page-${Date.now()}`;
+    if (name) {
+      setTimeout(() => { setPages(prev => prev.map(p => p.id === pageId ? { ...p, name } : p)); }, 0);
+    }
+    return pageId;
+  }, [handleCreatePage]);
 
   const handleSwitchTheme = useCallback((themeId: string) => {
     // Save the current theme's selection state before switching
@@ -10929,6 +11067,40 @@ export function AppShell() {
     }
   }, [flushUndo]);
 
+  // ── Build Mode: mutation context for AI ──────────────────────────
+  // Must be before any early returns to maintain consistent hook count.
+  const aiMutationContext = useMemo((): MutationContext => ({
+    createNodeProgrammatic,
+    updateNode,
+    deleteNode,
+    addToken,
+    updateToken,
+    deleteToken,
+    assignTokenToNode,
+    createThemeProgrammatic,
+    createPageProgrammatic,
+    setAdvancedLogic: (logic) => setAdvancedLogic(logic),
+    getCurrentProjectContext: () => buildProjectContext({
+      projects, activeProjectId, pages, activePageId,
+      themes, activeThemeId, allNodes, tokens, groups, advancedLogic,
+    }),
+    allNodes,
+    tokens,
+    groups,
+    themes,
+    pages,
+    advancedLogic,
+    activeProjectId,
+    activePageId,
+    activeThemeId,
+  }), [
+    createNodeProgrammatic, updateNode, deleteNode,
+    addToken, updateToken, deleteToken, assignTokenToNode,
+    createThemeProgrammatic, createPageProgrammatic,
+    projects, activeProjectId, pages, activePageId,
+    themes, activeThemeId, allNodes, tokens, groups, advancedLogic,
+  ]);
+
   // Auth gate — show auth page if still checking or not authenticated and user hasn't skipped
   if (authChecking) {
     return (
@@ -10965,27 +11137,7 @@ export function AppShell() {
   // Auth gate removed: auto-skip is handled by the effect below.
   // The full-screen AuthPage is now shown as a modal via showAuthModal.
 
-  // If viewing community page, show that
-  if (viewingCommunity) {
-    return (
-      <>
-        <CommunityPage
-          onBack={() => { navigate('/projects'); setViewingCommunity(false); _setViewingProjects(true); viewingProjectsRef.current = true; }}
-          onOpenProject={handleOpenCommunityProject}
-          onRemixProject={handleRemixCommunityProject}
-        />
-        {showAuthModal && (
-          <AuthPage
-            onAuth={(session) => { handleAuth(session); setShowAuthModal(false); }}
-            onSkip={() => setShowAuthModal(false)}
-          />
-        )}
-        <Toaster position="bottom-right" theme="dark" richColors />
-      </>
-    );
-  }
-
-  // If viewing projects page, show that instead of the app
+  // If viewing projects page (includes dashboard sections: projects, community, ai-settings, profile)
   if (viewingProjects) {
     return (
       <>
@@ -10993,7 +11145,7 @@ export function AppShell() {
           projects={projects.filter(p => !p.id.startsWith('community-'))}
           allNodes={allNodes}
           tokens={tokens}
-          collections={[]} // Using empty array as we don't have separate collections
+          collections={[]}
           groups={groups}
           onSelectProject={handleSelectProject}
           onCreateProject={handleCreateProject}
@@ -11007,20 +11159,32 @@ export function AppShell() {
           isTemplateAdmin={!!authSession?.isTemplateAdmin}
           userEmail={authSession?.email}
           onSignOut={handleSignOut}
-          cloudSyncStatus={cloudSyncStatus}
           onSignIn={() => setShowAuthModal(true)}
+          cloudSyncStatus={cloudSyncStatus}
           onForceCloudRefresh={handleForceCloudRefresh}
-          onOpenAISettings={() => setShowAISettingsPopup(true)}
-          onOpenCommunity={() => { navigate('/community'); setViewingCommunity(true); _setViewingProjects(false); viewingProjectsRef.current = false; }}
           publishedProjectIds={publishedProjectIds}
+          activeSection={dashboardSection}
+          onSectionChange={(section) => {
+            setDashboardSection(section);
+            if (section === 'projects') navigate('/projects');
+            else if (section === 'community') navigate('/community');
+            else if (section === 'ai-settings') navigate('/settings');
+            else if (section === 'profile') navigate('/profile');
+          }}
+          onAISettingsSaved={handleAISettingsSaved}
+          aiProjectContext={aiProjectContext}
+          onOpenCommunityProject={(slug) => {
+            navigate(`/community/${slug}`);
+            _setViewingProjects(false);
+            viewingProjectsRef.current = false;
+            setIsCommunityMode(true);
+            setCommunitySlug(slug);
+            communityLoadedRef.current = false;
+          }}
+          onRemixCommunityProject={(slug) => {
+            handleRemixCommunityProject(slug);
+          }}
         />
-        {showAISettingsPopup && (
-          <AISettingsPopup
-            onClose={() => setShowAISettingsPopup(false)}
-            onSettingsSaved={handleAISettingsSaved}
-            projectContext={aiProjectContext}
-          />
-        )}
         {/* Auth popup — appears when user clicks Sign In from projects page */}
         {showAuthModal && (
           <AuthPage
@@ -11517,7 +11681,7 @@ export function AppShell() {
                                   )}
                                 </div>
                                 {index < 9 && (
-                                  <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-dim bg-secondary border border-elevated" style={{ fontFamily: 'inherit' }}>
+                                  <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[11px] text-dim bg-secondary border border-elevated" style={{ fontFamily: 'inherit' }}>
                                     {index + 1}
                                   </kbd>
                                 )}
@@ -11525,7 +11689,7 @@ export function AppShell() {
                             )}
                             {editingThemeId !== theme.id && index < 9 && (
                               <div className="flex items-center gap-1">
-                                <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[10px] text-dim bg-secondary border border-elevated" style={{ fontFamily: 'inherit' }}>
+                                <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[11px] text-dim bg-secondary border border-elevated" style={{ fontFamily: 'inherit' }}>
                                   {index + 1}
                                 </kbd>
                               </div>
@@ -11581,7 +11745,7 @@ export function AppShell() {
                         {sampleTemplates[activeSampleIdx]?.name || 'Template'}
                       </span>
                       {sampleTemplates.length > 1 && (
-                        <span className="text-[10px] text-dim tabular-nums">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
+                        <span className="text-[11px] text-dim tabular-nums">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
                       )}
                       <ChevronDown className="h-3 w-3 text-faint" />
                     </button>
@@ -11589,7 +11753,7 @@ export function AppShell() {
                   <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-card p-1 shadow-lg" style={{ zIndex: 100002 }}>
                     <div className="px-2 py-1.5 flex items-center justify-between">
                       <span className="text-xs font-medium text-faint uppercase tracking-wider">Templates</span>
-                      <span className="text-[10px] text-dim tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
+                      <span className="text-[11px] text-dim tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
                     </div>
                     {sampleTemplates.length >= 5 && (
                       <div className="px-1.5 pb-1.5">
@@ -11629,10 +11793,10 @@ export function AppShell() {
                             />
                             <div className="flex flex-col flex-1 min-w-0">
                               <span className="truncate text-[12px]">{t.name}</span>
-                              <span className="truncate text-[10px] text-dim">{t.description}</span>
+                              <span className="truncate text-[11px] text-dim">{t.description}</span>
                             </div>
                             {activeSampleIdx === t._origIdx && (
-                              <span className="ml-auto text-[10px] text-brand font-medium shrink-0">Active</span>
+                              <span className="ml-auto text-[11px] text-brand font-medium shrink-0">Active</span>
                             )}
                           </DropdownMenuItem>
                         ))
@@ -11679,7 +11843,7 @@ export function AppShell() {
                           onClick={() => handleDuplicateSampleProject('cloud')}
                           className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-foreground focus:bg-secondary focus:text-foreground"
                         >
-                          <RefreshCw className="h-3.5 w-3.5 text-brand-pink" />
+                          <RefreshCw className="h-3.5 w-3.5 text-ai" />
                           <div className="flex flex-col">
                             <span className="text-[13px]">Cloud Project</span>
                             <span className="text-[11px] text-faint">Synced to Supabase</span>
@@ -11994,8 +12158,8 @@ export function AppShell() {
                 <Tip label="Ask AI" side="top">
                   <button
                     className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                        ? 'text-brand-pink bg-brand-pink/10'
-                        : 'text-muted-foreground hover:text-brand-pink hover:bg-elevated'
+                        ? 'text-ai bg-ai/10'
+                        : 'text-muted-foreground hover:text-ai hover:bg-elevated'
                       }`}
                     onClick={() => {
                       const activeProject = projects.find(p => p.id === activeProjectId);
@@ -12196,8 +12360,8 @@ export function AppShell() {
                 <Tip label="Ask AI" side="top">
                   <button
                     className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                        ? 'text-brand-pink bg-brand-pink/10'
-                        : 'text-muted-foreground hover:text-brand-pink hover:bg-elevated'
+                        ? 'text-ai bg-ai/10'
+                        : 'text-muted-foreground hover:text-ai hover:bg-elevated'
                       }`}
                     onClick={() => {
                       const activeProject = projects.find(p => p.id === activeProjectId);
@@ -12396,6 +12560,9 @@ export function AppShell() {
         isDocked={aiChatDocked}
         onDockChange={handleAIChatDockChange}
         onSettingsSaved={handleAISettingsSaved}
+        mutationContext={aiMutationContext}
+        onPauseUndo={pauseUndo}
+        onResumeUndo={resumeUndo}
       />
 
       {/* Token Table Popup */}

@@ -906,7 +906,7 @@ export function PaletteNodeCard({
             onClick={(e) => { e.stopPropagation(); toggleSection('name'); }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <span className="text-[10px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Name</span>
+            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Name</span>
             <div className="flex items-center gap-1.5">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateNode(node.id, { paletteNameLocked: !node.paletteNameLocked }); }}
@@ -947,7 +947,7 @@ export function PaletteNodeCard({
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Color</span>
+              <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Color</span>
               {isColorChanged && <div className="w-1.5 h-1.5 rounded-full bg-warning" title="Modified from primary" />}
             </div>
             <div className="flex items-center gap-1.5">
@@ -1016,7 +1016,7 @@ export function PaletteNodeCard({
         {/* ── DISTRIBUTION ── */}
         <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('distribution'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[10px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Distribution</span>
+            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Distribution</span>
             <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.distribution ? 'rotate-180' : ''}`} />
           </button>
           {expandedSections.distribution && (
@@ -1044,7 +1044,7 @@ export function PaletteNodeCard({
         {/* ── LIGHTNESS SCALE ── */}
         <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('lightnessScale'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[10px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Lightness Scale</span>
+            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Lightness Scale</span>
             <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.lightnessScale ? 'rotate-180' : ''}`} />
           </button>
           {expandedSections.lightnessScale && (
@@ -1061,8 +1061,8 @@ export function PaletteNodeCard({
                   markers={shadeColors.map((shade) => ({ position: shade.lightness, color: shade.hex }))}
                 />
                 <div className="flex justify-between mt-1">
-                  <span className="text-[10px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>L:{lightnessStart}%</span>
-                  <span className="text-[10px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>L:{lightnessEnd}%</span>
+                  <span className="text-[11px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>L:{lightnessStart}%</span>
+                  <span className="text-[11px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>L:{lightnessEnd}%</span>
                 </div>
               </div>
             </div>
@@ -1072,7 +1072,7 @@ export function PaletteNodeCard({
         {/* ── SATURATION ── */}
         <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('saturation'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[10px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Saturation</span>
+            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Saturation</span>
             <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.saturation ? 'rotate-180' : ''}`} />
           </button>
           {expandedSections.saturation && (
@@ -1097,8 +1097,8 @@ export function PaletteNodeCard({
                     fillStyle={`linear-gradient(to right, hsl(${eHue}, ${Math.min(satStart, satEnd)}%, ${eLit}%), hsl(${eHue}, ${Math.max(satStart, satEnd)}%, ${eLit}%))`}
                   />
                   <div className="flex justify-between mt-1">
-                    <span className="text-[10px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>S:{satStart}%</span>
-                    <span className="text-[10px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>S:{satEnd}%</span>
+                    <span className="text-[11px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>S:{satStart}%</span>
+                    <span className="text-[11px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>S:{satEnd}%</span>
                   </div>
                 </div>
               )}
@@ -1109,9 +1109,9 @@ export function PaletteNodeCard({
         {/* ── HUE SHIFT ── */}
         <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('hueShift'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[10px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Hue Shift</span>
+            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Hue Shift</span>
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-foreground" style={{ fontFamily: 'var(--font-mono)' }}>{hueShift > 0 ? '+' : ''}{hueShift}°</span>
+              <span className="text-[11px] text-foreground" style={{ fontFamily: 'var(--font-mono)' }}>{hueShift > 0 ? '+' : ''}{hueShift}°</span>
               <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.hueShift ? 'rotate-180' : ''}`} />
             </div>
           </button>
@@ -1127,11 +1127,11 @@ export function PaletteNodeCard({
         <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('pattern'); }} onMouseDown={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-4">
-              <span className="text-[10px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Pattern</span>
-              <span className="text-[10px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Shades</span>
+              <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Pattern</span>
+              <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Shades</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-foreground" style={{ fontFamily: 'var(--font-mono)' }}>{shadeCount}</span>
+              <span className="text-[11px] text-foreground" style={{ fontFamily: 'var(--font-mono)' }}>{shadeCount}</span>
               <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.pattern ? 'rotate-180' : ''}`} />
             </div>
           </button>
@@ -1161,7 +1161,7 @@ export function PaletteNodeCard({
         {/* ── PREVIEW ── */}
         <div className="border-t border-[#141414]">
           <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('preview'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[10px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Preview</span>
+            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Preview</span>
             <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.preview ? 'rotate-180' : ''}`} />
           </button>
           {expandedSections.preview && (
@@ -1202,7 +1202,7 @@ export function PaletteNodeCard({
           data-button-type="left-connect"
           title={isStructurallyLocked ? "Inherited from primary — unlink from primary to modify" : "Connect to parent"}
         >
-          <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'right' ? 'text-white' : 'text-foreground'}`} strokeWidth={3} />
+          <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'right' ? 'text-white' : 'text-foreground'}`} />
         </button>
       </div>
 
@@ -1242,7 +1242,7 @@ export function PaletteNodeCard({
           data-button-type="right-connect"
           title={isStructurallyLocked ? "Inherited from primary — unlink from primary to modify" : "Add shade"}
         >
-          <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} strokeWidth={3} />
+          <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
         </button>
       </div>
 

@@ -1,7 +1,13 @@
 import { Hono } from 'hono';
-import { kvGet, kvSet, kvDel, kvMget, kvMset } from '../db.js';
+import {
+    getUser, updateUser, getProjectOwner, getProjectSnapshot,
+    upsertProject, deleteProject, deleteTokenOutputs,
+    deleteDevConfig, deleteWebhookPending,
+    getCommunityMeta, deleteCommunityPublication,
+    batchUpsertProjects, getProjectsByIds, upsertProjectOwner,
+} from '../db.js';
 import { CLOUD_PROJECT_LIMIT, SYNC_BATCH_MAX, VALID_TOKEN_FORMATS } from '../constants.js';
-import { requireAuth, getUserRole, normalizeMeta } from '../middleware/auth.js';
+import { requireAuth, getUserRole, normalizeUserToMeta } from '../middleware/auth.js';
 import { invalidateCommunityListCache } from './community.js';
 
 const router = new Hono();
@@ -20,8 +26,8 @@ router.post('/cloud-register', async (c) => {
             return c.json({ error: 'projectId is required' }, 400);
         }
 
-        const rawMeta = await kvGet(`user:${userId}:meta`);
-        const meta = normalizeMeta(rawMeta);
+        const user = await getUser(userId);
+        const meta = normalizeUserToMeta(user);
         const role = await getUserRole(userId);
 
         // Enforce project limit for non-admins (admin = unlimited)
@@ -39,8 +45,8 @@ router.post('/cloud-register', async (c) => {
 
         // Register: add to list and persist
         meta.cloudProjectIds = [...meta.cloudProjectIds, projectId];
-        await kvSet(`user:${userId}:meta`, meta);
-        await kvSet(`project:${projectId}:owner`, userId);
+        await updateUser(userId, { cloud_project_ids: meta.cloudProjectIds });
+        await upsertProjectOwner(projectId, userId);
 
         return c.json({ success: true, meta });
     } catch (err: any) {
@@ -64,39 +70,31 @@ router.post('/cloud-unregister', async (c) => {
         }
 
         // Verify ownership
-        const owner = await kvGet(`project:${projectId}:owner`);
+        const owner = await getProjectOwner(projectId);
         if (owner !== userId) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
         // Remove from user meta
-        const rawMeta = await kvGet(`user:${userId}:meta`);
-        const meta = normalizeMeta(rawMeta);
+        const user = await getUser(userId);
+        const meta = normalizeUserToMeta(user);
         meta.cloudProjectIds = meta.cloudProjectIds.filter((id: string) => id !== projectId);
-        await kvSet(`user:${userId}:meta`, meta);
+        await updateUser(userId, { cloud_project_ids: meta.cloudProjectIds });
 
         // Delete project data
-        await kvDel(`project:${projectId}:snapshot`);
-        await kvDel(`project:${projectId}:owner`);
+        await deleteProject(projectId);
 
         // Clean up community entries if published
-        const communityMeta = await kvGet(`community:meta:${projectId}`);
+        const communityMeta = await getCommunityMeta(projectId);
         if (communityMeta) {
-            await kvDel(`community:meta:${projectId}`);
-            await kvDel(`community:snapshot:${projectId}`);
-            await kvDel(`community:thumbnail:${projectId}`);
-            if (communityMeta.slug) {
-                await kvDel(`community:slug:${communityMeta.slug}`);
-            }
+            await deleteCommunityPublication(projectId);
             invalidateCommunityListCache();
         }
 
-        // Clean up dev-mode keys
-        await kvDel(`dev-config:${projectId}`);
-        await kvDel(`webhook:${projectId}:pending`);
-        for (const fmt of VALID_TOKEN_FORMATS) {
-            await kvDel(`project:${projectId}:token-output:${fmt}`);
-        }
+        // Clean up dev-mode data
+        await deleteDevConfig(projectId);
+        await deleteWebhookPending(projectId);
+        await deleteTokenOutputs(projectId);
 
         return c.json({ success: true, meta });
     } catch (err: any) {
@@ -119,17 +117,16 @@ router.post('/sync', async (c) => {
             return c.json({ error: 'projectId and snapshot are required' }, 400);
         }
 
-        // Verify ownership via meta.cloudProjectIds
-        const rawMeta = await kvGet(`user:${userId}:meta`);
-        const meta = normalizeMeta(rawMeta);
+        // Verify ownership via user's cloudProjectIds
+        const user = await getUser(userId);
+        const meta = normalizeUserToMeta(user);
         if (!meta.cloudProjectIds.includes(projectId)) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
         // Store snapshot and owner
         const syncedAt = Date.now();
-        await kvSet(`project:${projectId}:snapshot`, { ...snapshot, _syncedAt: syncedAt, _userId: userId });
-        await kvSet(`project:${projectId}:owner`, userId);
+        await upsertProject(projectId, userId, { ...snapshot, _syncedAt: syncedAt, _userId: userId });
 
         return c.json({ success: true, syncedAt });
     } catch (err: any) {
@@ -149,12 +146,12 @@ router.get('/load/:projectId', async (c) => {
         const projectId = c.req.param('projectId');
 
         // Verify ownership
-        const owner = await kvGet(`project:${projectId}:owner`);
+        const owner = await getProjectOwner(projectId);
         if (owner !== userId) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
-        const snapshot = await kvGet(`project:${projectId}:snapshot`);
+        const snapshot = await getProjectSnapshot(projectId);
         return c.json({ snapshot: snapshot ?? null });
     } catch (err: any) {
         console.error('[load] Error:', err);
@@ -170,8 +167,8 @@ router.get('/load-all', async (c) => {
         const userId = await requireAuth(c);
         if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
-        const rawMeta = await kvGet(`user:${userId}:meta`);
-        const meta = normalizeMeta(rawMeta);
+        const user = await getUser(userId);
+        const meta = normalizeUserToMeta(user);
         const projectIds: string[] = meta.cloudProjectIds;
 
         console.log(`[load-all] userId=${userId}, cloudProjectIds=${JSON.stringify(projectIds)}`);
@@ -180,15 +177,15 @@ router.get('/load-all', async (c) => {
             return c.json({ projects: [] });
         }
 
-        // Build snapshot keys and fetch all at once
-        const snapshotKeys = projectIds.map(id => `project:${id}:snapshot`);
-        const snapshots = await kvMget(snapshotKeys);
+        // Batch load all project snapshots
+        const projectRows = await getProjectsByIds(projectIds);
+        const projectMap = new Map(projectRows.map(p => [p.id, p.snapshot]));
 
-        console.log(`[load-all] Fetched ${snapshots.filter(Boolean).length} of ${projectIds.length} snapshots`);
+        console.log(`[load-all] Fetched ${projectRows.length} of ${projectIds.length} snapshots`);
 
-        const projects = projectIds.map((id, idx) => ({
+        const projects = projectIds.map(id => ({
             projectId: id,
-            snapshot: snapshots[idx],
+            snapshot: projectMap.get(id) ?? null,
         })).filter(p => p.snapshot !== null);
 
         return c.json({ projects });
@@ -217,8 +214,8 @@ router.post('/sync-batch', async (c) => {
         }
 
         // Verify ownership via user meta
-        const rawMeta = await kvGet(`user:${userId}:meta`);
-        const meta = normalizeMeta(rawMeta);
+        const user = await getUser(userId);
+        const meta = normalizeUserToMeta(user);
         const ownedIds = new Set(meta.cloudProjectIds);
 
         const unauthorized = projects.filter((p: any) => !ownedIds.has(p.projectId));
@@ -230,15 +227,12 @@ router.post('/sync-batch', async (c) => {
         }
 
         // Batch upsert all snapshots + owners
-        const snapshotEntries: [string, any][] = projects.map((p: any) => [
-            `project:${p.projectId}:snapshot`,
-            { ...p.snapshot, _syncedAt: Date.now(), _userId: userId },
-        ]);
-        const ownerEntries: [string, any][] = projects.map((p: any) => [
-            `project:${p.projectId}:owner`,
-            userId,
-        ]);
-        await kvMset([...snapshotEntries, ...ownerEntries]);
+        const entries = projects.map((p: any) => ({
+            id: p.projectId,
+            ownerId: userId,
+            snapshot: { ...p.snapshot, _syncedAt: Date.now(), _userId: userId },
+        }));
+        await batchUpsertProjects(entries);
 
         return c.json({
             success: true,

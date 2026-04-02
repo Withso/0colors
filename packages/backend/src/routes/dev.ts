@@ -1,5 +1,9 @@
 import { Hono } from 'hono';
-import { kvGet, kvSet, kvDel } from '../db.js';
+import {
+    getDevConfig, saveDevConfig, getProjectOwner, getProjectSnapshot,
+    updateProjectSnapshot, saveTokenOutput, getTokenOutput,
+    saveWebhookPending, getWebhookPending, deleteWebhookPending,
+} from '../db.js';
 import { RATE_LIMIT_MAX, VALID_TOKEN_FORMATS, TOKEN_CONTENT_TYPES } from '../constants.js';
 import { requireAuth } from '../middleware/auth.js';
 import { checkRateLimit } from '../helpers/rate-limit.js';
@@ -15,7 +19,7 @@ router.post('/webhook/:projectId/run', async (c) => {
     try {
         const projectId = c.req.param('projectId');
 
-        const devConfig = await kvGet(`dev-config:${projectId}`);
+        const devConfig = await getDevConfig(projectId);
         if (!devConfig?.webhookSecret) {
             return c.json({ error: 'Webhook not configured for this project' }, 404);
         }
@@ -29,7 +33,7 @@ router.post('/webhook/:projectId/run', async (c) => {
         const { value, format, targetNodeId, outputFormat } = body;
 
         // Load project snapshot
-        const snapshot = await kvGet(`project:${projectId}:snapshot`);
+        const snapshot = await getProjectSnapshot(projectId);
         if (!snapshot) {
             return c.json({ error: 'Project snapshot not found' }, 404);
         }
@@ -54,7 +58,7 @@ router.post('/webhook/:projectId/run', async (c) => {
 
         // Save updated snapshot
         if (result.updatedSnapshot) {
-            await kvSet(`project:${projectId}:snapshot`, {
+            await updateProjectSnapshot(projectId, {
                 ...result.updatedSnapshot,
                 _syncedAt: Date.now(),
             });
@@ -64,7 +68,7 @@ router.post('/webhook/:projectId/run', async (c) => {
         if (result.output) {
             for (const [fmt, content] of Object.entries(result.output)) {
                 if (!fmt.includes(':')) {
-                    await kvSet(`project:${projectId}:token-output:${fmt}`, content);
+                    await saveTokenOutput(projectId, fmt, content as string);
                 }
             }
         }
@@ -85,7 +89,7 @@ router.post('/webhook/:projectId/:nodeId', async (c) => {
         const projectId = c.req.param('projectId');
         const nodeId = c.req.param('nodeId');
 
-        const devConfig = await kvGet(`dev-config:${projectId}`);
+        const devConfig = await getDevConfig(projectId);
         if (!devConfig?.webhookSecret) {
             return c.json({ error: 'Webhook not configured for this project' }, 404);
         }
@@ -99,7 +103,7 @@ router.post('/webhook/:projectId/:nodeId', async (c) => {
         const { value, format, outputFormat } = body;
 
         // Load project snapshot
-        const snapshot = await kvGet(`project:${projectId}:snapshot`);
+        const snapshot = await getProjectSnapshot(projectId);
         if (!snapshot) {
             return c.json({ error: 'Project snapshot not found' }, 404);
         }
@@ -119,7 +123,7 @@ router.post('/webhook/:projectId/:nodeId', async (c) => {
 
         // Save updated snapshot
         if (result.updatedSnapshot) {
-            await kvSet(`project:${projectId}:snapshot`, {
+            await updateProjectSnapshot(projectId, {
                 ...result.updatedSnapshot,
                 _syncedAt: Date.now(),
             });
@@ -129,7 +133,7 @@ router.post('/webhook/:projectId/:nodeId', async (c) => {
         if (result.output) {
             for (const [fmt, content] of Object.entries(result.output)) {
                 if (!fmt.includes(':')) {
-                    await kvSet(`project:${projectId}:token-output:${fmt}`, content);
+                    await saveTokenOutput(projectId, fmt, content as string);
                 }
             }
         }
@@ -151,7 +155,7 @@ router.post('/webhook/:projectId', async (c) => {
         const projectId = c.req.param('projectId');
 
         // Load dev config to verify webhook secret
-        const devConfig = await kvGet(`dev-config:${projectId}`);
+        const devConfig = await getDevConfig(projectId);
         if (!devConfig?.webhookSecret) {
             return c.json({ error: 'Webhook not configured for this project' }, 404);
         }
@@ -164,7 +168,7 @@ router.post('/webhook/:projectId', async (c) => {
         const body = await c.req.json();
         const { value, format, targetNodeId } = body;
 
-        await kvSet(`webhook:${projectId}:pending`, {
+        await saveWebhookPending(projectId, {
             value,
             format: format ?? null,
             receivedAt: new Date().toISOString(),
@@ -189,12 +193,12 @@ router.get('/webhook-pending/:projectId', async (c) => {
         const projectId = c.req.param('projectId');
 
         // Verify ownership
-        const owner = await kvGet(`project:${projectId}:owner`);
+        const owner = await getProjectOwner(projectId);
         if (owner !== userId) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
-        const pending = await kvGet(`webhook:${projectId}:pending`);
+        const pending = await getWebhookPending(projectId);
         return c.json({ pending: pending ?? null });
     } catch (err: any) {
         console.error('[webhook-pending] Error:', err);
@@ -213,12 +217,12 @@ router.post('/webhook-clear/:projectId', async (c) => {
         const projectId = c.req.param('projectId');
 
         // Verify ownership
-        const owner = await kvGet(`project:${projectId}:owner`);
+        const owner = await getProjectOwner(projectId);
         if (owner !== userId) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
-        await kvDel(`webhook:${projectId}:pending`);
+        await deleteWebhookPending(projectId);
         return c.json({ ok: true });
     } catch (err: any) {
         console.error('[webhook-clear] Error:', err);
@@ -247,12 +251,12 @@ router.get('/tokens/:projectId/:format/etag', async (c) => {
         }
 
         // Check pullApiEnabled
-        const devConfig = await kvGet(`dev-config:${projectId}`);
+        const devConfig = await getDevConfig(projectId);
         if (!devConfig?.pullApiEnabled) {
             return c.json({ error: 'Pull API not enabled for this project' }, 403);
         }
 
-        const output = await kvGet(`project:${projectId}:token-output:${format}`);
+        const output = await getTokenOutput(projectId, format);
         if (!output) {
             return c.json({ error: 'Token output not found for this project/format' }, 404);
         }
@@ -305,12 +309,12 @@ router.get('/tokens/:projectId/:format', async (c) => {
         }
 
         // Check pullApiEnabled
-        const devConfig = await kvGet(`dev-config:${projectId}`);
+        const devConfig = await getDevConfig(projectId);
         if (!devConfig?.pullApiEnabled) {
             return c.json({ error: 'Pull API not enabled for this project' }, 403);
         }
 
-        const output = await kvGet(`project:${projectId}:token-output:${format}`);
+        const output = await getTokenOutput(projectId, format);
         if (!output) {
             return c.json({ error: 'Token output not found for this project/format' }, 404);
         }
@@ -347,12 +351,12 @@ router.post('/dev/save-output', async (c) => {
         }
 
         // Verify ownership
-        const owner = await kvGet(`project:${projectId}:owner`);
+        const owner = await getProjectOwner(projectId);
         if (owner !== userId) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
-        await kvSet(`project:${projectId}:token-output:${format}`, output);
+        await saveTokenOutput(projectId, format, output);
         return c.json({ ok: true });
     } catch (err: any) {
         console.error('[dev/save-output] Error:', err);
@@ -500,12 +504,12 @@ router.post('/dev/save-config', async (c) => {
         }
 
         // Verify ownership
-        const owner = await kvGet(`project:${projectId}:owner`);
+        const owner = await getProjectOwner(projectId);
         if (owner !== userId) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
-        await kvSet(`dev-config:${projectId}`, devConfig);
+        await saveDevConfig(projectId, devConfig);
         return c.json({ ok: true });
     } catch (err: any) {
         console.error('[dev/save-config] Error:', err);
@@ -524,12 +528,12 @@ router.get('/dev/load-config/:projectId', async (c) => {
         const projectId = c.req.param('projectId');
 
         // Verify ownership
-        const owner = await kvGet(`project:${projectId}:owner`);
+        const owner = await getProjectOwner(projectId);
         if (owner !== userId) {
             return c.json({ error: 'Not the owner of this project' }, 403);
         }
 
-        const devConfig = await kvGet(`dev-config:${projectId}`);
+        const devConfig = await getDevConfig(projectId);
         return c.json({ devConfig: devConfig ?? null });
     } catch (err: any) {
         console.error('[dev/load-config] Error:', err);

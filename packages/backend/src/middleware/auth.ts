@@ -3,7 +3,7 @@
 // ===========================================================================
 
 import { getAuthUser } from '../auth.js';
-import { kvGet } from '../db.js';
+import { getUser, isUserAdmin, getAppSetting } from '../db.js';
 
 /** Require auth and return userId, or short-circuit the response */
 export async function requireAuth(c: any): Promise<string | null> {
@@ -15,24 +15,22 @@ export async function requireAuth(c: any): Promise<string | null> {
     return user.userId;
 }
 
-/** Check if a user is an admin (handles JSONB variations) */
+/** Check if a user is an admin */
 export async function isAdmin(userId: string): Promise<boolean> {
-    const val = await kvGet(`user:admin:${userId}`);
-    return val === true || val === 'true' || String(val) === 'true';
+    return isUserAdmin(userId);
 }
 
 /** Check if a user is the template admin (must be admin first) */
 export async function isTemplateAdmin(userId: string): Promise<boolean> {
-    const admin = await isAdmin(userId);
+    const admin = await isUserAdmin(userId);
     if (!admin) return false;
-    const templateAdminId = await kvGet('app:template_admin_user_id');
-    // Strip surrounding quotes from JSONB string values
+    const templateAdminId = await getAppSetting('template_admin_user_id');
     return templateAdminId != null && String(templateAdminId).replace(/^"|"$/g, '') === userId;
 }
 
 /** Get user role string */
 export async function getUserRole(userId: string): Promise<'admin' | 'user'> {
-    const admin = await isAdmin(userId);
+    const admin = await isUserAdmin(userId);
     return admin ? 'admin' : 'user';
 }
 
@@ -40,7 +38,7 @@ export async function getUserRole(userId: string): Promise<'admin' | 'user'> {
 export async function requireAdmin(c: any): Promise<string | null> {
     const userId = await requireAuth(c);
     if (!userId) return null;
-    const admin = await isAdmin(userId);
+    const admin = await isUserAdmin(userId);
     if (!admin) {
         c.status(403);
         return null;
@@ -48,12 +46,14 @@ export async function requireAdmin(c: any): Promise<string | null> {
     return userId;
 }
 
-/** Normalize user meta to handle legacy field names (cloudProjectsList → cloudProjectIds) */
-export function normalizeMeta(meta: any): any {
-    if (!meta) return { cloudProjectIds: [] };
-    const cloudProjectIds = meta.cloudProjectIds || meta.cloudProjectsList || meta.cloudProjects || [];
-    meta.cloudProjectIds = cloudProjectIds;
-    delete meta.cloudProjectsList;
-    delete meta.cloudProjects;
-    return meta;
+/** Normalize user row to the meta format routes expect */
+export function normalizeUserToMeta(user: any): any {
+    if (!user) return { cloudProjectIds: [] };
+    return {
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.created_at instanceof Date ? user.created_at.getTime() : user.created_at,
+        cloudProjectIds: user.cloud_project_ids || [],
+    };
 }

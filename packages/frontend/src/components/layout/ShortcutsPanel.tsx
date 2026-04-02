@@ -158,11 +158,11 @@ const tipCategories: TipCategory[] = [
 
 function KeyBadge({ k }: { k: string }) {
   if (k === '/' || k === '–') {
-    return <span className="text-[10px] text-ghost mx-0.5">{k}</span>;
+    return <span className="text-[11px] text-ghost mx-0.5">{k}</span>;
   }
   return (
     <kbd
-      className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-[5px] rounded-[4px] text-[10px] text-subtle bg-secondary border border-[#262626]"
+      className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-[5px] rounded-[4px] text-[11px] text-subtle bg-secondary border border-[#262626]"
       style={{ fontFamily: 'inherit' }}
     >
       {k}
@@ -172,7 +172,7 @@ function KeyBadge({ k }: { k: string }) {
 
 function ActionBadge({ text }: { text: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] text-faint bg-[#141414] border border-[#1e1e1e] rounded-[4px] px-1.5 py-[1px] whitespace-nowrap">
+    <span className="inline-flex items-center gap-1 text-[11px] text-faint bg-[#141414] border border-[#1e1e1e] rounded-[4px] px-1.5 py-[1px] whitespace-nowrap">
       {text}
     </span>
   );
@@ -461,7 +461,7 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
                 {/* Category header */}
                 <div className="sticky top-0 z-[2] bg-background">
                   <div className="flex items-center gap-2 px-3 pt-3.5 pb-1.5">
-                    <span className="text-[10px] text-dim uppercase tracking-widest">{cat.title}</span>
+                    <span className="text-[11px] text-dim uppercase tracking-widest">{cat.title}</span>
                     <div className="flex-1 h-px bg-[#141414]" />
                   </div>
                 </div>
@@ -500,7 +500,7 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
                 {/* Category header */}
                 <div className="sticky top-0 z-[2] bg-background">
                   <div className="flex items-center gap-2 px-3 pt-3.5 pb-1.5">
-                    <span className="text-[10px] text-dim uppercase tracking-widest">{cat.title}</span>
+                    <span className="text-[11px] text-dim uppercase tracking-widest">{cat.title}</span>
                     <div className="flex-1 h-px bg-[#141414]" />
                   </div>
                 </div>

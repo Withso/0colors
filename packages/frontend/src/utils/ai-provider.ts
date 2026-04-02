@@ -1,16 +1,201 @@
 // ═══════════════════════════════════════════════════════════════════
 // AI Provider Abstraction Layer
-// Supports: OpenAI-compatible (OpenAI, Perplexity, Groq, OpenRouter,
-//           Together, Mistral, DeepSeek, Railway/Ollama, and any
-//           /v1/chat/completions), Anthropic (direct API)
+// Supports: Anthropic, OpenAI, Google Gemini, Groq, Mistral,
+//           DeepSeek, Perplexity, OpenRouter — each as a distinct
+//           service with its own API key and model selection.
 // API keys are stored in localStorage only — never sent to our server.
 // AI calls happen directly from the frontend to the provider's API.
 // ═══════════════════════════════════════════════════════════════════
 
 import type { ContextTier } from './ai-context-manager';
 
+// ── Service-based architecture (V2) ────────────────────────────────
+
+export type ServiceId = 'anthropic' | 'openai' | 'google' | 'groq' | 'mistral' | 'deepseek' | 'perplexity' | 'openrouter';
+
+export interface PresetModel {
+  id: string;
+  label: string;
+  contextWindow?: number; // max context tokens (e.g., 200000)
+}
+
+export interface ServiceDefinition {
+  id: ServiceId;
+  label: string;
+  description: string;
+  streamType: 'openai' | 'anthropic';
+  baseUrl: string;
+  models: PresetModel[];
+  keyHint: string;
+  keyUrl: string;
+  supportsCustomModel: boolean;
+  hasFreeTier?: boolean;
+  freeNote?: string;
+}
+
+export interface ServiceConfig {
+  apiKey: string;
+  model: string;
+}
+
+export interface AISettingsV2 {
+  version: 2;
+  activeModel: { serviceId: ServiceId; modelId: string };
+  services: Partial<Record<ServiceId, ServiceConfig>>;
+}
+
+export const SERVICE_DEFINITIONS: ServiceDefinition[] = [
+  {
+    id: 'anthropic',
+    label: 'Anthropic',
+    description: 'Claude models via console.anthropic.com',
+    streamType: 'anthropic',
+    baseUrl: 'https://api.anthropic.com',
+    models: [
+      { id: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4', contextWindow: 200000 },
+      { id: 'claude-opus-4-20250514', label: 'Claude Opus 4', contextWindow: 200000 },
+      { id: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet', contextWindow: 200000 },
+      { id: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku', contextWindow: 200000 },
+    ],
+    keyHint: 'sk-ant-...',
+    keyUrl: 'https://console.anthropic.com/settings/keys',
+    supportsCustomModel: false,
+  },
+  {
+    id: 'openai',
+    label: 'OpenAI',
+    description: 'GPT-4o, o3, o4 models',
+    streamType: 'openai',
+    baseUrl: 'https://api.openai.com/v1',
+    models: [
+      { id: 'gpt-4o', label: 'GPT-4o', contextWindow: 128000 },
+      { id: 'gpt-4o-mini', label: 'GPT-4o Mini', contextWindow: 128000 },
+      { id: 'o3-mini', label: 'o3 Mini', contextWindow: 200000 },
+      { id: 'o4-mini', label: 'o4 Mini', contextWindow: 200000 },
+      { id: 'gpt-4.1', label: 'GPT-4.1', contextWindow: 1047576 },
+      { id: 'gpt-4.1-mini', label: 'GPT-4.1 Mini', contextWindow: 1047576 },
+      { id: 'gpt-4.1-nano', label: 'GPT-4.1 Nano', contextWindow: 1047576 },
+    ],
+    keyHint: 'sk-...',
+    keyUrl: 'https://platform.openai.com/api-keys',
+    supportsCustomModel: true,
+  },
+  {
+    id: 'google',
+    label: 'Google Gemini',
+    description: 'Gemini models with generous free tier',
+    streamType: 'openai',
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    models: [
+      { id: 'gemini-2.5-flash-preview-05-20', label: 'Gemini 2.5 Flash', contextWindow: 1048576 },
+      { id: 'gemini-2.5-pro-preview-05-06', label: 'Gemini 2.5 Pro', contextWindow: 1048576 },
+      { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', contextWindow: 1048576 },
+      { id: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite', contextWindow: 1048576 },
+    ],
+    keyHint: 'AIza...',
+    keyUrl: 'https://aistudio.google.com/apikey',
+    supportsCustomModel: false,
+    hasFreeTier: true,
+    freeNote: 'Generous free tier available. Get your key at aistudio.google.com',
+  },
+  {
+    id: 'groq',
+    label: 'Groq',
+    description: 'Ultra-fast inference — Llama, Qwen, DeepSeek',
+    streamType: 'openai',
+    baseUrl: 'https://api.groq.com/openai/v1',
+    models: [
+      { id: 'compound-beta', label: 'Compound Beta (Agentic)', contextWindow: 128000 },
+      { id: 'compound-beta-mini', label: 'Compound Beta Mini', contextWindow: 128000 },
+      { id: 'meta-llama/llama-4-scout-17b-16e-instruct', label: 'Llama 4 Scout 17B', contextWindow: 131072 },
+      { id: 'meta-llama/llama-4-maverick-17b-128e-instruct', label: 'Llama 4 Maverick 17B', contextWindow: 131072 },
+      { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B', contextWindow: 128000 },
+      { id: 'deepseek-r1-distill-llama-70b', label: 'DeepSeek R1 Distill 70B', contextWindow: 128000 },
+      { id: 'qwen-qwq-32b', label: 'Qwen QwQ 32B (Reasoning)', contextWindow: 131072 },
+      { id: 'mistral-saba-24b', label: 'Mistral Saba 24B', contextWindow: 32768 },
+      { id: 'gemma2-9b-it', label: 'Gemma 2 9B', contextWindow: 8192 },
+      { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B', contextWindow: 131072 },
+    ],
+    keyHint: 'gsk_...',
+    keyUrl: 'https://console.groq.com/keys',
+    supportsCustomModel: true,
+    hasFreeTier: true,
+    freeNote: 'Free tier with rate limits. Get your key at console.groq.com',
+  },
+  {
+    id: 'mistral',
+    label: 'Mistral',
+    description: 'Mistral Large, Small, and Codestral',
+    streamType: 'openai',
+    baseUrl: 'https://api.mistral.ai/v1',
+    models: [
+      { id: 'mistral-large-latest', label: 'Mistral Large', contextWindow: 128000 },
+      { id: 'mistral-small-latest', label: 'Mistral Small', contextWindow: 32000 },
+      { id: 'codestral-latest', label: 'Codestral', contextWindow: 256000 },
+      { id: 'open-mistral-nemo', label: 'Mistral Nemo', contextWindow: 128000 },
+    ],
+    keyHint: 'Enter your Mistral API key',
+    keyUrl: 'https://console.mistral.ai/api-keys',
+    supportsCustomModel: false,
+  },
+  {
+    id: 'deepseek',
+    label: 'DeepSeek',
+    description: 'DeepSeek Chat (V3) and Reasoner (R1)',
+    streamType: 'openai',
+    baseUrl: 'https://api.deepseek.com/v1',
+    models: [
+      { id: 'deepseek-chat', label: 'DeepSeek Chat (V3)', contextWindow: 64000 },
+      { id: 'deepseek-reasoner', label: 'DeepSeek Reasoner (R1)', contextWindow: 64000 },
+    ],
+    keyHint: 'sk-...',
+    keyUrl: 'https://platform.deepseek.com/api_keys',
+    supportsCustomModel: false,
+  },
+  {
+    id: 'perplexity',
+    label: 'Perplexity',
+    description: 'Sonar models with web search built-in',
+    streamType: 'openai',
+    baseUrl: 'https://api.perplexity.ai',
+    models: [
+      { id: 'sonar', label: 'Sonar', contextWindow: 127000 },
+      { id: 'sonar-pro', label: 'Sonar Pro', contextWindow: 127000 },
+      { id: 'sonar-reasoning', label: 'Sonar Reasoning', contextWindow: 127000 },
+    ],
+    keyHint: 'pplx-...',
+    keyUrl: 'https://www.perplexity.ai/settings/api',
+    supportsCustomModel: false,
+  },
+  {
+    id: 'openrouter',
+    label: 'OpenRouter',
+    description: 'Access 200+ models with one API key',
+    streamType: 'openai',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    models: [
+      { id: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4', contextWindow: 200000 },
+      { id: 'openai/gpt-4o', label: 'GPT-4o', contextWindow: 128000 },
+      { id: 'google/gemini-2.5-flash-preview', label: 'Gemini 2.5 Flash', contextWindow: 1048576 },
+      { id: 'meta-llama/llama-4-scout', label: 'Llama 4 Scout', contextWindow: 131072 },
+      { id: 'deepseek/deepseek-r1', label: 'DeepSeek R1', contextWindow: 64000 },
+    ],
+    keyHint: 'sk-or-...',
+    keyUrl: 'https://openrouter.ai/keys',
+    supportsCustomModel: true,
+  },
+];
+
+export const SERVICE_MAP: Record<ServiceId, ServiceDefinition> = Object.fromEntries(
+  SERVICE_DEFINITIONS.map(d => [d.id, d]),
+) as Record<ServiceId, ServiceDefinition>;
+
+// ── Legacy types (kept for backward compatibility) ──────────────
+
+/** @deprecated Use ServiceId instead */
 export type ProviderType = 'openai' | 'anthropic';
 
+/** @deprecated Use ServiceDefinition + ServiceConfig instead */
 export interface AIProviderConfig {
   type: ProviderType;
   apiKey: string;
@@ -31,154 +216,24 @@ export interface StreamCallbacks {
   onRetry?: (waitSeconds: number, attempt: number, maxAttempts: number) => void;
 }
 
-// ── Default provider configs ────────────────────────────────────
+// ── Legacy defaults (kept for migration) ────────────────────────
 
+/** @deprecated Use SERVICE_DEFINITIONS instead */
 export const DEFAULT_PROVIDERS: Record<ProviderType, Omit<AIProviderConfig, 'apiKey'>> = {
-  openai: {
-    type: 'openai',
-    baseUrl: 'https://api.openai.com/v1',
-    model: 'gpt-4o-mini',
-    label: 'OpenAI-Compatible',
-  },
-  anthropic: {
-    type: 'anthropic',
-    baseUrl: 'https://api.anthropic.com',
-    model: 'claude-3-5-sonnet-20241022',
-    label: 'Anthropic',
-  },
+  openai: { type: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini', label: 'OpenAI-Compatible' },
+  anthropic: { type: 'anthropic', baseUrl: 'https://api.anthropic.com', model: 'claude-sonnet-4-20250514', label: 'Anthropic' },
 };
 
-// ── Quick-fill presets for OpenAI-compatible providers ───────────
-// Clean model lists — no context window info displayed to user.
-
-export interface PresetModel {
-  id: string;
-  label: string;
-}
-
-export interface ProviderPreset {
-  label: string;
-  baseUrl: string;
-  models: PresetModel[];
-  hasFreeTier?: boolean;
-  freeNote?: string;
-}
-
-export const OPENAI_COMPATIBLE_PRESETS: ProviderPreset[] = [
-  {
-    label: 'OpenAI',
-    baseUrl: 'https://api.openai.com/v1',
-    models: [
-      { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-      { id: 'gpt-4o', label: 'GPT-4o' },
-      { id: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-      { id: 'o1-mini', label: 'o1 Mini' },
-      { id: 'o1', label: 'o1' },
-      { id: 'o3-mini', label: 'o3 Mini' },
-    ],
-  },
-  {
-    label: 'Groq',
-    baseUrl: 'https://api.groq.com/openai/v1',
-    hasFreeTier: true,
-    freeNote: 'Free tier available with rate limits. Get your key at console.groq.com',
-    models: [
-      { id: 'compound-beta', label: 'Compound Beta (Agentic)' },
-      { id: 'compound-beta-mini', label: 'Compound Beta Mini (Agentic)' },
-      { id: 'meta-llama/llama-4-scout-17b-16e-instruct', label: 'Llama 4 Scout 17B' },
-      { id: 'meta-llama/llama-4-maverick-17b-128e-instruct', label: 'Llama 4 Maverick 17B' },
-      { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B' },
-      { id: 'deepseek-r1-distill-llama-70b', label: 'DeepSeek R1 Distill 70B' },
-      { id: 'qwen-qwq-32b', label: 'Qwen QwQ 32B (Reasoning)' },
-      { id: 'mistral-saba-24b', label: 'Mistral Saba 24B' },
-      { id: 'gemma2-9b-it', label: 'Gemma 2 9B' },
-      { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B' },
-    ],
-  },
-  {
-    label: 'Perplexity',
-    baseUrl: 'https://api.perplexity.ai',
-    models: [
-      { id: 'sonar', label: 'Sonar' },
-      { id: 'sonar-pro', label: 'Sonar Pro' },
-      { id: 'sonar-reasoning', label: 'Sonar Reasoning' },
-    ],
-  },
-  {
-    label: 'OpenRouter',
-    baseUrl: 'https://openrouter.ai/api/v1',
-    models: [
-      { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini' },
-      { id: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet' },
-      { id: 'google/gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash' },
-      { id: 'meta-llama/llama-3.3-70b-instruct', label: 'Llama 3.3 70B' },
-      { id: 'deepseek/deepseek-r1', label: 'DeepSeek R1' },
-    ],
-  },
-  {
-    label: 'Together',
-    baseUrl: 'https://api.together.xyz/v1',
-    models: [
-      { id: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', label: 'Llama 3.3 70B Turbo' },
-      { id: 'mistralai/Mixtral-8x7B-Instruct-v0.1', label: 'Mixtral 8x7B' },
-      { id: 'Qwen/Qwen2.5-72B-Instruct-Turbo', label: 'Qwen 2.5 72B' },
-      { id: 'deepseek-ai/DeepSeek-R1', label: 'DeepSeek R1' },
-    ],
-  },
-  {
-    label: 'Mistral',
-    baseUrl: 'https://api.mistral.ai/v1',
-    models: [
-      { id: 'mistral-large-latest', label: 'Mistral Large' },
-      { id: 'mistral-small-latest', label: 'Mistral Small' },
-      { id: 'open-mistral-nemo', label: 'Mistral Nemo' },
-      { id: 'codestral-latest', label: 'Codestral' },
-    ],
-  },
-  {
-    label: 'DeepSeek',
-    baseUrl: 'https://api.deepseek.com/v1',
-    models: [
-      { id: 'deepseek-chat', label: 'DeepSeek Chat (V3)' },
-      { id: 'deepseek-reasoner', label: 'DeepSeek Reasoner (R1)' },
-    ],
-  },
-  {
-    label: 'Railway (Self-hosted)',
-    baseUrl: 'https://your-service.up.railway.app/v1',
-    freeNote: 'Self-hosted Ollama on Railway. No API key needed — leave blank. Replace URL with your Railway service URL.',
-    models: [
-      { id: 'qwen2.5:14b', label: 'Qwen 2.5 14B' },
-      { id: 'qwen2.5:32b', label: 'Qwen 2.5 32B' },
-      { id: 'deepseek-r1:14b', label: 'DeepSeek R1 14B' },
-      { id: 'deepseek-r1:32b', label: 'DeepSeek R1 32B' },
-      { id: 'llama3.1:8b', label: 'Llama 3.1 8B' },
-    ],
-  },
-];
-
-// ── Anthropic models ────────────────────────────────────────────
-
-export const ANTHROPIC_MODELS: PresetModel[] = [
-  { id: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet v2' },
-  { id: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
-  { id: 'claude-3-opus-20240229', label: 'Claude 3 Opus' },
-  { id: 'claude-3-sonnet-20240229', label: 'Claude 3 Sonnet' },
-  { id: 'claude-3-haiku-20240307', label: 'Claude 3 Haiku' },
-];
-
-// ── Available models per provider (for dropdown) ────────────────
-
-export const PROVIDER_MODELS: Record<ProviderType, { id: string; label: string }[]> = {
-  openai: [
-    { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-    { id: 'gpt-4o', label: 'GPT-4o' },
-    { id: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-    { id: 'o1-mini', label: 'o1 Mini' },
-    { id: 'o1', label: 'o1' },
-    { id: 'o3-mini', label: 'o3 Mini' },
-  ],
-  anthropic: ANTHROPIC_MODELS.map(m => ({ id: m.id, label: m.label })),
+/** @deprecated Use SERVICE_DEFINITIONS instead */
+export interface ProviderPreset { label: string; baseUrl: string; models: PresetModel[]; hasFreeTier?: boolean; freeNote?: string; }
+/** @deprecated Use SERVICE_DEFINITIONS instead */
+export const OPENAI_COMPATIBLE_PRESETS: ProviderPreset[] = [];
+/** @deprecated Use SERVICE_MAP.anthropic.models instead */
+export const ANTHROPIC_MODELS: PresetModel[] = SERVICE_MAP.anthropic.models;
+/** @deprecated Use SERVICE_DEFINITIONS instead */
+export const PROVIDER_MODELS: Record<ProviderType, PresetModel[]> = {
+  openai: SERVICE_MAP.openai.models,
+  anthropic: SERVICE_MAP.anthropic.models,
 };
 
 // ── LocalStorage persistence ────────────────────────────────────
@@ -187,10 +242,8 @@ const AI_CONFIG_KEY = '0colors-ai-config';
 const AI_CONTEXT_TIER_KEY = '0colors-ai-context-tier';
 const AI_CONTEXT_TOGGLES_KEY = '0colors-ai-context-toggles';
 
-export interface AISettings {
-  activeProvider: ProviderType;
-  providers: Record<ProviderType, AIProviderConfig>;
-}
+/** @deprecated Use AISettingsV2 instead. Kept as alias for backward compat. */
+export type AISettings = AISettingsV2;
 
 /** Context source toggles — which context sources are included */
 export interface ContextToggles {
@@ -240,62 +293,164 @@ export function saveContextTier(tier: ContextTier): void {
   } catch {}
 }
 
-export function loadAISettings(): AISettings {
+// ── V1 → V2 migration helper ──────────────────────────────────
+
+const HOSTNAME_TO_SERVICE: Record<string, ServiceId> = {
+  'api.openai.com': 'openai',
+  'api.groq.com': 'groq',
+  'api.perplexity.ai': 'perplexity',
+  'openrouter.ai': 'openrouter',
+  'api.together.xyz': 'openrouter', // map Together to OpenRouter
+  'api.mistral.ai': 'mistral',
+  'api.deepseek.com': 'deepseek',
+  'generativelanguage.googleapis.com': 'google',
+};
+
+function migrateV1ToV2(raw: any): AISettingsV2 {
+  const services: Partial<Record<ServiceId, ServiceConfig>> = {};
+
+  // Migrate OpenAI-compatible provider
+  const openaiP = raw.providers?.openai;
+  if (openaiP?.apiKey) {
+    let serviceId: ServiceId = 'openai';
+    try {
+      const hostname = new URL(openaiP.baseUrl).hostname;
+      serviceId = HOSTNAME_TO_SERVICE[hostname] || 'openai';
+    } catch {}
+    services[serviceId] = { apiKey: openaiP.apiKey, model: openaiP.model || SERVICE_MAP[serviceId].models[0].id };
+  }
+
+  // Migrate Anthropic provider
+  const anthropicP = raw.providers?.anthropic;
+  if (anthropicP?.apiKey) {
+    services.anthropic = { apiKey: anthropicP.apiKey, model: anthropicP.model || 'claude-sonnet-4-20250514' };
+  }
+
+  // Determine active model
+  const activeProvider = raw.activeProvider as string;
+  let activeServiceId: ServiceId = 'anthropic';
+  let activeModelId = 'claude-sonnet-4-20250514';
+
+  if (activeProvider === 'anthropic' && services.anthropic) {
+    activeServiceId = 'anthropic';
+    activeModelId = services.anthropic.model;
+  } else {
+    // Find which service was mapped from the openai provider
+    const mappedService = Object.keys(services).find(k => k !== 'anthropic') as ServiceId | undefined;
+    if (mappedService && services[mappedService]) {
+      activeServiceId = mappedService;
+      activeModelId = services[mappedService]!.model;
+    } else if (services.anthropic) {
+      activeServiceId = 'anthropic';
+      activeModelId = services.anthropic.model;
+    }
+  }
+
+  return { version: 2, activeModel: { serviceId: activeServiceId, modelId: activeModelId }, services };
+}
+
+// ── Load / Save ────────────────────────────────────────────────
+
+const DEFAULT_SETTINGS: AISettingsV2 = {
+  version: 2,
+  activeModel: { serviceId: 'anthropic', modelId: 'claude-sonnet-4-20250514' },
+  services: {},
+};
+
+export function loadAISettings(): AISettingsV2 {
   try {
     const raw = localStorage.getItem(AI_CONFIG_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as AISettings;
-      if (!parsed.providers.openai) {
-        parsed.providers.openai = { ...DEFAULT_PROVIDERS.openai, apiKey: '' };
-      }
-      if (!parsed.providers.anthropic) {
-        parsed.providers.anthropic = { ...DEFAULT_PROVIDERS.anthropic, apiKey: '' };
-      }
-      if ((parsed.activeProvider as string) === 'ollama') {
-        parsed.activeProvider = 'openai';
-      }
-      // Migrate stale Groq compound model IDs (groq/ prefix → compound-beta)
-      const openaiProvider = parsed.providers.openai;
-      if (openaiProvider) {
-        if (openaiProvider.model === 'groq/compound') openaiProvider.model = 'compound-beta';
-        if (openaiProvider.model === 'groq/compound-mini') openaiProvider.model = 'compound-beta-mini';
-      }
-      const cleaned: AISettings = {
-        activeProvider: parsed.activeProvider,
-        providers: {
-          openai: parsed.providers.openai,
-          anthropic: parsed.providers.anthropic,
-        },
-      };
-      return cleaned;
+      const parsed = JSON.parse(raw);
+      // V2 format
+      if (parsed.version === 2) return parsed as AISettingsV2;
+      // V1 format → migrate
+      const migrated = migrateV1ToV2(parsed);
+      saveAISettings(migrated);
+      return migrated;
     }
   } catch {}
-  return {
-    activeProvider: 'openai',
-    providers: {
-      openai: { ...DEFAULT_PROVIDERS.openai, apiKey: '' },
-      anthropic: { ...DEFAULT_PROVIDERS.anthropic, apiKey: '' },
-    },
-  };
+  return { ...DEFAULT_SETTINGS };
 }
 
-export function saveAISettings(settings: AISettings): void {
+export function saveAISettings(settings: AISettingsV2): void {
   try {
     localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(settings));
   } catch {}
 }
 
-export function getActiveProvider(settings: AISettings): AIProviderConfig {
-  return settings.providers[settings.activeProvider];
+// ── Active service helpers ─────────────────────────────────────
+
+export function getActiveServiceConfig(settings: AISettingsV2): { definition: ServiceDefinition; config: ServiceConfig } | null {
+  const { serviceId, modelId } = settings.activeModel;
+  const def = SERVICE_MAP[serviceId];
+  if (!def) return null;
+  const cfg = settings.services[serviceId];
+  if (!cfg?.apiKey) return null;
+  return { definition: def, config: { ...cfg, model: modelId } };
 }
 
-export function isProviderConfigured(settings: AISettings): boolean {
-  const provider = getActiveProvider(settings);
-  // Railway/Ollama self-hosted doesn't require an API key
-  if (provider.baseUrl && provider.baseUrl.includes('.up.railway.app')) {
-    return !!provider.baseUrl && !!provider.model;
+export function getConfiguredServices(settings: AISettingsV2): { definition: ServiceDefinition; config: ServiceConfig }[] {
+  const result: { definition: ServiceDefinition; config: ServiceConfig }[] = [];
+  for (const def of SERVICE_DEFINITIONS) {
+    const cfg = settings.services[def.id];
+    if (cfg?.apiKey) {
+      result.push({ definition: def, config: cfg });
+    }
   }
-  return !!provider.apiKey;
+  return result;
+}
+
+/** Build a legacy AIProviderConfig from the new service-based config.
+ *  Used as an adapter for the existing streamChat() function. */
+export function buildLegacyConfig(def: ServiceDefinition, cfg: ServiceConfig): AIProviderConfig {
+  return {
+    type: def.streamType === 'anthropic' ? 'anthropic' : 'openai',
+    apiKey: cfg.apiKey,
+    baseUrl: def.baseUrl,
+    model: cfg.model,
+    label: def.label,
+  };
+}
+
+/** Get the context window (in tokens) for a specific model.
+ *  Returns undefined if the model is custom / not found. */
+export function getModelContextWindow(serviceId: ServiceId, modelId: string): number | undefined {
+  const def = SERVICE_MAP[serviceId];
+  if (!def) return undefined;
+  return def.models.find(m => m.id === modelId)?.contextWindow;
+}
+
+/** Get all configured models with their context windows (for context tier display). */
+export function getConfiguredModelsWithContext(settings: AISettingsV2): { serviceId: ServiceId; serviceLabel: string; modelId: string; modelLabel: string; contextWindow: number | undefined; isActive: boolean }[] {
+  const result: { serviceId: ServiceId; serviceLabel: string; modelId: string; modelLabel: string; contextWindow: number | undefined; isActive: boolean }[] = [];
+  for (const def of SERVICE_DEFINITIONS) {
+    const cfg = settings.services[def.id];
+    if (!cfg?.apiKey) continue;
+    const modelId = cfg.model || def.models[0]?.id;
+    const modelDef = def.models.find(m => m.id === modelId);
+    result.push({
+      serviceId: def.id,
+      serviceLabel: def.label,
+      modelId,
+      modelLabel: modelDef?.label || modelId,
+      contextWindow: modelDef?.contextWindow,
+      isActive: settings.activeModel.serviceId === def.id && settings.activeModel.modelId === modelId,
+    });
+  }
+  return result;
+}
+
+/** @deprecated Use getActiveServiceConfig + buildLegacyConfig instead */
+export function getActiveProvider(settings: AISettingsV2): AIProviderConfig {
+  const active = getActiveServiceConfig(settings);
+  if (active) return buildLegacyConfig(active.definition, active.config);
+  return { ...DEFAULT_PROVIDERS.openai, apiKey: '' };
+}
+
+/** @deprecated Use getActiveServiceConfig instead */
+export function isProviderConfigured(settings: AISettingsV2): boolean {
+  return getActiveServiceConfig(settings) !== null;
 }
 
 // ── Rate limit retry helper ─────────────────────────────────────
@@ -823,22 +978,21 @@ async function decryptString(encrypted: string, key: CryptoKey): Promise<string>
   }
 }
 
-// ── Cloud settings bundle ───────────────────────────────────────
+// ── Cloud settings bundle (V2) ─────────────────────────────────
 // Bundles AI settings + context preferences into one envelope for cloud sync.
 // API keys are encrypted; everything else is plaintext.
 
 const AI_SETTINGS_UPDATED_KEY = '0colors-ai-settings-updated';
 
 export interface CloudAISettingsBundle {
+  version?: 2;
   settings: {
-    activeProvider: ProviderType;
-    providers: Record<ProviderType, {
-      type: ProviderType;
-      baseUrl: string;
-      model: string;
-      label: string;
-      encryptedKey: string; // AES-GCM encrypted API key
-    }>;
+    activeModel?: { serviceId: ServiceId; modelId: string };
+    // V2 format: per-service entries
+    services?: Record<string, { model: string; encryptedKey: string }>;
+    // V1 legacy fields (read during migration, never written)
+    activeProvider?: ProviderType;
+    providers?: Record<string, { type: string; baseUrl: string; model: string; label: string; encryptedKey: string }>;
   };
   contextTier: ContextTier;
   contextToggles: ContextToggles;
@@ -856,83 +1010,95 @@ export function setLocalSettingsUpdatedAt(ts: number): void {
   try { localStorage.setItem(AI_SETTINGS_UPDATED_KEY, String(ts)); } catch {}
 }
 
-/** Build a cloud-ready settings bundle with encrypted API keys */
+/** Build a V2 cloud-ready settings bundle with encrypted API keys */
 export async function buildCloudSettingsBundle(
-  settings: AISettings,
+  settings: AISettingsV2,
   contextTier: ContextTier,
   contextToggles: ContextToggles,
   userId: string,
 ): Promise<CloudAISettingsBundle> {
   const key = await deriveEncryptionKey(userId);
-  const providers: CloudAISettingsBundle['settings']['providers'] = {} as any;
-  for (const pt of ['openai', 'anthropic'] as ProviderType[]) {
-    const p = settings.providers[pt];
-    providers[pt] = {
-      type: p.type,
-      baseUrl: p.baseUrl,
-      model: p.model,
-      label: p.label,
-      encryptedKey: await encryptString(p.apiKey, key),
-    };
+  const services: Record<string, { model: string; encryptedKey: string }> = {};
+  for (const [sid, cfg] of Object.entries(settings.services)) {
+    if (cfg?.apiKey) {
+      services[sid] = {
+        model: cfg.model,
+        encryptedKey: await encryptString(cfg.apiKey, key),
+      };
+    }
   }
   const now = Date.now();
   setLocalSettingsUpdatedAt(now);
   return {
-    settings: { activeProvider: settings.activeProvider, providers },
+    version: 2,
+    settings: { activeModel: settings.activeModel, services },
     contextTier,
     contextToggles,
     updatedAt: now,
   };
 }
 
-/** Restore local AISettings from a cloud bundle (decrypts API keys) */
+/** Restore AISettingsV2 from a cloud bundle (decrypts API keys) */
 export async function restoreSettingsFromCloud(
   bundle: CloudAISettingsBundle,
   userId: string,
-): Promise<{ settings: AISettings; contextTier: ContextTier; contextToggles: ContextToggles }> {
+): Promise<{ settings: AISettingsV2; contextTier: ContextTier; contextToggles: ContextToggles }> {
   const key = await deriveEncryptionKey(userId);
-  const providers: Record<ProviderType, AIProviderConfig> = {} as any;
-  for (const pt of ['openai', 'anthropic'] as ProviderType[]) {
-    const cp = bundle.settings.providers[pt];
-    if (cp) {
-      providers[pt] = {
-        type: cp.type,
-        baseUrl: cp.baseUrl,
-        model: cp.model,
-        label: cp.label,
-        apiKey: await decryptString(cp.encryptedKey, key),
-      };
-    } else {
-      providers[pt] = { ...DEFAULT_PROVIDERS[pt], apiKey: '' };
+
+  // V2 cloud format
+  if (bundle.settings.services && bundle.settings.activeModel) {
+    const services: Partial<Record<ServiceId, ServiceConfig>> = {};
+    for (const [sid, entry] of Object.entries(bundle.settings.services)) {
+      if (SERVICE_MAP[sid as ServiceId]) {
+        services[sid as ServiceId] = {
+          apiKey: await decryptString(entry.encryptedKey, key),
+          model: entry.model,
+        };
+      }
+    }
+    return {
+      settings: { version: 2, activeModel: bundle.settings.activeModel, services },
+      contextTier: bundle.contextTier || 'medium',
+      contextToggles: bundle.contextToggles || DEFAULT_TOGGLES,
+    };
+  }
+
+  // V1 cloud format — migrate
+  const v1Data: any = { providers: {} };
+  if (bundle.settings.providers) {
+    for (const [pt, cp] of Object.entries(bundle.settings.providers)) {
+      v1Data.providers[pt] = { ...cp, apiKey: await decryptString(cp.encryptedKey, key) };
     }
   }
+  v1Data.activeProvider = bundle.settings.activeProvider || 'openai';
+  const migrated = migrateV1ToV2(v1Data);
   return {
-    settings: { activeProvider: bundle.settings.activeProvider, providers },
+    settings: migrated,
     contextTier: bundle.contextTier || 'medium',
-    contextToggles: bundle.contextToggles || { knowledgeBase: true, projectContext: true, conversationHistory: true },
+    contextToggles: bundle.contextToggles || DEFAULT_TOGGLES,
   };
 }
 
 /** Merge local and cloud settings — cloud wins if newer, but
  *  local API keys are preserved if cloud keys are empty (decryption failure). */
 export async function mergeSettingsBundles(
-  localSettings: AISettings,
+  localSettings: AISettingsV2,
   localTier: ContextTier,
   localToggles: ContextToggles,
   cloudBundle: CloudAISettingsBundle,
   userId: string,
-): Promise<{ settings: AISettings; contextTier: ContextTier; contextToggles: ContextToggles; changed: boolean }> {
+): Promise<{ settings: AISettingsV2; contextTier: ContextTier; contextToggles: ContextToggles; changed: boolean }> {
   const localUpdated = getLocalSettingsUpdatedAt();
   if (cloudBundle.updatedAt <= localUpdated) {
-    // Local is newer or same — no changes needed
     return { settings: localSettings, contextTier: localTier, contextToggles: localToggles, changed: false };
   }
-  // Cloud is newer — restore it
   const restored = await restoreSettingsFromCloud(cloudBundle, userId);
   // Preserve local API keys if cloud decryption returned empty
-  for (const pt of ['openai', 'anthropic'] as ProviderType[]) {
-    if (!restored.settings.providers[pt].apiKey && localSettings.providers[pt]?.apiKey) {
-      restored.settings.providers[pt].apiKey = localSettings.providers[pt].apiKey;
+  for (const sid of Object.keys(localSettings.services) as ServiceId[]) {
+    const localCfg = localSettings.services[sid];
+    const cloudCfg = restored.settings.services[sid];
+    if (localCfg?.apiKey && (!cloudCfg || !cloudCfg.apiKey)) {
+      restored.settings.services[sid] = { model: cloudCfg?.model || localCfg.model, apiKey: localCfg.apiKey };
     }
   }
   setLocalSettingsUpdatedAt(cloudBundle.updatedAt);
@@ -1003,21 +1169,8 @@ export async function saveCloudSettingsBundle(accessToken: string, bundle: Cloud
   }
 }
 
-// Keep the old function name as an alias for backwards compatibility
-export async function saveCloudAISettings(accessToken: string, settings: AISettings): Promise<boolean> {
-  // Legacy: this is now handled by saveCloudSettingsBundle with encryption.
-  // This function is kept for any remaining callers but should be migrated.
+/** @deprecated Use saveCloudSettingsBundle instead */
+export async function saveCloudAISettings(accessToken: string, settings: AISettingsV2): Promise<boolean> {
   console.log('[AI] Warning: saveCloudAISettings called — use saveCloudSettingsBundle for encrypted sync');
-  return saveCloudSettingsBundle(accessToken, {
-    settings: {
-      activeProvider: settings.activeProvider,
-      providers: {
-        openai: { ...settings.providers.openai, encryptedKey: '' },
-        anthropic: { ...settings.providers.anthropic, encryptedKey: '' },
-      },
-    },
-    contextTier: loadContextTier(),
-    contextToggles: loadContextToggles(),
-    updatedAt: Date.now(),
-  });
+  return false;
 }

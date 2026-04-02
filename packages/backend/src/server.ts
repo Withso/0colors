@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { initSchema } from './db.js';
 
 // Route imports
 import healthRouter from './routes/health.js';
@@ -47,9 +48,17 @@ const port = parseInt(process.env.PORT || '4455', 10);
 
 console.log(`[server] Starting 0colors API server on port ${port}...`);
 
-serve({
-    fetch: app.fetch,
-    port,
-}, (info) => {
-    console.log(`[server] 0colors API server running at http://localhost:${info.port}`);
-});
+// Initialize database schema, then start server
+initSchema()
+    .then(() => {
+        serve({
+            fetch: app.fetch,
+            port,
+        }, (info) => {
+            console.log(`[server] 0colors API server running at http://localhost:${info.port}`);
+        });
+    })
+    .catch((err) => {
+        console.error('[server] Failed to initialize database schema:', err);
+        process.exit(1);
+    });

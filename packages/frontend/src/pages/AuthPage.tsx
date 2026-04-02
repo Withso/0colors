@@ -290,7 +290,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
   ) => (
     <div className="px-6 pb-6 pt-5 text-center">
       <div className="flex justify-center mb-4">{icon}</div>
-      <h3 className="text-[15px] font-semibold text-white mb-1.5">{title}</h3>
+      <h3 className="text-[14px] font-semibold text-white mb-1.5">{title}</h3>
       <p className="text-[12px] text-dim leading-relaxed mb-5 max-w-[280px] mx-auto">{description}</p>
       <button
         onClick={onAction}
@@ -382,7 +382,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                   <MailCheck className="w-6 h-6 text-brand" />
                 </div>
               </div>
-              <h3 className="text-[15px] font-semibold text-white mb-1.5">Verify your email</h3>
+              <h3 className="text-[14px] font-semibold text-white mb-1.5">Verify your email</h3>
               <p className="text-[12px] text-dim leading-relaxed mb-5 max-w-[280px] mx-auto">
                 We sent a verification link to <span className="text-subtle">{email}</span>. Please check your inbox (and spam folder) and click the link to activate your account.
               </p>
@@ -404,7 +404,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 mb-3 cursor-pointer"
                 style={{
                   background: resendSuccess ? 'rgba(43,189,104,0.1)' : 'rgba(70,91,254,0.08)',
-                  color: resendSuccess ? '#2BBD68' : (resendCooldown > 0 ? '#555' : '#465BFE'),
+                  color: resendSuccess ? 'var(--success)' : (resendCooldown > 0 ? 'var(--dim)' : 'var(--brand)'),
                   cursor: (resending || resendCooldown > 0) ? 'not-allowed' : 'pointer',
                   opacity: (resendCooldown > 0 && !resendSuccess) ? 0.6 : 1,
                 }}

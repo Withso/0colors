@@ -331,7 +331,7 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`px-2 py-[3px] rounded text-[10px] transition-all duration-100 border ${
+      className={`px-2 py-[3px] rounded text-[11px] transition-all duration-100 border ${
         active
           ? 'bg-[#1a2a3a] text-[#6ab0f3] border-[#2a4a6a]/60'
           : 'bg-transparent text-faint border-hairline hover:text-subtle hover:border-[#ffffff]/[0.1] hover:bg-[#ffffff]/[0.02]'
@@ -419,7 +419,7 @@ export function TokenSearchBar({
         {/* Right-side indicators */}
         <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {hasFilters && !searchQuery && (
-            <span className="text-[9px] text-[#6ab0f3] bg-[#1a2a3a] rounded px-1 py-[1px]">
+            <span className="text-[11px] text-[#6ab0f3] bg-[#1a2a3a] rounded px-1 py-[1px]">
               {activeFilterCount}
             </span>
           )}
@@ -456,7 +456,7 @@ export function TokenSearchBar({
 
             {/* Color Space Row */}
             <div>
-              <div className="text-[9px] text-dim uppercase tracking-wider mb-1">Color Space</div>
+              <div className="text-[11px] text-dim uppercase tracking-wider mb-1">Color Space</div>
               <div className="flex flex-wrap gap-1">
                 {colorSpaces.map(cs => (
                   <FilterChip
@@ -474,7 +474,7 @@ export function TokenSearchBar({
 
             {/* Status Filters */}
             <div>
-              <div className="text-[9px] text-dim uppercase tracking-wider mb-1">Status</div>
+              <div className="text-[11px] text-dim uppercase tracking-wider mb-1">Status</div>
               <div className="flex flex-wrap gap-1">
                 <FilterChip label="Hidden" active={filters.hiddenOnly} onClick={() => toggleBool('hiddenOnly')} />
                 <FilterChip label="Unassigned" active={filters.unassignedOnly} onClick={() => toggleBool('unassignedOnly')} />
@@ -488,7 +488,7 @@ export function TokenSearchBar({
               <>
                 <div className="h-px bg-[#ffffff]/[0.04]" />
                 <div>
-                  <div className="text-[9px] text-dim uppercase tracking-wider mb-1">Theme</div>
+                  <div className="text-[11px] text-dim uppercase tracking-wider mb-1">Theme</div>
                   <div className="flex flex-wrap gap-1">
                     <FilterChip label="Modified" active={filters.modifiedOnly} onClick={() => toggleBool('modifiedOnly')} />
                   </div>
@@ -499,7 +499,7 @@ export function TokenSearchBar({
             {/* Palette Filters */}
             <div className="h-px bg-[#ffffff]/[0.04]" />
             <div>
-              <div className="text-[9px] text-dim uppercase tracking-wider mb-1">Palette</div>
+              <div className="text-[11px] text-dim uppercase tracking-wider mb-1">Palette</div>
               <div className="flex flex-wrap gap-1">
                 <FilterChip label="Palette Only" active={filters.paletteOnly} onClick={() => toggleBool('paletteOnly')} />
               </div>
@@ -507,7 +507,7 @@ export function TokenSearchBar({
 
             {/* Hints */}
             <div className="h-px bg-[#ffffff]/[0.04]" />
-            <div className="text-[9px] text-ghost leading-relaxed">
+            <div className="text-[11px] text-ghost leading-relaxed">
               <span className="text-dim">Tip:</span>{' '}
               Type <span className="text-dim font-mono">#hex</span> for color,{' '}
               <span className="text-dim font-mono">red</span>{' '}
@@ -518,10 +518,10 @@ export function TokenSearchBar({
           {/* Footer */}
           {hasFilters && (
             <div className="flex items-center justify-between px-2 py-1.5 bg-[#080808] border-t border-[#ffffff]/[0.04]">
-              <span className="text-[10px] text-dim">{activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}</span>
+              <span className="text-[11px] text-dim">{activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}</span>
               <button
                 onClick={clearAll}
-                className="text-[10px] text-faint hover:text-subtle transition-colors"
+                className="text-[11px] text-faint hover:text-subtle transition-colors"
               >
                 Clear all
               </button>

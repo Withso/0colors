@@ -844,7 +844,7 @@ export function PaletteShadesGrid({
                   data-node-id={node.id}
                   data-button-type="right-connect"
                 >
-                  <Plus className={`w-3 h-3 ${wireHoverNodeId === node.id && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} strokeWidth={3} />
+                  <Plus className={`w-3 h-3 ${wireHoverNodeId === node.id && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
                 </button>
               </div>
             );

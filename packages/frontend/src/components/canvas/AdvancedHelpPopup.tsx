@@ -81,7 +81,7 @@ function FnCard({ name, syntax, desc, useCases, color }: FnCardProps) {
         >
           {name}
         </span>
-        <span className="text-[10px] text-dim truncate">{desc}</span>
+        <span className="text-[11px] text-dim truncate">{desc}</span>
       </button>
 
       <AnimatePresence>
@@ -100,7 +100,7 @@ function FnCard({ name, syntax, desc, useCases, color }: FnCardProps) {
               {/* Syntax */}
               <div className="mb-2 mt-2">
                 <div
-                  className="text-[10px] px-2.5 py-1.5 rounded font-mono"
+                  className="text-[11px] px-2.5 py-1.5 rounded font-mono"
                   style={{
                     background: 'rgba(0,0,0,0.3)',
                     color: '#aaa',
@@ -115,9 +115,9 @@ function FnCard({ name, syntax, desc, useCases, color }: FnCardProps) {
               <div className="space-y-1.5">
                 {useCases.map((uc, i) => (
                   <div key={i} className="flex gap-2 items-start">
-                    <span className="text-[9px] text-ghost shrink-0 mt-[2px] w-[6px]">&bull;</span>
+                    <span className="text-[11px] text-ghost shrink-0 mt-[2px] w-[6px]">&bull;</span>
                     <div className="min-w-0">
-                      <span className="text-[10px] text-faint block">{uc.label}</span>
+                      <span className="text-[11px] text-faint block">{uc.label}</span>
                       <code
                         className="text-[9.5px] font-mono block mt-0.5 break-all"
                         style={{ color: 'var(--subtle)' }}
@@ -141,7 +141,7 @@ function SectionHeader({ id, title, subtitle }: { id: string; title: string; sub
   return (
     <div id={id} className="mb-3 pt-1 scroll-mt-4">
       <h3 className="text-[13px] text-foreground mb-0.5">{title}</h3>
-      {subtitle && <p className="text-[10px] text-dim">{subtitle}</p>}
+      {subtitle && <p className="text-[11px] text-dim">{subtitle}</p>}
       <div className="h-px mt-2" style={{ background: 'rgba(255,255,255,0.06)' }} />
     </div>
   );
@@ -273,8 +273,8 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
 
           {/* Keyboard tip */}
           <div className="px-3 pt-2 mt-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-            <span className="text-[9px] text-ghost">
-              Press <kbd className="px-1 py-0.5 rounded text-[8px]" style={{ background: 'rgba(255,255,255,0.06)' }}>Esc</kbd> to close
+            <span className="text-[11px] text-ghost">
+              Press <kbd className="px-1 py-0.5 rounded text-[11px]" style={{ background: 'rgba(255,255,255,0.06)' }}>Esc</kbd> to close
             </span>
           </div>
         </div>
@@ -288,7 +288,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
           >
             <div>
               <h2 className="text-[14px] text-foreground">Advanced Color Logic Guide</h2>
-              <p className="text-[10px] text-ghost mt-0.5">
+              <p className="text-[11px] text-ghost mt-0.5">
                 Expression system reference for the pull-based channel architecture
               </p>
             </div>
@@ -389,9 +389,9 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Code color={PILL.op}>{item.op}</Code>
-                    <span className="text-[10px] text-faint">{item.desc}</span>
+                    <span className="text-[11px] text-faint">{item.desc}</span>
                   </div>
-                  <code className="text-[9px] font-mono text-dim block">{item.ex}</code>
+                  <code className="text-[11px] font-mono text-dim block">{item.ex}</code>
                 </div>
               ))}
             </div>
@@ -413,10 +413,10 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Code color={PILL.op}>{item.op}</Code>
-                    <span className="text-[10px] text-faint">{item.desc}</span>
+                    <span className="text-[11px] text-faint">{item.desc}</span>
                   </div>
-                  <code className="text-[9px] font-mono text-dim block">{item.ex}</code>
-                  <span className="text-[9px] text-ghost block mt-0.5">{item.use}</span>
+                  <code className="text-[11px] font-mono text-dim block">{item.ex}</code>
+                  <span className="text-[11px] text-ghost block mt-0.5">{item.use}</span>
                 </div>
               ))}
             </div>

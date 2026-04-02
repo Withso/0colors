@@ -151,13 +151,13 @@ function TokenColorTooltipBody({ name, color, colorSpace, spaceValue, hex }: {
       <div className="px-3 pt-1.5 pb-2.5 space-y-1">
         {showSpaceRow && (
           <div className="flex items-center justify-between gap-4">
-            <span className="text-[10px] text-faint uppercase tracking-wide shrink-0">{colorSpace}</span>
-            <span className="text-[10px] font-mono text-subtle">{spaceValue}</span>
+            <span className="text-[11px] text-faint uppercase tracking-wide shrink-0">{colorSpace}</span>
+            <span className="text-[11px] font-mono text-subtle">{spaceValue}</span>
           </div>
         )}
         <div className="flex items-center justify-between gap-4">
-          <span className="text-[10px] text-faint uppercase tracking-wide shrink-0">HEX</span>
-          <span className="text-[10px] font-mono text-subtle">{hex}</span>
+          <span className="text-[11px] text-faint uppercase tracking-wide shrink-0">HEX</span>
+          <span className="text-[11px] font-mono text-subtle">{hex}</span>
         </div>
       </div>
     </div>
@@ -730,7 +730,7 @@ export function TokenNodeCard({
           data-node-id={node.id}
           data-button-type="left-connect"
         >
-          <Plus className={`w-3 h-3 ${isLeftConnectionLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'right' ? 'text-white' : 'text-foreground'}`} strokeWidth={3} />
+          <Plus className={`w-3 h-3 ${isLeftConnectionLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'right' ? 'text-white' : 'text-foreground'}`} />
         </button>
 
         {/* Parent selection popup */}
@@ -790,7 +790,7 @@ export function TokenNodeCard({
           data-node-id={node.id}
           data-button-type="right-connect"
         >
-          <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} strokeWidth={3} />
+          <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
         </button>
       </div>
 
@@ -869,7 +869,7 @@ export function TokenNodeCard({
           <div className="flex flex-col items-center justify-center px-6 w-full gap-0.5">
             {/* Prefix badge for prefix nodes */}
             {isPrefix && (
-              <span className="text-[10px] tracking-widest uppercase text-dim">Prefix</span>
+              <span className="text-[11px] tracking-widest uppercase text-dim">Prefix</span>
             )}
             {/* Full path label removed for child nodes — shown in floating label instead */}
             {isEditingName ? (
@@ -975,7 +975,7 @@ export function TokenNodeCard({
                     style={{ background: 'rgba(10,10,10,0.7)', border: 'none' }}>
                     {advancedTokenOutput ? (
                       advancedTokenOutput.type === 'error' ? (
-                        <span className="text-[9px] tracking-wide text-destructive/90 select-none px-1.5 py-0.5 rounded truncate w-full"
+                        <span className="text-[11px] tracking-wide text-destructive/90 select-none px-1.5 py-0.5 rounded truncate w-full"
                           style={{ background: 'rgba(255,77,106,0.08)', border: 'none' }}
                           title={advancedTokenOutput.label}>
                           {advancedTokenOutput.label}
@@ -998,14 +998,14 @@ export function TokenNodeCard({
                               <Tag className="w-3.5 h-3.5 shrink-0 text-warning/60" />
                             )
                           )}
-                          <span className="text-[10px] text-[#b0b0b0] select-none truncate min-w-0 flex-1 font-mono"
+                          <span className="text-[11px] text-[#b0b0b0] select-none truncate min-w-0 flex-1 font-mono"
                             title={advancedTokenOutput.label}>
                             {advancedTokenOutput.label}
                           </span>
                         </div>
                       )
                     ) : (
-                      <span className="text-[9px] tracking-wide uppercase text-brand/50 select-none px-1.5 py-0.5 rounded mx-auto"
+                      <span className="text-[11px] tracking-wide uppercase text-brand/50 select-none px-1.5 py-0.5 rounded mx-auto"
                         style={{ background: 'rgba(70,91,254,0.05)', border: 'none' }}>
                         No output
                       </span>
@@ -1077,7 +1077,7 @@ export function TokenNodeCard({
                           <button
                             key={pg.id}
                             className={cn(
-                              "shrink-0 px-2 py-[3px] rounded-md text-[10px] transition-all cursor-pointer whitespace-nowrap",
+                              "shrink-0 px-2 py-[3px] rounded-md text-[11px] transition-all cursor-pointer whitespace-nowrap",
                               isActive
                                 ? "bg-elevated text-foreground shadow-sm"
                                 : "text-faint hover:text-subtle"
@@ -1105,7 +1105,7 @@ export function TokenNodeCard({
                         <button
                           key={key}
                           className={cn(
-                            "flex-1 flex items-center justify-center gap-[5px] py-[3px] rounded-md text-[10px] transition-all cursor-pointer",
+                            "flex-1 flex items-center justify-center gap-[5px] py-[3px] rounded-md text-[11px] transition-all cursor-pointer",
                             isActive
                               ? "bg-elevated text-foreground shadow-sm"
                               : "text-faint hover:text-subtle"
@@ -1339,7 +1339,7 @@ export function TokenNodeCard({
                                     className={cn(
                                       "absolute right-3 top-1/2 -translate-y-1/2 z-10",
                                       "min-w-[20px] h-[20px] rounded-full flex items-center justify-center",
-                                      "text-[10px] tabular-nums transition-colors cursor-pointer",
+                                      "text-[11px] tabular-nums transition-colors cursor-pointer",
                                       isUsagePopoverOpen
                                         ? "bg-brand/25 text-[#7B8FFF]"
                                         : "bg-hairline text-faint hover:bg-[#ffffff]/[0.12] hover:text-muted-foreground"
@@ -1360,7 +1360,7 @@ export function TokenNodeCard({
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  <div className="px-3 pt-2.5 pb-1.5 text-[10px] tracking-wide uppercase text-faint">
+                                  <div className="px-3 pt-2.5 pb-1.5 text-[11px] tracking-wide uppercase text-faint">
                                     Referenced by
                                   </div>
                                   <div className="px-1.5 pb-1.5 flex flex-col">
@@ -1622,10 +1622,10 @@ export function TokenNodeCard({
               <span className={`text-[14px] select-none ${isDormant ? 'text-ghost' : 'text-dim'}`}>Advanced</span>
               {hasAdvancedTokenAssignment && (
                 <span
-                  className="text-[9px] tracking-wide uppercase px-1.5 h-[16px] flex items-center justify-center rounded select-none"
+                  className="text-[11px] tracking-wide uppercase px-1.5 h-[16px] flex items-center justify-center rounded select-none"
                   style={{
-                    color: 'var(--brand-pink)',
-                    backgroundColor: 'rgba(253,125,238,0.12)',
+                    color: 'var(--ai)',
+                    backgroundColor: 'rgba(139,143,255,0.12)',
                     border: 'none',
                   }}
                 >
@@ -1644,7 +1644,7 @@ export function TokenNodeCard({
                     return (
                       <span
                         key={chKey}
-                        className="text-[9px] font-mono w-[16px] h-[16px] flex items-center justify-center rounded select-none"
+                        className="text-[11px] font-mono w-[16px] h-[16px] flex items-center justify-center rounded select-none"
                         style={{
                           color: 'var(--success)',
                           backgroundColor: 'rgba(43,189,104,0.12)',

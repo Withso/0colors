@@ -669,7 +669,7 @@ export function AutoAssignTokenMenu({
                   <RefreshCw size={12} className="ml-[6px]" />
                   <span>Re-apply/Refresh</span>
                   {missingTokenCount > 0 && (
-                    <span className="ml-auto bg-brand/20 text-brand text-[10px] px-1.5 py-0.5 rounded-full">
+                    <span className="ml-auto bg-brand/20 text-brand text-[11px] px-1.5 py-0.5 rounded-full">
                       {missingTokenCount}
                     </span>
                   )}
@@ -762,7 +762,7 @@ export function AutoAssignTokenMenu({
 
                   {/* Preview */}
                   <div className="bg-card rounded-md px-2.5 py-2 border border-elevated">
-                    <div className="text-[10px] text-faint uppercase tracking-wider mb-1">Preview</div>
+                    <div className="text-[11px] text-faint uppercase tracking-wider mb-1">Preview</div>
                     <div className="text-[12px] text-[#aaa] font-mono">
                       {node.autoAssignPrefix || defaultPrefix}-
                       {getAutoAssignSuffixValue(node.autoAssignSuffix || '1-9', 0, node.autoAssignStartFrom)},{' '}
@@ -783,7 +783,7 @@ export function AutoAssignTokenMenu({
                   </div>
 
                   {/* Read-only notice */}
-                  <div className="text-[10px] text-dim text-center pt-1 border-t border-elevated">
+                  <div className="text-[11px] text-dim text-center pt-1 border-t border-elevated">
                     Read-only preview
                   </div>
                 </>
@@ -935,7 +935,7 @@ export function AutoAssignTokenMenu({
                   placeholder={String(getDefaultStartFrom(suffix))}
                   className="w-full bg-card border border-elevated rounded-md px-2.5 py-1.5 text-[13px] text-foreground outline-none focus:border-brand transition-colors"
                 />
-                <div className="text-[10px] text-dim">
+                <div className="text-[11px] text-dim">
                   Leave empty for default ({getDefaultStartFrom(suffix)})
                 </div>
               </div>
@@ -1036,7 +1036,7 @@ export function AutoAssignTokenMenu({
 
               {/* Preview */}
               <div className="bg-card rounded-md px-2.5 py-2 border border-elevated">
-                <div className="text-[10px] text-faint uppercase tracking-wider mb-1">Preview</div>
+                <div className="text-[11px] text-faint uppercase tracking-wider mb-1">Preview</div>
                 <div className="text-[12px] text-[#aaa] font-mono">
                   {prefix || defaultPrefix}-
                   {getAutoAssignSuffixValue(suffix, 0, startFrom)},{' '}
@@ -1053,7 +1053,7 @@ export function AutoAssignTokenMenu({
                 <div className="bg-[#1c1510] rounded-md px-2.5 py-2 border border-[#4a3520]">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <UserX size={10} className="text-warning" />
-                    <span className="text-[10px] text-warning/80 uppercase tracking-wider">
+                    <span className="text-[11px] text-warning/80 uppercase tracking-wider">
                       Excluded nodes ({excludedChildren.length})
                     </span>
                   </div>
@@ -1067,7 +1067,7 @@ export function AutoAssignTokenMenu({
                           {child.referenceName || child.id.slice(0, 8)}
                         </span>
                         <button
-                          className="text-[10px] text-subtle hover:text-foreground transition-colors shrink-0 px-1.5 py-0.5 rounded hover:bg-elevated"
+                          className="text-[11px] text-subtle hover:text-foreground transition-colors shrink-0 px-1.5 py-0.5 rounded hover:bg-elevated"
                           onClick={() => handleReincludeChild(child.id)}
                         >
                           Re-include
@@ -1081,7 +1081,7 @@ export function AutoAssignTokenMenu({
               {/* Change summary (shown when editing enabled config or re-enabling with changed settings) */}
               {hasChanges && (
                 <div className="bg-brand/8 rounded-md px-2.5 py-2 border border-brand/20">
-                  <div className="text-[10px] text-brand/70 uppercase tracking-wider mb-1">
+                  <div className="text-[11px] text-brand/70 uppercase tracking-wider mb-1">
                     Changes to apply
                   </div>
                   {changeSummary.map((change, idx) => (
@@ -1090,7 +1090,7 @@ export function AutoAssignTokenMenu({
                       <span>{change}</span>
                     </div>
                   ))}
-                  <div className="text-[10px] text-subtle mt-1">
+                  <div className="text-[11px] text-subtle mt-1">
                     Existing auto-assigned tokens will be updated in-place.
                   </div>
                 </div>

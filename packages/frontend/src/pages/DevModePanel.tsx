@@ -109,7 +109,7 @@ function SectionHeader({ icon: Icon, title, badge, children }: {
         <Icon className="h-3.5 w-3.5 text-faint" />
         <span className="text-[12px] font-medium text-subtle uppercase tracking-wider">{title}</span>
         {badge && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary border border-secondary text-faint">{badge}</span>
+          <span className="text-[11px] px-1.5 py-0.5 rounded bg-secondary border border-secondary text-faint">{badge}</span>
         )}
       </div>
       {children}
@@ -123,7 +123,7 @@ function FieldRow({ label, children, hint }: { label: string; children: React.Re
     <div className="mb-3 last:mb-0">
       <label className="block text-[11px] text-faint mb-1.5">{label}</label>
       {children}
-      {hint && <p className="text-[10px] text-ghost mt-1">{hint}</p>}
+      {hint && <p className="text-[11px] text-ghost mt-1">{hint}</p>}
     </div>
   );
 }
@@ -423,7 +423,7 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
                 </button>
               </div>
               {devConfig.githubPATEncrypted && (
-                <p className="text-[10px] text-success/60 mt-1 flex items-center gap-1">
+                <p className="text-[11px] text-success/60 mt-1 flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" /> PAT encrypted and saved
                 </p>
               )}
@@ -470,7 +470,7 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
               </div>
             </FieldRow>
             <div className="mt-2 p-2.5 rounded-md bg-background border border-[#141414]">
-              <p className="text-[10px] text-dim leading-relaxed">
+              <p className="text-[11px] text-dim leading-relaxed">
                 <span className="text-faint font-medium">Recommended:</span> Use webhook push instead of polling. 
                 Pull API is rate-limited and consumes Supabase invocations. For real-time updates, 
                 enable webhook output above and receive tokens on your server.
@@ -565,7 +565,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                           : [...devConfig.webhookAcceptFormats, fmt];
                         if (formats.length > 0) update({ webhookAcceptFormats: formats });
                       }}
-                      className={`h-6 px-2 rounded text-[10px] font-mono font-medium transition-colors cursor-pointer ${
+                      className={`h-6 px-2 rounded text-[11px] font-mono font-medium transition-colors cursor-pointer ${
                         isActive
                           ? 'bg-elevated text-foreground border border-elevated'
                           : 'bg-background text-ghost border border-[#141414] hover:text-faint hover:border-secondary'
@@ -580,8 +580,8 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
 
             {/* Example cURL */}
             <div className="mt-3 p-3 rounded-md bg-background border border-[#141414]">
-              <p className="text-[10px] text-dim mb-2 font-medium">Example Request</p>
-              <pre className="text-[10px] text-faint font-mono leading-relaxed whitespace-pre-wrap break-all">
+              <p className="text-[11px] text-dim mb-2 font-medium">Example Request</p>
+              <pre className="text-[11px] text-faint font-mono leading-relaxed whitespace-pre-wrap break-all">
 {`curl -X POST ${webhookUrl} \\
   -H "Content-Type: application/json" \\
   -H "X-Webhook-Secret: ${showSecret ? devConfig.webhookSecret : '<secret>'}" \\
@@ -592,7 +592,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
             {/* Per-Node Webhook URLs (Option B) */}
             {webhookInputNodes.length > 0 && (
               <div className="mt-3 p-3 rounded-md bg-[#0a0a0a] border border-[#FBBF24]/20">
-                <p className="text-[10px] text-[#FBBF24]/80 mb-2 font-medium flex items-center gap-1.5">
+                <p className="text-[11px] text-[#FBBF24]/80 mb-2 font-medium flex items-center gap-1.5">
                   <span>{'\u26A1'}</span> Per-Node Webhook URLs
                 </p>
                 <div className="space-y-2">
@@ -600,18 +600,18 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                     const nodeUrl = `${webhookUrl}/${node.id}`;
                     return (
                       <div key={node.id} className="flex items-center gap-2">
-                        <span className="text-[10px] text-subtle truncate min-w-[80px] max-w-[120px]">
+                        <span className="text-[11px] text-subtle truncate min-w-[80px] max-w-[120px]">
                           {node.referenceName || `Node ${node.id.slice(0, 6)}`}
                         </span>
                         <div className="flex-1">
-                          <GeistInput value={nodeUrl} onChange={() => {}} disabled mono className="!text-[10px] !h-6" />
+                          <GeistInput value={nodeUrl} onChange={() => {}} disabled mono className="!text-[11px] !h-6" />
                         </div>
                         <CopyButton text={nodeUrl} />
                       </div>
                     );
                   })}
                 </div>
-                <p className="text-[9px] text-ghost mt-2">
+                <p className="text-[11px] text-ghost mt-2">
                   Mark nodes as webhook inputs on the canvas (click the badge in Dev Mode). Each gets a unique URL.
                 </p>
               </div>

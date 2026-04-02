@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, Cloud, HardDrive, LogOut, LayoutTemplate, RefreshCw, Sparkles, Eye, Lock, LogIn, Globe } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, RefreshCw, Sparkles, Eye, LogIn, Globe, Folder, User } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
+import { CommunityPage } from './CommunityPage';
+import { AISettingsContent } from '../components/ai/AISettingsPopup';
 
 interface ColorNode {
   id: string;
@@ -60,6 +61,8 @@ interface TokenGroup {
   projectId: string;
 }
 
+type DashboardSection = 'projects' | 'community' | 'ai-settings' | 'profile';
+
 interface ProjectsPageProps {
   projects: Project[];
   allNodes: ColorNode[];
@@ -78,71 +81,49 @@ interface ProjectsPageProps {
   isTemplateAdmin?: boolean;
   userEmail?: string;
   onSignOut?: () => void;
+  onSignIn?: () => void;
   cloudSyncStatus?: string;
   onForceCloudRefresh?: () => void;
-  onOpenAISettings?: () => void;
-  onSignIn?: () => void;
-  onOpenCommunity?: () => void;
-  /** Set of project IDs that are currently published to community */
   publishedProjectIds?: Set<string>;
+
+  // NEW props
+  activeSection?: DashboardSection;
+  onSectionChange?: (section: DashboardSection) => void;
+  // AI Settings (inline)
+  onAISettingsSaved?: (settings: any, contextTier?: any, contextToggles?: any) => void;
+  aiProjectContext?: string;
+  // Community (inline)
+  onOpenCommunityProject?: (slug: string) => void;
+  onRemixCommunityProject?: (slug: string) => void;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Color helpers
+   NavItem — sidebar navigation item
    ═══════════════════════════════════════════════════════════════ */
 
-function getTextColors(hue: number) {
-  const isYellow = hue >= 40 && hue <= 70;
-  if (isYellow) {
-    return {
-      primary: 'rgba(0,0,0,0.88)',
-      secondary: 'rgba(0,0,0,0.58)',
-      badge: 'rgba(0,0,0,0.55)',
-      menuBtn: 'rgba(0,0,0,0.12)',
-      menuIcon: 'rgba(0,0,0,0.55)',
-      menuBorder: 'rgba(0,0,0,0.12)',
-      isYellow: true,
-      // Sample project indicator colors — contrast-safe on yellow backgrounds
-      sampleLabel: 'rgba(0,0,0,0.62)',
-      sampleBadgeText: 'rgba(0,0,0,0.6)',
-      sampleBadgeBg: 'rgba(0,0,0,0.08)',
-      sampleBadgeBorder: 'rgba(0,0,0,0.12)',
-      sampleShadow: 'none',
-    };
-  }
-  return {
-    primary: '#fff',
-    secondary: 'rgba(255,255,255,0.72)',
-    badge: 'rgba(255,255,255,0.65)',
-    menuBtn: 'rgba(255,255,255,0.18)',
-    menuIcon: 'rgba(255,255,255,0.75)',
-    menuBorder: 'rgba(255,255,255,0.15)',
-    isYellow: false,
-    // Sample project indicator colors — contrast-safe on dark/saturated backgrounds
-    sampleLabel: 'rgba(255,255,255,0.78)',
-    sampleBadgeText: 'rgba(255,255,255,0.85)',
-    sampleBadgeBg: 'rgba(255,255,255,0.14)',
-    sampleBadgeBorder: 'rgba(255,255,255,0.22)',
-    sampleShadow: '0 1px 3px rgba(0,0,0,0.4)',
-  };
+function NavItem({ icon: Icon, label, active, onClick }: {
+  icon: any; label: string; active: boolean; onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-2.5 h-8 px-3 rounded-md text-[13px] transition-colors cursor-pointer ${
+        active
+          ? 'bg-[#ffffff]/[0.06] text-foreground'
+          : 'text-subtle hover:bg-[#ffffff]/[0.04] hover:text-foreground'
+      }`}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
+    </button>
+  );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Folder Card Component
+   ProjectRow — replaces FolderCard
    ═══════════════════════════════════════════════════════════════ */
 
-function FolderCard({
-  project,
-  tokenCount,
-  nodeCount,
-  isHighlighted,
-  isPublished,
-  onClick,
-  onExport,
-  onDuplicate,
-  onDelete,
-  innerRef,
-}: {
+function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished, onClick, onExport, onDuplicate, onDelete, innerRef }: {
   project: Project;
   tokenCount: number;
   nodeCount: number;
@@ -155,10 +136,8 @@ function FolderCard({
   innerRef: (el: HTMLDivElement | null) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const hue = project.folderColor ?? 145;
-  const tc = getTextColors(hue);
+  const isSample = project.isSample;
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -171,285 +150,266 @@ function FolderCard({
     return () => document.removeEventListener('mousedown', handler);
   }, [menuOpen]);
 
-  const detailText = tokenCount > 0
-    ? `${tokenCount} token${tokenCount !== 1 ? 's' : ''}`
-    : nodeCount > 0
-      ? `${nodeCount} node${nodeCount !== 1 ? 's' : ''}`
-      : 'Empty project';
-
-  // ── Derived palette ──
-  const backDark    = `hsl(${hue}, 42%, 22%)`;
-  const backMid     = `hsl(${hue}, 40%, 18%)`;
-  const frontTop    = `hsla(${hue}, 58%, 52%, 0.82)`;
-  const frontBot    = `hsla(${hue}, 48%, 38%, 0.88)`;
-  const glassEdge   = `hsla(${hue}, 60%, 82%, 0.55)`;
-  const glassBorder = `hsla(${hue}, 45%, 68%, 0.30)`;
-  const badgeBg     = `hsla(${hue}, 30%, 88%, 0.18)`;
-  const badgeBorder = `hsla(${hue}, 35%, 76%, 0.22)`;
-
-  // Unique gradient id to avoid SVG conflicts when multiple cards render
-  const gradId = `bg-${hue}-${project.id.slice(-6)}`;
-
-  const folderPath = [
-    'M 0 12',
-    'C 0 5, 5 0, 12 0',
-    'L 88 0',
-    'C 96 0, 100 3, 102 8',
-    'L 108 17',
-    'C 111 21, 116 24, 124 24',
-    'L 228 24',
-    'C 235 24, 240 29, 240 36',
-    'L 240 188',
-    'C 240 195, 235 200, 228 200',
-    'L 12 200',
-    'C 5 200, 0 195, 0 188',
-    'L 0 12',
-    'Z',
-  ].join(' ');
-
   return (
     <div
       ref={innerRef}
-      className={`group relative cursor-pointer transition-all duration-300 ease-out select-none ${
-        isHighlighted ? 'scale-[1.04]' : 'hover:scale-[1.03] hover:-translate-y-1'
+      className={`flex items-center h-10 px-3 hover:bg-[#ffffff]/[0.03] cursor-pointer transition-colors border-b border-[#ffffff]/[0.04] last:border-b-0 ${
+        isHighlighted ? 'bg-[#ffffff]/[0.06]' : ''
       }`}
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
-      {/* ── Ambient glow ── */}
+      {/* Colored dot */}
       <div
-        className="absolute -inset-4 pointer-events-none"
-        style={{
-          background: `radial-gradient(ellipse at 50% 65%, hsla(${hue}, 35%, 30%, 0.12) 0%, transparent 55%)`,
-          opacity: isHighlighted ? 0.7 : isHovered ? 0.4 : 0,
-          transition: 'opacity 0.5s ease-out',
-        }}
+        className="w-2.5 h-2.5 rounded-full mr-3 flex-shrink-0"
+        style={{ background: `hsl(${project.folderColor ?? 200}, 55%, 50%)` }}
       />
-
-      {/* ── Card wrapper (fixed size) ── */}
-      <div className="relative" style={{ width: '100%', aspectRatio: '1.35 / 1', perspective: '600px' }}>
-        {/* ── SVG BACK PANEL ── */}
-        <svg
-          viewBox="0 0 240 200"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute inset-0 w-full h-full"
-          preserveAspectRatio="xMidYMid meet"
-          style={{ filter: `drop-shadow(0 6px 20px hsla(${hue}, 50%, 12%, 0.6))` }}
-        >
-          <defs>
-            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={backDark} />
-              <stop offset="100%" stopColor={backMid} />
-            </linearGradient>
-          </defs>
-          <path d={folderPath} fill={`url(#${gradId})`} />
-        </svg>
-
-        {/* ── WHITE DOCUMENT CARD ── */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: '14%',
-            left: '4%',
-            right: '4%',
-            height: '75%',
-            borderRadius: '8px 8px 6px 6px',
-            background: 'linear-gradient(180deg, #f5f5f7 0%, #eaeaec 4%, #e8e8ea 100%)',
-            boxShadow: isHovered
-              ? '0 -2px 12px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)'
-              : 'none',
-            opacity: isHovered ? 1 : 0,
-            transform: isHovered ? 'translateY(-18%)' : 'translateY(0%)',
-            transition: 'opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1), transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s ease',
-            zIndex: 1,
-          }}
-        >
-          <div className="px-[10%] pt-[4%] flex flex-col gap-[4px]">
-            <div style={{ height: '3px', width: '65%', borderRadius: '2px', background: 'rgba(0,0,0,0.13)' }} />
-            <div style={{ height: '3px', width: '42%', borderRadius: '2px', background: 'rgba(0,0,0,0.08)' }} />
-            <div style={{ height: '3px', width: '55%', borderRadius: '2px', background: 'rgba(0,0,0,0.06)' }} />
-          </div>
-        </div>
-
-        {/* ── FRONT PANEL (glassmorphism) ── */}
-        <div
-          className="absolute overflow-hidden"
-          style={{
-            top: '14%',
-            left: '0%',
-            right: '0%',
-            bottom: '0%',
-            borderRadius: '12px',
-            background: `linear-gradient(178deg, ${frontTop} 0%, ${frontBot} 100%)`,
-            backdropFilter: 'blur(28px) saturate(1.6)',
-            WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
-            border: `1px solid ${glassBorder}`,
-            boxShadow: isHovered
-              ? `inset 0 1px 0 0 ${glassEdge}, inset 0 -12px 28px -8px hsla(${hue}, 38%, 14%, 0.35), 0 12px 32px -4px hsla(${hue}, 40%, 8%, 0.55), 0 4px 12px -2px rgba(0,0,0,0.3)`
-              : `inset 0 1px 0 0 ${glassEdge}, inset 0 -12px 28px -8px hsla(${hue}, 38%, 14%, 0.35)`,
-            transformOrigin: 'bottom center',
-            transform: isHovered ? 'rotateX(-14deg)' : 'rotateX(0deg)',
-            transition: 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1)',
-            zIndex: 2,
-          }}
-        >
-          {/* ── Top bright edge ── */}
-          <div
-            className="absolute top-0 left-0 right-0 pointer-events-none"
-            style={{
-              height: '2px',
-              background: `linear-gradient(90deg, transparent 0%, ${glassEdge} 15%, hsla(${hue}, 70%, 92%, 0.7) 50%, ${glassEdge} 85%, transparent 100%)`,
-            }}
-          />
-
-          {/* ── Radial highlight ── */}
-          <div
-            className="absolute pointer-events-none"
-            style={{
-              top: '-30%', left: '-15%', width: '80%', height: '70%',
-              background: `radial-gradient(ellipse at 40% 60%, hsla(${hue}, 55%, 75%, 0.28) 0%, transparent 65%)`,
-            }}
-          />
-
-          {/* ── Subtle horizontal divider ── */}
-          <div
-            className="absolute left-[6%] right-[6%] pointer-events-none"
-            style={{ top: '1px', height: '1px', background: `linear-gradient(90deg, transparent, hsla(${hue}, 50%, 90%, 0.15), transparent)` }}
-          />
-
-          {/* ── Content ── */}
-          <div className="relative z-10 flex flex-col justify-between h-full px-[12%] py-[8%]">
-            {/* Top row */}
-            <div className="flex items-start justify-between gap-1.5">
-              <div className="flex-1 min-w-0">
-                {/* Sample project label */}
-                {project.isSample && (
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Eye className="w-2.5 h-2.5" style={{ color: tc.sampleLabel, filter: tc.isYellow ? 'none' : 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
-                    <span
-                      style={{
-                        fontSize: '9px',
-                        fontWeight: 600,
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase' as const,
-                        color: tc.sampleLabel,
-                        textShadow: tc.sampleShadow,
-                      }}
-                    >
-                      Sample Project
-                    </span>
-                  </div>
-                )}
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <h3
-                    className="truncate"
-                    style={{ color: tc.primary, fontSize: '14px', letterSpacing: '-0.01em', textShadow: tc.isYellow ? 'none' : '0 1px 4px rgba(0,0,0,0.35)' }}
-                    title={project.name}
-                  >
-                    {project.name}
-                  </h3>
-                  {isPublished && (
-                    <Globe
-                      className="w-3 h-3 shrink-0"
-                      style={{
-                        color: tc.isYellow ? 'rgba(0,0,0,0.5)' : 'rgba(70,91,254,0.85)',
-                        filter: tc.isYellow ? 'none' : 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
-                      }}
-                      title="Published to Community"
-                    />
-                  )}
-                </div>
-                {!project.isSample && (
-                  <p
-                    className="mt-0.5 truncate"
-                    style={{ color: tc.secondary, fontSize: '11px', textShadow: tc.isYellow ? 'none' : '0 1px 2px rgba(0,0,0,0.25)' }}
-                  >
-                    {detailText}
-                  </p>
-                )}
-              </div>
-
-              {/* ⋯ menu button */}
-              <div className="relative flex-shrink-0" ref={menuRef}>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
-                  className="flex items-center justify-center rounded-full transition-all duration-150"
-                  style={{ width: '26px', height: '26px', background: tc.menuBtn, backdropFilter: 'blur(8px)', border: `1px solid ${tc.menuBorder}` }}
-                >
-                  <MoreHorizontal className="w-[14px] h-[14px]" style={{ color: tc.menuIcon }} />
-                </button>
-
-                {menuOpen && (
-                  <div
-                    className="absolute right-0 top-full mt-2 w-[156px] rounded-xl overflow-hidden z-50"
-                    style={{ background: 'rgba(18,18,18,0.96)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 16px 48px rgba(0,0,0,0.75)', backdropFilter: 'blur(20px)' }}
-                  >
-                    {!project.isSample && (
-                      <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#bbb] hover:bg-white/[0.06] transition-colors" onClick={(e) => { e.stopPropagation(); onExport(e); setMenuOpen(false); }}>
-                        <Download className="w-3.5 h-3.5 opacity-50" /> Export
-                      </button>
-                    )}
-                    <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#bbb] hover:bg-white/[0.06] transition-colors" onClick={(e) => { e.stopPropagation(); onDuplicate(e); setMenuOpen(false); }}>
-                      <Copy className="w-3.5 h-3.5 opacity-50" /> Duplicate
-                    </button>
-                    {!project.isSample && (
-                      <>
-                        <div className="mx-3 h-px bg-white/[0.06]" />
-                        <button className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-[13px] text-[#FF4D6A] hover:bg-[#FF4D6A]/10 transition-colors" onClick={(e) => { e.stopPropagation(); onDelete(e); setMenuOpen(false); }}>
-                          <Trash2 className="w-3.5 h-3.5 opacity-50" /> Delete
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
+      {/* Project name */}
+      <span className="text-[13px] font-medium text-foreground truncate flex-1">
+        {project.name}
+      </span>
+      {/* Badges */}
+      {isSample && (
+        <span className="text-[11px] text-dim mr-3 flex items-center gap-1">
+          <Eye className="h-3 w-3" />
+          Read-only
+        </span>
+      )}
+      {isPublished && (
+        <Globe className="h-3 w-3 text-dim mr-2" />
+      )}
+      <span className="text-[12px] text-ghost mr-3 tabular-nums">
+        {tokenCount > 0 && `${tokenCount} tokens`}
+        {tokenCount > 0 && nodeCount > 0 && ' \u00b7 '}
+        {nodeCount > 0 && `${nodeCount} nodes`}
+      </span>
+      {/* Menu */}
+      {!isSample && (
+        <div className="relative" ref={menuRef} onClick={e => e.stopPropagation()}>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="h-7 w-7 rounded-md flex items-center justify-center text-ghost hover:text-foreground hover:bg-[#ffffff]/[0.06] transition-colors"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 w-[160px] rounded-lg bg-card border border-[#ffffff]/[0.06] shadow-lg py-1 z-50">
+              <button className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] text-foreground hover:bg-[#ffffff]/[0.06] transition-colors" onClick={(e) => { onExport(e); setMenuOpen(false); }}>
+                <Download className="h-3.5 w-3.5 text-dim" /> Export
+              </button>
+              <button className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] text-foreground hover:bg-[#ffffff]/[0.06] transition-colors" onClick={(e) => { onDuplicate(e); setMenuOpen(false); }}>
+                <Copy className="h-3.5 w-3.5 text-dim" /> Duplicate
+              </button>
+              <div className="my-1 border-t border-[#ffffff]/[0.04]" />
+              <button className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] text-destructive hover:bg-destructive/10 transition-colors" onClick={(e) => { onDelete(e); setMenuOpen(false); }}>
+                <Trash2 className="h-3.5 w-3.5" /> Delete
+              </button>
             </div>
-
-            {/* Bottom stat badges */}
-            <div className="flex items-center gap-1.5 flex-wrap mt-auto">
-              {project.isSample ? (
-                <span
-                  className="inline-flex items-center gap-1 rounded-full"
-                  style={{
-                    padding: '2.5px 9px',
-                    fontSize: '9.5px',
-                    fontWeight: 600,
-                    color: tc.sampleBadgeText,
-                    background: tc.sampleBadgeBg,
-                    border: `1px solid ${tc.sampleBadgeBorder}`,
-                    backdropFilter: 'blur(6px)',
-                    textShadow: tc.sampleShadow,
-                  }}
-                >
-                  <Lock className="w-2.5 h-2.5" />
-                  Read-only
-                </span>
-              ) : (
-                <>
-                  {tokenCount > 0 && (
-                    <span className="inline-flex items-center rounded-full" style={{ padding: '2px 8px', fontSize: '10px', color: tc.badge, background: badgeBg, border: `1px solid ${badgeBorder}`, backdropFilter: 'blur(6px)', textShadow: tc.isYellow ? 'none' : '0 1px 1px rgba(0,0,0,0.18)' }}>
-                      {tokenCount} token{tokenCount !== 1 ? 's' : ''}
-                    </span>
-                  )}
-                  {nodeCount > 0 && (
-                    <span className="inline-flex items-center rounded-full" style={{ padding: '2px 8px', fontSize: '10px', color: tc.badge, background: badgeBg, border: `1px solid ${badgeBorder}`, backdropFilter: 'blur(6px)', textShadow: tc.isYellow ? 'none' : '0 1px 1px rgba(0,0,0,0.18)' }}>
-                      {nodeCount} node{nodeCount !== 1 ? 's' : ''}
-                    </span>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
+          )}
         </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ProfileSection
+   ═══════════════════════════════════════════════════════════════ */
+
+function ProfileSection({ userEmail, isAdmin, isTemplateAdmin }: { userEmail?: string; isAdmin?: boolean; isTemplateAdmin?: boolean }) {
+  return (
+    <div className="max-w-[680px] mx-auto px-8 py-8">
+      <h1 className="text-[20px] font-semibold text-foreground mb-6">Profile</h1>
+      <div className="rounded-lg border border-[#ffffff]/[0.06] overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <span className="text-[13px] text-subtle">Email</span>
+          <span className="text-[13px] text-foreground">{userEmail || 'Not signed in'}</span>
+        </div>
+        {isAdmin && (
+          <>
+            <div className="border-t border-[#ffffff]/[0.04]" />
+            <div className="flex items-center justify-between px-5 py-3.5">
+              <span className="text-[13px] text-subtle">Role</span>
+              <span className="text-[13px] text-foreground">Admin{isTemplateAdmin ? ' + Template Admin' : ''}</span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Projects Page
+   ProjectList — replaces folder grid
+   ═══════════════════════════════════════════════════════════════ */
+
+function ProjectList({
+  projects,
+  projectStats,
+  templateProjects,
+  cloudSectionProjects,
+  cloudProjects,
+  localProjects,
+  highlightedProjectId,
+  isAuthenticated,
+  isAdmin,
+  isTemplateAdmin,
+  canCreateCloudProject,
+  cloudSyncStatus,
+  publishedProjectIds,
+  projectRefs,
+  onSelectProject,
+  onCreateProject,
+  onImportProject,
+  onExportProject,
+  onDuplicateProject,
+  onDeleteClick,
+  onForceCloudRefresh,
+  sampleProjects,
+}: {
+  projects: Project[];
+  projectStats: Map<string, { tokenCount: number; nodeCount: number }>;
+  templateProjects: Project[];
+  cloudSectionProjects: Project[];
+  cloudProjects: Project[];
+  localProjects: Project[];
+  highlightedProjectId: string | null;
+  isAuthenticated?: boolean;
+  isAdmin?: boolean;
+  isTemplateAdmin?: boolean;
+  canCreateCloudProject: boolean;
+  cloudSyncStatus?: string;
+  publishedProjectIds?: Set<string>;
+  projectRefs: React.MutableRefObject<Map<string, HTMLDivElement>>;
+  onSelectProject: (projectId: string) => void;
+  onCreateProject: (type: 'local' | 'cloud' | 'template') => void;
+  onImportProject: () => void;
+  onExportProject: (projectId: string) => void;
+  onDuplicateProject: (projectId: string) => void;
+  onDeleteClick: (projectId: string, e: React.MouseEvent) => void;
+  onForceCloudRefresh?: () => void;
+  sampleProjects: Project[];
+}) {
+  const renderSection = (
+    label: string,
+    projectList: Project[],
+    createType: 'local' | 'cloud' | 'template',
+    showCreate: boolean,
+    createLabel: string = 'New project',
+  ) => {
+    if (projectList.length === 0 && !showCreate) return null;
+    return (
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2 px-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] uppercase tracking-wider text-dim font-medium">{label}</span>
+            <span className="text-[11px] text-ghost">{projectList.length}</span>
+            {label.toLowerCase().includes('cloud') && cloudSyncStatus === 'syncing' && (
+              <span className="text-[11px] text-brand animate-pulse">Syncing...</span>
+            )}
+            {label.toLowerCase().includes('cloud') && onForceCloudRefresh && (
+              <button
+                onClick={onForceCloudRefresh}
+                className="text-[11px] text-ghost hover:text-brand flex items-center gap-1 transition-colors ml-1"
+                title="Force re-download all cloud projects from server"
+              >
+                <RefreshCw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          {showCreate && (
+            <button onClick={() => onCreateProject(createType)} className="h-7 px-2.5 rounded-md text-[12px] text-dim hover:text-foreground hover:bg-[#ffffff]/[0.04] transition-colors flex items-center gap-1.5">
+              <Plus className="h-3.5 w-3.5" />
+              {createLabel}
+            </button>
+          )}
+        </div>
+        {projectList.length === 0 ? (
+          <div className="rounded-lg overflow-hidden" style={{ border: '1px dashed rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center justify-center py-8 text-[13px] text-ghost">
+              No projects yet
+            </div>
+          </div>
+        ) : (
+          <div>
+            {projectList.map(p => {
+              const stats = projectStats.get(p.id) || { tokenCount: 0, nodeCount: 0 };
+              return (
+                <ProjectRow
+                  key={p.id}
+                  project={p}
+                  tokenCount={stats.tokenCount}
+                  nodeCount={stats.nodeCount}
+                  isHighlighted={highlightedProjectId === p.id}
+                  isPublished={publishedProjectIds?.has(p.id)}
+                  onClick={() => onSelectProject(p.id)}
+                  onExport={(e) => { e.stopPropagation(); onExportProject(p.id); }}
+                  onDuplicate={(e) => { e.stopPropagation(); onDuplicateProject(p.id); }}
+                  onDelete={(e) => onDeleteClick(p.id, e)}
+                  innerRef={(el) => {
+                    if (el) projectRefs.current.set(p.id, el);
+                    else projectRefs.current.delete(p.id);
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="max-w-[800px] mx-auto px-8 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-[20px] font-semibold text-foreground">Projects</h1>
+        <div className="flex items-center gap-2">
+          <button onClick={onImportProject} className="h-8 px-3 rounded-md text-[13px] text-subtle hover:text-foreground hover:bg-[#ffffff]/[0.04] transition-colors flex items-center gap-2">
+            <Upload className="h-3.5 w-3.5" />
+            Import
+          </button>
+        </div>
+      </div>
+
+      {/* Templates section (if template admin) */}
+      {isAuthenticated && isTemplateAdmin && renderSection(
+        'Templates',
+        templateProjects,
+        'template',
+        true,
+        'New template',
+      )}
+
+      {/* Cloud section (authenticated) */}
+      {isAuthenticated && renderSection(
+        'Cloud Projects',
+        cloudSectionProjects,
+        'cloud',
+        !!canCreateCloudProject,
+        'New cloud project',
+      )}
+
+      {/* Cloud section for unauthenticated — show sample projects */}
+      {!isAuthenticated && sampleProjects.length > 0 && renderSection(
+        'Cloud Projects',
+        sampleProjects,
+        'cloud',
+        false,
+      )}
+
+      {/* Local section */}
+      {renderSection(
+        'Local Projects',
+        localProjects,
+        'local',
+        true,
+        'New local project',
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Projects Page — Linear-style sidebar + main content
    ═══════════════════════════════════════════════════════════════ */
 
 export function ProjectsPage({
@@ -470,12 +430,16 @@ export function ProjectsPage({
   isTemplateAdmin,
   userEmail,
   onSignOut,
+  onSignIn,
   cloudSyncStatus,
   onForceCloudRefresh,
-  onOpenAISettings,
-  onSignIn,
-  onOpenCommunity,
   publishedProjectIds,
+  activeSection = 'projects',
+  onSectionChange,
+  onAISettingsSaved,
+  aiProjectContext,
+  onOpenCommunityProject,
+  onRemixCommunityProject,
 }: ProjectsPageProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
@@ -524,288 +488,122 @@ export function ProjectsPage({
   const cloudSectionProjects = useMemo(() => [...sampleProjects, ...cloudProjects], [sampleProjects, cloudProjects]);
   const canCreateCloudProject = isAuthenticated && (isAdmin || cloudProjects.length < 20);
 
-  const renderProjectGrid = (projectList: typeof projects) => (
-    <div
-      className="grid"
-      style={{
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '36px 28px',
-      }}
-    >
-      {projectList.map((project) => {
-        const stats = projectStats.get(project.id) || { tokenCount: 0, nodeCount: 0 };
-        return (
-          <FolderCard
-            key={project.id}
-            project={project}
-            tokenCount={stats.tokenCount}
-            nodeCount={stats.nodeCount}
-            isHighlighted={highlightedProjectId === project.id}
-            isPublished={publishedProjectIds?.has(project.id)}
-            onClick={() => onSelectProject(project.id)}
-            onExport={(e) => { e.stopPropagation(); onExportProject(project.id); }}
-            onDuplicate={(e) => { e.stopPropagation(); onDuplicateProject(project.id); }}
-            onDelete={(e) => handleDeleteClick(project.id, e)}
-            innerRef={(el) => {
-              if (el) projectRefs.current.set(project.id, el);
-              else projectRefs.current.delete(project.id);
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-
   return (
-    <div className="h-screen bg-background text-white overflow-auto">
-      <div className="max-w-[1200px] mx-auto px-10 py-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 style={{ fontSize: '22px', color: 'var(--foreground)' }}>
-                0<span className="text-faint">colors</span>
-              </h1>
-              {isAdmin && (
-                <span
-                  className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded"
-                  style={{
-                    background: 'rgba(168, 130, 255, 0.1)',
-                    color: '#a882ff',
-                    border: '1px solid rgba(168, 130, 255, 0.2)',
-                    letterSpacing: '0.06em',
-                  }}
-                >
-                  Admin
-                </span>
-              )}
-            </div>
-            <p className="mt-1" style={{ fontSize: '13px', color: 'var(--dim)' }}>
-              {projects.length} project{projects.length !== 1 ? 's' : ''}
-              {isAuthenticated && userEmail && (
-                <span className="text-ghost"> · {userEmail}</span>
-              )}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {!isAuthenticated && onSignIn && (
-              <Button
-                onClick={onSignIn}
-                className="bg-secondary hover:bg-[#1e1e1e] text-brand hover:text-[#7B8FFF] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors"
+    <div className="h-screen flex bg-background">
+      {/* Sidebar */}
+      <div className="w-[220px] flex-shrink-0 flex flex-col bg-[#0a0a0a] border-r border-[#ffffff]/[0.06]">
+        {/* Logo area */}
+        <div className="px-4 pt-5 pb-4">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-[14px] font-semibold text-foreground">
+              0<span className="text-faint">colors</span>
+            </h1>
+            {isAdmin && (
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                style={{
+                  background: 'rgba(168, 130, 255, 0.1)',
+                  color: '#a882ff',
+                  border: '1px solid rgba(168, 130, 255, 0.2)',
+                  letterSpacing: '0.06em',
+                }}
               >
-                <LogIn className="w-4 h-4" />
-                Sign In
-              </Button>
-            )}
-            <Button
-              onClick={onImportProject}
-              className="bg-secondary hover:bg-[#1e1e1e] text-subtle hover:text-white gap-2 transition-colors"
-            >
-              <Upload className="w-4 h-4" />
-              Import
-            </Button>
-            {onOpenCommunity && (
-              <Button
-                onClick={onOpenCommunity}
-                className="bg-secondary hover:bg-[#1e1e1e] text-brand hover:text-[#7B8FFF] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors"
-              >
-                <Globe className="w-4 h-4" />
-                Community
-              </Button>
-            )}
-            {isAuthenticated && onOpenAISettings && (
-              <Button
-                onClick={onOpenAISettings}
-                className="bg-secondary hover:bg-[#1e1e1e] text-brand-pink hover:text-[#FEA3F4] gap-2 border border-[#220D1F] hover:border-[#3D163A] transition-colors"
-              >
-                <Sparkles className="w-4 h-4" />
-                AI Settings
-              </Button>
-            )}
-            {isAuthenticated && onSignOut && (
-              <Button
-                onClick={onSignOut}
-                className="bg-secondary hover:bg-[#1e1e1e] text-faint hover:text-white gap-2 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
+                Admin
+              </span>
             )}
           </div>
+          <p className="text-[11px] text-dim mt-0.5">
+            {projects.length} projects
+            {userEmail && <span className="text-ghost"> &middot; {userEmail}</span>}
+          </p>
         </div>
 
-        {/* ═══ TEMPLATES SECTION (Template Admin only) ═══ */}
-        {isAuthenticated && isTemplateAdmin && (
-          <div className="mb-12">
-            {/* Section header */}
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2.5">
-                <LayoutTemplate className="w-4 h-4 text-[#d4a044]" />
-                <h2 className="text-[15px] text-foreground font-medium">Templates</h2>
-                <span
-                  className="text-[11px] px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(212, 160, 68, 0.12)', color: '#d4a044', border: '1px solid rgba(212, 160, 68, 0.18)' }}
-                >
-                  {templateProjects.length}
-                </span>
-                <span
-                  className="text-[11px] px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(212, 160, 68, 0.08)', color: '#b8923c', border: '1px solid rgba(212, 160, 68, 0.12)' }}
-                >
-                  Template Admin
-                </span>
-                {cloudSyncStatus === 'syncing' && (
-                  <span className="text-[11px] text-[#d4a044] animate-pulse">Syncing...</span>
-                )}
-              </div>
-              <Button
-                onClick={() => onCreateProject('template')}
-                className="bg-secondary hover:bg-[#1e1e1e] text-[#d4a044] hover:text-[#e8b84e] gap-2 border border-[#2a2210] hover:border-[#3d3318] transition-colors text-[13px] h-8 px-3"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                New template
-              </Button>
-            </div>
-            {/* Template projects grid or empty state */}
-            {templateProjects.length === 0 ? (
-              <div
-                className="flex items-center justify-center py-10 rounded-xl"
-                style={{ background: '#0d0d0a', border: '1px dashed rgba(212, 160, 68, 0.2)' }}
-              >
-                <div className="text-center">
-                  <LayoutTemplate className="w-8 h-8 text-[#3d3318] mx-auto mb-2" />
-                  <p className="text-[13px] text-ghost">No templates yet</p>
-                  <p className="text-[11px] text-ghost mt-1">Create template projects synced to Supabase</p>
-                </div>
-              </div>
-            ) : (
-              renderProjectGrid(templateProjects)
-            )}
+        {/* Navigation */}
+        <nav className="flex-1 px-2 py-1">
+          <NavItem icon={Folder} label="Projects" active={activeSection === 'projects'} onClick={() => onSectionChange?.('projects')} />
+          <NavItem icon={Globe} label="Community" active={activeSection === 'community'} onClick={() => onSectionChange?.('community')} />
 
-            {/* Divider */}
-            <div className="mt-10 border-t border-[#141414]" />
-          </div>
-        )}
+          <div className="my-2 mx-2 border-t border-[#ffffff]/[0.04]" />
 
-        {/* ═══ CLOUD PROJECTS SECTION ═══ */}
-        {isAuthenticated && (
-          <div className="mb-12">
-            {/* Section header */}
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2.5">
-                <Cloud className="w-4 h-4 text-brand" />
-                <h2 className="text-[15px] text-foreground font-medium">Supabase Cloud</h2>
-                <span
-                  className="text-[11px] px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(70, 91, 254, 0.12)', color: '#7B8FFF', border: '1px solid rgba(70, 91, 254, 0.15)' }}
-                >
-                  {isAdmin
-                    ? `${cloudProjects.length}`
-                    : `${cloudProjects.length}/20`}
-                </span>
-                {cloudSyncStatus === 'syncing' && (
-                  <span className="text-[11px] text-brand animate-pulse">Syncing...</span>
-                )}
-                {onForceCloudRefresh && (
-                  <button
-                    onClick={onForceCloudRefresh}
-                    className="text-[11px] text-[#666] hover:text-brand flex items-center gap-1 transition-colors ml-1"
-                    title="Force re-download all cloud projects from server"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    Refresh
-                  </button>
-                )}
-              </div>
-              {canCreateCloudProject && (
-                <Button
-                  onClick={() => onCreateProject('cloud')}
-                  className="bg-secondary hover:bg-[#1e1e1e] text-[#7B8FFF] hover:text-[#b7c4d1] gap-2 border border-[#1e2b33] hover:border-[#283841] transition-colors text-[13px] h-8 px-3"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  New cloud project
-                </Button>
-              )}
-            </div>
-            {/* Cloud projects grid — sample project is always first */}
-            {cloudSectionProjects.length === 0 ? (
-              <div
-                className="flex items-center justify-center py-10 rounded-xl"
-                style={{ background: '#0a0d14', border: '1px dashed rgba(68, 136, 255, 0.15)' }}
-              >
-                <div className="text-center">
-                  <Cloud className="w-8 h-8 text-[#1a2a44] mx-auto mb-2" />
-                  <p className="text-[13px] text-ghost">No cloud projects</p>
-                  <p className="text-[11px] text-ghost mt-1">Cloud projects sync across devices</p>
-                </div>
-              </div>
-            ) : (
-              renderProjectGrid(cloudSectionProjects)
-            )}
-
-            {/* Divider */}
-            <div className="mt-10 border-t border-[#141414]" />
-          </div>
-        )}
-
-        {/* ═══ CLOUD SECTION FOR UNAUTHENTICATED USERS — shows sample project in the grid ═══ */}
-        {!isAuthenticated && sampleProjects.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2.5">
-                <Cloud className="w-4 h-4 text-brand" />
-                <h2 className="text-[15px] text-foreground font-medium">Supabase Cloud</h2>
-                <span
-                  className="text-[11px] px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(70, 91, 254, 0.12)', color: '#7B8FFF', border: '1px solid rgba(70, 91, 254, 0.15)' }}
-                >
-                  Sign in to sync
-                </span>
-              </div>
-            </div>
-            {renderProjectGrid(sampleProjects)}
-            <div className="mt-10 border-t border-[#141414]" />
-          </div>
-        )}
-
-        {/* ═══ LOCAL PROJECTS SECTION ═══ */}
-        <div>
-          {/* Section header */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2.5">
-              <HardDrive className="w-4 h-4 text-faint" />
-              <h2 className="text-[15px] text-foreground font-medium">Local Projects</h2>
-              <span
-                className="text-[11px] px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--faint)', border: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                {localProjects.length}
-              </span>
-            </div>
-            <Button
-              onClick={() => onCreateProject('local')}
-              className="bg-secondary hover:bg-[#1e1e1e] text-subtle hover:text-white gap-2 transition-colors text-[13px] h-8 px-3"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              New local project
-            </Button>
-          </div>
-          {/* Local projects grid or empty state */}
-          {localProjects.length === 0 ? (
-            <div
-              className="flex items-center justify-center py-10 rounded-xl"
-              style={{ background: '#0d0d0d' }}
-            >
-              <div className="text-center">
-                <HardDrive className="w-8 h-8 text-elevated mx-auto mb-2" />
-                <p className="text-[13px] text-ghost">No local projects</p>
-                <p className="text-[11px] text-ghost mt-1">Local projects are stored in your browser</p>
-              </div>
-            </div>
-          ) : (
-            renderProjectGrid(localProjects)
+          {isAuthenticated && (
+            <NavItem icon={Sparkles} label="AI Settings" active={activeSection === 'ai-settings'} onClick={() => onSectionChange?.('ai-settings')} />
           )}
+          {isAuthenticated && (
+            <NavItem icon={User} label="Profile" active={activeSection === 'profile'} onClick={() => onSectionChange?.('profile')} />
+          )}
+        </nav>
+
+        {/* Bottom */}
+        <div className="px-2 pb-3">
+          {isAuthenticated && onSignOut ? (
+            <button onClick={onSignOut} className="w-full flex items-center gap-2.5 h-8 px-3 rounded-md text-[13px] text-dim hover:text-foreground hover:bg-[#ffffff]/[0.04] transition-colors">
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
+          ) : !isAuthenticated && onSignIn ? (
+            <button onClick={onSignIn} className="w-full flex items-center gap-2.5 h-8 px-3 rounded-md text-[13px] text-brand hover:bg-[#ffffff]/[0.04] transition-colors">
+              <LogIn className="h-4 w-4" />
+              Sign in
+            </button>
+          ) : null}
         </div>
       </div>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto">
+        {activeSection === 'projects' && (
+          <ProjectList
+            projects={projects}
+            projectStats={projectStats}
+            templateProjects={templateProjects}
+            cloudSectionProjects={cloudSectionProjects}
+            cloudProjects={cloudProjects}
+            localProjects={localProjects}
+            highlightedProjectId={highlightedProjectId}
+            isAuthenticated={isAuthenticated}
+            isAdmin={isAdmin}
+            isTemplateAdmin={isTemplateAdmin}
+            canCreateCloudProject={!!canCreateCloudProject}
+            cloudSyncStatus={cloudSyncStatus}
+            publishedProjectIds={publishedProjectIds}
+            projectRefs={projectRefs}
+            onSelectProject={onSelectProject}
+            onCreateProject={onCreateProject}
+            onImportProject={onImportProject}
+            onExportProject={onExportProject}
+            onDuplicateProject={onDuplicateProject}
+            onDeleteClick={handleDeleteClick}
+            onForceCloudRefresh={onForceCloudRefresh}
+            sampleProjects={sampleProjects}
+          />
+        )}
+        {activeSection === 'community' && onOpenCommunityProject && onRemixCommunityProject && (
+          <CommunityPage
+            inline
+            onOpenProject={onOpenCommunityProject}
+            onRemixProject={onRemixCommunityProject}
+          />
+        )}
+        {activeSection === 'ai-settings' && (
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-[680px] mx-auto px-8 py-8">
+              <h1 className="text-[20px] font-semibold text-foreground mb-6">AI Settings</h1>
+              <AISettingsContent
+                inline
+                onSettingsSaved={onAISettingsSaved}
+                projectContext={aiProjectContext}
+              />
+            </div>
+          </div>
+        )}
+        {activeSection === 'profile' && (
+          <ProfileSection
+            userEmail={userEmail}
+            isAdmin={isAdmin}
+            isTemplateAdmin={isTemplateAdmin}
+          />
+        )}
+      </main>
 
       {/* Delete dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

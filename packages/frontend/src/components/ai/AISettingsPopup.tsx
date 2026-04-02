@@ -1,12 +1,14 @@
 import { motion } from 'motion/react';
-import { X, Eye, EyeOff, Check, Zap, Info, ChevronDown, BookOpen, Settings, ToggleLeft, ToggleRight } from 'lucide-react';
+import { X, Eye, EyeOff, Check, Info, ChevronDown, BookOpen, Settings, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
-  AISettings, ProviderType, loadAISettings, saveAISettings,
-  DEFAULT_PROVIDERS, PROVIDER_MODELS, OPENAI_COMPATIBLE_PRESETS,
-  ANTHROPIC_MODELS, loadContextTier, saveContextTier,
+  AISettingsV2, ServiceId, ServiceConfig, ServiceDefinition,
+  SERVICE_DEFINITIONS, SERVICE_MAP,
+  loadAISettings, saveAISettings,
+  loadContextTier, saveContextTier,
   loadContextToggles, saveContextToggles, ContextToggles,
   ConversationMessage,
+  getModelContextWindow, getConfiguredModelsWithContext,
 } from '../../utils/ai-provider';
 import {
   type ContextTier, TIER_INFO, getContextBudget,
@@ -17,31 +19,24 @@ import {
 
 type SettingsTab = 'provider' | 'context';
 
+export interface AISettingsContentProps {
+  onSettingsSaved?: (settings: AISettingsV2, contextTier?: ContextTier, contextToggles?: ContextToggles) => void;
+  projectContext?: string;
+  currentConversationMessages?: ConversationMessage[];
+  onClose?: () => void;
+  inline?: boolean;
+}
+
 interface AISettingsPopupProps {
   onClose: () => void;
-  onSettingsSaved?: (settings: AISettings, contextTier: ContextTier, contextToggles: ContextToggles) => void;
+  onSettingsSaved?: (settings: AISettingsV2, contextTier: ContextTier, contextToggles: ContextToggles) => void;
   projectContext?: string;
   currentConversationMessages?: ConversationMessage[];
 }
 
-const PROVIDER_ORDER: ProviderType[] = ['openai', 'anthropic'];
-
-const PROVIDER_INFO: Record<ProviderType, { desc: string; keyHint: string; keyUrl: string }> = {
-  openai: {
-    desc: 'Works with OpenAI, Groq, Perplexity, OpenRouter, Together AI, Mistral, DeepSeek, Railway, and any OpenAI-compatible API.',
-    keyHint: 'Enter your provider API key',
-    keyUrl: '',
-  },
-  anthropic: {
-    desc: 'Direct Anthropic API for Claude models. Requires an API key from console.anthropic.com.',
-    keyHint: 'Enter your Anthropic API key (sk-ant-...)',
-    keyUrl: 'https://console.anthropic.com/settings/keys',
-  },
-};
-
 const TIER_COLORS: Record<ContextTier, string> = {
   small: '#FF4D6A',
-  medium: '#FD7DEE',
+  medium: '#8B8FFF',
   large: '#2BBD68',
 };
 
@@ -50,6 +45,11 @@ const TIER_COLORS: Record<ContextTier, string> = {
 function formatTokens(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K`;
   return `${n}`;
+}
+
+function maskKey(key: string): string {
+  if (!key || key.length < 8) return key ? '••••••••' : '';
+  return `${key.slice(0, 4)}...${key.slice(-4)}`;
 }
 
 // ── Toggle Switch Component ─────────────────────────────────────
@@ -70,65 +70,244 @@ function ToggleSwitch({ enabled, onChange, label }: { enabled: boolean; onChange
   );
 }
 
+// ── Service Section Component ───────────────────────────────────
+
+function ServiceSection({
+  definition,
+  config,
+  isActiveService,
+  showKey,
+  onToggleShowKey,
+  onUpdateConfig,
+  onSetActive,
+}: {
+  definition: ServiceDefinition;
+  config: ServiceConfig | undefined;
+  isActiveService: boolean;
+  showKey: boolean;
+  onToggleShowKey: () => void;
+  onUpdateConfig: (updates: Partial<ServiceConfig>) => void;
+  onSetActive: (modelId: string) => void;
+}) {
+  const hasKey = !!config?.apiKey;
+  const [customModelInput, setCustomModelInput] = useState('');
+
+  const currentModel = config?.model || definition.models[0]?.id || '';
+  const isKnownModel = definition.models.some(m => m.id === currentModel);
+
+  return (
+    <div
+      className="transition-all"
+      style={{
+        background: isActiveService ? 'rgba(139,143,255,0.04)' : 'transparent',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
+      }}
+    >
+      {/* Header */}
+      <div className="px-3.5 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] font-medium" style={{ color: hasKey ? 'var(--foreground)' : 'var(--subtle)' }}>
+            {definition.label}
+          </span>
+          {hasKey && (
+            <span
+              className="text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1"
+              style={{ background: 'rgba(43,189,104,0.08)', color: '#2BBD68' }}
+            >
+              <span className="w-1 h-1 rounded-full inline-block" style={{ background: '#2BBD68' }} />
+              Active
+            </span>
+          )}
+          {definition.hasFreeTier && (
+            <span
+              className="text-[10px] px-1.5 py-0.5 rounded-full"
+              style={{ background: 'rgba(43,189,104,0.08)', color: '#2BBD68' }}
+            >
+              Free tier
+            </span>
+          )}
+        </div>
+        {hasKey && !isActiveService && (
+          <button
+            onClick={() => onSetActive(currentModel)}
+            className="text-[10px] px-2 py-0.5 rounded cursor-pointer transition-colors hover:bg-white/5"
+            style={{ color: 'var(--dim)' }}
+          >
+            Set as active
+          </button>
+        )}
+      </div>
+
+      <div className="px-3.5 pb-3 space-y-2.5">
+        <p className="text-[11px] text-ghost leading-relaxed">{definition.description}</p>
+
+        {/* API Key */}
+        <div>
+          <label className="text-[10px] text-dim uppercase tracking-wider block mb-1">API Key</label>
+          <div className="flex gap-1.5">
+            <div className="flex-1 relative">
+              {showKey ? (
+                <input
+                  type="text"
+                  value={config?.apiKey || ''}
+                  onChange={e => onUpdateConfig({ apiKey: e.target.value })}
+                  placeholder={definition.keyHint}
+                  className="w-full h-7 px-2.5 rounded-md text-[11px] text-foreground placeholder:text-[#444] outline-none"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}
+                />
+              ) : (
+                <div
+                  className="w-full h-7 px-2.5 rounded-md text-[11px] flex items-center cursor-text"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    color: hasKey ? 'var(--dim)' : '#444',
+                  }}
+                  onClick={onToggleShowKey}
+                >
+                  {hasKey ? maskKey(config!.apiKey) : definition.keyHint}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={onToggleShowKey}
+              className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-white/5 cursor-pointer transition-colors"
+              style={{ color: '#555' }}
+            >
+              {showKey ? <EyeOff size={11} /> : <Eye size={11} />}
+            </button>
+          </div>
+          {definition.keyUrl && (
+            <a href={definition.keyUrl} target="_blank" rel="noopener noreferrer"
+              className="text-[10px] text-dim hover:text-subtle mt-1 inline-block transition-colors"
+            >
+              Get your API key &rarr;
+            </a>
+          )}
+          {definition.freeNote && hasKey && (
+            <p className="text-[10px] text-[#2BBD68]/60 mt-1 flex items-start gap-1">
+              <Info size={8} className="shrink-0 mt-[2px]" />
+              {definition.freeNote}
+            </p>
+          )}
+        </div>
+
+        {/* Model selector — only show when key is set */}
+        {hasKey && (
+          <div>
+            <label className="text-[10px] text-dim uppercase tracking-wider block mb-1">Model</label>
+            <div className="relative">
+              <select
+                value={isKnownModel ? currentModel : '__custom__'}
+                onChange={e => {
+                  if (e.target.value === '__custom__') return;
+                  const newModel = e.target.value;
+                  onUpdateConfig({ model: newModel });
+                  if (isActiveService) onSetActive(newModel);
+                }}
+                className="w-full h-7 px-2 pr-7 rounded-md text-[11px] text-foreground outline-none cursor-pointer appearance-none"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
+                {definition.models.map(m => (
+                  <option key={m.id} value={m.id}>{m.label}</option>
+                ))}
+                {!isKnownModel && currentModel && (
+                  <option value={currentModel}>{currentModel} (custom)</option>
+                )}
+                {definition.supportsCustomModel && (
+                  <option value="__custom__">Custom model...</option>
+                )}
+              </select>
+              <ChevronDown size={9} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-dim" />
+            </div>
+
+            {definition.supportsCustomModel && (
+              <input
+                type="text"
+                value={customModelInput}
+                onChange={e => {
+                  setCustomModelInput(e.target.value);
+                  if (e.target.value.trim()) {
+                    onUpdateConfig({ model: e.target.value.trim() });
+                    if (isActiveService) onSetActive(e.target.value.trim());
+                  }
+                }}
+                placeholder="Or paste any model ID..."
+                className="w-full h-6 px-2.5 mt-1.5 rounded-md text-[11px] text-muted-foreground placeholder:text-[#444] outline-none"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+              />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ═════════════════════════════════════════════════════════════════
-// Main Component
+// AISettingsContent — reusable settings UI (inline or inside modal)
 // ═════════════════════════════════════════════════════════════════
 
-export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, currentConversationMessages }: AISettingsPopupProps) {
-  const [settings, setSettings] = useState<AISettings>(loadAISettings);
-  const [showKey, setShowKey] = useState<Record<ProviderType, boolean>>({
-    openai: false, anthropic: false,
-  });
-  const [saved, setSaved] = useState(false);
-  const [customModel, setCustomModel] = useState<Record<ProviderType, string>>({
-    openai: '', anthropic: '',
-  });
+export function AISettingsContent({ onSettingsSaved, projectContext, currentConversationMessages, onClose, inline }: AISettingsContentProps) {
+  const [settings, setSettings] = useState<AISettingsV2>(loadAISettings);
+  const [showKey, setShowKey] = useState<Partial<Record<ServiceId, boolean>>>({});
   const [contextTier, setContextTier] = useState<ContextTier>(loadContextTier);
   const [contextToggles, setContextToggles] = useState<ContextToggles>(loadContextToggles);
   const [activeTab, setActiveTab] = useState<SettingsTab>('provider');
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const isInitialMount = useRef(true);
 
-  const sectionRefs = useRef<Record<ProviderType, HTMLDivElement | null>>({
-    openai: null, anthropic: null,
-  });
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // ── Auto-save with debounce ───────────────────────────────────
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    setSaveState('saving');
+    const timer = setTimeout(() => {
+      saveAISettings(settings);
+      saveContextTier(contextTier);
+      saveContextToggles(contextToggles);
+      onSettingsSaved?.(settings, contextTier, contextToggles);
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 1500);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [settings, contextTier, contextToggles]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Token calculations (live) ─────────────────────────────────
   const tokenBreakdown = useMemo(() => {
     const budget = getContextBudget(contextTier);
-
-    // Knowledge base
     const kbText = getKnowledgeBaseText(contextTier);
     const kbTokens = estimateTokens(kbText);
     const kbLabel = budget.useCompactKB ? 'Compact' : 'Full';
-
-    // Project context (raw, before truncation by tier)
     const projectRawTokens = estimateTokens(projectContext || '');
     const projectBudget = budget.projectContext;
     const projectEffective = Math.min(projectRawTokens, projectBudget);
-
-    // Conversation history
     const convTokens = (currentConversationMessages || []).reduce(
-      (sum, m) => sum + estimateTokens(m.content) + 4,
-      0,
+      (sum, m) => sum + estimateTokens(m.content) + 4, 0,
     );
     const convBudget = budget.conversationHistory;
     const convEffective = Math.min(convTokens, convBudget);
     const convMessageCount = (currentConversationMessages || []).length;
-
-    // System instruction (tail)
     const tailTokens = estimateTokens(
       budget.useCompactKB
         ? 'Use the project context above to give specific answers. Reference actual node/token names. Be concise.'
         : 'IMPORTANT: You have full context of the user\'s current project above. Use it to give specific, actionable answers. Reference their actual node names, token names, and settings when relevant. Be concise and helpful.'
     );
-
-    // Calculate totals based on toggles
     const activeKB = contextToggles.knowledgeBase ? kbTokens : 0;
     const activeProject = contextToggles.projectContext ? projectEffective : 0;
     const activeConv = contextToggles.conversationHistory ? convEffective : 0;
     const totalInput = activeKB + activeProject + activeConv + tailTokens;
     const totalWithResponse = totalInput + budget.maxResponseTokens;
-
     return {
       kbTokens, kbLabel,
       projectRawTokens, projectEffective, projectBudget,
@@ -136,384 +315,199 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
       tailTokens,
       maxResponse: budget.maxResponseTokens,
       totalBudget: budget.totalBudget,
-      totalInput,
-      totalWithResponse,
+      totalInput, totalWithResponse,
       activeKB, activeProject, activeConv,
     };
   }, [contextTier, contextToggles, projectContext, currentConversationMessages]);
 
-  const handleSave = useCallback(() => {
-    saveAISettings(settings);
-    saveContextTier(contextTier);
-    saveContextToggles(contextToggles);
-    onSettingsSaved?.(settings, contextTier, contextToggles);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }, [settings, contextTier, contextToggles, onSettingsSaved]);
+  // ── Service update helpers ────────────────────────────────────
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  const updateService = useCallback((serviceId: ServiceId, updates: Partial<ServiceConfig>) => {
+    setSettings(prev => {
+      const existing = prev.services[serviceId] || { apiKey: '', model: SERVICE_MAP[serviceId].models[0]?.id || '' };
+      const updated = { ...existing, ...updates };
 
-  const updateProvider = (type: ProviderType, updates: Partial<AISettings['providers'][ProviderType]>) => {
-    setSettings(prev => ({
-      ...prev,
-      providers: {
-        ...prev.providers,
-        [type]: { ...prev.providers[type], ...updates },
-      },
-    }));
-  };
+      const newSettings = {
+        ...prev,
+        services: { ...prev.services, [serviceId]: updated },
+      };
 
-  const selectProvider = (type: ProviderType) => {
-    setSettings(prev => ({ ...prev, activeProvider: type }));
-    setTimeout(() => {
-      sectionRefs.current[type]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
-  };
+      // Auto-activate: if this is the first service with a key and no active service has a key
+      if (updates.apiKey && updates.apiKey.length > 0) {
+        const currentActive = prev.services[prev.activeModel.serviceId];
+        if (!currentActive?.apiKey) {
+          newSettings.activeModel = { serviceId, modelId: updated.model };
+        }
+      }
 
-  const applyPreset = (preset: typeof OPENAI_COMPATIBLE_PRESETS[0]) => {
-    updateProvider('openai', { baseUrl: preset.baseUrl, model: preset.models[0].id });
-    setCustomModel(prev => ({ ...prev, openai: '' }));
-  };
+      return newSettings;
+    });
+  }, []);
 
-  const getCurrentPreset = () => {
-    const baseUrl = settings.providers.openai.baseUrl;
-    if (!baseUrl) return null;
-    return OPENAI_COMPATIBLE_PRESETS.find(p => {
-      try {
-        if (baseUrl.includes('.up.railway.app')) return p.baseUrl.includes('.up.railway.app');
-        return baseUrl.includes(new URL(p.baseUrl).hostname);
-      } catch { return false; }
-    }) || null;
-  };
+  const setActiveModel = useCallback((serviceId: ServiceId, modelId: string) => {
+    setSettings(prev => ({ ...prev, activeModel: { serviceId, modelId } }));
+  }, []);
 
   const updateToggle = (key: keyof ContextToggles, value: boolean) => {
     setContextToggles(prev => ({ ...prev, [key]: value }));
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 100000 }}>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="absolute inset-0"
-        style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-        onClick={onClose}
-      />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.97, y: 8 }}
-        transition={{ duration: 0.2 }}
-        className="relative rounded-xl overflow-hidden flex flex-col"
-        style={{
-          width: 'min(580px, 92vw)',
-          maxHeight: 'min(740px, 90vh)',
-          background: 'var(--card)',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-        }}
-      >
-        {/* ── Header ── */}
-        <div className="shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <div className={`flex flex-col ${inline ? '' : 'h-full'}`}>
+      {/* ── Header ── */}
+      <div className="shrink-0" style={inline ? { borderBottom: '1px solid rgba(255,255,255,0.04)' } : { borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        {!inline && (
           <div className="flex items-center justify-between px-5 py-3">
             <div>
               <h2 className="text-[14px] text-foreground font-medium">AI Settings</h2>
-              <p className="text-[10px] text-ghost mt-0.5">Bring your own API key — stored locally, never sent to our servers</p>
+              <p className="text-[11px] text-ghost mt-0.5">Bring your own API key — stored locally, never sent to our servers</p>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-md hover:bg-white/5 cursor-pointer" style={{ color: 'var(--dim)' }}>
-              <X size={14} />
-            </button>
+            {onClose && (
+              <button onClick={onClose} className="p-1.5 rounded-md hover:bg-white/5 cursor-pointer" style={{ color: 'var(--dim)' }}>
+                <X size={14} />
+              </button>
+            )}
           </div>
+        )}
+        {inline && (
+          <p className="text-[11px] text-ghost mb-3">Bring your own API key — stored locally, never sent to our servers</p>
+        )}
 
-          {/* ── Tab Bar ── */}
-          <div className="flex px-5 gap-0">
-            {([
-              { id: 'provider' as SettingsTab, label: 'Provider', icon: Settings },
-              { id: 'context' as SettingsTab, label: 'Context Tier', icon: BookOpen },
-            ]).map(tab => {
-              const isActive = activeTab === tab.id;
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className="flex items-center gap-1.5 px-3.5 py-2 text-[11px] transition-all cursor-pointer relative"
-                  style={{ color: isActive ? 'var(--foreground)' : 'var(--dim)' }}
-                >
-                  <Icon size={12} />
-                  {tab.label}
-                  {isActive && (
-                    <motion.div
-                      layoutId="settings-tab-indicator"
-                      className="absolute bottom-0 left-1 right-1 h-[2px] rounded-full"
-                      style={{ background: '#FD7DEE' }}
-                      transition={{ duration: 0.2 }}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+        {/* ── Tab Bar ── */}
+        <div className={`flex ${inline ? '' : 'px-5'} gap-0`}>
+          {([
+            { id: 'provider' as SettingsTab, label: 'Provider', icon: Settings },
+            { id: 'context' as SettingsTab, label: 'Context Tier', icon: BookOpen },
+          ]).map(tab => {
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className="flex items-center gap-1.5 px-3.5 py-2 text-[11px] transition-all cursor-pointer relative"
+                style={{ color: isActive ? 'var(--foreground)' : 'var(--dim)' }}
+              >
+                <Icon size={12} />
+                {tab.label}
+                {isActive && (
+                  <motion.div
+                    layoutId={inline ? 'settings-tab-indicator-inline' : 'settings-tab-indicator'}
+                    className="absolute bottom-0 left-1 right-1 h-[2px] rounded-full"
+                    style={{ background: 'var(--ai)' }}
+                    transition={{ duration: 0.2 }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        {/* ── Content ── */}
-        <div ref={contentRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+      {/* ── Content ── */}
+      <div ref={contentRef} className={`flex-1 min-h-0 overflow-y-auto ${inline ? 'py-2' : 'px-0 py-2'}`}>
 
-          {activeTab === 'provider' ? (
+        {activeTab === 'provider' ? (
             /* ═══════════════════════════════════════════════════════════
-               PROVIDER TAB
+               PROVIDER TAB — Per-service sections
                ═══════════════════════════════════════════════════════════ */
-            <>
-              {/* Active Provider Tabs */}
-              <div>
-                <label className="text-[10px] text-dim uppercase tracking-wider block mb-2">Provider</label>
-                <div className="flex gap-2">
-                  {PROVIDER_ORDER.map(type => {
-                    const isActive = settings.activeProvider === type;
-                    const isConfigured = !!settings.providers[type].apiKey
-                      || (type === 'openai' && settings.providers[type].baseUrl.includes('.up.railway.app'));
-                    return (
-                      <button
-                        key={type}
-                        onClick={() => selectProvider(type)}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px] transition-all cursor-pointer"
-                        style={{
-                          background: isActive ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)',
-                          border: `1px solid ${isActive ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.04)'}`,
-                          color: isActive ? 'var(--foreground)' : 'var(--faint)',
-                        }}
-                      >
-                        {isConfigured && <div className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? 'var(--success)' : 'var(--ghost)' }} />}
-                        {DEFAULT_PROVIDERS[type].label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Provider Sections */}
-              {PROVIDER_ORDER.map(type => {
-                const provider = settings.providers[type];
-                const isActive = settings.activeProvider === type;
-                const info = PROVIDER_INFO[type];
-                const currentPreset = type === 'openai' ? getCurrentPreset() : null;
-
+            <div>
+              {SERVICE_DEFINITIONS.map(def => {
+                const cfg = settings.services[def.id];
+                const isActive = settings.activeModel.serviceId === def.id;
                 return (
-                  <div
-                    key={type}
-                    ref={el => { sectionRefs.current[type] = el; }}
-                    className="rounded-lg overflow-hidden transition-all"
-                    style={{
-                      background: 'rgba(255,255,255,0.02)',
-                      border: `1px solid ${isActive ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)'}`,
-                    }}
-                  >
-                    <div className="px-3.5 py-2.5 flex items-center justify-between cursor-pointer"
-                      style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                      onClick={() => selectProvider(type)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px]" style={{ color: isActive ? 'var(--foreground)' : 'var(--subtle)' }}>
-                          {DEFAULT_PROVIDERS[type].label}
-                        </span>
-                        {isActive && (
-                          <span
-                            className="text-[9px] text-success bg-success/10 px-1.5 py-0.5 rounded"
-                            style={{ border: 'none' }}
-                          >
-                            Active
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {(!!provider.apiKey || (type === 'openai' && provider.baseUrl.includes('.up.railway.app'))) && (
-                          <span className="text-[9px] text-dim bg-white/[0.03] px-1.5 py-0.5 rounded">
-                            {provider.baseUrl.includes('.up.railway.app') ? 'Self-hosted' : 'Key set'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="px-3.5 py-3 space-y-3">
-                      <p className="text-[9px] text-ghost leading-relaxed">{info.desc}</p>
-
-                      {/* Quick-fill presets */}
-                      {type === 'openai' && (
-                        <div>
-                          <label className="text-[10px] text-dim block mb-1.5">Quick Fill</label>
-                          <div className="flex flex-wrap gap-1">
-                            {OPENAI_COMPATIBLE_PRESETS.map(preset => {
-                              const isSelected = (() => {
-                                try {
-                                  if (provider.baseUrl.includes('.up.railway.app')) return preset.baseUrl.includes('.up.railway.app');
-                                  return provider.baseUrl.includes(new URL(preset.baseUrl).hostname);
-                                } catch { return false; }
-                              })();
-                              return (
-                                <button
-                                  key={preset.label}
-                                  onClick={() => applyPreset(preset)}
-                                  className="flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all cursor-pointer"
-                                  style={{
-                                    background: isSelected ? 'rgba(253,125,238,0.15)' : 'rgba(255,255,255,0.04)',
-                                    border: `1px solid ${isSelected ? 'rgba(253,125,238,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                                    color: isSelected ? '#FD7DEE' : '#888',
-                                  }}
-                                >
-                                  <Zap size={8} />
-                                  {preset.label}
-                                  {preset.hasFreeTier && (
-                                    <span className="text-[8px] px-1 py-[1px] rounded"
-                                      style={{ background: 'rgba(43,189,104,0.15)', color: '#2BBD68', border: 'none' }}
-                                    >
-                                      free
-                                    </span>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                          {currentPreset?.freeNote && (
-                            <p className="text-[9px] text-[#2BBD68]/70 mt-1.5 flex items-start gap-1">
-                              <Info size={9} className="shrink-0 mt-[1px]" />
-                              {currentPreset.freeNote}
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      {/* API Key */}
-                      <div>
-                        <label className="text-[10px] text-dim block mb-1">API Key</label>
-                        <div className="flex gap-1.5">
-                          <input
-                            type={showKey[type] ? 'text' : 'password'}
-                            value={provider.apiKey}
-                            onChange={e => updateProvider(type, { apiKey: e.target.value })}
-                            placeholder={info.keyHint}
-                            className="flex-1 h-8 px-2.5 rounded-md text-[11px] text-foreground placeholder:text-[#2a2a2a] outline-none"
-                            style={{
-                              background: 'rgba(0,0,0,0.3)',
-                              border: `1px solid ${provider.apiKey ? 'rgba(43,189,104,0.2)' : 'rgba(255,255,255,0.06)'}`,
-                            }}
-                          />
-                          <button
-                            onClick={() => setShowKey(prev => ({ ...prev, [type]: !prev[type] }))}
-                            className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-white/5 cursor-pointer"
-                            style={{ color: '#555', border: '1px solid rgba(255,255,255,0.06)' }}
-                          >
-                            {showKey[type] ? <EyeOff size={12} /> : <Eye size={12} />}
-                          </button>
-                        </div>
-                        {info.keyUrl && (
-                          <a href={info.keyUrl} target="_blank" rel="noopener noreferrer"
-                            className="text-[9px] text-dim hover:text-subtle mt-1 inline-block"
-                          >
-                            Get your API key &rarr;
-                          </a>
-                        )}
-                      </div>
-
-                      {/* Base URL */}
-                      {type === 'openai' && (
-                        <div>
-                          <label className="text-[10px] text-dim block mb-1">Base URL</label>
-                          <input
-                            type="text"
-                            value={provider.baseUrl}
-                            onChange={e => updateProvider(type, { baseUrl: e.target.value })}
-                            className="w-full h-8 px-2.5 rounded-md text-[11px] text-foreground placeholder:text-[#2a2a2a] outline-none"
-                            style={{
-                              background: 'rgba(0,0,0,0.3)',
-                              border: '1px solid rgba(255,255,255,0.06)',
-                            }}
-                          />
-                        </div>
-                      )}
-
-                      {/* Model selector */}
-                      <div>
-                        <label className="text-[10px] text-dim block mb-1">Model</label>
-                        <div className="flex gap-1.5">
-                          <div className="flex-1 relative">
-                            <select
-                              value={(() => {
-                                if (type === 'openai' && currentPreset) {
-                                  if (currentPreset.models.some(m => m.id === provider.model)) return provider.model;
-                                }
-                                const models = PROVIDER_MODELS[type];
-                                if (models.some(m => m.id === provider.model)) return provider.model;
-                                return '__custom__';
-                              })()}
-                              onChange={e => {
-                                if (e.target.value !== '__custom__') {
-                                  updateProvider(type, { model: e.target.value });
-                                  setCustomModel(prev => ({ ...prev, [type]: '' }));
-                                }
-                              }}
-                              className="w-full h-8 px-2 pr-7 rounded-md text-[11px] text-foreground outline-none cursor-pointer appearance-none"
-                              style={{
-                                background: 'rgba(0,0,0,0.3)',
-                                border: '1px solid rgba(255,255,255,0.06)',
-                              }}
-                            >
-                              {type === 'openai' && currentPreset && currentPreset.models.map(m => (
-                                <option key={m.id} value={m.id}>{m.label}</option>
-                              ))}
-                              {type === 'openai' && !currentPreset && PROVIDER_MODELS.openai.map(m => (
-                                <option key={m.id} value={m.id}>{m.label}</option>
-                              ))}
-                              {type === 'anthropic' && ANTHROPIC_MODELS.map(m => (
-                                <option key={m.id} value={m.id}>{m.label}</option>
-                              ))}
-                              {!(() => {
-                                if (type === 'openai' && currentPreset) {
-                                  return currentPreset.models.some(m => m.id === provider.model);
-                                }
-                                return PROVIDER_MODELS[type].some(m => m.id === provider.model);
-                              })() && provider.model && (
-                                <option value={provider.model}>{provider.model} (custom)</option>
-                              )}
-                              <option value="__custom__">Custom model...</option>
-                            </select>
-                            <ChevronDown size={10} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-dim" />
-                          </div>
-                        </div>
-
-                        <input
-                          type="text"
-                          value={customModel[type]}
-                          onChange={e => {
-                            setCustomModel(prev => ({ ...prev, [type]: e.target.value }));
-                            if (e.target.value.trim()) {
-                              updateProvider(type, { model: e.target.value.trim() });
-                            }
-                          }}
-                          placeholder="Or type any model ID..."
-                          className="w-full h-7 px-2.5 mt-1.5 rounded-md text-[10px] text-muted-foreground placeholder:text-[#2a2a2a] outline-none"
-                          style={{
-                            background: 'rgba(0,0,0,0.2)',
-                            border: '1px solid rgba(255,255,255,0.04)',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <ServiceSection
+                    key={def.id}
+                    definition={def}
+                    config={cfg}
+                    isActiveService={isActive}
+                    showKey={!!showKey[def.id]}
+                    onToggleShowKey={() => setShowKey(prev => ({ ...prev, [def.id]: !prev[def.id] }))}
+                    onUpdateConfig={updates => updateService(def.id, updates)}
+                    onSetActive={modelId => setActiveModel(def.id, modelId)}
+                  />
                 );
               })}
-            </>
+            </div>
           ) : (
             /* ═══════════════════════════════════════════════════════════
                CONTEXT TIER TAB
                ═══════════════════════════════════════════════════════════ */
-            <>
+            <div className={`${inline ? '' : 'px-5'} space-y-4`}>
+              {/* Active Model Context Info */}
+              {(() => {
+                const configuredModels = getConfiguredModelsWithContext(settings);
+                const activeCtx = getModelContextWindow(settings.activeModel.serviceId, settings.activeModel.modelId);
+                const activeDef = SERVICE_MAP[settings.activeModel.serviceId];
+                const activeModelLabel = activeDef?.models.find(m => m.id === settings.activeModel.modelId)?.label || settings.activeModel.modelId;
+                return configuredModels.length > 0 ? (
+                  <div className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div className="px-3.5 py-2.5">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-[10px] text-dim uppercase tracking-wider">Active Model</label>
+                        {activeCtx && (
+                          <span className="text-[11px] font-mono tabular-nums" style={{ color: 'var(--ai)' }}>
+                            {formatTokens(activeCtx)} context
+                          </span>
+                        )}
+                      </div>
+                      {configuredModels.length > 1 ? (
+                        <div className="relative">
+                          <select
+                            value={`${settings.activeModel.serviceId}:${settings.activeModel.modelId}`}
+                            onChange={e => {
+                              const [sid, ...rest] = e.target.value.split(':');
+                              const mid = rest.join(':');
+                              setSettings(prev => ({ ...prev, activeModel: { serviceId: sid as ServiceId, modelId: mid } }));
+                            }}
+                            className="w-full h-7 px-2 pr-7 rounded-md text-[11px] text-foreground outline-none cursor-pointer appearance-none"
+                            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                          >
+                            {configuredModels.map(m => (
+                              <option key={`${m.serviceId}:${m.modelId}`} value={`${m.serviceId}:${m.modelId}`}>
+                                {m.serviceLabel}: {m.modelLabel}{m.contextWindow ? ` (${formatTokens(m.contextWindow)})` : ''}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown size={9} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-dim" />
+                        </div>
+                      ) : (
+                        <div className="text-[11px] text-foreground">
+                          {activeDef?.label}: {activeModelLabel}
+                        </div>
+                      )}
+                      {activeCtx && (
+                        <div className="mt-2">
+                          <div className="flex items-center justify-between text-[10px] text-ghost mb-1">
+                            <span>Context usage</span>
+                            <span className="font-mono tabular-nums">
+                              {formatTokens(tokenBreakdown.totalWithResponse)} / {formatTokens(activeCtx)}
+                            </span>
+                          </div>
+                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{
+                                width: `${Math.min((tokenBreakdown.totalWithResponse / activeCtx) * 100, 100)}%`,
+                                background: tokenBreakdown.totalWithResponse > activeCtx ? '#FF4D6A' : 'var(--ai)',
+                              }}
+                            />
+                          </div>
+                          {tokenBreakdown.totalWithResponse > activeCtx && (
+                            <p className="text-[10px] mt-1" style={{ color: '#FF4D6A' }}>
+                              Exceeds model context — reduce tier or disable sources
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
               {/* Tier Selector */}
               <div>
-                <label className="text-[10px] text-dim uppercase tracking-wider block mb-2">Context Tier</label>
+                <label className="text-[11px] text-dim uppercase tracking-wider block mb-2">Context Tier</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['small', 'medium', 'large'] as ContextTier[]).map(tier => {
                     const isSelected = contextTier === tier;
@@ -535,21 +529,21 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                             {info.label}
                           </span>
                         </div>
-                        <p className="text-[9px] leading-relaxed" style={{ color: isSelected ? 'var(--subtle)' : 'var(--dim)' }}>
+                        <p className="text-[11px] leading-relaxed" style={{ color: isSelected ? 'var(--subtle)' : 'var(--dim)' }}>
                           {info.description}
                         </p>
                       </button>
                     );
                   })}
                 </div>
-                <p className="text-[9px] text-ghost mt-2 leading-relaxed px-0.5">
+                <p className="text-[11px] text-ghost mt-2 leading-relaxed px-0.5">
                   {TIER_INFO[contextTier].detail}
                 </p>
               </div>
 
               {/* ── Context Sources Breakdown ── */}
               <div>
-                <label className="text-[10px] text-dim uppercase tracking-wider block mb-2">Context Sources</label>
+                <label className="text-[11px] text-dim uppercase tracking-wider block mb-2">Context Sources</label>
                 <div className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
 
                   {/* Knowledge Base */}
@@ -561,16 +555,11 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                         <span className="text-[11px]" style={{ color: contextToggles.knowledgeBase ? 'var(--foreground)' : 'var(--dim)' }}>
                           Knowledge Base
                         </span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded" style={{
-                          background: 'rgba(255,255,255,0.04)',
-                          color: '#666',
-                        }}>
+                        <span className="text-[11px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.04)', color: '#666' }}>
                           {tokenBreakdown.kbLabel}
                         </span>
                       </div>
-                      <p className="text-[9px] text-ghost mt-0.5">
-                        0colors features, concepts, and usage guide
-                      </p>
+                      <p className="text-[11px] text-ghost mt-0.5">0colors features, concepts, and usage guide</p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="text-[11px] font-mono tabular-nums" style={{
@@ -592,12 +581,12 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           Project Data
                         </span>
                         {tokenBreakdown.projectRawTokens > tokenBreakdown.projectBudget && contextToggles.projectContext && (
-                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(253,125,238,0.15)', color: '#FD7DEE' }}>
+                          <span className="text-[11px] px-1 py-[1px] rounded" style={{ background: 'rgba(139,143,255,0.15)', color: 'var(--ai)' }}>
                             truncated
                           </span>
                         )}
                       </div>
-                      <p className="text-[9px] text-ghost mt-0.5">
+                      <p className="text-[11px] text-ghost mt-0.5">
                         {projectContext
                           ? `Current project: nodes, tokens, themes, logic (${formatTokens(tokenBreakdown.projectRawTokens)} raw)`
                           : 'No project context available'
@@ -624,12 +613,12 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                           Conversation History
                         </span>
                         {tokenBreakdown.convTokens > tokenBreakdown.convBudget && contextToggles.conversationHistory && (
-                          <span className="text-[8px] px-1 py-[1px] rounded" style={{ background: 'rgba(253,125,238,0.15)', color: '#FD7DEE' }}>
+                          <span className="text-[11px] px-1 py-[1px] rounded" style={{ background: 'rgba(139,143,255,0.15)', color: 'var(--ai)' }}>
                             truncated
                           </span>
                         )}
                       </div>
-                      <p className="text-[9px] text-ghost mt-0.5">
+                      <p className="text-[11px] text-ghost mt-0.5">
                         {tokenBreakdown.convMessageCount > 0
                           ? `${tokenBreakdown.convMessageCount} messages in current chat (${formatTokens(tokenBreakdown.convTokens)} raw)`
                           : 'No active conversation'
@@ -646,21 +635,17 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                     </div>
                   </div>
 
-                  {/* System Instruction (always on, not toggleable) */}
+                  {/* System Instruction */}
                   <div className="px-3.5 py-2.5 flex items-center justify-between"
                     style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                   >
                     <div className="flex-1 min-w-0">
                       <span className="text-[11px] text-faint">System Instruction</span>
-                      <p className="text-[9px] text-ghost mt-0.5">
-                        Always included — guides AI behavior
-                      </p>
+                      <p className="text-[11px] text-ghost mt-0.5">Always included — guides AI behavior</p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] font-mono tabular-nums text-dim">
-                        {formatTokens(tokenBreakdown.tailTokens)}
-                      </span>
-                      <div className="w-[18px]" /> {/* spacer to align with toggles */}
+                      <span className="text-[11px] font-mono tabular-nums text-dim">{formatTokens(tokenBreakdown.tailTokens)}</span>
+                      <div className="w-[18px]" />
                     </div>
                   </div>
 
@@ -670,25 +655,21 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
                   >
                     <div className="flex-1 min-w-0">
                       <span className="text-[11px] text-faint">Max Response</span>
-                      <p className="text-[9px] text-ghost mt-0.5">
-                        Reserved for AI output generation
-                      </p>
+                      <p className="text-[11px] text-ghost mt-0.5">Reserved for AI output generation</p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] font-mono tabular-nums text-dim">
-                        {formatTokens(tokenBreakdown.maxResponse)}
-                      </span>
+                      <span className="text-[11px] font-mono tabular-nums text-dim">{formatTokens(tokenBreakdown.maxResponse)}</span>
                       <div className="w-[18px]" />
                     </div>
                   </div>
 
-                  {/* ── Total ── */}
+                  {/* Total */}
                   <div className="px-3.5 py-2.5 flex items-center justify-between"
                     style={{ background: 'rgba(255,255,255,0.02)' }}
                   >
                     <div className="flex-1">
                       <span className="text-[11px] text-subtle font-medium">Total Estimated</span>
-                      <p className="text-[9px] text-ghost mt-0.5">
+                      <p className="text-[11px] text-ghost mt-0.5">
                         Input: {formatTokens(tokenBreakdown.totalInput)} + Response: {formatTokens(tokenBreakdown.maxResponse)}
                       </p>
                     </div>
@@ -705,108 +686,114 @@ export function AISettingsPopup({ onClose, onSettingsSaved, projectContext, curr
               {/* ── Budget bar visualization ── */}
               <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[9px] text-dim">Token budget usage</span>
-                  <span className="text-[9px] font-mono tabular-nums" style={{ color: TIER_COLORS[contextTier] }}>
+                  <span className="text-[11px] text-dim">Token budget usage</span>
+                  <span className="text-[11px] font-mono tabular-nums" style={{ color: TIER_COLORS[contextTier] }}>
                     {formatTokens(tokenBreakdown.totalWithResponse)} / {formatTokens(tokenBreakdown.totalBudget)}
                   </span>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden flex" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                  {/* KB segment */}
                   {tokenBreakdown.activeKB > 0 && (
-                    <div
-                      className="h-full"
-                      style={{
-                        width: `${(tokenBreakdown.activeKB / tokenBreakdown.totalBudget) * 100}%`,
-                        background: '#7C66DC',
-                      }}
-                      title={`Knowledge Base: ${formatTokens(tokenBreakdown.activeKB)}`}
-                    />
+                    <div className="h-full" style={{ width: `${(tokenBreakdown.activeKB / tokenBreakdown.totalBudget) * 100}%`, background: '#7C66DC' }}
+                      title={`Knowledge Base: ${formatTokens(tokenBreakdown.activeKB)}`} />
                   )}
-                  {/* Project segment */}
                   {tokenBreakdown.activeProject > 0 && (
-                    <div
-                      className="h-full"
-                      style={{
-                        width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`,
-                        background: '#FD7DEE',
-                      }}
-                      title={`Project: ${formatTokens(tokenBreakdown.activeProject)}`}
-                    />
+                    <div className="h-full" style={{ width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--ai)' }}
+                      title={`Project: ${formatTokens(tokenBreakdown.activeProject)}`} />
                   )}
-                  {/* Conversation segment */}
                   {tokenBreakdown.activeConv > 0 && (
-                    <div
-                      className="h-full"
-                      style={{
-                        width: `${(tokenBreakdown.activeConv / tokenBreakdown.totalBudget) * 100}%`,
-                        background: '#2BBD68',
-                      }}
-                      title={`Conversation: ${formatTokens(tokenBreakdown.activeConv)}`}
-                    />
+                    <div className="h-full" style={{ width: `${(tokenBreakdown.activeConv / tokenBreakdown.totalBudget) * 100}%`, background: '#2BBD68' }}
+                      title={`Conversation: ${formatTokens(tokenBreakdown.activeConv)}`} />
                   )}
-                  {/* System + Response segment */}
-                  <div
-                    className="h-full"
-                    style={{
-                      width: `${((tokenBreakdown.tailTokens + tokenBreakdown.maxResponse) / tokenBreakdown.totalBudget) * 100}%`,
-                      background: 'rgba(255,255,255,0.08)',
-                    }}
-                    title={`System + Response: ${formatTokens(tokenBreakdown.tailTokens + tokenBreakdown.maxResponse)}`}
-                  />
+                  <div className="h-full"
+                    style={{ width: `${((tokenBreakdown.tailTokens + tokenBreakdown.maxResponse) / tokenBreakdown.totalBudget) * 100}%`, background: 'rgba(255,255,255,0.08)' }}
+                    title={`System + Response: ${formatTokens(tokenBreakdown.tailTokens + tokenBreakdown.maxResponse)}`} />
                 </div>
-                {/* Legend */}
                 <div className="flex flex-wrap gap-3 mt-2">
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-sm" style={{ background: '#7C66DC' }} />
-                    <span className="text-[8px] text-dim">KB</span>
+                    <span className="text-[11px] text-dim">KB</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: '#FD7DEE' }} />
-                    <span className="text-[8px] text-dim">Project</span>
+                    <div className="w-2 h-2 rounded-sm" style={{ background: 'var(--ai)' }} />
+                    <span className="text-[11px] text-dim">Project</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-sm" style={{ background: '#2BBD68' }} />
-                    <span className="text-[8px] text-dim">Conversation</span>
+                    <span className="text-[11px] text-dim">Conversation</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-sm" style={{ background: 'rgba(255,255,255,0.15)' }} />
-                    <span className="text-[8px] text-dim">System + Response</span>
+                    <span className="text-[11px] text-dim">System + Response</span>
                   </div>
                 </div>
               </div>
 
               {/* ── How It Works ── */}
-              <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(253,125,238,0.04)', border: '1px solid rgba(253,125,238,0.08)' }}>
-                <p className="text-[10px] text-[#FD7DEE]/70 leading-relaxed">
+              <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(139,143,255,0.04)', border: '1px solid rgba(139,143,255,0.08)' }}>
+                <p className="text-[11px] text-ai/70 leading-relaxed">
                   <strong>How it works:</strong> The Context Tier sets a total token budget. Each source (KB, project, conversation)
                   gets a share of that budget. Toggle sources off to reduce token usage or free up budget for other sources.
                   If the total exceeds what your model can handle, you'll see an error in chat — just switch to a smaller tier or
                   disable some sources.
                 </p>
               </div>
-            </>
+            </div>
           )}
         </div>
 
-        {/* ── Footer ── */}
-        <div className="shrink-0 px-5 py-3 flex items-center justify-between"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-        >
-          <p className="text-[9px] text-ghost">
-            Keys encrypted locally before cloud sync
-          </p>
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-1.5 h-8 px-4 rounded-lg text-[12px] cursor-pointer transition-colors"
-            style={{
-              background: saved ? '#2BBD68' : 'rgba(255,255,255,0.08)',
-              color: saved ? '#fff' : '#ccc',
-              border: `1px solid ${saved ? '#2BBD68' : 'rgba(255,255,255,0.1)'}`,
-            }}
-          >
-            {saved ? <><Check size={12} /> Saved</> : 'Save Settings'}
-          </button>
+      {/* ── Footer ── */}
+      <div className={`shrink-0 ${inline ? '' : 'px-5'} py-3 flex items-center justify-between`}
+        style={{ borderTop: `1px solid rgba(255,255,255,${inline ? '0.04' : '0.06'})` }}
+      >
+        <p className="text-[11px] text-ghost">
+          Keys encrypted locally before cloud sync
+        </p>
+        <div className="flex items-center gap-1.5 text-[11px]" style={{ color: saveState === 'saved' ? '#2BBD68' : 'var(--ghost)' }}>
+          {saveState === 'saved' && <><Check size={10} /> Saved</>}
+          {saveState === 'saving' && 'Saving...'}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════
+// AISettingsPopup — modal wrapper around AISettingsContent
+// ═════════════════════════════════════════════════════════════════
+
+export function AISettingsPopup({ onClose, ...contentProps }: AISettingsPopupProps) {
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 100000 }}>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0"
+        style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+        onClick={onClose}
+      />
+      {/* Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 8 }}
+        transition={{ duration: 0.2 }}
+        className="relative rounded-xl overflow-hidden flex flex-col"
+        style={{
+          width: 'min(580px, 92vw)',
+          height: 'min(740px, 90vh)',
+          background: 'var(--card)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+        }}
+      >
+        <AISettingsContent {...contentProps} onClose={onClose} />
       </motion.div>
     </div>
   );

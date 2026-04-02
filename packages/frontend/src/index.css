@@ -6263,6 +6263,10 @@
 .bg-brand\/10 { background-color: color-mix(in srgb, var(--brand) 10%, transparent); }
 .bg-brand\/20 { background-color: color-mix(in srgb, var(--brand) 20%, transparent); }
 .bg-brand-pink { background-color: var(--brand-pink); }
+.bg-ai { background-color: var(--ai); }
+.bg-ai\/10 { background-color: color-mix(in srgb, var(--ai) 10%, transparent); }
+.bg-ai\/15 { background-color: color-mix(in srgb, var(--ai) 15%, transparent); }
+.bg-ai\/20 { background-color: color-mix(in srgb, var(--ai) 20%, transparent); }
 .bg-success { background-color: var(--success); }
 .bg-warning { background-color: var(--warning); }
 .bg-info { background-color: var(--info); }
@@ -6274,6 +6278,7 @@
 .text-ghost { color: var(--ghost); }
 .text-brand { color: var(--brand); }
 .text-brand-pink { color: var(--brand-pink); }
+.text-ai { color: var(--ai); }
 .text-success { color: var(--success); }
 .text-warning { color: var(--warning); }
 .text-info { color: var(--info); }
@@ -6295,6 +6300,12 @@
 .hover\:text-foreground:hover { color: var(--foreground); }
 .hover\:text-brand:hover { color: var(--brand); }
 .hover\:text-brand-pink:hover { color: var(--brand-pink); }
+.hover\:text-ai:hover { color: var(--ai); }
+.hover\:bg-ai:hover { background-color: var(--ai); }
+.hover\:bg-ai\/10:hover { background-color: color-mix(in srgb, var(--ai) 10%, transparent); }
+.text-ai\/30 { color: color-mix(in srgb, var(--ai) 30%, transparent); }
+.text-ai\/70 { color: color-mix(in srgb, var(--ai) 70%, transparent); }
+.border-ai\/20 { border-color: color-mix(in srgb, var(--ai) 20%, transparent); }
 .hover\:border-brand:hover { border-color: var(--brand); }
 
 .focus\:border-brand:focus { border-color: var(--brand); }

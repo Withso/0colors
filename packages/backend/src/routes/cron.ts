@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { kvGet, kvSet, kvGetByPrefix } from '../db.js';
+import { getAllDevConfigs, getProjectSnapshot, saveTokenOutput } from '../db.js';
 import { runPipeline } from '../computation/pipeline.js';
 
 const router = new Hono();
@@ -24,16 +24,16 @@ router.get('/cron-tick', async (c) => {
         const results: any[] = [];
         let processed = 0;
 
-        // Scan all dev-config keys for active schedules
-        const configs = await kvGetByPrefix('dev-config:');
+        // Scan all dev configs for active schedules
+        const configs = await getAllDevConfigs();
         for (const cfg of configs) {
-            const devConfig = cfg.value;
+            const devConfig = cfg.config;
             if (!devConfig?.cronEnabled || !devConfig?.cronSchedule) continue;
 
-            const projectId = cfg.key.replace('dev-config:', '');
+            const projectId = cfg.project_id;
 
             // Load snapshot and run pipeline
-            const snapshot = await kvGet(`project:${projectId}:snapshot`);
+            const snapshot = await getProjectSnapshot(projectId);
             if (!snapshot || !devConfig.webhookTargetNodeId) {
                 results.push({ projectId, status: 'skipped', message: 'No snapshot or target node' });
                 processed++;
@@ -52,7 +52,7 @@ router.get('/cron-tick', async (c) => {
             if (pipelineResult.success && pipelineResult.output) {
                 for (const [fmt, content] of Object.entries(pipelineResult.output)) {
                     if (!fmt.includes(':')) {
-                        await kvSet(`project:${projectId}:token-output:${fmt}`, content);
+                        await saveTokenOutput(projectId, fmt, content as string);
                     }
                 }
             }

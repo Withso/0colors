@@ -236,7 +236,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
                     <span className={fmt === selectedFormat ? 'text-foreground' : 'text-subtle'}>
                       {formatLabels[fmt]}
                     </span>
-                    <span className="text-[10px] text-ghost">{formatDescriptions[fmt]}</span>
+                    <span className="text-[11px] text-ghost">{formatDescriptions[fmt]}</span>
                   </div>
                   {fmt === selectedFormat && <Check className="h-3 w-3 text-dim" />}
                 </DropdownMenuItem>
@@ -303,12 +303,12 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
         className="flex items-center justify-between px-5 h-[30px] shrink-0 select-none"
         style={{ borderTop: '1px solid #141414' }}
       >
-        <span className="text-[10px] text-ghost tabular-nums">
+        <span className="text-[11px] text-ghost tabular-nums">
           {lineCount} line{lineCount !== 1 ? 's' : ''}
           {' \u00b7 '}
           {formatLabels[selectedFormat]}
         </span>
-        <span className="text-[10px] text-ghost uppercase tracking-wider">
+        <span className="text-[11px] text-ghost uppercase tracking-wider">
           Read-only
         </span>
       </div>

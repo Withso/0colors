@@ -195,7 +195,7 @@ export function PublishPopup({
               <Globe className="h-4 w-4 text-brand" />
             </div>
             <div>
-              <h2 className="text-[15px] font-semibold text-foreground">
+              <h2 className="text-[14px] font-semibold text-foreground">
                 {isEditing ? 'Edit Community Listing' : 'Publish to Community'}
               </h2>
               <p className="text-[11px] text-dim">
@@ -246,7 +246,7 @@ export function PublishPopup({
                 className="w-full px-3 py-2.5 rounded-lg bg-background border border-elevated text-[13px] text-foreground placeholder-ghost outline-none focus:border-brand/40 transition-colors resize-none"
               />
               <div className="text-right mt-1">
-                <span className="text-[10px] text-ghost">{description.length}/500</span>
+                <span className="text-[11px] text-ghost">{description.length}/500</span>
               </div>
             </div>
 
@@ -260,7 +260,7 @@ export function PublishPopup({
                     }`}
                   onClick={() => setAllowRemix(!allowRemix)}
                 >
-                  {allowRemix && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                  {allowRemix && <Check className="h-3 w-3 text-white" />}
                 </div>
                 <div onClick={() => setAllowRemix(!allowRemix)}>
                   <div className="flex items-center gap-1.5">
