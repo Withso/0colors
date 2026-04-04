@@ -476,7 +476,7 @@ export function SpacingNodeCard({
           className="spacing-card-resize-svg"
           viewBox="0 0 12 12"
           fill="none"
-          style={{ color: 'var(--grey-800)' }}
+          style={{ color: 'var(--border-on-surface-0)' }}
         >
           <path d="M10 2L2 10M10 6L6 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>

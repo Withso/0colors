@@ -11,7 +11,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-normal);
   line-height: 1;
-  color: var(--grey-300);
+  color: var(--on-surface-1);
   user-select: none;
 }
 

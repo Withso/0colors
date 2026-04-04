@@ -2,7 +2,7 @@
 
 .image-fallback-container {
   display: inline-block;
-  background-color: var(--grey-100);
+  background-color: var(--on-surface-0);
   text-align: center;
   vertical-align: middle;
 }

@@ -9,14 +9,14 @@
   overflow: hidden;
   transition: border-color 0.15s, box-shadow 0.15s;
   z-index: 100;
-  background: var(--grey-900);
-  box-shadow: 0 16px 48px color-mix(in srgb, var(--grey-950) 40%, transparent);
+  background: var(--surface-2);
+  box-shadow: 0 16px 48px color-mix(in srgb, var(--shadow-color-overlay) 40%, transparent);
 }
 
 .shortcuts-panel--active {
   box-shadow:
-    0 24px 80px color-mix(in srgb, var(--grey-950) 65%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--grey-50) 6%, transparent) inset;
+    0 24px 80px color-mix(in srgb, var(--shadow-color-overlay) 65%, transparent),
+    0 0 0 1px var(--border-subtle) inset;
 }
 
 /* ─── Header ─── */
@@ -28,7 +28,7 @@
   height: 42px;
   flex-shrink: 0;
   user-select: none;
-  border-bottom: 1px solid var(--grey-900);
+  border-bottom: 1px solid var(--border-on-surface-0);
 }
 
 .shortcuts-header-left {
@@ -39,13 +39,13 @@
 }
 
 .shortcuts-header-icon {
-  color: var(--grey-400);
+  color: var(--icon-secondary);
   flex-shrink: 0;
 }
 
 .shortcuts-header-title {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--text-disabled);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   flex-shrink: 0;
@@ -60,15 +60,15 @@
   border-radius: var(--radius-md);
   border: none;
   background: none;
-  color: var(--grey-600);
+  color: var(--icon-disabled);
   cursor: pointer;
   transition: color 0.15s, background-color 0.15s;
   padding: 0;
 }
 
 .shortcuts-close-btn:hover {
-  background-color: var(--grey-800);
-  color: var(--grey-500);
+  background-color: var(--surface-3);
+  color: var(--icon-tertiary);
 }
 
 /* ─── Tab bar ─── */
@@ -95,18 +95,18 @@
 }
 
 .shortcuts-tab--active {
-  background-color: var(--grey-800);
-  color: var(--grey-100);
-  border-color: var(--grey-400);
+  background-color: var(--surface-3);
+  color: var(--text-primary);
+  border-color: var(--border-on-surface-2);
 }
 
 .shortcuts-tab--inactive {
-  color: var(--grey-600);
+  color: var(--text-disabled);
 }
 
 .shortcuts-tab--inactive:hover {
-  color: var(--grey-500);
-  background-color: var(--grey-800);
+  color: var(--text-tertiary);
+  background-color: var(--surface-3);
 }
 
 /* ─── Body ─── */
@@ -122,7 +122,7 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  background-color: var(--grey-900);
+  background-color: var(--surface-2);
 }
 
 .shortcuts-category-inner {
@@ -134,7 +134,7 @@
 
 .shortcuts-category-title {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--text-disabled);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -142,7 +142,7 @@
 .shortcuts-category-line {
   flex: 1;
   height: 1px;
-  background-color: var(--grey-900);
+  background-color: var(--border-on-surface-0);
 }
 
 /* ─── Shortcut row ─── */
@@ -158,17 +158,17 @@
 }
 
 .shortcuts-row:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .shortcuts-row-desc {
   font-size: 11px;
-  color: var(--grey-500);
+  color: var(--text-tertiary);
   transition: color 0.15s;
 }
 
 .shortcuts-row:hover .shortcuts-row-desc {
-  color: var(--grey-400);
+  color: var(--text-secondary);
 }
 
 .shortcuts-row-keys {
@@ -190,7 +190,7 @@
 }
 
 .shortcuts-tip-row:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .shortcuts-tip-action-wrap {
@@ -200,31 +200,31 @@
 }
 
 .shortcuts-tip-icon {
-  color: var(--grey-700);
+  color: var(--icon-disabled);
   flex-shrink: 0;
   transition: color 0.15s;
 }
 
 .shortcuts-tip-row:hover .shortcuts-tip-icon {
-  color: var(--grey-600);
+  color: var(--icon-tertiary);
 }
 
 .shortcuts-tip-desc {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--text-disabled);
   transition: color 0.15s;
   padding-left: 20px;
 }
 
 .shortcuts-tip-row:hover .shortcuts-tip-desc {
-  color: var(--grey-400);
+  color: var(--text-secondary);
 }
 
 /* ─── Divider ─── */
 .shortcuts-divider {
   margin: 4px 12px;
   height: 1px;
-  background-color: var(--grey-900);
+  background-color: var(--border-on-surface-0);
 }
 
 /* ─── Spacer ─── */
@@ -235,7 +235,7 @@
 /* ─── KeyBadge ─── */
 .shortcuts-key-separator {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--text-disabled);
   margin: 0 2px;
 }
 
@@ -249,9 +249,9 @@
   border-radius: 4px;
   font-size: 11px;
   font-family: inherit;
-  color: var(--grey-500);
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  color: var(--text-tertiary);
+  background-color: var(--surface-3);
+  border: 1px solid var(--border-on-surface-0);
 }
 
 /* ─── ActionBadge ─── */
@@ -260,9 +260,9 @@
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: var(--grey-600);
-  background-color: var(--grey-900);
-  border: 1px solid var(--grey-800);
+  color: var(--text-disabled);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-on-surface-0);
   border-radius: 4px;
   padding: 1px 6px;
   white-space: nowrap;

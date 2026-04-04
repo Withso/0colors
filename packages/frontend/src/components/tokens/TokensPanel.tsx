@@ -2878,8 +2878,8 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       top: Math.min(dragStart.y, dragEnd.y),
                       width: Math.abs(dragEnd.x - dragStart.x),
                       height: Math.abs(dragEnd.y - dragStart.y),
-                      backgroundColor: 'color-mix(in srgb, var(--blue-500) 10%, transparent)',
-                      border: '1px solid var(--blue-500)',
+                      backgroundColor: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)',
+                      border: '1px solid var(--accent-primary)',
                       pointerEvents: 'none',
                       zIndex: 1000,
                     }}
@@ -4131,7 +4131,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
               className="tp-resize-svg"
               viewBox="0 0 12 12"
               fill="none"
-              style={{ color: 'var(--grey-700)' }}
+              style={{ color: 'var(--icon-disabled)' }}
             >
               <path d="M10 2L2 10M10 6L6 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>

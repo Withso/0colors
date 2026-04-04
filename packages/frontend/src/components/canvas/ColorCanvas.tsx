@@ -2850,9 +2850,9 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       onMouseLeave={handleMouseUp}
       onMouseDown={handleCanvasMouseDown}
       style={{
-        background: 'var(--grey-900)',
+        background: 'var(--surface-2)',
         backgroundImage:
-          'linear-gradient(color-mix(in srgb, var(--grey-50) 2.5%, transparent) 0.1em, transparent 0.1em), linear-gradient(90deg, color-mix(in srgb, var(--grey-50) 2.5%, transparent) 0.1em, transparent 0.1em)',
+          'linear-gradient(color-mix(in srgb, var(--on-surface-0) 2.5%, transparent) 0.1em, transparent 0.1em), linear-gradient(90deg, color-mix(in srgb, var(--on-surface-0) 2.5%, transparent) 0.1em, transparent 0.1em)',
         backgroundSize: `${1.5 * zoom}em ${1.5 * zoom}em`,
         backgroundPosition: `${safePan.x}px ${safePan.y}px`,
         cursor: isSpacePressed ? (isPanning ? 'grabbing' : 'grab') : 'default',
@@ -2918,7 +2918,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
             // Check if this wire connects to any selected node (single or multi-selection)
             const isSelectedWire = (selectedNodeId && (conn.parentId === selectedNodeId || conn.childId === selectedNodeId)) ||
               (selectedNodeIds.length > 0 && (selectedNodeIds.includes(conn.parentId) || selectedNodeIds.includes(conn.childId)));
-            const wireColor = isSelectedWire ? 'var(--blue-500)' : 'var(--grey-600)';
+            const wireColor = isSelectedWire ? 'var(--accent-primary)' : 'var(--on-surface-disabled)';
 
             const connKey = `${conn.parentId}__${conn.childId}`;
             return (
@@ -2947,7 +2947,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
             const toX = wireMousePosition.x;
             const toY = wireMousePosition.y;
-            const wireColor = wireHoverNodeId ? 'var(--blue-500)' : 'var(--grey-600)';
+            const wireColor = wireHoverNodeId ? 'var(--accent-primary)' : 'var(--on-surface-disabled)';
 
             // Helper to compute the "from" position for a given node
             const getFromPosition = (nodeId: string): { x: number; y: number } | null => {
@@ -3012,8 +3012,8 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                 y={minY}
                 width={width}
                 height={height}
-                fill="color-mix(in srgb, var(--blue-600) 10%, transparent)"
-                stroke="var(--blue-500)"
+                fill="color-mix(in srgb, var(--accent-primary-strong) 10%, transparent)"
+                stroke="var(--accent-primary)"
                 strokeWidth="1"
                 strokeDasharray="4,4"
               />
@@ -3395,7 +3395,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                                       height: 0,
                                       borderLeft: '6px solid transparent',
                                       borderRight: '6px solid transparent',
-                                      borderBottom: '6px solid var(--grey-800)',
+                                      borderBottom: '6px solid var(--surface-3)',
                                     }}
                                   />
                                 </div>
@@ -3411,7 +3411,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                                   }}
                                 >
                                   <div className="color-canvas-prompt-icon-box">
-                                    <Zap size={11} style={{ color: 'var(--blue-500)' }} />
+                                    <Zap size={11} style={{ color: 'var(--icon-brand)' }} />
                                   </div>
                                   <span className="color-canvas-prompt-text">
                                     Auto-assign tokens

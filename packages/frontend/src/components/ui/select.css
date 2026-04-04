@@ -14,9 +14,9 @@
   height: 36px;
   padding: 0 12px;
   font-size: var(--font-size-sm);
-  color: var(--grey-100);
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-700);
+  color: var(--on-surface-0);
+  background-color: var(--surface-3);
+  border: 1px solid var(--border-on-surface-0);
   border-radius: var(--radius-md);
   outline: none;
   white-space: nowrap;
@@ -29,8 +29,8 @@
 }
 
 [data-slot="select-trigger"]:focus-visible {
-  border-color: var(--blue-500);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--blue-500) 50%, transparent);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 50%, transparent);
 }
 
 [data-slot="select-trigger"]:disabled {
@@ -39,7 +39,7 @@
 }
 
 [data-slot="select-trigger"] [data-slot="select-value"][data-placeholder] {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 [data-slot="select-trigger"] [data-slot="select-value"] {
@@ -67,8 +67,8 @@
   max-height: var(--radix-select-content-available-height);
   overflow-x: hidden;
   overflow-y: auto;
-  background-color: var(--grey-925);
-  border: 1px solid var(--grey-800);
+  background-color: var(--surface-1);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   transform-origin: var(--radix-select-content-transform-origin);
@@ -113,7 +113,7 @@
   width: 100%;
   padding: 6px 32px 6px 10px;
   font-size: var(--font-size-sm);
-  color: var(--grey-300);
+  color: var(--on-surface-1);
   border-radius: var(--radius-md);
   outline: none;
   cursor: default;
@@ -121,8 +121,8 @@
 }
 
 [data-slot="select-item"]:focus {
-  background-color: var(--grey-700);
-  color: var(--grey-50);
+  background-color: var(--border-on-surface-0);
+  color: var(--on-surface-0);
 }
 
 [data-slot="select-item"][data-disabled] {
@@ -159,14 +159,14 @@
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-semi-bold);
   text-transform: uppercase;
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 /* ─── Separator ─── */
 [data-slot="select-separator"] {
   height: 1px;
   margin: 4px -4px;
-  background-color: var(--grey-700);
+  background-color: var(--border-on-surface-0);
   pointer-events: none;
 }
 
@@ -178,7 +178,7 @@
   justify-content: center;
   padding: 4px 0;
   cursor: default;
-  color: var(--grey-300);
+  color: var(--on-surface-1);
 }
 
 [data-slot="select-scroll-up-button"] svg,

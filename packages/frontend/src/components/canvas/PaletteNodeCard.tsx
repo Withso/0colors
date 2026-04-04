@@ -276,23 +276,23 @@ function CurveVisualizer({
       style={{ height: '100px' }}
     >
       {/* Grid lines */}
-      <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke="var(--grey-800)" strokeWidth="0.5" />
-      <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke="var(--grey-800)" strokeWidth="0.5" />
+      <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke="var(--border-on-surface-0)" strokeWidth="0.5" />
+      <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke="var(--border-on-surface-0)" strokeWidth="0.5" />
       {/* 50% lightness guide */}
       <line
         x1={PAD}
         y1={PAD + (1 - 0.5) * (H - PAD * 2)}
         x2={W - PAD}
         y2={PAD + (1 - 0.5) * (H - PAD * 2)}
-        stroke="var(--grey-800)"
+        stroke="var(--border-on-surface-0)"
         strokeWidth="0.5"
         strokeDasharray="2,3"
       />
       {/* 25% and 75% guides */}
-      <line x1={PAD} y1={PAD + 0.25 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.25 * (H - PAD * 2)} stroke="var(--grey-800)" strokeWidth="0.5" strokeDasharray="1,4" />
-      <line x1={PAD} y1={PAD + 0.75 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.75 * (H - PAD * 2)} stroke="var(--grey-800)" strokeWidth="0.5" strokeDasharray="1,4" />
+      <line x1={PAD} y1={PAD + 0.25 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.25 * (H - PAD * 2)} stroke="var(--border-on-surface-0)" strokeWidth="0.5" strokeDasharray="1,4" />
+      <line x1={PAD} y1={PAD + 0.75 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.75 * (H - PAD * 2)} stroke="var(--border-on-surface-0)" strokeWidth="0.5" strokeDasharray="1,4" />
       {/* Curve path */}
-      <path d={pathParts.join(' ')} fill="none" stroke="var(--blue-500)" strokeWidth="1.5" opacity="0.8" />
+      <path d={pathParts.join(' ')} fill="none" stroke="var(--accent-primary)" strokeWidth="1.5" opacity="0.8" />
       {/* Shade dots — always draggable */}
       {dots.map((dot, i) => (
         <g key={i}>
@@ -310,7 +310,7 @@ function CurveVisualizer({
             cy={dot.y}
             r={draggingIndex !== null ? 5 : 4}
             fill={dot.color}
-            stroke={draggingIndex === i ? 'var(--blue-500)' : 'var(--grey-900)'}
+            stroke={draggingIndex === i ? 'var(--accent-primary)' : 'var(--surface-2)'}
             strokeWidth={draggingIndex === i ? 2 : 1}
             style={{ cursor: 'ns-resize' }}
             onMouseDown={(e) => handleDotMouseDown(e, i)}
@@ -320,7 +320,7 @@ function CurveVisualizer({
             <text
               x={dot.x}
               y={dot.y - 10}
-              fill="var(--grey-100)"
+              fill="var(--text-primary)"
               fontSize="9"
               fontFamily="var(--font-mono)"
               textAnchor="middle"
@@ -331,8 +331,8 @@ function CurveVisualizer({
         </g>
       ))}
       {/* Axis labels */}
-      <text x={PAD} y={H - 2} fill="var(--grey-700)" fontSize="7" fontFamily="var(--font-mono)">L</text>
-      <text x={W - PAD - 6} y={H - 2} fill="var(--grey-700)" fontSize="7" fontFamily="var(--font-mono)">R</text>
+      <text x={PAD} y={H - 2} fill="var(--text-disabled)" fontSize="7" fontFamily="var(--font-mono)">L</text>
+      <text x={W - PAD - 6} y={H - 2} fill="var(--text-disabled)" fontSize="7" fontFamily="var(--font-mono)">R</text>
     </svg>
   );
 }
@@ -378,7 +378,7 @@ function ShadePreviewStrip({
               )}
               {copiedIndex === i && (
                 <div className="palette-card-shade-copied">
-                  <Check className="palette-card-shade-check" style={{ color: shade.lightness > 55 ? 'var(--grey-900)' : 'var(--grey-50)' }} />
+                  <Check className="palette-card-shade-check" style={{ color: shade.lightness > 55 ? 'var(--absolute-black)' : 'var(--absolute-white)' }} />
                 </div>
               )}
             </div>
@@ -818,7 +818,7 @@ export function PaletteNodeCard({
       {showInheritanceIcon && !isPrimaryTheme && (
         <div
           className="palette-card-inherit-bar"
-          style={{ width: `${nodeWidth}px`, backgroundColor: 'var(--grey-900)', ...(barDimOpacity !== undefined ? { opacity: barDimOpacity } : {}) }}
+          style={{ width: `${nodeWidth}px`, backgroundColor: 'var(--surface-2)', ...(barDimOpacity !== undefined ? { opacity: barDimOpacity } : {}) }}
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
           onMouseEnter={() => { if (colorNeedsHover) setHoveredSection('color'); }}
@@ -878,7 +878,7 @@ export function PaletteNodeCard({
                 <Copy className={`palette-card-copy-icon ${isLightBackground ? 'palette-card-copy-icon--light-dim' : 'palette-card-copy-icon--dark-dim'}`} />
               )}
             </button>
-            <span className="palette-card-swatch-value" style={{ color: isLightBackground ? 'color-mix(in srgb, var(--grey-950) 75%, transparent)' : 'color-mix(in srgb, var(--grey-50) 90%, transparent)' }}>
+            <span className="palette-card-swatch-value" style={{ color: isLightBackground ? 'color-mix(in srgb, var(--absolute-black) 75%, transparent)' : 'color-mix(in srgb, var(--absolute-white) 90%, transparent)' }}>
               {displayColorValue}
             </span>
           </div>
@@ -968,10 +968,10 @@ export function PaletteNodeCard({
                     disabled={isColorInputDisabled}
                     className="palette-card-color-slider color-slider"
                     style={{
-                      backgroundImage: `linear-gradient(to right, hsla(${eHue}, ${eSat}%, ${eLit}%, 0), hsla(${eHue}, ${eSat}%, ${eLit}%, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`,
+                      backgroundImage: `linear-gradient(to right, hsla(${eHue}, ${eSat}%, ${eLit}%, 0), hsla(${eHue}, ${eSat}%, ${eLit}%, 1)), linear-gradient(45deg, var(--border-on-surface-2) 25%, transparent 25%, transparent 75%, var(--border-on-surface-2) 75%, var(--border-on-surface-2)), linear-gradient(45deg, var(--border-on-surface-2) 25%, transparent 25%, transparent 75%, var(--border-on-surface-2) 75%, var(--border-on-surface-2))`,
                       backgroundSize: '100% 100%, 8px 8px, 8px 8px',
                       backgroundPosition: '0 0, 0 0, 4px 4px',
-                      backgroundColor: 'var(--grey-400)',
+                      backgroundColor: 'var(--on-surface-4)',
                       '--slider-thumb-color': `hsla(${eHue}, ${eSat}%, ${eLit}%, ${(eAlpha ?? 100) / 100})`,
                     } as React.CSSProperties}
                   />

@@ -35,11 +35,11 @@
   position: relative;
   border-radius: 21px;
   overflow: hidden;
-  background: var(--grey-800);
+  background: var(--surface-3);
   box-shadow:
-    0 24px 80px color-mix(in srgb, var(--grey-950) 60%, transparent),
-    0 8px 24px color-mix(in srgb, var(--grey-950) 40%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--grey-50) 3%, transparent) inset;
+    0 24px 80px color-mix(in srgb, var(--surface-0) 60%, transparent),
+    0 8px 24px color-mix(in srgb, var(--surface-0) 40%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--on-surface-0) 3%, transparent) inset;
 }
 
 /* ─── Header ─── */
@@ -58,17 +58,17 @@
 .auth-brand-title {
   font-size: 20px;
   font-weight: var(--font-weight-semi-bold);
-  color: var(--grey-50);
+  color: var(--on-surface-0);
   letter-spacing: -0.025em;
 }
 
 .auth-brand-title-dim {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .auth-brand-subtitle {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   margin-top: 2px;
 }
 
@@ -80,7 +80,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -88,8 +88,8 @@
 }
 
 .auth-close-btn:hover {
-  color: var(--grey-400);
-  background: var(--grey-800);
+  color: var(--on-surface-2);
+  background: var(--surface-3);
 }
 
 .auth-close-btn-icon {
@@ -119,35 +119,35 @@
 }
 
 .auth-confirmation-icon-box-success {
-  background: color-mix(in srgb, var(--green-500) 10%, transparent);
+  background: color-mix(in srgb, var(--status-success) 10%, transparent);
 }
 
 .auth-confirmation-icon-box-brand {
-  background: color-mix(in srgb, var(--blue-500) 10%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .auth-confirmation-icon-success {
   width: 24px;
   height: 24px;
-  color: var(--green-500);
+  color: var(--status-success);
 }
 
 .auth-confirmation-icon-brand {
   width: 24px;
   height: 24px;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .auth-confirmation-title {
   font-size: 14px;
   font-weight: var(--font-weight-semi-bold);
-  color: var(--grey-50);
+  color: var(--on-surface-0);
   margin-bottom: 6px;
 }
 
 .auth-confirmation-desc {
   font-size: var(--font-size-xs);
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   line-height: 1.625;
   margin-bottom: 20px;
   max-width: 280px;
@@ -156,7 +156,7 @@
 }
 
 .auth-confirmation-email {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 /* ─── Primary Action Button (confirmation screens) ─── */
@@ -166,11 +166,11 @@
   border-radius: var(--radius-xl);
   font-size: 13px;
   font-weight: var(--font-weight-normal);
-  background: var(--grey-200);
-  color: var(--grey-900);
+  background: var(--on-surface-1);
+  color: var(--surface-2);
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--grey-50) 6%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   transition: opacity 0.2s ease, background-color 0.2s ease;
 }
 
@@ -183,8 +183,8 @@
   padding: 8px 12px;
   border-radius: var(--radius-xl);
   font-size: var(--font-size-xs);
-  background: color-mix(in srgb, var(--red-500) 8%, transparent);
-  color: var(--red-500);
+  background: color-mix(in srgb, var(--status-danger) 8%, transparent);
+  color: var(--status-danger);
 }
 
 .auth-error-verify {
@@ -206,13 +206,13 @@
 .auth-verify-title {
   font-size: 14px;
   font-weight: var(--font-weight-semi-bold);
-  color: var(--grey-50);
+  color: var(--on-surface-0);
   margin-bottom: 6px;
 }
 
 .auth-verify-desc {
   font-size: var(--font-size-xs);
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   line-height: 1.625;
   margin-bottom: 20px;
   max-width: 280px;
@@ -221,7 +221,7 @@
 }
 
 .auth-verify-email-highlight {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 /* ─── Resend Button ─── */
@@ -268,11 +268,11 @@
   border-radius: var(--radius-xl);
   font-size: 13px;
   font-weight: var(--font-weight-normal);
-  background: var(--grey-200);
-  color: var(--grey-900);
+  background: var(--on-surface-1);
+  color: var(--surface-2);
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--grey-50) 6%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   margin-bottom: 8px;
   transition: opacity 0.2s ease, background-color 0.2s ease;
 }
@@ -289,7 +289,7 @@
 
 .auth-skip-btn {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -297,7 +297,7 @@
 }
 
 .auth-skip-btn:hover {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 /* ─── Form Container ─── */
@@ -311,7 +311,7 @@
   border-radius: var(--radius-xl);
   margin-bottom: 20px;
   padding: 4px;
-  background: var(--grey-925);
+  background: var(--surface-1);
 }
 
 .auth-tab {
@@ -323,15 +323,15 @@
   border: none;
   cursor: pointer;
   background: transparent;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   box-shadow: none;
   transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .auth-tab--selected {
-  background: var(--grey-800);
-  color: var(--grey-200);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--grey-950) 45%, transparent);
+  background: var(--surface-3);
+  color: var(--on-surface-1);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--surface-0) 45%, transparent);
 }
 
 /* ─── Forgot Password Sub-Header ─── */
@@ -349,18 +349,18 @@
 .auth-forgot-header-icon {
   width: 16px;
   height: 16px;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .auth-forgot-header-title {
   font-size: 14px;
   font-weight: var(--font-weight-normal);
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 .auth-forgot-header-desc {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   line-height: 1.625;
 }
 
@@ -383,7 +383,7 @@
   transform: translateY(-50%);
   width: 16px;
   height: 16px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
 }
 
 .auth-input {
@@ -391,19 +391,19 @@
   padding: 10px 16px 10px 40px;
   border-radius: var(--radius-xl);
   font-size: 13px;
-  color: var(--grey-50);
-  background: var(--grey-950);
+  color: var(--on-surface-0);
+  background: var(--surface-0);
   border: none;
   outline: none;
   transition: box-shadow 0.15s ease;
 }
 
 .auth-input::placeholder {
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
 }
 
 .auth-input:focus {
-  box-shadow: 0 0 0 1px var(--grey-700);
+  box-shadow: 0 0 0 1px var(--border-on-surface-0);
 }
 
 /* ─── Forgot Password Link ─── */
@@ -415,7 +415,7 @@
 
 .auth-forgot-link {
   font-size: 11px;
-  color: color-mix(in srgb, var(--blue-500) 70%, transparent);
+  color: color-mix(in srgb, var(--accent-primary) 70%, transparent);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -423,7 +423,7 @@
 }
 
 .auth-forgot-link:hover {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 /* ─── Submit Button ─── */
@@ -446,7 +446,7 @@
 }
 
 .auth-submit-btn:not(:disabled) {
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--grey-50) 6%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .auth-submit-btn-icon {
@@ -468,7 +468,7 @@
 
 .auth-back-link {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -476,7 +476,7 @@
 }
 
 .auth-back-link:hover {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 /* ─── Footer Skip Link ─── */
@@ -484,12 +484,12 @@
   text-align: center;
   margin-top: 16px;
   padding-top: 12px;
-  border-top: 1px solid var(--grey-900);
+  border-top: 1px solid var(--surface-2);
 }
 
 .auth-footer-skip-btn {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -497,5 +497,5 @@
 }
 
 .auth-footer-skip-btn:hover {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }

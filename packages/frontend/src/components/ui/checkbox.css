@@ -9,7 +9,7 @@
   width: 16px;
   height: 16px;
   padding: 0;
-  border: 1px solid var(--grey-700);
+  border: 1px solid var(--border-on-surface-0);
   border-radius: 3px;
   background-color: transparent;
   cursor: pointer;
@@ -18,12 +18,12 @@
 }
 
 [data-slot="checkbox"][data-state="checked"] {
-  background-color: var(--grey-100);
-  border-color: var(--grey-100);
+  background-color: var(--on-surface-0);
+  border-color: var(--on-surface-0);
 }
 
 [data-slot="checkbox"]:focus-visible {
-  box-shadow: 0 0 0 2px var(--blue-500);
+  box-shadow: 0 0 0 2px var(--accent-primary);
 }
 
 [data-slot="checkbox"]:disabled {
@@ -37,7 +37,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--grey-900);
+  color: var(--surface-2);
 }
 
 [data-slot="checkbox-indicator"] svg {

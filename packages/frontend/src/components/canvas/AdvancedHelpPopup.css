@@ -7,8 +7,8 @@
   font-size: 10.5px;
   font-family: var(--font-mono);
   display: inline-block;
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 /* ── FnCard ── */
@@ -17,8 +17,8 @@
   margin-bottom: 8px;
   overflow: hidden;
   transition: all 150ms;
-  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 .help-popup-fn-header {
@@ -35,13 +35,13 @@
 }
 
 .help-popup-fn-header:hover {
-  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
 }
 
 .help-popup-fn-chevron {
   flex-shrink: 0;
   transition: transform 150ms;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .help-popup-fn-name {
@@ -52,7 +52,7 @@
 
 .help-popup-fn-desc {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -64,7 +64,7 @@
 
 .help-popup-fn-body-inner {
   padding: 0 12px 10px;
-  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .help-popup-fn-syntax {
@@ -77,9 +77,9 @@
   padding: 6px 10px;
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
-  background: color-mix(in srgb, var(--grey-950) 30%, transparent);
-  color: var(--grey-400);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background: color-mix(in srgb, var(--surface-0) 30%, transparent);
+  color: var(--on-surface-4);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .help-popup-fn-usecases {
@@ -96,7 +96,7 @@
 
 .help-popup-fn-usecase-bullet {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   flex-shrink: 0;
   margin-top: 2px;
   width: 6px;
@@ -108,7 +108,7 @@
 
 .help-popup-fn-usecase-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   display: block;
 }
 
@@ -119,7 +119,7 @@
   margin-top: 2px;
   overflow-wrap: break-word;
   word-break: break-all;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 /* ── Section header ── */
@@ -131,19 +131,19 @@
 
 .help-popup-section-title {
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   margin-bottom: 2px;
 }
 
 .help-popup-section-subtitle {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .help-popup-section-rule {
   height: 1px;
   margin-top: 8px;
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 /* ── Backdrop ── */
@@ -159,7 +159,7 @@
 .help-popup-overlay {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--grey-950) 60%, transparent);
+  background: color-mix(in srgb, var(--surface-0) 60%, transparent);
   backdrop-filter: blur(4px);
 }
 
@@ -171,10 +171,10 @@
   overflow: hidden;
   width: min(820px, 90vw);
   height: min(620px, 85vh);
-  background: var(--grey-900);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
-  box-shadow: 0 24px 80px color-mix(in srgb, var(--grey-950) 60%, transparent),
-              0 0 0 1px color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background: var(--surface-2);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
+  box-shadow: 0 24px 80px color-mix(in srgb, var(--surface-0) 60%, transparent),
+              0 0 0 1px color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 /* ── Left sidebar ── */
@@ -184,8 +184,8 @@
   flex-shrink: 0;
   padding: 12px 0;
   width: 180px;
-  background: var(--grey-950);
-  border-right: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background: var(--surface-0);
+  border-right: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .help-popup-sidebar-header {
@@ -201,12 +201,12 @@
 
 .help-popup-sidebar-title {
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .help-popup-sidebar-subtitle {
   font-size: 9.5px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   display: block;
   margin-top: 2px;
 }
@@ -235,16 +235,16 @@
 }
 
 .help-popup-nav-btn-active {
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  color: var(--grey-100);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  color: var(--on-surface-1);
 }
 
 .help-popup-nav-btn-inactive {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .help-popup-nav-btn-inactive:hover {
-  background: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 .help-popup-nav-label {
@@ -257,19 +257,19 @@
 .help-popup-sidebar-footer {
   padding: 8px 12px 0;
   margin-top: auto;
-  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .help-popup-sidebar-tip {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 .help-popup-kbd {
   padding: 2px 4px;
   border-radius: var(--radius-sm);
   font-size: 11px;
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 /* ── Right content area ── */
@@ -278,7 +278,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--grey-900);
+  background: var(--surface-2);
 }
 
 .help-popup-content-header {
@@ -287,17 +287,17 @@
   justify-content: space-between;
   padding: 12px 20px;
   flex-shrink: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .help-popup-content-title {
   font-size: 14px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .help-popup-content-subtitle {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   margin-top: 2px;
 }
 
@@ -306,13 +306,13 @@
   border-radius: var(--radius-md);
   transition: background-color 150ms;
   cursor: pointer;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   border: none;
   background: none;
 }
 
 .help-popup-close-btn:hover {
-  background: color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 .help-popup-scroll {
@@ -325,18 +325,18 @@
 .help-popup-info-box {
   border-radius: var(--radius-lg);
   padding: 10px 12px;
-  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 .help-popup-info-text {
   font-size: 10.5px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   line-height: 1.6;
 }
 
 .help-popup-info-bold {
-  color: var(--grey-400);
+  color: var(--on-surface-4);
   font-weight: 600;
 }
 
@@ -350,8 +350,8 @@
 .help-popup-op-card {
   border-radius: var(--radius-md);
   padding: 8px 10px;
-  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .help-popup-op-header {
@@ -363,19 +363,19 @@
 
 .help-popup-op-desc {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .help-popup-op-example {
   font-size: 11px;
   font-family: var(--font-mono);
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   display: block;
 }
 
 .help-popup-op-use {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   display: block;
   margin-top: 2px;
 }
@@ -391,8 +391,8 @@
 .help-popup-combo-card {
   border-radius: var(--radius-lg);
   padding: 10px 12px;
-  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 .help-popup-combo-header {
@@ -409,13 +409,13 @@
 
 .help-popup-combo-title {
   font-size: 10.5px;
-  color: var(--grey-400);
+  color: var(--on-surface-4);
   display: block;
 }
 
 .help-popup-combo-desc {
   font-size: 9.5px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   display: block;
 }
 
@@ -427,9 +427,9 @@
   white-space: pre-wrap;
   overflow-wrap: break-word;
   word-break: break-all;
-  background: color-mix(in srgb, var(--grey-950) 30%, transparent);
-  color: var(--grey-500);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background: color-mix(in srgb, var(--surface-0) 30%, transparent);
+  color: var(--on-surface-5);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 /* ── Spacer ── */

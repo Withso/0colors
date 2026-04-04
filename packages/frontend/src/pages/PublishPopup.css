@@ -14,8 +14,8 @@
   width: 100%;
   max-width: 480px;
   border-radius: var(--radius-2xl);
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-700);
+  background-color: var(--surface-3);
+  border: 1px solid var(--border-on-surface-0);
   box-shadow: var(--shadow-2xl);
 }
 
@@ -40,25 +40,25 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius-lg);
-  background-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--blue-500) 20%, transparent);
+  background-color: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .publish-header-icon {
   height: 16px;
   width: 16px;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .publish-header-title {
   font-size: 14px;
   font-weight: var(--font-weight-semi-bold);
-  color: var(--grey-100);
+  color: var(--on-surface-0);
 }
 
 .publish-header-subtitle {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .publish-close-btn {
@@ -68,7 +68,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-md);
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   cursor: pointer;
   transition: color 0.15s, background-color 0.15s;
   background: none;
@@ -76,8 +76,8 @@
 }
 
 .publish-close-btn:hover {
-  background-color: var(--grey-700);
-  color: var(--grey-50);
+  background-color: var(--border-on-surface-0);
+  color: var(--on-surface-0);
 }
 
 .publish-close-icon {
@@ -96,7 +96,7 @@
 .publish-loading-icon {
   height: 20px;
   width: 20px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 /* ─── Form body ─── */
@@ -113,7 +113,7 @@
   display: block;
   font-size: 11px;
   font-weight: var(--font-weight-normal);
-  color: var(--grey-500);
+  color: var(--on-surface-3);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 6px;
@@ -124,41 +124,41 @@
   height: 40px;
   padding: 0 12px;
   border-radius: var(--radius-lg);
-  background-color: var(--grey-900);
-  border: 1px solid var(--grey-700);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-on-surface-0);
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   outline: none;
   transition: border-color 0.15s;
 }
 
 .publish-input::placeholder {
-  color: var(--grey-800);
+  color: var(--surface-3);
 }
 
 .publish-input:focus {
-  border-color: color-mix(in srgb, var(--blue-500) 40%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }
 
 .publish-textarea {
   width: 100%;
   padding: 10px 12px;
   border-radius: var(--radius-lg);
-  background-color: var(--grey-900);
-  border: 1px solid var(--grey-700);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-on-surface-0);
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   outline: none;
   resize: none;
   transition: border-color 0.15s;
 }
 
 .publish-textarea::placeholder {
-  color: var(--grey-800);
+  color: var(--surface-3);
 }
 
 .publish-textarea:focus {
-  border-color: color-mix(in srgb, var(--blue-500) 40%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }
 
 .publish-char-count {
@@ -168,7 +168,7 @@
 
 .publish-char-count-text {
   font-size: 11px;
-  color: var(--grey-800);
+  color: var(--surface-3);
 }
 
 /* ─── Remix checkbox ─── */
@@ -196,23 +196,23 @@
 }
 
 .publish-checkbox--checked {
-  background-color: var(--blue-500);
-  border-color: var(--blue-500);
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
 }
 
 .publish-checkbox--unchecked {
   background-color: transparent;
-  border-color: var(--grey-600);
+  border-color: var(--on-surface-4);
 }
 
 .publish-checkbox--unchecked:hover {
-  border-color: var(--grey-600);
+  border-color: var(--on-surface-4);
 }
 
 .publish-checkbox-icon {
   height: 12px;
   width: 12px;
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 .publish-remix-info {
@@ -224,18 +224,18 @@
 .publish-remix-info-icon {
   height: 14px;
   width: 14px;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .publish-remix-info-text {
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   font-weight: var(--font-weight-normal);
 }
 
 .publish-remix-description {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   margin-top: 2px;
 }
 
@@ -256,9 +256,9 @@
   height: 36px;
   padding: 0 16px;
   border-radius: var(--radius-lg);
-  background-color: color-mix(in srgb, var(--red-500) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--red-500) 20%, transparent);
-  color: var(--red-500);
+  background-color: color-mix(in srgb, var(--status-danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--status-danger) 20%, transparent);
+  color: var(--status-danger);
   font-size: 12px;
   font-weight: var(--font-weight-normal);
   cursor: pointer;
@@ -266,7 +266,7 @@
 }
 
 .publish-unpublish-confirm-btn:hover {
-  background-color: color-mix(in srgb, var(--red-500) 20%, transparent);
+  background-color: color-mix(in srgb, var(--status-danger) 20%, transparent);
 }
 
 .publish-unpublish-confirm-btn:disabled {
@@ -283,7 +283,7 @@
   padding: 0 12px;
   border-radius: var(--radius-lg);
   font-size: 12px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   cursor: pointer;
   transition: color 0.15s;
   background: none;
@@ -291,14 +291,14 @@
 }
 
 .publish-unpublish-cancel-btn:hover {
-  color: var(--grey-400);
+  color: var(--on-surface-2);
 }
 
 .publish-unpublish-btn {
   height: 36px;
   padding: 0 12px;
   border-radius: var(--radius-lg);
-  color: color-mix(in srgb, var(--red-500) 60%, transparent);
+  color: color-mix(in srgb, var(--status-danger) 60%, transparent);
   font-size: 12px;
   cursor: pointer;
   transition: color 0.15s;
@@ -310,7 +310,7 @@
 }
 
 .publish-unpublish-btn:hover {
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 .publish-unpublish-icon {
@@ -327,7 +327,7 @@
   padding: 0 16px;
   border-radius: var(--radius-lg);
   font-size: 12px;
-  color: var(--grey-500);
+  color: var(--on-surface-3);
   cursor: pointer;
   transition: color 0.15s;
   background: none;
@@ -335,15 +335,15 @@
 }
 
 .publish-cancel-btn:hover {
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 .publish-submit-btn {
   height: 36px;
   padding: 0 20px;
   border-radius: var(--radius-lg);
-  background-color: var(--blue-500);
-  color: var(--grey-50);
+  background-color: var(--accent-primary);
+  color: var(--on-surface-0);
   font-size: 12px;
   font-weight: var(--font-weight-semi-bold);
   cursor: pointer;
@@ -355,7 +355,7 @@
 }
 
 .publish-submit-btn:hover {
-  background-color: var(--blue-600);
+  background-color: var(--accent-primary-hover);
 }
 
 .publish-submit-btn:disabled {

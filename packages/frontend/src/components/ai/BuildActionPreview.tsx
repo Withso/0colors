@@ -22,14 +22,14 @@ export function PendingActionsCard({ toolCalls, descriptions, onApply, onSkip, o
     <div
       className="build-preview-card"
       style={{
-        background: 'color-mix(in srgb, var(--indigo-400) 6%, transparent)',
-        border: '1px solid color-mix(in srgb, var(--indigo-400) 15%, transparent)',
+        background: 'var(--surface-selected)',
+        border: '1px solid var(--border-primary)',
       }}
     >
       <div className="build-preview-header"
-        style={{ borderBottom: '1px solid color-mix(in srgb, var(--indigo-400) 10%, transparent)' }}
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}
       >
-        <span className="build-preview-header-text" style={{ color: 'var(--blue-500)' }}>
+        <span className="build-preview-header-text" style={{ color: 'var(--text-info)' }}>
           Proposed Actions ({toolCalls.length})
         </span>
       </div>
@@ -44,7 +44,7 @@ export function PendingActionsCard({ toolCalls, descriptions, onApply, onSkip, o
       </div>
 
       <div className="build-preview-actions"
-        style={{ borderTop: '1px solid color-mix(in srgb, var(--indigo-400) 10%, transparent)' }}
+        style={{ borderTop: '1px solid var(--border-subtle)' }}
       >
         <button
           onClick={onApply}
@@ -83,11 +83,11 @@ export function ExecutedActionItem({ description, result }: ExecutedActionProps)
   return (
     <div className="build-preview-executed-item">
       {result.success ? (
-        <Check size={10} className="build-preview-executed-icon" style={{ color: 'var(--green-500)' }} />
+        <Check size={10} className="build-preview-executed-icon" style={{ color: 'var(--icon-success)' }} />
       ) : (
-        <AlertCircle size={10} className="build-preview-executed-icon" style={{ color: 'var(--red-500)' }} />
+        <AlertCircle size={10} className="build-preview-executed-icon" style={{ color: 'var(--icon-critical)' }} />
       )}
-      <span style={{ color: result.success ? 'var(--grey-500)' : 'var(--red-500)' }}>
+      <span style={{ color: result.success ? 'var(--text-tertiary)' : 'var(--text-critical)' }}>
         {description}
         {!result.success && result.error && (
           <span className="build-preview-error-hint"> -- {result.error}</span>
@@ -113,16 +113,16 @@ export function ExecutedActionsSummary({ actions }: ExecutedActionsSummaryProps)
     <div
       className="build-preview-summary"
       style={{
-        background: 'color-mix(in srgb, var(--green-500) 4%, transparent)',
+        background: 'var(--surface-success-subtle)',
         border: failCount > 0
-          ? '1px solid color-mix(in srgb, var(--red-500) 12%, transparent)'
-          : '1px solid color-mix(in srgb, var(--green-500) 12%, transparent)',
+          ? '1px solid var(--border-critical)'
+          : '1px solid var(--border-success)',
       }}
     >
       <div className="build-preview-summary-header"
-        style={{ borderBottom: '1px solid color-mix(in srgb, var(--grey-50) 4%, transparent)' }}
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}
       >
-        <span className="build-preview-summary-label" style={{ color: failCount > 0 ? 'var(--red-500)' : 'var(--green-500)' }}>
+        <span className="build-preview-summary-label" style={{ color: failCount > 0 ? 'var(--text-critical)' : 'var(--text-success)' }}>
           {successCount} action{successCount !== 1 ? 's' : ''} applied
           {failCount > 0 && `, ${failCount} failed`}
         </span>
@@ -143,8 +143,8 @@ export function BuildModeBadge() {
     <span
       className="build-preview-badge"
       style={{
-        background: 'color-mix(in srgb, var(--orange-400) 12%, transparent)',
-        color: 'var(--orange-400)',
+        background: 'color-mix(in srgb, var(--utility-build) 12%, transparent)',
+        color: 'var(--utility-build)',
       }}
     >
       Build

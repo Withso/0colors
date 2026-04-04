@@ -19,8 +19,8 @@
 }
 
 [data-slot="scroll-area-viewport"]:focus-visible {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-500) 45%, transparent);
-  outline: 1px solid var(--blue-500);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 45%, transparent);
+  outline: 1px solid var(--accent-primary);
 }
 
 /* ─── Scrollbar ─── */
@@ -48,10 +48,10 @@
 [data-slot="scroll-area-thumb"] {
   position: relative;
   flex: 1;
-  background-color: var(--grey-700);
+  background-color: var(--border-on-surface-0);
   border-radius: var(--radius-full);
 }
 
 [data-slot="scroll-area-thumb"]:hover {
-  background-color: var(--grey-600);
+  background-color: var(--on-surface-4);
 }

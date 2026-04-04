@@ -316,10 +316,10 @@ export function TokenNodeCard({
   })();
   // Determine if text over the value token color should be light or dark
   const valueTokenTextColor = (() => {
-    if (!valueToken) return 'var(--grey-400)';
+    if (!valueToken) return 'var(--text-secondary)';
     const tv = activeThemeId && valueToken.themeValues?.[activeThemeId];
     const l = (tv && tv.lightness !== undefined) ? tv.lightness : (valueToken.lightness ?? 0);
-    return l > 55 ? 'color-mix(in srgb, var(--grey-950) 70%, transparent)' : 'color-mix(in srgb, var(--grey-50) 85%, transparent)';
+    return l > 55 ? 'color-mix(in srgb, var(--absolute-black) 70%, transparent)' : 'color-mix(in srgb, var(--absolute-white) 85%, transparent)';
   })();
 
   // Helper function to get theme-specific token assignments
@@ -800,8 +800,8 @@ export function TokenNodeCard({
       <Card
         className="token-card-body"
         style={{
-          backgroundColor: 'var(--grey-900)',
-          border: isSelected ? '1px solid var(--blue-500)' : isMultiSelected ? '1px solid var(--blue-400)' : '1px solid transparent',
+          backgroundColor: 'var(--surface-2)',
+          border: isSelected ? '1px solid var(--accent-primary)' : isMultiSelected ? '1px solid var(--accent-primary-hover)' : '1px solid transparent',
           width: `${nodeWidth}px`,
           maxWidth: `${nodeWidth}px`,
           minWidth: `${nodeWidth}px`,
@@ -836,8 +836,8 @@ export function TokenNodeCard({
         <div
           className={`token-card-name-area ${isPrefix ? 'token-card-name-area-prefix' : 'token-card-name-area-child'} ${isNodeInherited && !showAllVisible ? 'token-card-name-area-inherited' : ''}`}
           style={{
-            backgroundColor: 'var(--grey-900)',
-            border: '1px solid var(--grey-800)',
+            backgroundColor: 'var(--surface-2)',
+            border: '1px solid var(--border-on-surface-0)',
             ...(nameDimOpacity !== undefined ? { opacity: nameDimOpacity } : {}),
           }}
           onMouseEnter={() => { if (!isPrimaryTheme) setHoveredSection('name'); }}
@@ -893,7 +893,7 @@ export function TokenNodeCard({
             ) : (
               <button
                 className="token-card-name-button"
-                style={{ color: 'var(--grey-500)' }}
+                style={{ color: 'var(--text-tertiary)' }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelect();
@@ -939,7 +939,7 @@ export function TokenNodeCard({
                 disabled={!hasAnyTokenChanges}
                 className="token-card-switch"
                 style={{
-                  backgroundColor: !hasAnyTokenChanges ? 'var(--yellow-500)' : 'var(--grey-700)',
+                  backgroundColor: !hasAnyTokenChanges ? 'var(--status-warning)' : 'var(--on-surface-disabled)',
                 }}
               />
               <span className={`token-card-theme-label ${hasAnyTokenChanges ? 'token-card-theme-label-modified' : 'token-card-theme-label-inherited'}`}>
@@ -1587,7 +1587,7 @@ export function TokenNodeCard({
           <div
             className="token-card-advanced-island"
             style={{
-              backgroundColor: 'var(--grey-900)',
+              backgroundColor: 'var(--surface-2)',
               width: `${nodeWidth}px`,
               opacity: isVisible ? (isDormant ? 0.5 : 1) : 0,
               pointerEvents: isVisible ? undefined : 'none',

@@ -12,8 +12,8 @@
   overflow-x: hidden;
   overflow-y: auto;
   padding: 4px;
-  background-color: var(--grey-925);
-  border: 1px solid var(--grey-800);
+  background-color: var(--surface-1);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   transform-origin: var(--radix-dropdown-menu-content-transform-origin);
@@ -25,8 +25,8 @@
   min-width: 8rem;
   overflow: hidden;
   padding: 4px;
-  background-color: var(--grey-925);
-  border: 1px solid var(--grey-800);
+  background-color: var(--surface-1);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   transform-origin: var(--radix-dropdown-menu-content-transform-origin);
@@ -40,7 +40,7 @@
   gap: 8px;
   padding: 6px 10px;
   font-size: var(--font-size-sm);
-  color: var(--grey-300);
+  color: var(--on-surface-1);
   border-radius: var(--radius-md);
   outline: none;
   cursor: default;
@@ -48,8 +48,8 @@
 }
 
 [data-slot="dropdown-menu-item"]:focus {
-  background-color: var(--grey-700);
-  color: var(--grey-50);
+  background-color: var(--border-on-surface-0);
+  color: var(--on-surface-0);
 }
 
 [data-slot="dropdown-menu-item"][data-disabled] {
@@ -62,12 +62,12 @@
 }
 
 [data-slot="dropdown-menu-item"][data-variant="destructive"] {
-  color: var(--red-400);
+  color: var(--status-danger);
 }
 
 [data-slot="dropdown-menu-item"][data-variant="destructive"]:focus {
-  background-color: color-mix(in srgb, var(--red-500) 10%, transparent);
-  color: var(--red-400);
+  background-color: color-mix(in srgb, var(--status-danger) 10%, transparent);
+  color: var(--status-danger);
 }
 
 [data-slot="dropdown-menu-item"] svg {
@@ -85,7 +85,7 @@
   gap: 8px;
   padding: 6px 10px 6px 32px;
   font-size: var(--font-size-sm);
-  color: var(--grey-300);
+  color: var(--on-surface-1);
   border-radius: var(--radius-md);
   outline: none;
   cursor: default;
@@ -93,8 +93,8 @@
 }
 
 [data-slot="dropdown-menu-checkbox-item"]:focus {
-  background-color: var(--grey-700);
-  color: var(--grey-50);
+  background-color: var(--border-on-surface-0);
+  color: var(--on-surface-0);
 }
 
 [data-slot="dropdown-menu-checkbox-item"][data-disabled] {
@@ -129,7 +129,7 @@
   gap: 8px;
   padding: 6px 10px 6px 32px;
   font-size: var(--font-size-sm);
-  color: var(--grey-300);
+  color: var(--on-surface-1);
   border-radius: var(--radius-md);
   outline: none;
   cursor: default;
@@ -137,8 +137,8 @@
 }
 
 [data-slot="dropdown-menu-radio-item"]:focus {
-  background-color: var(--grey-700);
-  color: var(--grey-50);
+  background-color: var(--border-on-surface-0);
+  color: var(--on-surface-0);
 }
 
 [data-slot="dropdown-menu-radio-item"][data-disabled] {
@@ -166,7 +166,7 @@
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-semi-bold);
   text-transform: uppercase;
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 [data-slot="dropdown-menu-label"][data-inset="true"] {
@@ -177,7 +177,7 @@
 [data-slot="dropdown-menu-separator"] {
   height: 1px;
   margin: 4px -4px;
-  background-color: var(--grey-700);
+  background-color: var(--border-on-surface-0);
 }
 
 /* ─── Shortcut ─── */
@@ -185,7 +185,7 @@
   margin-left: auto;
   font-size: var(--font-size-xs);
   letter-spacing: 0.05em;
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 /* ─── Sub-trigger ─── */
@@ -196,7 +196,7 @@
   gap: 8px;
   padding: 6px 10px;
   font-size: var(--font-size-sm);
-  color: var(--grey-300);
+  color: var(--on-surface-1);
   border-radius: var(--radius-md);
   outline: none;
   cursor: default;
@@ -204,13 +204,13 @@
 }
 
 [data-slot="dropdown-menu-sub-trigger"]:focus {
-  background-color: var(--grey-700);
-  color: var(--grey-50);
+  background-color: var(--border-on-surface-0);
+  color: var(--on-surface-0);
 }
 
 [data-slot="dropdown-menu-sub-trigger"][data-state="open"] {
-  background-color: var(--grey-700);
-  color: var(--grey-50);
+  background-color: var(--border-on-surface-0);
+  color: var(--on-surface-0);
 }
 
 [data-slot="dropdown-menu-sub-trigger"][data-inset="true"] {

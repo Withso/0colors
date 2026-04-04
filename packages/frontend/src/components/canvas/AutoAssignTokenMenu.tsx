@@ -708,7 +708,7 @@ export function AutoAssignTokenMenu({
             {/* Header */}
             <div className="auto-assign-popup-header">
               <div className="auto-assign-popup-header-left">
-                <Zap size={12} style={{ color: 'var(--blue-500)' }} />
+                <Zap size={12} style={{ color: 'var(--icon-brand)' }} />
                 <span className="auto-assign-popup-title">
                   {readOnly ? 'Auto-assign settings' : isEnabled ? 'Edit auto-assign' : 'Auto-assign tokens'}
                 </span>
@@ -819,7 +819,7 @@ export function AutoAssignTokenMenu({
                     }}
                   >
                     <span>{isCustomSuffix(suffix) ? `Custom (+${getCustomIncrement(suffix)})` : suffix}</span>
-                    <ChevronDown size={12} style={{ color: 'var(--grey-600)' }} />
+                    <ChevronDown size={12} style={{ color: 'var(--icon-disabled)' }} />
                   </button>
                   {suffixDropdownOpen && (
                     <div className="auto-assign-options">
@@ -963,7 +963,7 @@ export function AutoAssignTokenMenu({
                         ? availableGroups.find((g) => g.id === groupId)?.name || 'Unknown'
                         : 'Ungrouped'}
                     </span>
-                    <ChevronDown size={12} style={{ color: 'var(--grey-600)', flexShrink: 0 }} />
+                    <ChevronDown size={12} style={{ color: 'var(--icon-disabled)', flexShrink: 0 }} />
                   </button>
                   {groupDropdownOpen && !createNewGroup && (
                     <div className="auto-assign-options auto-assign-options-scroll">
@@ -1035,7 +1035,7 @@ export function AutoAssignTokenMenu({
               {excludedChildren.length > 0 && (
                 <div className="auto-assign-excluded-box">
                   <div className="auto-assign-excluded-header">
-                    <UserX size={10} style={{ color: 'var(--yellow-400)' }} />
+                    <UserX size={10} style={{ color: 'var(--icon-warning)' }} />
                     <span className="auto-assign-excluded-title">
                       Excluded nodes ({excludedChildren.length})
                     </span>

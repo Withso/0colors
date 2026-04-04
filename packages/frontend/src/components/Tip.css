@@ -6,10 +6,10 @@
   border-radius: var(--radius-lg);
   font-size: 12px;
   letter-spacing: -0.01em;
-  color: var(--grey-100);
-  background-color: color-mix(in srgb, var(--grey-925) 96%, transparent);
+  color: var(--on-surface-0);
+  background-color: color-mix(in srgb, var(--surface-1) 96%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
   box-shadow: var(--shadow-lg);
   user-select: none;
   white-space: nowrap;

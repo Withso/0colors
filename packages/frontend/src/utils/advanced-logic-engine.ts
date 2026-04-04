@@ -1376,17 +1376,17 @@ export const PROPERTY_OPTIONS: Record<string, { label: string; key: string; shor
 // ── Token Colors (for pill rendering) ───────────────────────────
 
 export const TOKEN_COLORS: Record<ExpressionToken['type'], string> = {
-  keyword: 'var(--fuchsia-400)',
-  operator: 'var(--red-400)',
-  reference: 'var(--blue-500)',
-  function: 'var(--green-400)',
-  literal: 'var(--grey-400)',
-  boolean: 'var(--yellow-400)',
-  property: 'var(--blue-500)',
-  paren: 'var(--grey-600)',
-  comma: 'var(--grey-600)',
-  local: 'var(--purple-300)',
-  tokenRef: 'var(--pink-500)',
+  keyword: 'var(--utility-expression-keyword)',
+  operator: 'var(--utility-expression-operator)',
+  reference: 'var(--utility-expression-reference)',
+  function: 'var(--utility-expression-function)',
+  literal: 'var(--utility-expression-literal)',
+  boolean: 'var(--utility-expression-boolean)',
+  property: 'var(--utility-expression-property)',
+  paren: 'var(--utility-expression-paren)',
+  comma: 'var(--utility-expression-comma)',
+  local: 'var(--utility-expression-local)',
+  tokenRef: 'var(--utility-expression-token)',
 };
 
 // ═══════════════════════════════════════════════════════════════════

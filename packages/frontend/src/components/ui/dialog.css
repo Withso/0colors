@@ -9,7 +9,7 @@
   position: fixed;
   inset: 0;
   z-index: 50;
-  background-color: color-mix(in srgb, var(--grey-950) 60%, transparent);
+  background-color: color-mix(in srgb, var(--surface-0) 60%, transparent);
 }
 
 /* ─── Content ─── */
@@ -23,8 +23,8 @@
   width: 100%;
   max-width: 500px;
   padding: 24px;
-  background-color: var(--grey-925);
-  border: 1px solid var(--grey-800);
+  background-color: var(--surface-1);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   animation-duration: 0.2s;
@@ -41,7 +41,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--grey-400);
+  color: var(--on-surface-2);
   border-radius: var(--radius-sm);
   opacity: 0.7;
   cursor: pointer;
@@ -50,11 +50,11 @@
 
 [data-slot="dialog-close-button"]:hover {
   opacity: 1;
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 [data-slot="dialog-close-button"]:focus-visible {
-  outline: 2px solid var(--blue-500);
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
 
@@ -89,11 +89,11 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semi-bold);
   line-height: 1;
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 /* ─── Description ─── */
 [data-slot="dialog-description"] {
   font-size: var(--font-size-sm);
-  color: var(--grey-400);
+  color: var(--on-surface-2);
 }

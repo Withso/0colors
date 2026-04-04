@@ -9200,7 +9200,7 @@ export function AppShell() {
         };
       } else if (type === 'shadow') {
         themeValues[theme.id] = {
-          shadowValue: '0 1px 3px 0 color-mix(in srgb, var(--grey-950) 10%, transparent)',
+          shadowValue: '0 1px 3px 0 color-mix(in srgb, var(--shadow-color-overlay) 10%, transparent)',
         };
       } else if (type === 'opacity') {
         themeValues[theme.id] = {
@@ -11207,11 +11207,11 @@ export function AppShell() {
         theme="dark"
         toastOptions={{
           style: {
-            background: 'color-mix(in srgb, var(--grey-800) 95%, transparent)',
+            background: 'color-mix(in srgb, var(--surface-3) 95%, transparent)',
             backdropFilter: 'blur(12px)',
             border: 'none',
-            color: 'var(--grey-100)',
-            boxShadow: '0 4px 24px color-mix(in srgb, var(--grey-950) 40%, transparent)',
+            color: 'var(--text-primary)',
+            boxShadow: '0 4px 24px color-mix(in srgb, var(--shadow-color-overlay) 40%, transparent)',
             borderRadius: '8px',
             fontSize: '13px',
           },
@@ -11789,7 +11789,7 @@ export function AppShell() {
                               className="app-canvas-template-swatch"
                               style={{
                                 background: `hsl(${t.folderColor}, 60%, 45%)`,
-                                borderColor: activeSampleIdx === t._origIdx ? 'var(--blue-500)' : 'transparent',
+                                borderColor: activeSampleIdx === t._origIdx ? 'var(--accent-primary)' : 'transparent',
                               }}
                             />
                             <div className="app-canvas-template-item-info">

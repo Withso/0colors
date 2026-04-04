@@ -176,7 +176,7 @@ export function PublishPopup({
       style={{
         zIndex: 200000,
         background: mounted
-          ? 'color-mix(in srgb, var(--grey-950) 70%, transparent)'
+          ? 'var(--surface-overlay)'
           : 'transparent',
         backdropFilter: mounted ? 'blur(8px)' : 'none',
         transition: 'background 0.3s ease, backdrop-filter 0.3s ease',

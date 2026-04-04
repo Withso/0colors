@@ -9,7 +9,7 @@
   position: fixed;
   inset: 0;
   z-index: 50;
-  background-color: color-mix(in srgb, var(--grey-950) 60%, transparent);
+  background-color: color-mix(in srgb, var(--surface-0) 60%, transparent);
 }
 
 /* ─── Content ─── */
@@ -23,8 +23,8 @@
   width: 100%;
   max-width: 500px;
   padding: 24px;
-  background-color: var(--grey-925);
-  border: 1px solid var(--grey-800);
+  background-color: var(--surface-1);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   animation-duration: 0.2s;
@@ -51,13 +51,13 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semi-bold);
   line-height: 1;
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 /* ─── Description ─── */
 [data-slot="alert-dialog-description"] {
   font-size: var(--font-size-sm);
-  color: var(--grey-400);
+  color: var(--on-surface-2);
 }
 
 /* ─── Action button (primary) ─── */
@@ -75,16 +75,16 @@
   border: none;
   cursor: pointer;
   transition: background-color 0.15s ease;
-  background-color: var(--blue-600);
-  color: var(--grey-50);
+  background-color: var(--accent-primary-hover);
+  color: var(--on-surface-0);
 }
 
 [data-slot="alert-dialog-action"]:hover {
-  background-color: var(--blue-700);
+  background-color: var(--accent-primary-hover);
 }
 
 [data-slot="alert-dialog-action"]:focus-visible {
-  outline: 2px solid var(--blue-500);
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
 
@@ -108,17 +108,17 @@
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
   background-color: transparent;
-  color: var(--grey-50);
-  border: 1px solid var(--grey-700);
+  color: var(--on-surface-0);
+  border: 1px solid var(--border-on-surface-0);
 }
 
 [data-slot="alert-dialog-cancel"]:hover {
-  background-color: var(--grey-700);
-  border-color: var(--grey-600);
+  background-color: var(--border-on-surface-0);
+  border-color: var(--on-surface-4);
 }
 
 [data-slot="alert-dialog-cancel"]:focus-visible {
-  outline: 2px solid var(--blue-500);
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
 

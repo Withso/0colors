@@ -101,42 +101,111 @@ NEVER put component code inside page files (import them instead).
 
 Every UI surface in the entire application MUST use ONLY tokens from this file. No exceptions.
 
-### Color tokens available (grey palette for backgrounds, text, borders, icons):
+### Semantic token system
 
-| Token | Hex | Purpose |
-|---|---|---|
-| `--grey-900` | #171717 | Darkest background |
-| `--grey-800` | #262626 | Card/section background |
-| `--grey-700` | #404040 | Borders, elevated hover |
-| `--grey-600` | #525252 | Muted elements, icon dim |
-| `--grey-500` | #737373 | Muted text, placeholders |
-| `--grey-400` | #A3A3A3 | Secondary text, labels |
-| `--grey-300` | #D4D4D4 | Body text |
-| `--grey-200` | #E5E5E5 | Bright body text |
-| `--grey-100` | #F5F5F5 | Primary text |
-| `--grey-50`  | #FAFAFA | Headings, buttons |
+The app now uses a semantic token layer. Primitive palettes still exist inside `variables.css`, but application code MUST consume the semantic tokens, not the raw grey/blue/green/etc. tokens.
 
-### Full color palettes (50-900 scale):
+### Core rule
 
-red, sky, blue, cyan, lime, pink, teal, green, indigo, orange, purple, yellow, fuchsia
+- **Backgrounds use `surface-*` tokens**
+- **Foregrounds use `on-surface-*` tokens**
+- **Persistent borders use `border-on-surface-*` tokens**
 
-### Rules:
+This is the base philosophy across pages, panels, cards, controls, overlays, dialogs, tables, sidebars, tokens UI, canvas UI, and future extensions.
 
-- **NO hardcoded hex values** in TSX files. Use `var(--token-name)` only.
-- **NO semantic aliases** (no `--background`, `--foreground`). Use the grey palette directly.
-- **Use CSS classes** for all styling. NOT inline styles (except for dynamic values like computed colors).
+### Required surface hierarchy
+
+These are the most important tokens in the system and MUST stay consistent:
+
+| Semantic token | Role |
+|---|---|
+| `--surface-0` | App/page/base canvas background |
+| `--surface-1` | Primary panels, shells, trays |
+| `--surface-2` | Cards, grouped sections, raised containers |
+| `--surface-3` | Hover, active chrome, embedded controls |
+| `--surface-4` | Highest non-overlay local emphasis |
+| `--surface-overlay` | Scrims, modal overlays, dim backdrops |
+| `--border-on-surface-0` | Strongest divider/border on dark or light surfaces |
+| `--border-on-surface-1` | Default border |
+| `--border-on-surface-2` | Soft border / low-emphasis separators |
+
+### Required foreground hierarchy
+
+| Semantic token | Role |
+|---|---|
+| `--on-surface-0` | Highest contrast text on a surface |
+| `--on-surface-1` | Primary text/icons |
+| `--on-surface-2` | Secondary text/icons |
+| `--on-surface-3` | Tertiary text/icons |
+| `--on-surface-4` | Muted support content |
+| `--on-surface-5` | Placeholder / quiet metadata |
+| `--on-surface-6` | Disabled / de-emphasized foreground |
+
+### Preferred aliases
+
+When a semantic alias already exists, prefer the alias instead of reaching for the raw level token:
+
+- Text: `--text-primary`, `--text-secondary`, `--text-tertiary`, `--text-disabled`
+- Icons: `--icon-primary`, `--icon-secondary`, `--icon-tertiary`, `--icon-disabled`
+- Borders: `--border-on-surface-0`, `--border-on-surface-1`, `--border-on-surface-2`, `--border-subtle`, `--border-faint`
+- Accent/interactive: `--accent-primary`, `--accent-primary-hover`, `--accent-primary-strong`
+- Status: `--text-success`, `--text-warning`, `--text-critical`, `--status-success`, `--status-warning`, `--status-critical`
+- Status surfaces: `--surface-success-subtle`, `--surface-warning-subtle`, `--surface-critical-subtle`
+
+### How to choose tokens
+
+#### Backgrounds
+
+- App shell, page canvas, major empty areas: `--surface-0`
+- Sidebars, large fixed chrome, main containers: `--surface-1`
+- Cards, sections, popovers, tables, panels: `--surface-2`
+- Inputs, hover states, selected rows, pressed chips, embedded inner containers: `--surface-3`
+- Extra-local emphasis where a component already sits on `surface-3`: `--surface-4`
+
+#### Foregrounds
+
+- Headings and strongest readable text: `--text-primary` or `--on-surface-0`
+- Standard body text and default icons: `--text-primary` / `--icon-primary`
+- Secondary metadata and helper labels: `--text-secondary` / `--icon-secondary`
+- Quiet metadata, placeholders, low-priority labels: `--text-tertiary` or `--text-disabled`
+
+#### Borders
+
+- Default strokes around inputs, cards, rows, buttons, panels: `--border-on-surface-1`
+- Strong dividers and selected container outlines when neutral: `--border-on-surface-0`
+- Soft separators and non-critical inner edges: `--border-on-surface-2` or `--border-faint`
+- Focus rings and interactive emphasis: `--border-focus` / `--focus-ring`
+
+### Non-negotiable styling rules
+
+- **NO hardcoded hex values** in app TSX/CSS except inside `variables.css`
+- **NO primitive palette tokens in components/pages** such as `--grey-*`, `--blue-*`, `--green-*`, etc.
+- **NO old naming systems** or app-specific legacy token names once semantic equivalents exist
+- **Use CSS classes** for styling. Inline styles are only for runtime-computed values such as gradients, user-defined colors, positions, dimensions, and alpha/color-preview logic
 - **Tailwind for layout ONLY**: `flex`, `grid`, `gap-*`, `p-*`, `m-*`, `w-*`, `h-*`, `items-*`, `justify-*`
-- **All component-specific styling** uses CSS classes in `/src/styles/globals.css`
-- **CSS class naming**: use descriptive names with state variants:
-  - `.card`, `.card:hover`, `.card.when-selected`
-  - `.btn-primary`, `.btn-primary:hover`, `.btn-primary:focus-visible`
-  - `.sidebar-item`, `.sidebar-item.when-selected`
-  - `.input`, `.input:focus`, `.input.when-disabled`
-  - `.loading`, `.skeleton`, `.when-dim`
+- **All reusable UI decisions** should resolve back to semantic tokens so dark/light themes stay visually stable
 
-### Exception:
+### Consistency rules for common UI
 
-Dynamic colors computed at runtime (HSL gradients, user-defined colors in the canvas) may use inline styles. Third-party brand SVGs may use their official colors.
+- A card sitting on a page should usually be `surface-2` with `border-on-surface-1`
+- Nested controls inside a card should usually move one level up to `surface-3`
+- Hover should usually increase surface emphasis, not jump to random accent colors
+- Text and icon contrast should move together. If text becomes secondary, the adjacent icon should usually become secondary too
+- Status colors should be reserved for meaning: success, warning, danger, info. Never use them as generic decoration
+- Accent colors should indicate interaction, selection, focus, active navigation, or primary CTA intent
+- If a UI area looks “too flat” or “too noisy”, fix hierarchy with `surface-*` and `on-surface-*` first before introducing new colors
+
+### Exception
+
+Dynamic colors computed at runtime may use inline styles:
+
+- HSL/RGB/OKLCH/HCT previews
+- Canvas node previews
+- Generated gradients
+- User-created color values
+- Third-party brand marks that must preserve official colors
+
+Even in those cases, surrounding chrome, labels, containers, overlays, inputs, and controls must still use semantic tokens.
 
 ---
 
@@ -282,5 +351,5 @@ const res = await fetch("https://...");
 | API Call | Function in `/api/` |
 | Navigate | `useNavigate()` from react-router |
 | Toast | `toast()` from sonner |
-| CSS Token | `var(--grey-900)` from variables.css |
+| CSS Token | `var(--surface-2)`, `var(--text-primary)`, `var(--border-on-surface-1)` from variables.css |
 | CSS Class | `.card`, `.btn-primary`, etc. from globals.css |

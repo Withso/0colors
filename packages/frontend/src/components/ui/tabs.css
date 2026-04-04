@@ -15,7 +15,7 @@
 [data-slot="tabs-list"] {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--grey-700);
+  border-bottom: 1px solid var(--border-on-surface-0);
 }
 
 /* ─── Trigger ─── */
@@ -31,7 +31,7 @@
   background: transparent;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-normal);
-  color: var(--grey-500);
+  color: var(--on-surface-3);
   white-space: nowrap;
   cursor: pointer;
   outline: none;
@@ -40,16 +40,16 @@
 }
 
 [data-slot="tabs-trigger"]:hover {
-  color: var(--grey-300);
+  color: var(--on-surface-1);
 }
 
 [data-slot="tabs-trigger"][data-state="active"] {
-  color: var(--grey-50);
-  border-bottom-color: var(--grey-50);
+  color: var(--on-surface-0);
+  border-bottom-color: var(--on-surface-0);
 }
 
 [data-slot="tabs-trigger"]:focus-visible {
-  outline: 2px solid var(--blue-500);
+  outline: 2px solid var(--accent-primary);
   outline-offset: -2px;
 }
 

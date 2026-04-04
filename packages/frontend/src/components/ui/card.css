@@ -8,10 +8,10 @@
 [data-slot="card"] {
   display: flex;
   flex-direction: column;
-  background-color: var(--grey-925);
-  border: 1px solid var(--grey-800);
+  background-color: var(--surface-1);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-xl);
-  color: var(--grey-100);
+  color: var(--on-surface-0);
 }
 
 /* ─── Header ─── */
@@ -27,13 +27,13 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semi-bold);
   line-height: 1;
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 /* ─── Description ─── */
 [data-slot="card-description"] {
   font-size: var(--font-size-sm);
-  color: var(--grey-400);
+  color: var(--on-surface-2);
 }
 
 /* ─── Action ─── */

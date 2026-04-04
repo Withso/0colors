@@ -101,25 +101,25 @@ export function CloudSyncIndicator({
 
     switch (effectiveStatus) {
       case 'syncing':
-        lines.push({ label: 'Status', value: 'Syncing...', color: 'var(--blue-500)' });
+        lines.push({ label: 'Status', value: 'Syncing...', color: 'var(--text-info)' });
         break;
       case 'synced':
-        lines.push({ label: 'Status', value: 'All changes saved', color: 'var(--green-500)' });
+        lines.push({ label: 'Status', value: 'All changes saved', color: 'var(--text-success)' });
         break;
       case 'error':
-        lines.push({ label: 'Status', value: 'Sync failed', color: 'var(--red-500)' });
+        lines.push({ label: 'Status', value: 'Sync failed', color: 'var(--text-critical)' });
         if (lastError) {
-          lines.push({ label: 'Error', value: lastError.length > 50 ? lastError.slice(0, 50) + '...' : lastError, color: 'var(--red-500)' });
+          lines.push({ label: 'Error', value: lastError.length > 50 ? lastError.slice(0, 50) + '...' : lastError, color: 'var(--text-critical)' });
         }
         break;
       case 'dirty':
-        lines.push({ label: 'Status', value: `Unsaved changes${dirtyCount > 1 ? ` (${dirtyCount} projects)` : ''}`, color: 'var(--yellow-400)' });
+        lines.push({ label: 'Status', value: `Unsaved changes${dirtyCount > 1 ? ` (${dirtyCount} projects)` : ''}`, color: 'var(--text-warning)' });
         break;
       case 'offline':
-        lines.push({ label: 'Status', value: 'Offline — will sync when online', color: 'var(--yellow-400)' });
+        lines.push({ label: 'Status', value: 'Offline — will sync when online', color: 'var(--text-warning)' });
         break;
       default: // idle
-        lines.push({ label: 'Status', value: 'Up to date', color: 'var(--green-500)' });
+        lines.push({ label: 'Status', value: 'Up to date', color: 'var(--text-success)' });
         break;
     }
 
@@ -130,7 +130,7 @@ export function CloudSyncIndicator({
     }
 
     if (isClickable && effectiveStatus !== 'synced') {
-      lines.push({ label: '', value: 'Click to sync now', color: 'var(--grey-500)' });
+      lines.push({ label: '', value: 'Click to sync now', color: 'var(--text-tertiary)' });
     }
 
     return lines;
@@ -141,48 +141,48 @@ export function CloudSyncIndicator({
       case 'syncing':
         return (
           <div className="sync-icon-wrap">
-            <Cloud size={16} style={{ color: 'var(--grey-100)' }} />
+            <Cloud size={16} style={{ color: 'var(--icon-primary)' }} />
             <div className="sync-icon-badge">
-              <Loader2 size={10} style={{ color: 'var(--blue-400)', animation: 'spin 1s linear infinite' }} />
+              <Loader2 size={10} style={{ color: 'var(--icon-info)', animation: 'spin 1s linear infinite' }} />
             </div>
           </div>
         );
       case 'synced':
         return (
           <div className="sync-icon-wrap">
-            <Cloud size={16} style={{ color: 'var(--grey-100)' }} />
+            <Cloud size={16} style={{ color: 'var(--icon-primary)' }} />
             <div className="sync-icon-badge sync-icon-badge-bg">
-              <Check size={10} style={{ color: 'var(--green-500)' }} />
+              <Check size={10} style={{ color: 'var(--icon-success)' }} />
             </div>
           </div>
         );
       case 'error':
         return (
           <div className="sync-icon-wrap">
-            <Cloud size={16} style={{ color: 'var(--grey-100)' }} />
+            <Cloud size={16} style={{ color: 'var(--icon-primary)' }} />
             <div className="sync-icon-badge sync-icon-badge-bg">
-              <AlertTriangle size={10} style={{ color: 'var(--red-500)' }} />
+              <AlertTriangle size={10} style={{ color: 'var(--icon-critical)' }} />
             </div>
           </div>
         );
       case 'dirty':
         return (
           <div className="sync-icon-wrap">
-            <Cloud size={16} style={{ color: 'var(--grey-100)' }} />
+            <Cloud size={16} style={{ color: 'var(--icon-primary)' }} />
             <div className="sync-icon-badge--top sync-dirty-dot" />
           </div>
         );
       case 'offline':
         return (
           <div className="sync-icon-wrap">
-            <Cloud size={16} style={{ color: 'var(--grey-500)' }} />
+            <Cloud size={16} style={{ color: 'var(--icon-tertiary)' }} />
             <div className="sync-icon-badge sync-icon-badge-bg">
-              <WifiOff size={10} style={{ color: 'var(--yellow-500)' }} />
+              <WifiOff size={10} style={{ color: 'var(--icon-warning)' }} />
             </div>
           </div>
         );
       default: // idle
-        return <Cloud size={16} style={{ color: 'var(--grey-100)' }} />;
+        return <Cloud size={16} style={{ color: 'var(--icon-primary)' }} />;
     }
   };
 
@@ -218,13 +218,13 @@ export function CloudSyncIndicator({
                 line.label ? (
                   <div key={i} className="sync-tooltip-row">
                     <span className="sync-tooltip-label">{line.label}</span>
-                    <span className="sync-tooltip-value" style={{ color: line.color || 'var(--grey-100)' }}>
+                    <span className="sync-tooltip-value" style={{ color: line.color || 'var(--text-primary)' }}>
                       {line.value}
                     </span>
                   </div>
                 ) : (
                   <div key={i} className="sync-tooltip-divider">
-                    <span className="sync-tooltip-hint" style={{ color: line.color || 'var(--grey-500)' }}>
+                    <span className="sync-tooltip-hint" style={{ color: line.color || 'var(--text-tertiary)' }}>
                       {line.value}
                     </span>
                   </div>

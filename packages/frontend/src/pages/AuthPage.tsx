@@ -307,7 +307,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
       onClick={(e) => { if (e.target === e.currentTarget) onSkip(); }}
       style={{
         background: mounted
-          ? 'color-mix(in srgb, var(--grey-950) 55%, transparent)'
+          ? 'var(--surface-overlay)'
           : 'transparent',
         backdropFilter: mounted ? 'blur(12px)' : 'blur(0px)',
         WebkitBackdropFilter: mounted ? 'blur(12px)' : 'blur(0px)',
@@ -328,7 +328,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
         <div
           className="auth-glow-ring"
           style={{
-            background: 'linear-gradient(135deg, color-mix(in srgb, var(--blue-500) 15%, transparent) 0%, color-mix(in srgb, var(--green-500) 8%, transparent) 50%, color-mix(in srgb, var(--blue-500) 5%, transparent) 100%)',
+            background: 'linear-gradient(135deg, color-mix(in srgb, var(--accent-primary) 15%, transparent) 0%, color-mix(in srgb, var(--status-success) 8%, transparent) 50%, color-mix(in srgb, var(--accent-primary) 5%, transparent) 100%)',
           }}
         />
 
@@ -385,8 +385,8 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 disabled={resending || resendCooldown > 0}
                 className="auth-resend-btn"
                 style={{
-                  background: resendSuccess ? 'color-mix(in srgb, var(--green-500) 10%, transparent)' : 'color-mix(in srgb, var(--blue-500) 8%, transparent)',
-                  color: resendSuccess ? 'var(--green-500)' : (resendCooldown > 0 ? 'var(--grey-600)' : 'var(--blue-500)'),
+                  background: resendSuccess ? 'var(--surface-success-subtle)' : 'var(--surface-info-subtle)',
+                  color: resendSuccess ? 'var(--text-success)' : (resendCooldown > 0 ? 'var(--text-disabled)' : 'var(--text-info)'),
                   opacity: (resendCooldown > 0 && !resendSuccess) ? 0.6 : 1,
                 }}
               >
@@ -529,10 +529,10 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="auth-submit-btn"
-                  style={{
-                    background: loading ? 'var(--grey-800)' : 'var(--grey-200)',
-                    color: loading ? 'var(--grey-600)' : 'var(--grey-900)',
+                className="auth-submit-btn"
+                style={{
+                    background: loading ? 'var(--surface-3)' : 'var(--on-surface-1)',
+                    color: loading ? 'var(--text-disabled)' : 'var(--on-surface-inverse)',
                     cursor: loading ? 'not-allowed' : 'pointer',
                   }}
                 >

@@ -61,8 +61,8 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
         className="prop-control-label"
         style={{
           color: isSelected
-            ? 'var(--grey-50)'
-            : 'var(--grey-200)',
+            ? 'var(--on-surface-0)'
+            : 'var(--on-surface-2)',
           backgroundColor: isSelected
             ? (() => {
                 // Calculate luminance to determine adaptive blue color
@@ -90,16 +90,16 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
                   b = node.blue;
                 } else if (node.colorSpace === 'oklch') {
                   // For OKLCH, use lightness to determine
-                  return node.oklchL > 50 ? 'var(--blue-400)' : 'var(--blue-500)';
+                  return node.oklchL > 50 ? 'var(--accent-primary-hover)' : 'var(--accent-primary)';
                 } else if (node.colorSpace === 'hct') {
                   // For HCT, use tone to determine
-                  return node.hctT > 50 ? 'var(--blue-400)' : 'var(--blue-500)';
+                  return node.hctT > 50 ? 'var(--accent-primary-hover)' : 'var(--accent-primary)';
                 } else {
-                  return 'var(--blue-500)';
+                  return 'var(--accent-primary)';
                 }
                 const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                 // If light node color (dark bg), use lighter blue; if dark node color (light bg), use darker blue
-                return luminance > 0.5 ? 'var(--blue-400)' : 'var(--blue-500)';
+                return luminance > 0.5 ? 'var(--accent-primary-hover)' : 'var(--accent-primary)';
               })()
             : 'transparent',
           borderRadius: borderRadius
@@ -135,7 +135,7 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
             }}
             className="prop-control-btn"
             style={{
-              color: node[`diff${prop}` as keyof ColorNode] === true ? 'var(--blue-500)' : 'var(--grey-400)'
+              color: node[`diff${prop}` as keyof ColorNode] === true ? 'var(--accent-primary)' : 'var(--icon-tertiary)'
             }}
             title={node[`diff${prop}` as keyof ColorNode] === false ? 'Diff disabled - matches parent' : 'Diff enabled - maintains offset'}
           >
@@ -326,9 +326,9 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
                 onClick={(e) => e.stopPropagation()}
                 className="prop-control-diff-input"
                 style={{
-                  background: 'var(--grey-800)',
-                  borderColor: 'var(--blue-500)',
-                  color: isDiffEnabled ? 'var(--blue-500)' : 'var(--grey-600)',
+                  background: 'var(--surface-3)',
+                  borderColor: 'var(--accent-primary)',
+                  color: isDiffEnabled ? 'var(--accent-primary)' : 'var(--text-disabled)',
                 }}
               />
             ) : (
@@ -343,7 +343,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
                 disabled={disabled}
                 className="prop-control-diff-value-btn"
                 style={{
-                  color: isDiffEnabled ? 'var(--blue-500)' : 'var(--grey-600)',
+                  color: isDiffEnabled ? 'var(--accent-primary)' : 'var(--text-disabled)',
                 }}
                 title={`Offset from parent: ${formattedDiff}. Click to edit.`}
               >
@@ -567,9 +567,9 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
             onMouseDown={(e) => e.stopPropagation()}
           >
             {node.paletteNameLocked ? (
-              <Lock className="prop-control-lock-icon" style={{ color: 'var(--blue-500)' }} />
+              <Lock className="prop-control-lock-icon" style={{ color: 'var(--accent-primary)' }} />
             ) : (
-              <Unlock className="prop-control-lock-icon" style={{ color: 'var(--grey-400)' }} />
+              <Unlock className="prop-control-lock-icon" style={{ color: 'var(--icon-tertiary)' }} />
             )}
           </button>
           </Tip>
@@ -647,14 +647,14 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
                   hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 0),
                   hsl(${node.hue}, ${node.saturation}%, ${node.lightness}%)
                 ),
-                linear-gradient(45deg, var(--grey-300) 25%, transparent 25%),
-                linear-gradient(-45deg, var(--grey-300) 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, var(--grey-300) 75%),
-                linear-gradient(-45deg, transparent 75%, var(--grey-300) 75%)
+                linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%),
+                linear-gradient(-45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%),
+                linear-gradient(-45deg, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%)
               `,
               backgroundSize: '100% 100%, 8px 8px, 8px 8px, 8px 8px, 8px 8px',
               backgroundPosition: '0 0, 0 0, 4px 0, 4px -4px, 0 4px',
-              backgroundColor: 'var(--grey-50)'
+              backgroundColor: 'var(--absolute-white)'
             }}
           />
           <input
@@ -743,8 +743,8 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
                     className="color-card-palette-range-dot"
                     style={{ 
                       left: `${lightnessValue}%`,
-                      backgroundColor: 'var(--grey-300)',
-                      boxShadow: '0 1px 2px color-mix(in srgb, var(--grey-950) 10%, transparent)'
+                      backgroundColor: 'var(--on-surface-3)',
+                      boxShadow: '0 1px 2px color-mix(in srgb, var(--absolute-black) 10%, transparent)'
                     }}
                   ></div>
                 );
@@ -1588,7 +1588,7 @@ export function ColorNodeCard({
         return node.hexValue;
       }
       // Locked but no hexValue - show default gray
-      return 'var(--grey-500)';
+      return 'var(--on-surface-5)';
     }
     
     // For unlocked hex nodes, use their own hexValue if set (preserves value when unlocking)
@@ -2578,9 +2578,9 @@ export function ColorNodeCard({
           style={{
             backgroundColor: hslColor,
             border: isSelected
-              ? '2px solid var(--blue-500)'
+              ? '2px solid var(--accent-primary)'
               : isMultiSelected
-              ? '2px solid var(--blue-400)'
+              ? '2px solid var(--accent-primary-hover)'
               : '2px solid transparent',
             width: `${nodeWidth}px`,
             height: '44px',
@@ -2598,10 +2598,10 @@ export function ColorNodeCard({
           <span
             className="color-card-shade-hex"
             style={{
-              color: isLightBackground ? 'color-mix(in srgb, var(--grey-950) 75%, transparent)' : 'color-mix(in srgb, var(--grey-50) 90%, transparent)',
+              color: isLightBackground ? 'color-mix(in srgb, var(--absolute-black) 75%, transparent)' : 'color-mix(in srgb, var(--absolute-white) 90%, transparent)',
               textShadow: isLightBackground
-                ? '0 1px 2px color-mix(in srgb, var(--grey-50) 30%, transparent)'
-                : '0 1px 2px color-mix(in srgb, var(--grey-950) 40%, transparent)',
+                ? '0 1px 2px color-mix(in srgb, var(--absolute-white) 30%, transparent)'
+                : '0 1px 2px color-mix(in srgb, var(--absolute-black) 40%, transparent)',
             }}
           >
             {displayColorValue !== hexColor ? displayColorValue : hexColor.toUpperCase()}
@@ -2614,10 +2614,10 @@ export function ColorNodeCard({
               <span
                 className="color-card-shade-token-name"
                 style={{
-                  color: isLightBackground ? 'color-mix(in srgb, var(--grey-950) 75%, transparent)' : 'color-mix(in srgb, var(--grey-50) 90%, transparent)',
+                  color: isLightBackground ? 'color-mix(in srgb, var(--absolute-black) 75%, transparent)' : 'color-mix(in srgb, var(--absolute-white) 90%, transparent)',
                   textShadow: isLightBackground
-                    ? '0 1px 2px color-mix(in srgb, var(--grey-50) 30%, transparent)'
-                    : '0 1px 3px color-mix(in srgb, var(--grey-950) 60%, transparent)',
+                    ? '0 1px 2px color-mix(in srgb, var(--absolute-white) 30%, transparent)'
+                    : '0 1px 3px color-mix(in srgb, var(--absolute-black) 60%, transparent)',
                 }}
               >
                 {shadeToken.name}
@@ -2851,7 +2851,7 @@ export function ColorNodeCard({
     <Card
       className="color-card-card"
       style={{
-        border: isSelected ? '1px solid var(--blue-500)' : isMultiSelected ? '1px solid var(--blue-400)' : '1px solid transparent',
+        border: isSelected ? '1px solid var(--accent-primary)' : isMultiSelected ? '1px solid var(--accent-primary-hover)' : '1px solid transparent',
         width: `${nodeWidth}px`,
         maxWidth: `${nodeWidth}px`,
         minWidth: `${nodeWidth}px`
@@ -2993,15 +2993,15 @@ export function ColorNodeCard({
                   b = node.blue;
                 } else if (node.colorSpace === 'oklch') {
                   // For OKLCH, use lightness to determine
-                  return node.oklchL > 50 ? 'color-mix(in srgb, var(--grey-950) 30%, transparent)' : 'color-mix(in srgb, var(--grey-50) 30%, transparent)';
+                  return node.oklchL > 50 ? 'color-mix(in srgb, var(--absolute-black) 30%, transparent)' : 'color-mix(in srgb, var(--absolute-white) 30%, transparent)';
                 } else if (node.colorSpace === 'hct') {
                   // For HCT, use tone to determine
-                  return node.hctT > 50 ? 'color-mix(in srgb, var(--grey-950) 30%, transparent)' : 'color-mix(in srgb, var(--grey-50) 30%, transparent)';
+                  return node.hctT > 50 ? 'color-mix(in srgb, var(--absolute-black) 30%, transparent)' : 'color-mix(in srgb, var(--absolute-white) 30%, transparent)';
                 }
                 // Calculate relative luminance
                 const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                 // If light color, use black background; if dark, use white
-                return luminance > 0.5 ? 'color-mix(in srgb, var(--grey-950) 30%, transparent)' : 'color-mix(in srgb, var(--grey-50) 30%, transparent)';
+                return luminance > 0.5 ? 'color-mix(in srgb, var(--absolute-black) 30%, transparent)' : 'color-mix(in srgb, var(--absolute-white) 30%, transparent)';
               })(),
               color: (() => {
                 // Calculate luminance to determine text color
@@ -3029,14 +3029,14 @@ export function ColorNodeCard({
                   b = node.blue;
                 } else if (node.colorSpace === 'oklch') {
                   // For OKLCH, if light bg use dark text, if dark bg use light text
-                  return node.oklchL > 50 ? 'color-mix(in srgb, var(--grey-50) 90%, transparent)' : 'color-mix(in srgb, var(--grey-950) 80%, transparent)';
+                  return node.oklchL > 50 ? 'color-mix(in srgb, var(--absolute-white) 90%, transparent)' : 'color-mix(in srgb, var(--absolute-black) 80%, transparent)';
                 } else if (node.colorSpace === 'hct') {
                   // For HCT, if light tone use dark text, if dark tone use light text
-                  return node.hctT > 50 ? 'color-mix(in srgb, var(--grey-50) 90%, transparent)' : 'color-mix(in srgb, var(--grey-950) 80%, transparent)';
+                  return node.hctT > 50 ? 'color-mix(in srgb, var(--absolute-white) 90%, transparent)' : 'color-mix(in srgb, var(--absolute-black) 80%, transparent)';
                 }
                 const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                 // If light node color (black bg), use white text; if dark node color (white bg), use black text
-                return luminance > 0.5 ? 'color-mix(in srgb, var(--grey-50) 90%, transparent)' : 'color-mix(in srgb, var(--grey-950) 80%, transparent)';
+                return luminance > 0.5 ? 'color-mix(in srgb, var(--absolute-white) 90%, transparent)' : 'color-mix(in srgb, var(--absolute-black) 80%, transparent)';
               })()
             }}
           >
@@ -3332,12 +3332,12 @@ export function ColorNodeCard({
                             linear-gradient(to right, 
                               hsla(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%, 0), 
                               hsla(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%, 1)),
-                            linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)),
-                            linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))
+                            linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white))),
+                            linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)))
                           `,
                           backgroundSize: '100% 100%, 8px 8px, 8px 8px',
                           backgroundPosition: '0 0, 0 0, 4px 4px',
-                          backgroundColor: 'var(--grey-400)',
+                          backgroundColor: 'var(--absolute-white)',
                           '--slider-thumb-color': `hsla(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%, ${(effectiveColors.alpha ?? 100) / 100})`,
                           opacity: isChannelAdvanced('alpha') ? 0.3 : 1,
                         } as React.CSSProperties}
@@ -3390,7 +3390,7 @@ export function ColorNodeCard({
                           <ScrubberInput ref={alphaInputRef} value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 0), rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 0), rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 1)), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white))), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--absolute-white)', '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
                   </>
                 )}
@@ -3475,7 +3475,7 @@ export function ColorNodeCard({
                           <ScrubberInput ref={alphaInputRef} value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / 0), oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / 0), oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / 1)), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white))), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--absolute-white)', '--slider-thumb-color': `oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
                   </>
                   );
@@ -3529,7 +3529,7 @@ export function ColorNodeCard({
                           <ScrubberInput ref={alphaInputRef} value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('alpha')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `linear-gradient(to right, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0), rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`; })(), backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(node.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `linear-gradient(to right, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0), rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white))), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)))`; })(), backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--absolute-white)', '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(node.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
                   </>
                   );
@@ -3565,7 +3565,7 @@ export function ColorNodeCard({
             <span
               className="color-card-srgb-fallback"
               style={{
-                color: isLightBackground ? 'color-mix(in srgb, var(--grey-950) 50%, transparent)' : 'color-mix(in srgb, var(--grey-50) 50%, transparent)',
+                color: isLightBackground ? 'color-mix(in srgb, var(--absolute-black) 50%, transparent)' : 'color-mix(in srgb, var(--absolute-white) 50%, transparent)',
               }}
             >
               sRGB fallback
@@ -3687,7 +3687,7 @@ export function ColorNodeCard({
           <div className="color-card-cs-label-wrap">
             <div
               className="color-card-cs-label"
-              style={{ backgroundColor: 'var(--grey-800)', color: 'var(--grey-100)' }}
+              style={{ backgroundColor: 'var(--surface-3)', color: 'var(--on-surface-1)' }}
             >
               {node.colorSpace === 'hsl' ? 'HSL' : node.colorSpace === 'rgb' ? 'RGB' : node.colorSpace === 'oklch' ? 'OKLCH' : node.colorSpace === 'hct' ? 'HCT' : 'HEX'}
             </div>
@@ -3800,7 +3800,7 @@ export function ColorNodeCard({
                   <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                 </div>
               </div>
-              <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 0), hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+              <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 0), hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 1)), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white))), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--absolute-white)', '--slider-thumb-color': `hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
             </div>)}
           </>
         )}
@@ -3851,7 +3851,7 @@ export function ColorNodeCard({
                     <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 0), rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 0), rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 1)), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white))), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--absolute-white)', '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
             </>
           );
@@ -3948,7 +3948,7 @@ export function ColorNodeCard({
                     <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, oklch(${effectiveColors.oklchL || 0}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / 0), oklch(${effectiveColors.oklchL || 0}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `oklch(${(effectiveColors.oklchL || 0)}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, oklch(${effectiveColors.oklchL || 0}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / 0), oklch(${effectiveColors.oklchL || 0}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / 1)), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white))), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--absolute-white)', '--slider-thumb-color': `oklch(${(effectiveColors.oklchL || 0)}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
             </>
           );
@@ -3999,7 +3999,7 @@ export function ColorNodeCard({
                     <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, hsl(${node.hctH || 0}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / 0), hsl(${node.hctH || 0}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `hsl(${(node.hctH || 0)}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, hsl(${node.hctH || 0}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / 0), hsl(${node.hctH || 0}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / 1)), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white))), linear-gradient(45deg, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)) 75%, color-mix(in srgb, var(--absolute-black) 18%, var(--absolute-white)))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--absolute-white)', '--slider-thumb-color': `hsl(${(node.hctH || 0)}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
             </>
           );
@@ -4521,7 +4521,7 @@ export function ColorNodeCard({
           className="color-card-resize-svg" 
           viewBox="0 0 12 12" 
           fill="none"
-          style={{ color: 'var(--grey-800)' }}
+          style={{ color: 'var(--icon-secondary)' }}
         >
           <path d="M10 2L2 10M10 6L6 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
@@ -4534,7 +4534,7 @@ export function ColorNodeCard({
       <div
         className="color-card-advanced-island"
         style={{
-          backgroundColor: 'var(--grey-900)',
+          backgroundColor: 'var(--surface-2)',
           border: 'none',
           width: `${nodeWidth}px`,
         }}
@@ -4557,8 +4557,8 @@ export function ColorNodeCard({
                     key={chKey}
                     className="color-card-advanced-channel-badge"
                     style={{
-                      color: 'var(--green-500)',
-                      backgroundColor: 'color-mix(in srgb, var(--green-400) 12%, transparent)',
+                      color: 'var(--text-success)',
+                      backgroundColor: 'var(--surface-success-subtle)',
                       border: 'none',
                     }}
                   >

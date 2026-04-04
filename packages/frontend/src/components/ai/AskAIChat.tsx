@@ -153,22 +153,22 @@ function parseStructuredError(content: string): StructuredError | null {
 }
 
 const ERROR_ICON_COLORS: Record<string, string> = {
-  'rate_limit_exceeded': 'var(--yellow-400)',
-  'rate_limited': 'var(--yellow-400)',
-  '429': 'var(--yellow-400)',
-  'authentication_error': 'var(--red-400)',
-  '401': 'var(--red-400)',
-  '403': 'var(--red-400)',
-  'not_found': 'var(--purple-500)',
-  '404': 'var(--purple-500)',
-  'network_error': 'var(--red-400)',
-  '0': 'var(--red-400)',
+  'rate_limit_exceeded': 'var(--text-warning)',
+  'rate_limited': 'var(--text-warning)',
+  '429': 'var(--text-warning)',
+  'authentication_error': 'var(--text-critical)',
+  '401': 'var(--text-critical)',
+  '403': 'var(--text-critical)',
+  'not_found': 'var(--utility-knowledge)',
+  '404': 'var(--utility-knowledge)',
+  'network_error': 'var(--text-critical)',
+  '0': 'var(--text-critical)',
 };
 
 function getErrorColor(err: StructuredError): string {
   return ERROR_ICON_COLORS[err.errorCode] ||
     ERROR_ICON_COLORS[String(err.code)] ||
-    'var(--red-400)';
+    'var(--text-critical)';
 }
 
 function ErrorBubble({ error }: { error: StructuredError }) {
@@ -215,7 +215,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       className="ai-chat-copy-btn"
-      style={{ color: copied ? 'var(--green-500)' : 'var(--grey-700)' }}
+      style={{ color: copied ? 'var(--text-success)' : 'var(--text-disabled)' }}
       onClick={() => {
         copyTextToClipboard(text);
         setCopied(true);
@@ -869,7 +869,7 @@ export function AskAIChat({
       <button
         onClick={(e) => { e.stopPropagation(); setShowSidebar(prev => !prev); }}
         className="ai-chat-header-btn"
-        style={{ color: showSidebar ? 'var(--grey-100)' : 'var(--grey-600)' }}
+        style={{ color: showSidebar ? 'var(--text-primary)' : 'var(--icon-disabled)' }}
       >
         <Menu size={14} />
       </button>
@@ -886,7 +886,7 @@ export function AskAIChat({
       <button
         onClick={(e) => { e.stopPropagation(); startNewConversation(); }}
         className="ai-chat-header-btn"
-        style={{ color: 'var(--grey-600)' }}
+        style={{ color: 'var(--icon-disabled)' }}
         title="New Chat"
       >
         <Plus size={14} />
@@ -894,7 +894,7 @@ export function AskAIChat({
       <button
         onClick={(e) => { e.stopPropagation(); toggleDock(); }}
         className="ai-chat-header-btn"
-        style={{ color: isDocked ? 'var(--blue-400)' : 'var(--grey-600)' }}
+        style={{ color: isDocked ? 'var(--accent-primary-hover)' : 'var(--icon-disabled)' }}
         title={isDocked ? 'Undock (floating popup)' : 'Dock to right panel'}
       >
         {isDocked ? <Maximize2 size={14} /> : <PanelRight size={14} />}
@@ -902,7 +902,7 @@ export function AskAIChat({
       <button
         onClick={(e) => { e.stopPropagation(); setShowSettings(true); }}
         className="ai-chat-header-btn"
-        style={{ color: 'var(--grey-600)' }}
+        style={{ color: 'var(--icon-disabled)' }}
         title="AI Settings"
       >
         <Settings size={14} />
@@ -910,7 +910,7 @@ export function AskAIChat({
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}
         className="ai-chat-header-btn"
-        style={{ color: 'var(--grey-600)' }}
+        style={{ color: 'var(--icon-disabled)' }}
       >
         <X size={14} />
       </button>
@@ -938,11 +938,11 @@ export function AskAIChat({
               {/* Conversations header bar */}
               <div className="ai-chat-convos-header">
                 <div className="ai-chat-convos-header-left">
-                  <MessageSquare size={13} style={{ color: 'var(--grey-600)' }} />
+                  <MessageSquare size={13} style={{ color: 'var(--icon-disabled)' }} />
                   <span className="ai-chat-convos-title">Conversations</span>
                   {conversations.length > 0 && (
                     <span className="ai-chat-convos-count"
-                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? 'var(--blue-400)' : 'var(--grey-600)' }}
+                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? 'var(--accent-primary-hover)' : 'var(--text-disabled)' }}
                       title={`${conversations.length} of ${MAX_CONVERSATIONS} max conversations`}
                     >
                       {conversations.length}/{MAX_CONVERSATIONS}
@@ -983,15 +983,15 @@ export function AskAIChat({
                           key={conv.id}
                           className={`ai-chat-convo-item${isActive ? ' is-active' : ''}`}
                           onClick={() => { setActiveConvId(conv.id); setShowSidebar(false); }}
-                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'color-mix(in srgb, var(--grey-50) 3%, transparent)'; }}
+                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--surface-hover)'; }}
                           onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = ''; } }}
                         >
                           <div className="ai-chat-convo-item-icon">
-                            <MessageSquare size={12} style={{ color: isActive ? 'var(--blue-500)' : 'var(--grey-700)' }} />
+                            <MessageSquare size={12} style={{ color: isActive ? 'var(--icon-brand)' : 'var(--icon-disabled)' }} />
                           </div>
                           <div className="ai-chat-convo-item-body">
                             <div className="ai-chat-convo-item-top">
-                              <span className="ai-chat-convo-item-title" style={{ color: isActive ? 'var(--grey-100)' : 'var(--grey-500)' }}>
+                              <span className="ai-chat-convo-item-title" style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
                                 {conv.title}
                               </span>
                               <div className="ai-chat-convo-item-actions">
@@ -1015,7 +1015,7 @@ export function AskAIChat({
                               {preview}
                             </p>
                             <div className="ai-chat-convo-item-meta">
-                              <span className="ai-chat-convo-item-count" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? 'var(--blue-400)' : 'var(--grey-700)' }}
+                              <span className="ai-chat-convo-item-count" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? 'var(--accent-primary-hover)' : 'var(--text-disabled)' }}
                                 title={msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5 ? `${msgCount}/${MAX_MESSAGES_PER_CONVERSATION} max messages` : undefined}
                               >
                                 {msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5
@@ -1272,7 +1272,7 @@ export function AskAIChat({
                                           setShowModelPicker(false);
                                         }}
                                         className="ai-chat-model-option"
-                                        style={{ color: isActive ? 'var(--grey-100)' : 'var(--grey-500)' }}
+                                        style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-tertiary)' }}
                                       >
                                         <span className={`ai-chat-model-dot ${isActive ? 'is-active' : 'is-inactive'}`} />
                                         {model.label}
@@ -1312,9 +1312,9 @@ export function AskAIChat({
                             className="ai-chat-send-btn"
                             style={{
                               background: input.trim() && !isOverLimit
-                                ? (aiMode === 'build' ? 'var(--orange-400)' : 'var(--blue-500)')
-                                : 'color-mix(in srgb, var(--grey-50) 4%, transparent)',
-                              color: input.trim() && !isOverLimit ? 'var(--grey-900)' : 'var(--grey-700)',
+                                ? (aiMode === 'build' ? 'var(--utility-build)' : 'var(--accent-primary)')
+                                : 'var(--surface-hover)',
+                              color: input.trim() && !isOverLimit ? 'var(--on-primary)' : 'var(--text-disabled)',
                             }}
                           >
                             {aiMode === 'build' ? <Hammer size={13} /> : <Send size={13} />}

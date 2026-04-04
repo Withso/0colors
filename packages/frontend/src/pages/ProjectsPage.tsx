@@ -497,9 +497,9 @@ export function ProjectsPage({
               <span
                 className="projects-sidebar-admin-badge"
                 style={{
-                  background: 'color-mix(in srgb, var(--purple-400) 10%, transparent)',
-                  color: 'var(--purple-400)',
-                  border: '1px solid color-mix(in srgb, var(--purple-400) 20%, transparent)',
+                  background: 'color-mix(in srgb, var(--utility-knowledge) 10%, transparent)',
+                  color: 'var(--utility-knowledge)',
+                  border: '1px solid color-mix(in srgb, var(--utility-knowledge) 20%, transparent)',
                 }}
               >
                 Admin

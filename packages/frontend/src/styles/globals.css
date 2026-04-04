@@ -15,12 +15,12 @@
 html {
   overflow: hidden;
   overscroll-behavior: none;
-  background-color: var(--grey-950);
+  background-color: var(--surface-0);
 }
 
 body {
-  background-color: var(--grey-950);
-  color: var(--default-text-color);
+  background-color: var(--surface-0);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   -webkit-font-smoothing: antialiased;
@@ -68,20 +68,20 @@ body.selecting * {
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] svg {
-  color: var(--green-500) !important;
+  color: var(--status-success) !important;
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] svg {
-  color: var(--red-500) !important;
+  color: var(--status-danger) !important;
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type="success"],
 [data-sonner-toaster] [data-sonner-toast][data-type="error"],
 [data-sonner-toaster] [data-sonner-toast][data-type="info"],
 [data-sonner-toaster] [data-sonner-toast][data-type="warning"] {
-  background: var(--grey-800) !important;
-  border-color: var(--grey-700) !important;
-  color: var(--grey-100) !important;
+  background: var(--surface-3) !important;
+  border-color: var(--surface-4) !important;
+  color: var(--on-surface-1) !important;
 }
 
 /* ═══════════════════════════════════════════
@@ -101,7 +101,7 @@ body.selecting * {
   appearance: none !important;
   width: 14px !important;
   height: 14px !important;
-  border: 2px solid var(--grey-50) !important;
+  border: 2px solid var(--on-surface-0) !important;
   border-radius: 2px !important;
   transform: rotate(45deg) !important;
   cursor: grab !important;
@@ -121,7 +121,7 @@ body.selecting * {
   appearance: none !important;
   width: 14px !important;
   height: 14px !important;
-  border: 2px solid var(--grey-50) !important;
+  border: 2px solid var(--on-surface-0) !important;
   border-radius: 2px !important;
   transform: rotate(45deg) !important;
   cursor: grab !important;
@@ -138,42 +138,42 @@ body.selecting * {
 .color-slider::-webkit-slider-thumb {
   background: var(--slider-thumb-color, transparent) !important;
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--grey-950) 15%, transparent),
-    0 1px 4px color-mix(in srgb, var(--grey-950) 40%, transparent) !important;
+    inset 0 0 0 1px color-mix(in srgb, var(--surface-0) 15%, transparent),
+    0 1px 4px color-mix(in srgb, var(--surface-0) 40%, transparent) !important;
 }
 .color-slider::-webkit-slider-thumb:active {
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--grey-950) 15%, transparent),
-    0 0 0 3px color-mix(in srgb, var(--grey-50) 20%, transparent),
-    0 1px 4px color-mix(in srgb, var(--grey-950) 40%, transparent) !important;
+    inset 0 0 0 1px color-mix(in srgb, var(--surface-0) 15%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--on-surface-0) 20%, transparent),
+    0 1px 4px color-mix(in srgb, var(--surface-0) 40%, transparent) !important;
 }
 .color-slider::-moz-range-thumb {
   background: var(--slider-thumb-color, transparent) !important;
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--grey-950) 15%, transparent),
-    0 1px 4px color-mix(in srgb, var(--grey-950) 40%, transparent) !important;
+    inset 0 0 0 1px color-mix(in srgb, var(--surface-0) 15%, transparent),
+    0 1px 4px color-mix(in srgb, var(--surface-0) 40%, transparent) !important;
 }
 .color-slider::-moz-range-thumb:active {
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--grey-950) 15%, transparent),
-    0 0 0 3px color-mix(in srgb, var(--grey-50) 20%, transparent),
-    0 1px 4px color-mix(in srgb, var(--grey-950) 40%, transparent) !important;
+    inset 0 0 0 1px color-mix(in srgb, var(--surface-0) 15%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--on-surface-0) 20%, transparent),
+    0 1px 4px color-mix(in srgb, var(--surface-0) 40%, transparent) !important;
 }
 
 /* Palette-range-slider: fixed navy fill */
 .palette-range-slider::-webkit-slider-thumb {
-  background: var(--blue-900) !important;
-  box-shadow: 0 1px 4px color-mix(in srgb, var(--grey-950) 35%, transparent) !important;
+  background: var(--surface-accent) !important;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--surface-0) 35%, transparent) !important;
 }
 .palette-range-slider::-webkit-slider-thumb:active {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-900) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--grey-900) 35%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--surface-accent) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--surface-2) 35%, transparent) !important;
 }
 .palette-range-slider::-moz-range-thumb {
-  background: var(--blue-900) !important;
-  box-shadow: 0 1px 4px color-mix(in srgb, var(--grey-950) 35%, transparent) !important;
+  background: var(--surface-accent) !important;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--surface-0) 35%, transparent) !important;
 }
 .palette-range-slider::-moz-range-thumb:active {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-900) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--grey-900) 35%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--surface-accent) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--surface-2) 35%, transparent) !important;
 }
 
 /* Slider tracks */

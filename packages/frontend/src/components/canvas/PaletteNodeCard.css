@@ -41,9 +41,9 @@
   width: 4px;
   height: 4px;
   border-radius: var(--radius-full);
-  background-color: var(--yellow-500);
+  background-color: var(--status-warning);
   z-index: 10;
-  box-shadow: 0 0 2px color-mix(in srgb, var(--grey-950) 50%, transparent);
+  box-shadow: 0 0 2px color-mix(in srgb, var(--surface-0) 50%, transparent);
 }
 
 .palette-card-shade-copied {
@@ -64,16 +64,16 @@
   border-radius: var(--radius-xl);
   overflow: hidden;
   transition: all 0.15s;
-  background-color: var(--grey-900);
-  border: 1px solid var(--grey-900);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--grey-950) 30%, transparent);
+  background-color: var(--surface-2);
+  border: 1px solid var(--surface-2);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--surface-0) 30%, transparent);
 }
 
 .palette-card-island--selected {
-  border-color: color-mix(in srgb, var(--blue-500) 50%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--blue-500) 30%, transparent),
-    0 4px 16px color-mix(in srgb, var(--grey-950) 40%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--accent-primary) 30%, transparent),
+    0 4px 16px color-mix(in srgb, var(--surface-0) 40%, transparent);
 }
 
 .palette-card-island-inner {
@@ -101,16 +101,16 @@
 
 .palette-card-visibility--hidden {
   opacity: 1;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .palette-card-visibility--hovered {
   opacity: 1;
-  color: var(--grey-400);
+  color: var(--on-surface-4);
 }
 
 .palette-card-visibility--hovered:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .palette-card-visibility--default {
@@ -144,11 +144,11 @@
 }
 
 .palette-card-inherit-switch[data-state="checked"] {
-  background-color: var(--yellow-500);
+  background-color: var(--status-warning);
 }
 
 .palette-card-inherit-switch[data-state="unchecked"] {
-  background-color: var(--grey-700);
+  background-color: var(--surface-4);
 }
 
 .palette-card-inherit-crown {
@@ -159,15 +159,15 @@
 }
 
 .palette-card-inherit-crown--linked {
-  color: var(--yellow-500);
+  color: var(--status-warning);
 }
 
 .palette-card-inherit-crown--modified {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .palette-card-inherit-crown--dim {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .palette-card-inherit-label {
@@ -177,15 +177,15 @@
 }
 
 .palette-card-inherit-label--linked {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .palette-card-inherit-label--modified {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .palette-card-inherit-label--dim {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ─── Header: Color Swatch ─── */
@@ -202,7 +202,7 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background-color: color-mix(in srgb, var(--grey-950) 55%, transparent);
+  background-color: color-mix(in srgb, var(--surface-0) 55%, transparent);
   border-radius: 11px 11px 0 0;
 }
 
@@ -225,11 +225,11 @@
 }
 
 .palette-card-copy-btn--light:hover {
-  background-color: color-mix(in srgb, var(--grey-950) 10%, transparent);
+  background-color: color-mix(in srgb, var(--surface-0) 10%, transparent);
 }
 
 .palette-card-copy-btn--dark:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 20%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 20%, transparent);
 }
 
 .palette-card-copy-btn--visible {
@@ -247,33 +247,33 @@
 }
 
 .palette-card-copy-icon--light {
-  color: color-mix(in srgb, var(--grey-600) 80%, transparent);
+  color: color-mix(in srgb, var(--on-surface-6) 80%, transparent);
 }
 
 .palette-card-copy-icon--light-dim {
-  color: color-mix(in srgb, var(--grey-600) 60%, transparent);
+  color: color-mix(in srgb, var(--on-surface-6) 60%, transparent);
 }
 
 .palette-card-copy-icon--dark {
-  color: color-mix(in srgb, var(--grey-50) 80%, transparent);
+  color: color-mix(in srgb, var(--on-surface-0) 80%, transparent);
 }
 
 .palette-card-copy-icon--dark-dim {
-  color: color-mix(in srgb, var(--grey-50) 60%, transparent);
+  color: color-mix(in srgb, var(--on-surface-0) 60%, transparent);
 }
 
 .palette-card-swatch-value {
   font-family: var(--font-mono);
-  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--grey-950) 25%, transparent));
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--surface-0) 25%, transparent));
 }
 
 /* ─── Section shared styles ─── */
 .palette-card-section {
-  border-top: 1px solid var(--grey-800);
+  border-top: 1px solid var(--surface-3);
 }
 
 .palette-card-section--color {
-  border-top: 1px solid var(--grey-800);
+  border-top: 1px solid var(--surface-3);
   transition: opacity 0.15s;
 }
 
@@ -294,12 +294,12 @@
 }
 
 .palette-card-section-header:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .palette-card-section-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-family: var(--font-sans);
@@ -314,7 +314,7 @@
 .palette-card-chevron {
   width: 14px;
   height: 14px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   transition: transform 0.15s;
 }
 
@@ -344,7 +344,7 @@
 }
 
 .palette-card-lock-btn:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .palette-card-lock-icon {
@@ -353,11 +353,11 @@
 }
 
 .palette-card-lock-icon--locked {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .palette-card-lock-icon--unlocked {
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 /* ─── Color section ─── */
@@ -371,7 +371,7 @@
   width: 6px;
   height: 6px;
   border-radius: var(--radius-full);
-  background-color: var(--yellow-500);
+  background-color: var(--status-warning);
 }
 
 .palette-card-color-header-right {
@@ -384,7 +384,7 @@
   width: 16px;
   height: 16px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--grey-700);
+  border: 1px solid var(--surface-4);
 }
 
 .palette-card-color-sliders {
@@ -411,14 +411,14 @@
 
 .palette-card-color-value-display {
   flex: 1;
-  background-color: var(--grey-950);
-  border: 1px solid var(--grey-800);
+  background-color: var(--surface-0);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-lg);
   padding-left: 10px;
   padding-right: 10px;
   display: flex;
   align-items: center;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-size: 11px;
   overflow: hidden;
   font-family: var(--font-mono);
@@ -427,10 +427,10 @@
 
 /* ─── Distribution section ─── */
 .palette-card-curve-box {
-  background-color: var(--grey-950);
+  background-color: var(--surface-0);
   border-radius: var(--radius-lg);
   padding: 6px;
-  border: 1px solid var(--grey-800);
+  border: 1px solid var(--surface-3);
 }
 
 /* ─── Lightness Scale section ─── */
@@ -448,7 +448,7 @@
 
 .palette-card-slider-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   font-family: var(--font-mono);
 }
 
@@ -461,14 +461,14 @@
 
 .palette-card-hue-value {
   font-size: 11px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-family: var(--font-mono);
 }
 
 .palette-card-range-slider {
   width: 100%;
   height: 8px;
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   border-radius: var(--radius-full);
   appearance: none;
   -webkit-appearance: none;
@@ -490,7 +490,7 @@
 
 .palette-card-pattern-value {
   font-size: 11px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-family: var(--font-mono);
 }
 
@@ -530,20 +530,20 @@
 }
 
 .palette-card-connect-btn--locked {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   cursor: not-allowed;
 }
 
 .palette-card-connect-btn--hovered {
-  background-color: var(--green-500);
+  background-color: var(--status-success);
 }
 
 .palette-card-connect-btn--default {
-  background-color: var(--grey-700);
+  background-color: var(--surface-4);
 }
 
 .palette-card-connect-btn--default:hover {
-  background-color: var(--grey-700);
+  background-color: var(--surface-4);
 }
 
 .palette-card-connect-icon {
@@ -552,15 +552,15 @@
 }
 
 .palette-card-connect-icon--locked {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .palette-card-connect-icon--hovered {
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 .palette-card-connect-icon--default {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 /* ─── Delete button ─── */
@@ -581,7 +581,7 @@
   width: 20px;
   height: 20px;
   border-radius: var(--radius-full);
-  background-color: var(--red-500);
+  background-color: var(--status-danger);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -592,20 +592,20 @@
 }
 
 .palette-card-delete-btn:hover {
-  background-color: var(--pink-400);
+  background-color: var(--status-critical);
 }
 
 .palette-card-delete-icon {
   width: 10px;
   height: 10px;
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 /* ─── Trigger classes (select, input shared) ─── */
 .palette-card-select-trigger {
-  background-color: var(--grey-950);
-  border-color: var(--grey-800);
-  color: var(--grey-100);
+  background-color: var(--surface-0);
+  border-color: var(--surface-3);
+  color: var(--on-surface-1);
   height: 28px;
   font-size: var(--font-size-xs);
   margin-bottom: 8px;
@@ -617,28 +617,28 @@
 
 .palette-card-select-trigger--format {
   width: 72px;
-  background-color: var(--grey-950);
-  border-color: var(--grey-800);
-  color: var(--grey-100);
+  background-color: var(--surface-0);
+  border-color: var(--surface-3);
+  color: var(--on-surface-1);
   font-size: 11px;
   height: 28px;
 }
 
 .palette-card-select-content {
-  background-color: var(--grey-800);
-  border-color: var(--grey-700);
+  background-color: var(--surface-3);
+  border-color: var(--surface-4);
 }
 
 .palette-card-select-item {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-size: var(--font-size-xs);
 }
 
 .palette-card-name-input {
   height: 28px;
-  background-color: var(--grey-950);
-  border-color: var(--grey-800);
-  color: var(--grey-100);
+  background-color: var(--surface-0);
+  border-color: var(--surface-3);
+  color: var(--on-surface-1);
   font-size: var(--font-size-xs);
   border-radius: var(--radius-lg);
   font-family: var(--font-sans);

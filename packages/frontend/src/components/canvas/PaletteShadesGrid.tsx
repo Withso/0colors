@@ -420,7 +420,7 @@ export function PaletteShadesGrid({
       <div
         className="psg-container"
         style={{
-          backgroundColor: 'var(--grey-800)',
+          backgroundColor: 'var(--surface-3)',
           backdropFilter: 'blur(4px)',
           width: '360px',
           zIndex: 5,
@@ -478,7 +478,7 @@ export function PaletteShadesGrid({
                   backgroundColor: shadeColor,
                   borderWidth: '2px',
                   borderStyle: 'solid',
-                  borderColor: isSelected ? 'var(--blue-500)' : 'transparent',
+                  borderColor: isSelected ? 'var(--accent-primary)' : 'transparent',
                   filter: isSelected ? 'brightness(1.1)' : 'none',
                 }}
                 tabIndex={0}
@@ -563,11 +563,11 @@ export function PaletteShadesGrid({
                   
                   const luminance = getLuminance(shadeColor);
                   const isDark = luminance < 0.5;
-                  const textColor = isDark ? 'color-mix(in srgb, var(--grey-50) 90%, transparent)' : 'color-mix(in srgb, var(--grey-950) 80%, transparent)';
-                  const secondaryTextColor = isDark ? 'color-mix(in srgb, var(--grey-50) 60%, transparent)' : 'color-mix(in srgb, var(--grey-950) 50%, transparent)';
-                  const badgeBgColor = isDark ? 'color-mix(in srgb, var(--grey-50) 15%, transparent)' : 'color-mix(in srgb, var(--grey-950) 10%, transparent)';
-                  const buttonBgColor = isDark ? 'color-mix(in srgb, var(--grey-50) 15%, transparent)' : 'color-mix(in srgb, var(--grey-950) 10%, transparent)';
-                  const buttonHoverBgColor = isDark ? 'color-mix(in srgb, var(--grey-50) 25%, transparent)' : 'color-mix(in srgb, var(--grey-950) 20%, transparent)';
+                  const textColor = isDark ? 'color-mix(in srgb, var(--absolute-white) 90%, transparent)' : 'color-mix(in srgb, var(--absolute-black) 80%, transparent)';
+                  const secondaryTextColor = isDark ? 'color-mix(in srgb, var(--absolute-white) 60%, transparent)' : 'color-mix(in srgb, var(--absolute-black) 50%, transparent)';
+                  const badgeBgColor = isDark ? 'color-mix(in srgb, var(--absolute-white) 15%, transparent)' : 'color-mix(in srgb, var(--absolute-black) 10%, transparent)';
+                  const buttonBgColor = isDark ? 'color-mix(in srgb, var(--absolute-white) 15%, transparent)' : 'color-mix(in srgb, var(--absolute-black) 10%, transparent)';
+                  const buttonHoverBgColor = isDark ? 'color-mix(in srgb, var(--absolute-white) 25%, transparent)' : 'color-mix(in srgb, var(--absolute-black) 20%, transparent)';
                   
                   return (
                     <>
@@ -789,12 +789,12 @@ export function PaletteShadesGrid({
                                         linear-gradient(to right, 
                                           hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 0), 
                                           hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 1)),
-                                        linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)),
-                                        linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))
+                                        linear-gradient(45deg, var(--border-on-surface-2) 25%, transparent 25%, transparent 75%, var(--border-on-surface-2) 75%, var(--border-on-surface-2)),
+                                        linear-gradient(45deg, var(--border-on-surface-2) 25%, transparent 25%, transparent 75%, var(--border-on-surface-2) 75%, var(--border-on-surface-2))
                                       `,
                                       backgroundSize: '100% 100%, 8px 8px, 8px 8px',
                                       backgroundPosition: '0 0, 0 0, 4px 4px',
-                                      backgroundColor: 'var(--grey-400)',
+                                      backgroundColor: 'var(--on-surface-4)',
                                       '--slider-thumb-color': `hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, ${(node.alpha ?? 100) / 100})`,
                                     } as React.CSSProperties}
                                   />

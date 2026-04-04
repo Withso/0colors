@@ -6,7 +6,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: var(--grey-900);
+  background-color: var(--surface-2);
   overflow: hidden;
 }
 
@@ -18,8 +18,8 @@
   padding: 0 20px;
   height: 44px;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--grey-800);
-  background-color: var(--grey-925);
+  border-bottom: 1px solid var(--surface-3);
+  background-color: var(--surface-1);
   user-select: none;
 }
 
@@ -32,7 +32,7 @@
 
 .export-top-bar-label {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   flex-shrink: 0;
@@ -41,19 +41,19 @@
 .export-top-bar-divider {
   width: 1px;
   height: 14px;
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   flex-shrink: 0;
 }
 
 .export-top-bar-stat {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   font-variant-numeric: tabular-nums;
 }
 
 .export-top-bar-preview-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   flex-shrink: 0;
 }
 
@@ -64,10 +64,10 @@
   height: 24px;
   padding: 0 8px;
   border-radius: var(--radius-sm);
-  background-color: var(--grey-900);
-  border: 1px solid var(--grey-700);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-on-surface-0);
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   outline: none;
   cursor: pointer;
   max-width: 140px;
@@ -75,8 +75,8 @@
 }
 
 .export-figma-preview-btn:hover {
-  background-color: var(--grey-800);
-  color: var(--grey-400);
+  background-color: var(--surface-3);
+  color: var(--on-surface-2);
 }
 
 .export-figma-preview-btn-text {
@@ -106,18 +106,18 @@
   height: 28px;
   padding: 0 10px;
   border-radius: var(--radius-md);
-  background-color: var(--grey-900);
-  border: 1px solid var(--grey-700);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-on-surface-0);
   font-size: 11px;
-  color: var(--grey-500);
+  color: var(--on-surface-3);
   cursor: pointer;
   transition: color 0.15s, background-color 0.15s;
   outline: none;
 }
 
 .export-action-btn:hover {
-  background-color: var(--grey-800);
-  color: var(--grey-100);
+  background-color: var(--surface-3);
+  color: var(--on-surface-0);
 }
 
 .export-action-btn:disabled {
@@ -133,17 +133,17 @@
 .export-action-icon--success {
   height: 12px;
   width: 12px;
-  color: var(--green-500);
+  color: var(--status-success);
 }
 
 .export-action-text--success {
-  color: var(--green-500);
+  color: var(--status-success);
 }
 
 .export-divider-v {
   width: 1px;
   height: 16px;
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   margin: 0 2px;
 }
 
@@ -161,8 +161,8 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  border-right: 1px solid var(--grey-800);
-  background-color: var(--grey-925);
+  border-right: 1px solid var(--surface-3);
+  background-color: var(--surface-1);
 }
 
 /* ─── Sidebar Section Headers ─── */
@@ -187,14 +187,14 @@
 
 .export-sidebar-section-title {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
 .export-sidebar-toggle-all-btn {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   cursor: pointer;
   transition: color 0.15s;
   background: none;
@@ -203,12 +203,12 @@
 }
 
 .export-sidebar-toggle-all-btn:hover {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .export-sidebar-section-count {
   font-size: 11px;
-  color: var(--grey-800);
+  color: var(--surface-3);
   font-variant-numeric: tabular-nums;
 }
 
@@ -222,12 +222,12 @@
 .export-sidebar-hex-icon {
   height: 12px;
   width: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .export-sidebar-hex-hint {
   font-size: 11px;
-  color: var(--grey-800);
+  color: var(--surface-3);
 }
 
 /* ─── Sidebar List Items ─── */
@@ -254,7 +254,7 @@
 }
 
 .export-sidebar-item:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 .export-sidebar-item-label {
@@ -267,22 +267,22 @@
 }
 
 .export-sidebar-item-label--selected {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 .export-sidebar-item-label--unselected {
-  color: var(--grey-800);
+  color: var(--surface-3);
 }
 
 .export-sidebar-item-badge {
   font-size: 11px;
-  color: var(--grey-800);
+  color: var(--surface-3);
 }
 
 /* ─── Sidebar Divider ─── */
 .export-sidebar-divider {
   margin: 0 16px;
-  border-top: 1px solid var(--grey-800);
+  border-top: 1px solid var(--surface-3);
 }
 
 /* ─── Code Panel ─── */
@@ -292,14 +292,14 @@
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
-  background-color: var(--grey-900);
+  background-color: var(--surface-2);
 }
 
 .export-code-display {
   flex: 1;
   overflow: auto;
   min-height: 0;
-  background-color: var(--grey-950);
+  background-color: var(--surface-0);
 }
 
 /* ─── Empty States ─── */
@@ -318,8 +318,8 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-lg);
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-900);
+  background-color: var(--surface-3);
+  border: 1px solid var(--surface-2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -329,17 +329,17 @@
 .export-empty-icon {
   height: 20px;
   width: 20px;
-  color: var(--grey-800);
+  color: var(--surface-3);
 }
 
 .export-empty-title {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   font-size: 13px;
   margin-bottom: 4px;
 }
 
 .export-empty-subtitle {
-  color: var(--grey-800);
+  color: var(--surface-3);
   font-size: 11px;
 }
 
@@ -352,19 +352,19 @@
   height: 30px;
   flex-shrink: 0;
   user-select: none;
-  border-top: 1px solid var(--grey-800);
-  background-color: var(--grey-925);
+  border-top: 1px solid var(--surface-3);
+  background-color: var(--surface-1);
 }
 
 .export-footer-left {
   font-size: 11px;
-  color: var(--grey-800);
+  color: var(--surface-3);
   font-variant-numeric: tabular-nums;
 }
 
 .export-footer-right {
   font-size: 11px;
-  color: var(--grey-800);
+  color: var(--surface-3);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -376,45 +376,45 @@
 }
 
 .export-format-dropdown-item-label--active {
-  color: var(--grey-100);
+  color: var(--on-surface-0);
 }
 
 .export-format-dropdown-item-label--inactive {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 .export-format-dropdown-item-desc {
   font-size: 11px;
-  color: var(--grey-800);
+  color: var(--surface-3);
 }
 
 .export-format-dropdown-check {
   height: 12px;
   width: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .export-figma-theme-label--active {
-  color: var(--grey-100);
+  color: var(--on-surface-0);
 }
 
 .export-figma-theme-label--inactive {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 /* ─── Dropdown overrides ─── */
 .export-dropdown-content {
   width: 220px;
-  background-color: var(--grey-800);
-  border-color: var(--grey-800);
+  background-color: var(--surface-3);
+  border-color: var(--surface-3);
   padding: 4px;
   box-shadow: var(--shadow-lg);
 }
 
 .export-dropdown-content--narrow {
   width: 180px;
-  background-color: var(--grey-800);
-  border-color: var(--grey-800);
+  background-color: var(--surface-3);
+  border-color: var(--surface-3);
   padding: 4px;
   box-shadow: var(--shadow-lg);
 }
@@ -428,8 +428,8 @@
 }
 
 .export-dropdown-menu-item:focus {
-  background-color: var(--grey-900);
-  color: var(--grey-100);
+  background-color: var(--surface-2);
+  color: var(--on-surface-0);
 }
 
 .export-dropdown-theme-item {
@@ -438,8 +438,8 @@
 }
 
 .export-dropdown-theme-item:focus {
-  background-color: var(--grey-900);
-  color: var(--grey-100);
+  background-color: var(--surface-2);
+  color: var(--on-surface-0);
 }
 
 .export-checkbox-wrapper {

@@ -19,7 +19,7 @@
 }
 
 .sync-button--clickable:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 8%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 8%, transparent);
 }
 
 .sync-button--waiting {
@@ -43,7 +43,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 /* ─── Icon composition (overlaid badge) ─── */
@@ -64,7 +64,7 @@
 }
 
 .sync-icon-badge-bg {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   border-radius: var(--radius-full);
 }
 
@@ -72,7 +72,7 @@
   height: 8px;
   width: 8px;
   border-radius: var(--radius-full);
-  background-color: var(--yellow-500);
+  background-color: var(--status-warning);
 }
 
 /* ─── Tooltip ─── */
@@ -82,10 +82,10 @@
   border-radius: var(--radius-lg);
   font-size: 12px;
   letter-spacing: -0.01em;
-  color: var(--grey-100);
-  background-color: color-mix(in srgb, var(--grey-800) 95%, transparent);
+  color: var(--on-surface-0);
+  background-color: color-mix(in srgb, var(--surface-3) 95%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
   box-shadow: var(--shadow-lg);
   user-select: none;
   max-width: 220px;
@@ -97,10 +97,10 @@
   border-radius: var(--radius-lg);
   font-size: 12px;
   letter-spacing: -0.01em;
-  color: var(--grey-100);
-  background-color: color-mix(in srgb, var(--grey-800) 95%, transparent);
+  color: var(--on-surface-0);
+  background-color: color-mix(in srgb, var(--surface-3) 95%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
   box-shadow: var(--shadow-lg);
   user-select: none;
 }
@@ -126,7 +126,7 @@
 }
 
 .sync-tooltip-label {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   font-size: 11px;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .sync-tooltip-divider {
-  border-top: 1px solid var(--grey-800);
+  border-top: 1px solid var(--surface-3);
   padding-top: 6px;
   margin-top: 2px;
 }
@@ -146,10 +146,10 @@
 }
 
 .sync-local-title {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 .sync-local-subtitle {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   font-size: 11px;
 }

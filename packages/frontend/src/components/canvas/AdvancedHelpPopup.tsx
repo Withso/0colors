@@ -22,10 +22,10 @@ const PILL = {
   keyword: '#FFA0E6',
   fn: '#5CD88E',
   op: '#FF7A90',
-  ref: 'var(--blue-400)',
-  lit: 'var(--grey-400)',
-  bool: 'var(--yellow-400)',
-  prop: 'var(--blue-400)',
+  ref: 'var(--utility-expression-reference)',
+  lit: 'var(--utility-expression-literal)',
+  bool: 'var(--utility-expression-boolean)',
+  prop: 'var(--utility-expression-property)',
   local: '#D4A0FF',
 };
 
@@ -34,7 +34,7 @@ function Code({ children, color }: { children: string; color?: string }) {
   return (
     <code
       className="help-popup-code"
-      style={{ color: color || 'var(--grey-100)' }}
+      style={{ color: color || 'var(--text-primary)' }}
     >
       {children}
     </code>
@@ -252,7 +252,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
               <div className="help-popup-info-box">
                 <p className="help-popup-info-text">
                   Each channel (Hue, Saturation, Lightness, Alpha, etc.) gets its own expression column.
-                  Expressions evaluate top-to-bottom. The <strong style={{ color: 'var(--grey-400)' }}>last row that produces a valid number</strong> becomes the channel's output.
+                  Expressions evaluate top-to-bottom. The <strong style={{ color: 'var(--text-secondary)' }}>last row that produces a valid number</strong> becomes the channel's output.
                   Rows that produce booleans are stored as <Code color={PILL.bool}>$variables</Code> for subsequent rows but don't set the channel value.
                 </p>
               </div>
@@ -306,7 +306,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
                 name="locked"
                 syntax="locked"
                 desc="Keep the channel's current base value unchanged"
-                color="var(--yellow-400)"
+                color="var(--text-warning)"
                 useCases={[
                   { label: 'Preserve hue while other channels change', code: 'locked' },
                   { label: 'Conditional lock', code: 'if @Self.S < 5 then locked else @Self.H + 30' },

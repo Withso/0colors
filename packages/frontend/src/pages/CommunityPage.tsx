@@ -53,7 +53,7 @@ function DescriptionPopup({
       className="community-desc-overlay"
       style={{
         zIndex: 200000,
-        background: 'color-mix(in srgb, var(--grey-950) 70%, transparent)',
+        background: 'var(--surface-overlay)',
         backdropFilter: 'blur(6px)',
       }}
       onClick={onClose}
@@ -309,14 +309,14 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject, inline = 
           className="community-hero-gradient"
           style={{
             background:
-              'linear-gradient(135deg, color-mix(in srgb, var(--green-500) 8%, transparent) 0%, color-mix(in srgb, var(--blue-500) 6%, transparent) 50%, color-mix(in srgb, var(--purple-500) 8%, transparent) 100%)',
+              'linear-gradient(135deg, color-mix(in srgb, var(--utility-conversation) 8%, transparent) 0%, color-mix(in srgb, var(--accent-primary) 6%, transparent) 50%, color-mix(in srgb, var(--utility-knowledge) 8%, transparent) 100%)',
           }}
         />
         <div
           className="community-hero-gradient"
           style={{
             background:
-              'radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--green-500) 12%, transparent) 0%, transparent 60%)',
+              'radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--utility-conversation) 12%, transparent) 0%, transparent 60%)',
           }}
         />
 

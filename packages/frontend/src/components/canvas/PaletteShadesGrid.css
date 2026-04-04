@@ -5,20 +5,20 @@
    ══════════════════════════════════════════════ */
 
 .psg-toggle-active {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .psg-toggle-active:hover {
-  background-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
+  background-color: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .psg-toggle-inactive {
-  color: var(--grey-400);
+  color: var(--on-surface-4);
 }
 
 .psg-toggle-inactive:hover {
-  color: var(--grey-100);
-  background-color: var(--grey-800);
+  color: var(--on-surface-1);
+  background-color: var(--surface-3);
 }
 
 /* ══════════════════════════════════════════════
@@ -26,11 +26,11 @@
    ══════════════════════════════════════════════ */
 
 .psg-label-foreground {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .psg-icon-foreground {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 /* ══════════════════════════════════════════════
@@ -40,8 +40,8 @@
 .psg-popover-content {
   width: 268px;
   padding: 16px;
-  background-color: var(--grey-800);
-  border-color: var(--grey-800);
+  background-color: var(--surface-3);
+  border-color: var(--surface-3);
 }
 
 /* ══════════════════════════════════════════════
@@ -150,7 +150,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-lg);
-  color: var(--grey-50);
+  color: var(--on-surface-0);
   font-size: 14px;
   z-index: 50;
   border-radius: var(--radius-lg);
@@ -239,15 +239,15 @@
 }
 
 .psg-wire-btn--success {
-  background-color: var(--green-500);
+  background-color: var(--status-success);
 }
 
 .psg-wire-btn--default {
-  background-color: var(--grey-700);
+  background-color: var(--surface-4);
 }
 
 .psg-wire-btn--default:hover {
-  background-color: var(--grey-600);
+  background-color: var(--on-surface-6);
 }
 
 .psg-icon-3 {
@@ -256,5 +256,5 @@
 }
 
 .psg-icon-white {
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }

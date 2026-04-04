@@ -25,20 +25,20 @@
 }
 
 .token-card-connect-btn-default {
-  background-color: var(--grey-700);
+  background-color: var(--surface-4);
 }
 
 .token-card-connect-btn-default:hover {
-  background-color: var(--grey-700);
+  background-color: var(--surface-4);
 }
 
 .token-card-connect-btn-locked {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   cursor: not-allowed;
 }
 
 .token-card-connect-btn-success {
-  background-color: var(--green-500);
+  background-color: var(--status-success);
 }
 
 .token-card-connect-icon {
@@ -47,15 +47,15 @@
 }
 
 .token-card-connect-icon-default {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .token-card-connect-icon-dim {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-connect-icon-white {
-  color: var(--grey-50);
+  color: var(--on-surface-0);
 }
 
 /* ── Parent selector popup ── */
@@ -63,8 +63,8 @@
   position: absolute;
   left: 32px;
   top: 0;
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  background-color: var(--surface-3);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: 8px;
@@ -76,7 +76,7 @@
   font-size: var(--text-xs);
   margin-bottom: 4px;
   padding: 4px 8px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .token-card-parent-popup-item {
@@ -88,20 +88,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   cursor: pointer;
   background: transparent;
   border: none;
 }
 
 .token-card-parent-popup-item:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .token-card-parent-popup-item-icon {
   width: 12px;
   height: 12px;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 /* ── Right connection button area ── */
@@ -124,7 +124,7 @@
   width: 10px;
   height: 10px;
   border-radius: var(--radius-full);
-  background-color: var(--blue-500);
+  background-color: var(--accent-primary);
 }
 
 /* ── Card body ── */
@@ -169,16 +169,16 @@
 
 .token-card-visibility-hidden {
   opacity: 1;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .token-card-visibility-hover {
   opacity: 1;
-  color: var(--grey-400);
+  color: var(--on-surface-4);
 }
 
 .token-card-visibility-hover:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .token-card-visibility-idle {
@@ -206,13 +206,13 @@
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-name-input {
   background: transparent;
   text-align: center;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-size: var(--text-sm);
   border-radius: var(--radius-lg);
   padding: 6px 12px;
@@ -224,11 +224,11 @@
 }
 
 .token-card-name-input:focus {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .token-card-name-input::selection {
-  background-color: color-mix(in srgb, var(--blue-500) 30%, transparent);
+  background-color: color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
 .token-card-name-button {
@@ -245,7 +245,7 @@
 }
 
 .token-card-name-button:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 /* ── Token assignment section ── */
@@ -276,13 +276,13 @@
 }
 
 .token-card-crown-modified {
-  color: var(--blue-500);
-  fill: var(--blue-500);
+  color: var(--accent-primary);
+  fill: var(--accent-primary);
 }
 
 .token-card-crown-inherited {
-  color: var(--yellow-400);
-  fill: var(--yellow-400);
+  color: var(--status-warning);
+  fill: var(--status-warning);
 }
 
 .token-card-theme-label {
@@ -292,11 +292,11 @@
 }
 
 .token-card-theme-label-modified {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .token-card-theme-label-inherited {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ── Token field wrapper ── */
@@ -314,13 +314,13 @@
   border-radius: 10px;
   pointer-events: none;
   padding: 0 10px;
-  background: color-mix(in srgb, var(--grey-950) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-0) 70%, transparent);
 }
 
 .token-card-advanced-error {
   font-size: 11px;
   letter-spacing: 0.05em;
-  color: color-mix(in srgb, var(--red-500) 90%, transparent);
+  color: color-mix(in srgb, var(--status-danger) 90%, transparent);
   user-select: none;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
@@ -328,7 +328,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
-  background: color-mix(in srgb, var(--red-500) 8%, transparent);
+  background: color-mix(in srgb, var(--status-danger) 8%, transparent);
   border: none;
 }
 
@@ -345,23 +345,23 @@
   height: 14px;
   border-radius: 4px;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grey-50) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-surface-0) 10%, transparent);
 }
 
 .token-card-advanced-swatch-token-ref {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--yellow-400) 30%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status-warning) 30%, transparent);
 }
 
 .token-card-advanced-tag-icon {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-  color: color-mix(in srgb, var(--yellow-400) 60%, transparent);
+  color: color-mix(in srgb, var(--status-warning) 60%, transparent);
 }
 
 .token-card-advanced-output-label {
   font-size: 11px;
-  color: var(--grey-400);
+  color: var(--on-surface-4);
   user-select: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -375,12 +375,12 @@
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--blue-500) 50%, transparent);
+  color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
   user-select: none;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
   margin: 0 auto;
-  background: color-mix(in srgb, var(--blue-500) 5%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 5%, transparent);
   border: none;
 }
 
@@ -409,22 +409,22 @@
 }
 
 .token-card-trigger-assigned {
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  background-color: var(--surface-3);
+  border: 1px solid var(--surface-3);
 }
 
 .token-card-trigger-assigned:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .token-card-trigger-empty {
   background: transparent;
-  border: 1px dashed var(--grey-800);
+  border: 1px dashed var(--surface-3);
 }
 
 .token-card-trigger-empty:hover {
-  border-color: var(--grey-700);
-  background-color: color-mix(in srgb, var(--grey-50) 2%, transparent);
+  border-color: var(--surface-4);
+  background-color: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
 }
 
 /* ── Token swatch & icon ── */
@@ -436,11 +436,11 @@
 }
 
 .token-card-swatch-ring {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grey-50) 8%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-surface-0) 8%, transparent);
 }
 
 .token-card-swatch-dashed {
-  border: 1px dashed var(--grey-800);
+  border: 1px dashed var(--surface-3);
   opacity: 0.4;
 }
 
@@ -448,7 +448,7 @@
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-empty-swatch {
@@ -456,7 +456,7 @@
   height: 14px;
   border-radius: 4px;
   flex-shrink: 0;
-  border: 1px dashed var(--grey-800);
+  border: 1px dashed var(--surface-3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -465,7 +465,7 @@
 .token-card-empty-swatch-icon {
   height: 8px;
   width: 8px;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 .token-card-trigger-label {
@@ -474,12 +474,12 @@
   white-space: nowrap;
   flex: 1;
   text-align: left;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   min-width: 0;
 }
 
 .token-card-trigger-placeholder {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   flex: 1;
   text-align: left;
 }
@@ -488,7 +488,7 @@
   height: 12px;
   width: 12px;
   flex-shrink: 0;
-  color: var(--grey-700);
+  color: var(--surface-4);
   opacity: 0;
   transition: opacity 0.15s;
 }
@@ -501,8 +501,8 @@
 .token-card-dropdown {
   width: 260px;
   padding: 0;
-  background-color: var(--grey-800);
-  border-color: var(--grey-800);
+  background-color: var(--surface-3);
+  border-color: var(--surface-3);
 }
 
 /* ── Page switcher ── */
@@ -515,7 +515,7 @@
   gap: 2px;
   overflow-x: auto;
   border-radius: var(--radius-lg);
-  background-color: var(--grey-900);
+  background-color: var(--surface-2);
   padding: 3px;
   scrollbar-width: none;
 }
@@ -533,17 +533,17 @@
 }
 
 .token-card-page-tab-active {
-  background-color: var(--grey-800);
-  color: var(--grey-100);
+  background-color: var(--surface-3);
+  color: var(--on-surface-1);
   box-shadow: var(--shadow-sm);
 }
 
 .token-card-page-tab-inactive {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-page-tab-inactive:hover {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 /* ── Mode tabs ── */
@@ -555,7 +555,7 @@
   display: flex;
   gap: 2px;
   border-radius: var(--radius-lg);
-  background-color: var(--grey-900);
+  background-color: var(--surface-2);
   padding: 3px;
 }
 
@@ -575,17 +575,17 @@
 }
 
 .token-card-mode-tab-active {
-  background-color: var(--grey-800);
-  color: var(--grey-100);
+  background-color: var(--surface-3);
+  color: var(--on-surface-1);
   box-shadow: var(--shadow-sm);
 }
 
 .token-card-mode-tab-inactive {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-mode-tab-inactive:hover {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .token-card-mode-icon {
@@ -595,21 +595,21 @@
 
 /* ── Command search ── */
 .token-card-command-bg {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .token-card-search-input {
   height: 36px;
   font-size: var(--text-xs);
-  background-color: var(--grey-900);
+  background-color: var(--surface-2);
   padding-left: 10px;
   margin: 4px 6px 4px 6px;
   border-radius: var(--radius-md);
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .token-card-search-input::placeholder {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-search-input:focus-visible {
@@ -626,7 +626,7 @@
   padding: 24px 0;
   font-size: var(--text-xs);
   text-align: center;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 /* ── Group heading ── */
@@ -643,12 +643,12 @@
   display: flex;
   align-items: center;
   font-size: var(--text-xs);
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   font-weight: 600;
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   padding: 6px 8px 6px 10px;
 }
 
@@ -656,7 +656,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: color-mix(in srgb, var(--grey-50) 3.5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 3.5%, transparent);
   border-radius: 5px;
   padding: 1px 6px;
 }
@@ -672,7 +672,7 @@
 
 .token-card-item {
   font-size: var(--text-xs);
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -681,7 +681,7 @@
 }
 
 .token-card-item[aria-selected="true"] {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .token-card-item-swatch {
@@ -689,14 +689,14 @@
   height: 12px;
   border-radius: 2px;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grey-50) 6%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .token-card-item-tag {
   width: 10px;
   height: 10px;
   flex-shrink: 0;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-item-label {
@@ -709,7 +709,7 @@
 .token-card-item-check {
   height: 12px;
   width: 12px;
-  color: var(--blue-500);
+  color: var(--accent-primary);
   flex-shrink: 0;
 }
 
@@ -721,11 +721,11 @@
 /* ── Tooltip for token color info ── */
 .token-card-color-tooltip {
   z-index: 300;
-  background-color: color-mix(in srgb, var(--grey-800) 95%, transparent);
+  background-color: color-mix(in srgb, var(--surface-3) 95%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--grey-950) 50%, transparent);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--surface-0) 50%, transparent);
 }
 
 .token-card-color-tooltip-bottom {
@@ -750,12 +750,12 @@
   height: 14px;
   border-radius: 4px;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grey-50) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-surface-0) 10%, transparent);
 }
 
 .token-card-tooltip-name {
   font-size: 11px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -763,7 +763,7 @@
 
 .token-card-tooltip-divider {
   height: 1px;
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   margin: 0 8px;
 }
 
@@ -783,7 +783,7 @@
 
 .token-card-tooltip-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   flex-shrink: 0;
@@ -792,7 +792,7 @@
 .token-card-tooltip-value {
   font-size: 11px;
   font-family: var(--font-mono);
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 /* ── Usage count badge ── */
@@ -818,27 +818,27 @@
 }
 
 .token-card-usage-badge-open {
-  background-color: color-mix(in srgb, var(--blue-500) 25%, transparent);
-  color: var(--blue-500);
+  background-color: color-mix(in srgb, var(--accent-primary) 25%, transparent);
+  color: var(--accent-primary);
 }
 
 .token-card-usage-badge-closed {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  color: var(--grey-600);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  color: var(--on-surface-6);
 }
 
 .token-card-usage-badge-closed:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 12%, transparent);
-  color: var(--grey-400);
+  background-color: color-mix(in srgb, var(--on-surface-0) 12%, transparent);
+  color: var(--on-surface-4);
 }
 
 /* ── Usage popover ── */
 .token-card-usage-popover {
   width: 200px;
   padding: 0;
-  background-color: var(--grey-800);
-  border-color: var(--grey-800);
-  box-shadow: 0 8px 30px color-mix(in srgb, var(--grey-950) 50%, transparent);
+  background-color: var(--surface-3);
+  border-color: var(--surface-3);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--surface-0) 50%, transparent);
 }
 
 .token-card-usage-heading {
@@ -846,7 +846,7 @@
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-usage-list {
@@ -862,7 +862,7 @@
   padding: 6px 8px;
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   transition: background-color 0.15s, color 0.15s;
   width: 100%;
   text-align: left;
@@ -872,8 +872,8 @@
 }
 
 .token-card-usage-item:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  color: var(--grey-100);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  color: var(--on-surface-1);
 }
 
 .token-card-usage-item-swatch {
@@ -887,7 +887,7 @@
   width: 12px;
   height: 12px;
   flex-shrink: 0;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-usage-item-label {
@@ -902,7 +902,7 @@
   width: 12px;
   height: 12px;
   flex-shrink: 0;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ── Unassign button ── */
@@ -926,18 +926,18 @@
 }
 
 .token-card-unassign-btn:hover {
-  background-color: color-mix(in srgb, var(--red-500) 10%, transparent);
+  background-color: color-mix(in srgb, var(--status-danger) 10%, transparent);
 }
 
 .token-card-unassign-icon {
   height: 12px;
   width: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   transition: color 0.15s;
 }
 
 .token-card-unassign-icon:hover {
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 /* ── Advanced island ── */
@@ -964,11 +964,11 @@
 }
 
 .token-card-advanced-label-dormant {
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 .token-card-advanced-label-active {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-advanced-pill {
@@ -982,8 +982,8 @@
   justify-content: center;
   border-radius: var(--radius-sm);
   user-select: none;
-  color: var(--blue-500);
-  background-color: color-mix(in srgb, var(--blue-500) 12%, transparent);
+  color: var(--accent-primary);
+  background-color: color-mix(in srgb, var(--accent-primary) 12%, transparent);
   border: none;
 }
 
@@ -1003,8 +1003,8 @@
   justify-content: center;
   border-radius: var(--radius-sm);
   user-select: none;
-  color: var(--green-500);
-  background-color: color-mix(in srgb, var(--green-500) 12%, transparent);
+  color: var(--status-success);
+  background-color: color-mix(in srgb, var(--status-success) 12%, transparent);
   border: none;
 }
 
@@ -1018,23 +1018,23 @@
 }
 
 .token-card-advanced-btn:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .token-card-advanced-btn-dormant {
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 .token-card-advanced-btn-dormant:hover {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-advanced-btn-active {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .token-card-advanced-btn-active:hover {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 /* ── Switch overrides for theme toggle ── */

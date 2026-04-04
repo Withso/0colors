@@ -56,7 +56,7 @@ function hslToHex(h: number, s: number, l: number, a: number = 100): string {
 }
 
 // Checkerboard for transparent colors
-const checkerboardBg = `linear-gradient(45deg, var(--grey-800) 25%, transparent 25%), linear-gradient(-45deg, var(--grey-800) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--grey-800) 75%), linear-gradient(-45deg, transparent 75%, var(--grey-800) 75%)`;
+const checkerboardBg = `linear-gradient(45deg, var(--border-on-surface-0) 25%, transparent 25%), linear-gradient(-45deg, var(--border-on-surface-0) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--border-on-surface-0) 75%), linear-gradient(-45deg, transparent 75%, var(--border-on-surface-0) 75%)`;
 
 // ─── Rich tooltip body for token table cells ───
 interface CellTooltipData {

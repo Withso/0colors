@@ -11,7 +11,7 @@
 .projects-page {
   height: 100vh;
   display: flex;
-  background-color: var(--grey-950);
+  background-color: var(--surface-0);
 }
 
 /* ═══════════════════════════════════════════
@@ -23,8 +23,8 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background-color: var(--grey-925);
-  border-right: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: var(--surface-1);
+  border-right: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 /* Logo area */
@@ -41,11 +41,11 @@
 .projects-sidebar-title {
   font-size: 14px;
   font-weight: var(--font-weight-semi-bold);
-  color: var(--grey-100);
+  color: var(--on-surface-0);
 }
 
 .projects-sidebar-title-faint {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .projects-sidebar-admin-badge {
@@ -59,12 +59,12 @@
 
 .projects-sidebar-subtitle {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   margin-top: 2px;
 }
 
 .projects-sidebar-subtitle-ghost {
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
 }
 
 /* Navigation */
@@ -76,7 +76,7 @@
 .projects-sidebar-divider {
   margin: 8px;
   border: none;
-  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 /* Bottom actions */
@@ -101,17 +101,17 @@
   cursor: pointer;
   border: none;
   background: none;
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 .projects-nav-item:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
-  color: var(--grey-100);
+  background-color: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
+  color: var(--on-surface-0);
 }
 
 .projects-nav-item.is-active {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  color: var(--grey-100);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  color: var(--on-surface-0);
 }
 
 .projects-nav-item-icon {
@@ -136,12 +136,12 @@
   cursor: pointer;
   border: none;
   background: none;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .projects-sidebar-auth-btn:hover {
-  color: var(--grey-100);
-  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  color: var(--on-surface-0);
+  background-color: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .projects-sidebar-auth-btn-icon {
@@ -150,11 +150,11 @@
 }
 
 .projects-sidebar-auth-btn-signin {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .projects-sidebar-auth-btn-signin:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 /* ═══════════════════════════════════════════
@@ -164,7 +164,7 @@
 .projects-main {
   flex: 1;
   overflow-y: auto;
-  background-color: var(--grey-900);
+  background-color: var(--surface-2);
   min-width: 0;
 }
 
@@ -186,7 +186,7 @@
 .projects-section-title {
   font-size: 20px;
   font-weight: var(--font-weight-semi-bold);
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   margin-bottom: 24px;
 }
 
@@ -202,7 +202,7 @@
 
 .projects-profile-card {
   border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   overflow: hidden;
 }
 
@@ -215,17 +215,17 @@
 
 .projects-profile-label {
   font-size: 13px;
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 .projects-profile-value {
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
 }
 
 .projects-profile-divider {
   border: none;
-  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 /* ═══════════════════════════════════════════
@@ -248,7 +248,7 @@
 .projects-list-title {
   font-size: 20px;
   font-weight: var(--font-weight-semi-bold);
-  color: var(--grey-100);
+  color: var(--on-surface-0);
 }
 
 .projects-list-actions {
@@ -262,7 +262,7 @@
   padding: 0 12px;
   border-radius: var(--radius-md);
   font-size: 13px;
-  color: var(--grey-500);
+  color: var(--on-surface-3);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -273,8 +273,8 @@
 }
 
 .projects-import-btn:hover {
-  color: var(--grey-100);
-  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  color: var(--on-surface-0);
+  background-color: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .projects-import-btn-icon {
@@ -308,18 +308,18 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   font-weight: var(--font-weight-normal);
 }
 
 .projects-section-count {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
 }
 
 .projects-section-syncing {
   font-size: 11px;
-  color: var(--blue-500);
+  color: var(--accent-primary);
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -330,7 +330,7 @@
 
 .projects-section-refresh-btn {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -343,7 +343,7 @@
 }
 
 .projects-section-refresh-btn:hover {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .projects-section-refresh-icon {
@@ -356,7 +356,7 @@
   padding: 0 10px;
   border-radius: var(--radius-md);
   font-size: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -367,8 +367,8 @@
 }
 
 .projects-section-create-btn:hover {
-  color: var(--grey-100);
-  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  color: var(--on-surface-0);
+  background-color: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .projects-section-create-icon {
@@ -380,7 +380,7 @@
 .projects-section-empty {
   border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px dashed color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .projects-section-empty-text {
@@ -389,7 +389,7 @@
   justify-content: center;
   padding: 32px 0;
   font-size: 13px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
 }
 
 /* ═══════════════════════════════════════════
@@ -403,7 +403,7 @@
   padding: 0 12px;
   cursor: pointer;
   transition: background-color 0.15s;
-  border-bottom: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .projects-row:last-child {
@@ -411,11 +411,11 @@
 }
 
 .projects-row:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 .projects-row.when-highlighted {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .projects-row-dot {
@@ -429,7 +429,7 @@
 .projects-row-name {
   font-size: 13px;
   font-weight: var(--font-weight-normal);
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -438,7 +438,7 @@
 
 .projects-row-badge-sample {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   margin-right: 12px;
   display: flex;
   align-items: center;
@@ -453,13 +453,13 @@
 .projects-row-published-icon {
   width: 12px;
   height: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   margin-right: 8px;
 }
 
 .projects-row-stats {
   font-size: 12px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   margin-right: 12px;
   font-variant-numeric: tabular-nums;
 }
@@ -479,7 +479,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   transition: color 0.15s, background-color 0.15s;
   cursor: pointer;
   border: none;
@@ -487,8 +487,8 @@
 }
 
 .projects-row-menu-trigger:hover {
-  color: var(--grey-100);
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  color: var(--on-surface-0);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .projects-row-menu-trigger-icon {
@@ -503,8 +503,8 @@
   margin-top: 4px;
   width: 160px;
   border-radius: var(--radius-lg);
-  background-color: var(--grey-800);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: var(--surface-3);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   box-shadow: var(--shadow-lg);
   padding: 4px 0;
   z-index: 50;
@@ -518,7 +518,7 @@
   padding: 6px 12px;
   text-align: left;
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   transition: background-color 0.15s;
   cursor: pointer;
   border: none;
@@ -526,31 +526,31 @@
 }
 
 .projects-row-menu-item:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .projects-row-menu-item-icon {
   width: 14px;
   height: 14px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .projects-row-menu-item-destructive {
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 .projects-row-menu-item-destructive:hover {
-  background-color: color-mix(in srgb, var(--red-500) 10%, transparent);
+  background-color: color-mix(in srgb, var(--status-danger) 10%, transparent);
 }
 
 .projects-row-menu-item-destructive .projects-row-menu-item-icon {
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 .projects-row-menu-divider {
   margin: 4px 0;
   border: none;
-  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 /* ═══════════════════════════════════════════
@@ -558,28 +558,28 @@
    ═══════════════════════════════════════════ */
 
 .projects-delete-dialog {
-  background-color: var(--grey-800);
-  color: var(--grey-50);
+  background-color: var(--surface-3);
+  color: var(--on-surface-0);
 }
 
 .projects-delete-dialog-description {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 .projects-delete-dialog-cancel {
-  background-color: var(--grey-800);
-  color: var(--grey-50);
+  background-color: var(--surface-3);
+  color: var(--on-surface-0);
 }
 
 .projects-delete-dialog-cancel:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .projects-delete-dialog-confirm {
-  background-color: var(--red-600);
-  color: var(--grey-50);
+  background-color: var(--status-danger);
+  color: var(--on-surface-0);
 }
 
 .projects-delete-dialog-confirm:hover {
-  background-color: var(--red-700);
+  background-color: var(--status-danger);
 }

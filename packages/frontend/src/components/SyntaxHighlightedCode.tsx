@@ -4,11 +4,11 @@ import './SyntaxHighlightedCode.css';
 // ───── Geist-inspired syntax color palette ─────
 const COLORS = {
   // Base
-  bg: 'var(--grey-900)',
-  gutterBg: 'var(--grey-900)',
-  gutterBorder: '#141414',
-  lineNumber: 'var(--grey-700)',
-  lineNumberActive: 'var(--grey-600)',
+  bg: 'var(--surface-2)',
+  gutterBg: 'var(--surface-2)',
+  gutterBorder: 'var(--border-on-surface-0)',
+  lineNumber: 'var(--text-disabled)',
+  lineNumberActive: 'var(--text-tertiary)',
   lineHighlight: 'rgba(255,255,255,0.03)',
   text: '#abb2bf',
 

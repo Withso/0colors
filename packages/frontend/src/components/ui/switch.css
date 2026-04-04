@@ -10,18 +10,18 @@
   padding: 0;
   border: none;
   border-radius: 9999px;
-  background-color: var(--grey-600);
+  background-color: var(--on-surface-4);
   cursor: pointer;
   outline: none;
   transition: background-color 0.15s ease;
 }
 
 [data-slot="switch"][data-state="checked"] {
-  background-color: var(--blue-500);
+  background-color: var(--accent-primary);
 }
 
 [data-slot="switch"]:focus-visible {
-  box-shadow: 0 0 0 2px var(--blue-500);
+  box-shadow: 0 0 0 2px var(--accent-primary);
 }
 
 [data-slot="switch"]:disabled {
@@ -36,7 +36,7 @@
   width: 16px;
   height: 16px;
   border-radius: 9999px;
-  background-color: var(--grey-50);
+  background-color: var(--on-surface-0);
   pointer-events: none;
   transition: transform 0.15s ease;
 }

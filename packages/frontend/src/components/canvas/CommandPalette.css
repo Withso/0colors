@@ -25,10 +25,10 @@
   flex-direction: column;
   overflow: hidden;
   border-radius: var(--radius-xl);
-  background: var(--grey-900);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--grey-50) 6%, transparent),
-              0 24px 68px color-mix(in srgb, var(--grey-950) 60%, transparent),
-              0 8px 24px color-mix(in srgb, var(--grey-950) 40%, transparent);
+  background: var(--surface-2);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--on-surface-0) 6%, transparent),
+              0 24px 68px color-mix(in srgb, var(--surface-0) 60%, transparent),
+              0 8px 24px color-mix(in srgb, var(--surface-0) 40%, transparent);
   animation: cmdkSlideIn 0.15s ease-out;
   height: 440px;
 }
@@ -40,31 +40,31 @@
   gap: 10px;
   padding: 0 14px;
   height: 42px;
-  border-bottom: 1px solid var(--grey-800);
+  border-bottom: 1px solid var(--surface-3);
 }
 
 .cmd-palette-search-icon {
   width: 14px;
   height: 14px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   flex-shrink: 0;
 }
 
 .cmd-palette-search-input {
   flex: 1;
   background: transparent;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-size: 13px;
   outline: none;
 }
 
 .cmd-palette-search-input::placeholder {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .cmd-palette-result-count {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -76,7 +76,7 @@
   overscroll-behavior: contain;
   padding: 4px 0;
   scrollbar-width: thin;
-  scrollbar-color: var(--grey-700) transparent;
+  scrollbar-color: var(--surface-4) transparent;
 }
 
 .cmd-palette-empty {
@@ -91,17 +91,17 @@
 .cmd-palette-empty-icon {
   width: 24px;
   height: 24px;
-  color: var(--grey-800);
+  color: var(--surface-3);
 }
 
 .cmd-palette-empty-text {
   font-size: 13px;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 .cmd-palette-empty-hint {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 /* ── Category group ── */
@@ -121,12 +121,12 @@
 .cmd-palette-group-icon {
   width: 10px;
   height: 10px;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 .cmd-palette-group-label {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   font-weight: 500;
 }
 
@@ -138,13 +138,13 @@
 
 .cmd-palette-group-count {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   font-variant-numeric: tabular-nums;
 }
 
 .cmd-palette-clear-recent {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   background: none;
   border: none;
   cursor: pointer;
@@ -152,7 +152,7 @@
 }
 
 .cmd-palette-clear-recent:hover {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ── Result row ── */
@@ -168,11 +168,11 @@
 }
 
 .cmd-palette-row:hover {
-  background: var(--grey-800);
+  background: var(--surface-3);
 }
 
 .cmd-palette-row-selected {
-  background: var(--grey-800);
+  background: var(--surface-3);
 }
 
 .cmd-palette-row-icon-box {
@@ -182,7 +182,7 @@
   width: 22px;
   height: 22px;
   border-radius: var(--radius-md);
-  background: var(--grey-800);
+  background: var(--surface-3);
   flex-shrink: 0;
 }
 
@@ -196,7 +196,7 @@
 .cmd-palette-icon {
   width: 14px;
   height: 14px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   flex-shrink: 0;
 }
 
@@ -216,25 +216,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .cmd-palette-row-title-selected {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .cmd-palette-row-cs-badge {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   padding: 1px 4px;
   border-radius: var(--radius-sm);
-  background: var(--grey-900);
+  background: var(--surface-2);
   flex-shrink: 0;
 }
 
 .cmd-palette-row-subtitle {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -249,7 +249,7 @@
 
 .cmd-palette-location-hint {
   font-size: 11px;
-  color: var(--grey-800);
+  color: var(--surface-3);
   width: 76px;
   text-align: right;
   overflow: hidden;
@@ -278,26 +278,26 @@
 }
 
 .cmd-palette-pin-btn-pinned {
-  color: var(--yellow-400);
+  color: var(--status-warning);
   opacity: 1;
 }
 
 .cmd-palette-pin-btn-selected {
-  color: var(--grey-700);
+  color: var(--surface-4);
   opacity: 1;
 }
 
 .cmd-palette-pin-btn-selected:hover {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .cmd-palette-pin-btn-default {
-  color: var(--grey-700);
+  color: var(--surface-4);
   opacity: 0;
 }
 
 .cmd-palette-pin-btn-default:hover {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .cmd-palette-row:hover .cmd-palette-pin-btn-default {
@@ -305,7 +305,7 @@
 }
 
 .cmd-palette-pin-icon-filled {
-  fill: var(--yellow-400);
+  fill: var(--status-warning);
 }
 
 /* ── Footer ── */
@@ -315,8 +315,8 @@
   justify-content: space-between;
   padding: 8px 14px;
   min-height: 42px;
-  border-top: 1px solid var(--grey-800);
-  background: var(--grey-900);
+  border-top: 1px solid var(--surface-3);
+  background: var(--surface-2);
 }
 
 .cmd-palette-footer-left {
@@ -340,14 +340,14 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  background: var(--grey-800);
+  background: var(--surface-3);
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 .cmd-palette-shortcut-label {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
   margin-left: 2px;
 }
 

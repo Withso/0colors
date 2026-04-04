@@ -6,7 +6,7 @@
 
 .tokens-panel-token-name {
   font-size: var(--font-size-xs);
-  color: var(--grey-50);
+  color: var(--on-surface-0);
   cursor: default;
   overflow: hidden;
   white-space: nowrap;
@@ -47,12 +47,12 @@
   width: 12px;
   height: 12px;
   flex-shrink: 0;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-tooltip-name {
   font-size: 11px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -60,7 +60,7 @@
 
 .tokens-panel-tooltip-divider {
   height: 1px;
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   margin-left: 8px;
   margin-right: 8px;
 }
@@ -78,7 +78,7 @@
 
 .tokens-panel-tooltip-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   flex-shrink: 0;
@@ -87,7 +87,7 @@
 .tokens-panel-tooltip-mono {
   font-size: 11px;
   font-family: monospace;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -106,7 +106,7 @@
 
 .tokens-panel-tooltip-value-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -114,7 +114,7 @@
 .tokens-panel-tooltip-link-icon {
   width: 10px;
   height: 10px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-tooltip-value-row {
@@ -128,7 +128,7 @@
   height: 12px;
   border-radius: 3px;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grey-50) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-surface-0) 10%, transparent);
 }
 
 .tokens-panel-tooltip-swatch-empty {
@@ -136,7 +136,7 @@
   height: 12px;
   border-radius: 3px;
   flex-shrink: 0;
-  border: 1px solid color-mix(in srgb, var(--grey-800) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--surface-3) 50%, transparent);
   opacity: 0.4;
 }
 
@@ -160,7 +160,7 @@
 
 .tokens-panel-tooltip-no-value-text {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   font-style: italic;
 }
 
@@ -169,7 +169,7 @@
   height: 14px;
   border-radius: 4px;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grey-50) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-surface-0) 10%, transparent);
 }
 
 .tokens-panel-tooltip-swatch-lg-empty {
@@ -177,7 +177,7 @@
   height: 14px;
   border-radius: 4px;
   flex-shrink: 0;
-  border: 1px dashed color-mix(in srgb, var(--grey-800) 50%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--surface-3) 50%, transparent);
   opacity: 0.4;
 }
 
@@ -194,11 +194,11 @@
 
 .tokens-panel-tooltip-content {
   z-index: 50;
-  background: color-mix(in srgb, var(--grey-800) 95%, transparent);
+  background: color-mix(in srgb, var(--surface-3) 95%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--grey-950) 50%, transparent);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--surface-0) 50%, transparent);
   animation: fadeInZoom 150ms ease-out;
 }
 
@@ -233,7 +233,7 @@
   position: relative;
   z-index: 50;
   /* Side chrome — grey-925 between void and workspace */
-  background-color: var(--grey-925);
+  background-color: var(--surface-1);
   border-radius: var(--radius-xl);
 }
 
@@ -264,7 +264,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--grey-50);
+  color: var(--on-surface-0);
   font-size: var(--font-size-sm);
   min-width: 0;
   flex: 1;
@@ -282,12 +282,12 @@
 }
 
 .tokens-panel-home-icon:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-project-name-input {
-  background: var(--grey-700);
-  color: var(--grey-50);
+  background: var(--surface-4);
+  color: var(--on-surface-0);
   font-size: var(--font-size-sm);
   padding: 2px 8px;
   border-radius: var(--radius-md);
@@ -297,7 +297,7 @@
 }
 
 .tokens-panel-project-name-input:focus {
-  border-color: var(--blue-500);
+  border-color: var(--accent-primary);
   outline: none;
 }
 
@@ -313,7 +313,7 @@
 }
 
 .tokens-panel-project-name-text-editable:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-project-name-text-readonly {
@@ -366,28 +366,28 @@
 }
 
 .tokens-panel-tab-active {
-  background: var(--grey-800);
-  color: var(--grey-50);
+  background: var(--surface-3);
+  color: var(--on-surface-0);
 }
 
 .tokens-panel-tab-inactive {
   background: transparent;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-tab-inactive:hover {
-  color: var(--grey-500);
-  background: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  color: var(--on-surface-5);
+  background: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 .tokens-panel-tab-count-active {
   font-size: 11px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .tokens-panel-tab-count-inactive {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 .tokens-panel-tab-label {
@@ -397,13 +397,13 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--grey-800);
-  color: var(--grey-50);
+  background: var(--surface-3);
+  color: var(--on-surface-0);
 }
 
 .tokens-panel-tab-label-count {
   font-size: 11px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 /* ── Scroll content area ── */
@@ -435,7 +435,7 @@
 .tokens-panel-no-project {
   text-align: center;
   padding: 32px 0;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-no-project-text {
@@ -469,13 +469,13 @@
 }
 
 .tokens-panel-chevron-btn:hover {
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .tokens-panel-chevron-icon {
   height: 12px;
   width: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-project-edit-input {
@@ -483,9 +483,9 @@
   font-size: var(--font-size-xs);
   min-width: 0;
   flex: 1;
-  background: var(--grey-700);
+  background: var(--surface-4);
   border-color: transparent;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   user-select: text;
 }
 
@@ -497,7 +497,7 @@
 
 .tokens-panel-page-name {
   font-size: var(--font-size-xs);
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   transition: color 0.15s;
   padding: 2px 4px;
   border-radius: var(--radius-sm);
@@ -512,8 +512,8 @@
 }
 
 .tokens-panel-page-name-editable:hover {
-  color: var(--grey-100);
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  color: var(--on-surface-1);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .tokens-panel-page-name-readonly {
@@ -530,7 +530,7 @@
 }
 
 .tokens-panel-header-action-btn:hover {
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .tokens-panel-header-action-btn-ml {
@@ -540,7 +540,7 @@
 .tokens-panel-header-action-icon {
   height: 12px;
   width: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ══════════════════════════════════════════════
@@ -549,7 +549,7 @@
 
 .tokens-panel-drop-indicator {
   height: 2px;
-  background: var(--blue-500);
+  background: var(--accent-primary);
   border-radius: 9999px;
   margin: 1px 8px;
   pointer-events: none;
@@ -557,7 +557,7 @@
 
 .tokens-panel-group-drop-indicator {
   height: 2px;
-  background: var(--blue-500);
+  background: var(--accent-primary);
   border-radius: 9999px;
   margin: 2px 4px;
   pointer-events: none;
@@ -577,16 +577,16 @@
 
 .tokens-panel-token-row-selected {
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  background: color-mix(in srgb, var(--blue-500) 8%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
 }
 
 .tokens-panel-token-row-highlighted {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue-500) 60%, transparent);
-  background: color-mix(in srgb, var(--blue-500) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 60%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
 .tokens-panel-token-row-context {
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .tokens-panel-token-row-idle {
@@ -594,7 +594,7 @@
 }
 
 .tokens-panel-token-row-idle:hover {
-  background: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 .tokens-panel-token-row-dragging {
@@ -618,7 +618,7 @@
 }
 
 .tokens-panel-token-row-focused {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue-500) 40%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }
 
 .tokens-panel-selection-bar {
@@ -627,7 +627,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--blue-500);
+  background: var(--accent-primary);
 }
 
 .tokens-panel-token-inner {
@@ -663,7 +663,7 @@
 .tokens-panel-drag-handle-icon {
   height: 12px;
   width: 12px;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 /* ── Theme crown column ── */
@@ -681,8 +681,8 @@
 .tokens-panel-crown-icon {
   height: 10px;
   width: 10px;
-  color: var(--blue-500);
-  fill: var(--blue-500);
+  color: var(--accent-primary);
+  fill: var(--accent-primary);
 }
 
 /* ── Token color swatch ── */
@@ -696,15 +696,15 @@
 }
 
 .tokens-panel-swatch-empty {
-  border: 1px dashed color-mix(in srgb, var(--grey-800) 50%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--surface-3) 50%, transparent);
 }
 
 .tokens-panel-swatch-unassigned {
-  border: 1px dashed color-mix(in srgb, var(--grey-800) 50%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--surface-3) 50%, transparent);
 }
 
 .tokens-panel-swatch-selected {
-  box-shadow: 0 0 0 2px var(--blue-500);
+  box-shadow: 0 0 0 2px var(--accent-primary);
 }
 
 /* ── Token edit input ── */
@@ -712,13 +712,13 @@
 .tokens-panel-token-edit-input {
   background: transparent;
   border: none;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   padding: 0 8px;
   margin: 0;
   min-width: 0;
   flex: 1;
   outline: none;
-  caret-color: var(--blue-500);
+  caret-color: var(--accent-primary);
   user-select: text;
   font-size: 12px;
   line-height: normal;
@@ -737,7 +737,7 @@
 
 .tokens-panel-hidden-indicator {
   flex-shrink: 0;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-hidden-indicator-icon {
@@ -748,10 +748,10 @@
 .tokens-panel-logic-badge {
   font-size: 11px;
   font-family: monospace;
-  color: color-mix(in srgb, var(--yellow-400) 70%, transparent);
+  color: color-mix(in srgb, var(--status-warning) 70%, transparent);
   padding: 1px 4px;
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--yellow-400) 8%, transparent);
+  background: color-mix(in srgb, var(--status-warning) 8%, transparent);
   flex-shrink: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -760,17 +760,17 @@
 .tokens-panel-token-badge {
   font-size: 11px;
   font-family: monospace;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   padding: 1px 4px;
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
   flex-shrink: 0;
 }
 
 .tokens-panel-spacing-value {
   font-size: var(--font-size-xs);
   font-family: monospace;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   flex-shrink: 0;
 }
 
@@ -783,18 +783,18 @@
 }
 
 .tokens-panel-node-badge-modified {
-  color: var(--blue-500);
-  background: color-mix(in srgb, var(--blue-500) 12%, transparent);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
 .tokens-panel-node-badge-inherited {
-  color: var(--yellow-600);
-  background: color-mix(in srgb, var(--yellow-400) 10%, transparent);
+  color: var(--status-warning);
+  background: color-mix(in srgb, var(--status-warning) 10%, transparent);
 }
 
 .tokens-panel-node-badge-default {
-  color: var(--grey-600);
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  color: var(--on-surface-6);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 /* ── Eye visibility button ── */
@@ -809,16 +809,16 @@
 
 .tokens-panel-eye-btn-hidden {
   opacity: 1;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tokens-panel-eye-btn-visible {
   opacity: 0;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-eye-btn-visible:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-token-row:hover .tokens-panel-eye-btn-visible {
@@ -843,16 +843,16 @@
    ══════════════════════════════════════════════ */
 
 .tokens-panel-context-menu {
-  background: var(--grey-800);
-  border: 1px solid var(--grey-700);
+  background: var(--surface-3);
+  border: 1px solid var(--surface-4);
   border-radius: var(--radius-xl);
-  box-shadow: 0 8px 30px color-mix(in srgb, var(--grey-950) 50%, transparent);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--surface-0) 50%, transparent);
   padding: 4px;
   min-width: 160px;
 }
 
 .tokens-panel-context-item {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   cursor: pointer;
   border-radius: var(--radius-lg);
   padding: 8px 10px;
@@ -861,12 +861,12 @@
 }
 
 .tokens-panel-context-item:focus {
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  color: var(--grey-100);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-context-item-disabled {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   cursor: default;
   border-radius: var(--radius-lg);
   padding: 8px 10px;
@@ -875,7 +875,7 @@
 }
 
 .tokens-panel-context-item-destructive {
-  color: var(--red-500);
+  color: var(--status-danger);
   cursor: pointer;
   border-radius: var(--radius-lg);
   padding: 8px 10px;
@@ -884,17 +884,17 @@
 }
 
 .tokens-panel-context-item-destructive:focus {
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  color: var(--pink-400);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  color: var(--status-critical);
 }
 
 .tokens-panel-context-separator {
-  background: var(--grey-700);
+  background: var(--surface-4);
   margin: 4px 0;
 }
 
 .tokens-panel-context-sub-trigger {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   cursor: pointer;
   border-radius: var(--radius-lg);
   padding: 8px 10px;
@@ -904,15 +904,15 @@
 
 .tokens-panel-context-sub-trigger:focus,
 .tokens-panel-context-sub-trigger[data-state="open"] {
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  color: var(--grey-100);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-context-sub-content {
-  background: var(--grey-800);
-  border: 1px solid var(--grey-700);
+  background: var(--surface-3);
+  border: 1px solid var(--surface-4);
   border-radius: var(--radius-xl);
-  box-shadow: 0 8px 30px color-mix(in srgb, var(--grey-950) 50%, transparent);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--surface-0) 50%, transparent);
   padding: 4px;
   min-width: 140px;
   max-height: 300px;
@@ -922,25 +922,25 @@
 .tokens-panel-context-icon {
   height: 14px;
   width: 14px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-context-icon-sm {
   height: 12px;
   width: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-context-check-active {
   height: 14px;
   width: 14px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-context-check-inactive {
   height: 14px;
   width: 14px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ══════════════════════════════════════════════
@@ -969,11 +969,11 @@
 }
 
 .tokens-panel-palette-header:hover {
-  background: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 .tokens-panel-palette-header:focus-visible {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue-500) 50%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 50%, transparent);
 }
 
 .tokens-panel-group-grip {
@@ -1003,9 +1003,9 @@
 .tokens-panel-palette-name-input {
   height: auto;
   font-size: var(--font-size-xs);
-  background: var(--grey-800);
+  background: var(--surface-3);
   border-color: transparent;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   padding: 0 8px;
   min-width: 120px;
   flex: 1;
@@ -1029,7 +1029,7 @@
 
 .tokens-panel-palette-name {
   font-size: var(--font-size-xs);
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1041,7 +1041,7 @@
 }
 
 .tokens-panel-palette-name-editable:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-palette-name-readonly {
@@ -1057,24 +1057,24 @@
 }
 
 .tokens-panel-palette-badge-brand {
-  color: var(--blue-500);
-  background: color-mix(in srgb, var(--blue-500) 12%, transparent);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
 .tokens-panel-palette-badge-warning {
-  color: var(--yellow-400);
-  background: color-mix(in srgb, var(--yellow-400) 12%, transparent);
+  color: var(--status-warning);
+  background: color-mix(in srgb, var(--status-warning) 12%, transparent);
 }
 
 .tokens-panel-palette-badge-dim {
-  color: var(--grey-600);
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  color: var(--on-surface-6);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .tokens-panel-palette-hidden-icon {
   height: 10px;
   width: 10px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   flex-shrink: 0;
 }
 
@@ -1094,7 +1094,7 @@
 }
 
 .tokens-panel-palette-action-btn:hover {
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .tokens-panel-palette-header:hover .tokens-panel-palette-action-btn {
@@ -1109,23 +1109,23 @@
 .tokens-panel-palette-action-icon {
   width: 12px;
   height: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-palette-action-icon-brand {
   width: 12px;
   height: 12px;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tokens-panel-palette-delete-icon {
   width: 12px;
   height: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-palette-delete-icon:hover {
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 /* ── Palette gradient ── */
@@ -1165,16 +1165,16 @@
 
 .tokens-panel-shade-row-selected {
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  background: color-mix(in srgb, var(--blue-500) 8%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
 }
 
 .tokens-panel-shade-row-highlighted {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue-500) 60%, transparent);
-  background: color-mix(in srgb, var(--blue-500) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 60%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
 .tokens-panel-shade-row-idle:hover {
-  background: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 .tokens-panel-shade-row-inherited {
@@ -1186,12 +1186,12 @@
 }
 
 .tokens-panel-shade-row-focused {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue-500) 40%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }
 
 .tokens-panel-shade-name {
   font-size: var(--font-size-xs);
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1202,13 +1202,13 @@
 .tokens-panel-shade-edit-input {
   background: transparent;
   border: none;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   padding: 0;
   margin: 0;
   min-width: 0;
   flex: 1;
   outline: none;
-  caret-color: var(--blue-500);
+  caret-color: var(--accent-primary);
   user-select: text;
   font-size: 12px;
   line-height: normal;
@@ -1238,7 +1238,7 @@
 }
 
 .tokens-panel-group-header:focus-visible {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue-500) 50%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 50%, transparent);
 }
 
 .tokens-panel-group-grip-regular {
@@ -1265,7 +1265,7 @@
 
 .tokens-panel-group-name {
   font-size: var(--font-size-xs);
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   transition: color 0.15s;
   padding: 2px 4px;
   border-radius: var(--radius-sm);
@@ -1280,8 +1280,8 @@
 }
 
 .tokens-panel-group-name-editable:hover {
-  color: var(--grey-100);
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  color: var(--on-surface-1);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .tokens-panel-group-name-readonly {
@@ -1293,9 +1293,9 @@
   font-size: var(--font-size-xs);
   min-width: 0;
   flex: 1;
-  background: var(--grey-800);
+  background: var(--surface-3);
   border-color: transparent;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   user-select: text;
 }
 
@@ -1311,7 +1311,7 @@
 }
 
 .tokens-panel-group-action-btn:hover {
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .tokens-panel-group-header:hover .tokens-panel-group-action-btn {
@@ -1325,17 +1325,17 @@
 .tokens-panel-group-action-icon {
   height: 12px;
   width: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-group-action-icon:hover {
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 .tokens-panel-group-action-icon-add {
   height: 12px;
   width: 12px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ── Group tokens area ── */
@@ -1352,7 +1352,7 @@
 
 .tokens-panel-group-empty {
   font-size: var(--font-size-xs);
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   padding: 4px 12px;
 }
 
@@ -1369,7 +1369,7 @@
 .tokens-panel-empty-state {
   text-align: center;
   padding: 32px 0;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-empty-title {
@@ -1379,7 +1379,7 @@
 .tokens-panel-empty-subtitle {
   font-size: var(--font-size-xs);
   margin-top: 4px;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 /* ══════════════════════════════════════════════
@@ -1387,8 +1387,8 @@
    ══════════════════════════════════════════════ */
 
 .tokens-panel-bulk-actions {
-  border-top: 1px solid var(--grey-700);
-  background: var(--grey-800);
+  border-top: 1px solid var(--surface-4);
+  background: var(--surface-3);
   flex-shrink: 0;
 }
 
@@ -1400,7 +1400,7 @@
 }
 
 .tokens-panel-bulk-header-bordered {
-  border-bottom: 1px solid var(--grey-700);
+  border-bottom: 1px solid var(--surface-4);
 }
 
 .tokens-panel-bulk-left {
@@ -1411,7 +1411,7 @@
 
 .tokens-panel-bulk-count {
   font-size: var(--font-size-xs);
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tokens-panel-bulk-right {
@@ -1434,24 +1434,24 @@
 }
 
 .tokens-panel-bulk-eye-btn-hidden {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tokens-panel-bulk-eye-btn-hidden:hover {
-  background: color-mix(in srgb, var(--blue-500) 10%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .tokens-panel-bulk-eye-btn-visible {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-bulk-eye-btn-visible:hover {
-  color: var(--grey-100);
-  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  color: var(--on-surface-1);
+  background: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .tokens-panel-bulk-eye-btn-disabled {
-  color: var(--grey-700);
+  color: var(--surface-4);
   cursor: not-allowed;
 }
 
@@ -1472,7 +1472,7 @@
 
 .tokens-panel-bulk-disabled-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-bulk-buttons {
@@ -1505,7 +1505,7 @@
   width: 12px;
   height: 12px;
   transition: color 0.15s;
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 /* ══════════════════════════════════════════════
@@ -1513,36 +1513,36 @@
    ══════════════════════════════════════════════ */
 
 .tokens-panel-alert-content {
-  background: var(--grey-800);
-  border-color: var(--grey-700);
+  background: var(--surface-3);
+  border-color: var(--surface-4);
 }
 
 .tokens-panel-alert-content-narrow {
-  background: var(--grey-800);
-  border-color: var(--grey-700);
+  background: var(--surface-3);
+  border-color: var(--surface-4);
   max-width: 400px;
 }
 
 .tokens-panel-alert-title {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-alert-title-with-icon {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .tokens-panel-alert-body {
-  color: var(--grey-400);
+  color: var(--on-surface-4);
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .tokens-panel-alert-body-lg {
-  color: var(--grey-400);
+  color: var(--on-surface-4);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1550,26 +1550,26 @@
 
 .tokens-panel-alert-bold {
   font-weight: var(--font-weight-semi-bold);
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-alert-mono {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-family: monospace;
   font-size: 12px;
-  background: var(--grey-800);
+  background: var(--surface-3);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
 }
 
 .tokens-panel-alert-warning {
-  color: var(--yellow-400);
+  color: var(--status-warning);
 }
 
 .tokens-panel-alert-destructive-text {
   margin-top: 12px;
   font-weight: var(--font-weight-semi-bold);
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 .tokens-panel-alert-sm {
@@ -1577,33 +1577,33 @@
 }
 
 .tokens-panel-alert-cancel {
-  background: var(--grey-800);
+  background: var(--surface-3);
   border-color: transparent;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tokens-panel-alert-cancel:hover {
-  background: var(--grey-800);
+  background: var(--surface-3);
 }
 
 .tokens-panel-alert-delete {
-  background: var(--red-600);
-  color: var(--grey-50);
+  background: var(--status-danger);
+  color: var(--on-surface-0);
 }
 
 .tokens-panel-alert-delete:hover {
-  background: var(--red-700);
+  background: var(--status-danger);
 }
 
 /* ── Auto-assign dialog specifics ── */
 
 .tokens-panel-auto-assign-icon {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tokens-panel-auto-assign-subtitle {
   font-size: 12px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .tokens-panel-auto-assign-list {
@@ -1622,14 +1622,14 @@
 }
 
 .tokens-panel-auto-assign-list-icon {
-  color: var(--blue-500);
+  color: var(--accent-primary);
   flex-shrink: 0;
 }
 
 .tokens-panel-auto-assign-list-name {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-family: monospace;
-  background: var(--grey-800);
+  background: var(--surface-3);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -1638,11 +1638,11 @@
 }
 
 .tokens-panel-auto-assign-arrow {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tokens-panel-auto-assign-node-name {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1650,7 +1650,7 @@
 
 .tokens-panel-auto-assign-extra {
   font-size: 12px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .tokens-panel-auto-assign-checkbox-label {
@@ -1658,7 +1658,7 @@
   align-items: flex-start;
   gap: 10px;
   cursor: pointer;
-  background: var(--grey-800);
+  background: var(--surface-3);
   border-radius: var(--radius-lg);
   padding: 10px 12px;
   border: 1px solid transparent;
@@ -1666,7 +1666,7 @@
 }
 
 .tokens-panel-auto-assign-checkbox-label:hover {
-  border-color: var(--grey-800);
+  border-color: var(--surface-3);
 }
 
 .tokens-panel-auto-assign-checkbox {
@@ -1674,7 +1674,7 @@
   height: 16px;
   margin-top: 1px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--grey-600);
+  border: 1px solid var(--on-surface-6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1684,27 +1684,27 @@
 }
 
 .tokens-panel-auto-assign-checkbox:hover {
-  border-color: var(--grey-500);
+  border-color: var(--on-surface-5);
 }
 
 .tokens-panel-auto-assign-checkbox-checked {
-  background: var(--yellow-400);
-  border-color: var(--yellow-400);
+  background: var(--status-warning);
+  border-color: var(--status-warning);
 }
 
 .tokens-panel-auto-assign-checkbox-check {
-  color: var(--grey-900);
+  color: var(--surface-2);
 }
 
 .tokens-panel-auto-assign-checkbox-text {
   font-size: 12px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   user-select: none;
 }
 
 .tokens-panel-auto-assign-checkbox-hint {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   user-select: none;
   margin-top: 2px;
 }
@@ -1715,11 +1715,11 @@
 
 .tokens-panel-palette-context-menu {
   min-width: 160px;
-  background: color-mix(in srgb, var(--grey-800) 95%, transparent);
+  background: color-mix(in srgb, var(--surface-3) 95%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--grey-950) 50%, transparent);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--surface-0) 50%, transparent);
   padding: 4px;
 }
 
@@ -1745,7 +1745,7 @@
 }
 
 .tokens-panel-palette-inside-header:hover {
-  background: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 /* ══════════════════════════════════════════════
@@ -1753,24 +1753,24 @@
    ══════════════════════════════════════════════ */
 
 .tp-icon-dim {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tp-icon-brand {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tp-icon-brand-fill {
-  color: var(--blue-500);
-  fill: var(--blue-500);
+  color: var(--accent-primary);
+  fill: var(--accent-primary);
 }
 
 .tp-icon-dim-hover-destructive {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tp-icon-dim-hover-destructive:hover {
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 /* ══════════════════════════════════════════════
@@ -1778,9 +1778,9 @@
    ══════════════════════════════════════════════ */
 
 .tp-palette-edit-input {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   border-color: transparent;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 /* ══════════════════════════════════════════════
@@ -1788,7 +1788,7 @@
    ══════════════════════════════════════════════ */
 
 .tp-name-subtle {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   font-size: var(--font-size-xs);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1801,7 +1801,7 @@
 }
 
 .tp-name-subtle-editable:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 /* ══════════════════════════════════════════════
@@ -1810,11 +1810,11 @@
 
 .tp-context-menu {
   min-width: 160px;
-  background: color-mix(in srgb, var(--grey-800) 95%, transparent);
+  background: color-mix(in srgb, var(--surface-3) 95%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--grey-950) 50%, transparent);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--surface-0) 50%, transparent);
   padding: 4px;
 }
 
@@ -1823,12 +1823,12 @@
    ══════════════════════════════════════════════ */
 
 .tp-shade-edit-input {
-  color: var(--grey-100);
-  caret-color: var(--blue-500);
+  color: var(--on-surface-1);
+  caret-color: var(--accent-primary);
 }
 
 .tp-shade-name {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 /* ══════════════════════════════════════════════
@@ -1836,7 +1836,7 @@
    ══════════════════════════════════════════════ */
 
 .tp-shade-select-bar {
-  background-color: var(--blue-500);
+  background-color: var(--accent-primary);
 }
 
 /* ══════════════════════════════════════════════
@@ -1844,11 +1844,11 @@
    ══════════════════════════════════════════════ */
 
 .tp-shade-tooltip {
-  background: color-mix(in srgb, var(--grey-800) 95%, transparent);
+  background: color-mix(in srgb, var(--surface-3) 95%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--grey-950) 50%, transparent);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--surface-0) 50%, transparent);
 }
 
 /* ══════════════════════════════════════════════
@@ -1856,11 +1856,11 @@
    ══════════════════════════════════════════════ */
 
 .tp-badge-text-brand {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tp-badge-text-dim {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ══════════════════════════════════════════════
@@ -1868,9 +1868,9 @@
    ══════════════════════════════════════════════ */
 
 .tp-group-edit-input {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   border-color: transparent;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 /* ══════════════════════════════════════════════
@@ -1878,11 +1878,11 @@
    ══════════════════════════════════════════════ */
 
 .tp-empty-dim {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tp-empty-ghost {
-  color: var(--grey-700);
+  color: var(--surface-4);
 }
 
 /* ══════════════════════════════════════════════
@@ -1891,48 +1891,48 @@
 
 .tp-bulk-count {
   font-size: var(--font-size-xs);
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tp-bulk-select-all {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .tp-bulk-select-all:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tp-bulk-vis-ghost {
-  color: var(--grey-700);
+  color: var(--surface-4);
   cursor: not-allowed;
 }
 
 .tp-bulk-vis-brand {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tp-bulk-vis-brand:hover {
-  background-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
+  background-color: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .tp-bulk-vis-faint {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tp-bulk-vis-faint:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tp-bulk-clear {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tp-bulk-clear:hover {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tp-bulk-info {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ══════════════════════════════════════════════
@@ -1940,28 +1940,28 @@
    ══════════════════════════════════════════════ */
 
 .tp-move-btn {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   border-color: transparent;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tp-move-btn:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .tp-move-dropdown {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   border-color: transparent;
 }
 
 .tp-move-dropdown-item {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   cursor: pointer;
 }
 
 .tp-move-dropdown-item:focus {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  color: var(--grey-100);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  color: var(--on-surface-1);
 }
 
 /* ══════════════════════════════════════════════
@@ -1969,30 +1969,30 @@
    ══════════════════════════════════════════════ */
 
 .tp-bulk-vis-ghost-btn {
-  color: var(--grey-700);
-  background-color: var(--grey-800);
+  color: var(--surface-4);
+  background-color: var(--surface-3);
   cursor: not-allowed;
 }
 
 .tp-bulk-vis-brand-btn {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tp-bulk-vis-default-btn {
-  color: var(--grey-100);
-  background-color: var(--grey-800);
+  color: var(--on-surface-1);
+  background-color: var(--surface-3);
 }
 
 .tp-bulk-vis-default-btn:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 .tp-bulk-delete-btn {
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 .tp-bulk-delete-btn:hover {
-  color: var(--pink-400);
+  color: var(--status-critical);
 }
 
 /* ══════════════════════════════════════════════
@@ -2000,34 +2000,34 @@
    ══════════════════════════════════════════════ */
 
 .tp-dialog-content {
-  background-color: var(--grey-800);
-  border-color: var(--grey-700);
+  background-color: var(--surface-3);
+  border-color: var(--surface-4);
 }
 
 .tp-dialog-title {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tp-dialog-desc {
-  color: var(--grey-400);
+  color: var(--on-surface-4);
 }
 
 .tp-dialog-highlight {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tp-dialog-destructive {
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 .tp-dialog-cancel {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   border-color: transparent;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .tp-dialog-cancel:hover {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 /* ══════════════════════════════════════════════
@@ -2035,42 +2035,42 @@
    ══════════════════════════════════════════════ */
 
 .tp-aa-dialog-content {
-  background-color: var(--grey-800);
-  border-color: var(--grey-700);
+  background-color: var(--surface-3);
+  border-color: var(--surface-4);
 }
 
 .tp-aa-dialog-zap {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .tp-aa-dialog-highlight-mono {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-family: var(--font-mono);
   font-size: 12px;
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   padding: 2px 6px;
   border-radius: var(--radius-md);
 }
 
 .tp-aa-dialog-subtle {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .tp-aa-dialog-arrow {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tp-aa-dialog-faint {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .tp-aa-dialog-checkbox-label {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
   border-color: transparent;
 }
 
 .tp-aa-dialog-checkbox-label:hover {
-  border-color: var(--grey-800);
+  border-color: var(--surface-3);
 }
 
 /* ══════════════════════════════════════════════
@@ -2078,24 +2078,24 @@
    ══════════════════════════════════════════════ */
 
 .tp-shade-highlight {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--blue-500) 60%, transparent);
-  background-color: color-mix(in srgb, var(--blue-500) 12%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 60%, transparent);
+  background-color: color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
 .tp-shade-selected {
-  background-color: color-mix(in srgb, var(--blue-500) 8%, transparent);
+  background-color: color-mix(in srgb, var(--accent-primary) 8%, transparent);
 }
 
 .tp-shade-focus-ring {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--blue-500) 40%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }
 
 .tp-shade-swatch-ring {
-  box-shadow: 0 0 0 2px var(--blue-500);
+  box-shadow: 0 0 0 2px var(--accent-primary);
 }
 
 .tp-group-focus-ring:focus-visible {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--blue-500) 50%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 50%, transparent);
 }
 
 /* ══════════════════════════════════════════════
@@ -2103,15 +2103,15 @@
    ══════════════════════════════════════════════ */
 
 .tp-badge-bg-brand {
-  background-color: color-mix(in srgb, var(--blue-500) 12%, transparent);
+  background-color: color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
 .tp-badge-bg-warning {
-  background-color: color-mix(in srgb, var(--yellow-400) 12%, transparent);
+  background-color: color-mix(in srgb, var(--status-warning) 12%, transparent);
 }
 
 .tp-badge-bg-default {
-  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 /* ══════════════════════════════════════════════
@@ -2119,13 +2119,13 @@
    ══════════════════════════════════════════════ */
 
 .tp-bulk-vis-brand-active {
-  color: var(--blue-500);
-  background-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
-  border-color: color-mix(in srgb, var(--blue-500) 20%, transparent);
+  color: var(--accent-primary);
+  background-color: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .tp-bulk-vis-brand-active:hover {
-  background-color: color-mix(in srgb, var(--blue-500) 15%, transparent);
+  background-color: color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
 /* ══════════════════════════════════════════════
@@ -2190,7 +2190,7 @@
 }
 
 .tp-chevron-btn:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 /* --- Palette / group content column --- */
@@ -2242,7 +2242,7 @@
 }
 
 .tp-palette-action-btn:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .group:hover .tp-palette-action-btn {
@@ -2262,7 +2262,7 @@
 }
 
 .tp-palette-action-btn-static:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 /* --- Palette gradient bar --- */
@@ -2306,7 +2306,7 @@
 }
 
 .tp-shade-row:not(.tp-shade-highlight):not(.tp-shade-selected):hover {
-  background-color: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 /* --- Shade select bar (left edge) --- */
@@ -2367,7 +2367,7 @@
 }
 
 .tp-palette-header-row:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
 }
 
 /* --- Group wrapper --- */
@@ -2436,7 +2436,7 @@
 }
 
 .tp-group-name-text-editable:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 /* --- Group action button (delete / add) --- */
@@ -2449,7 +2449,7 @@
 }
 
 .tp-group-action-btn:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .group\/group:hover .tp-group-action-btn {
@@ -2504,8 +2504,8 @@
 
 /* --- Bulk actions panel --- */
 .tp-bulk-panel {
-  border-top: 1px solid var(--grey-700);
-  background-color: var(--grey-800);
+  border-top: 1px solid var(--surface-4);
+  background-color: var(--surface-3);
   flex-shrink: 0;
 }
 
@@ -2518,7 +2518,7 @@
 }
 
 .tp-bulk-header-bordered {
-  border-bottom: 1px solid var(--grey-700);
+  border-bottom: 1px solid var(--surface-4);
 }
 
 /* --- Bulk header left side --- */
@@ -2543,7 +2543,7 @@
 }
 
 .tp-bulk-select-all-wrap:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 /* --- Bulk visibility button (read-only, small) --- */
@@ -2558,7 +2558,7 @@
 }
 
 .tp-bulk-vis-faint:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 /* --- Bulk clear button --- */
@@ -2569,7 +2569,7 @@
 }
 
 .tp-bulk-clear-wrap:hover {
-  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background-color: color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 /* --- Bulk panel content (actions area) --- */
@@ -2625,7 +2625,7 @@
 
 /* --- Dropdown separator --- */
 .tp-dropdown-separator {
-  background-color: var(--grey-800);
+  background-color: var(--surface-3);
 }
 
 /* --- Bulk visibility button (large, primary theme) --- */
@@ -2643,12 +2643,12 @@
   width: 32px;
   padding: 0;
   font-size: var(--font-size-xs);
-  background-color: color-mix(in srgb, var(--red-500) 10%, transparent);
-  border-color: color-mix(in srgb, var(--red-500) 20%, transparent);
+  background-color: color-mix(in srgb, var(--status-danger) 10%, transparent);
+  border-color: color-mix(in srgb, var(--status-danger) 20%, transparent);
 }
 
 .tp-bulk-delete-btn-wrap:hover {
-  background-color: color-mix(in srgb, var(--red-500) 15%, transparent);
+  background-color: color-mix(in srgb, var(--status-danger) 15%, transparent);
 }
 
 /* --- Resize handle --- */
@@ -2688,7 +2688,7 @@
 }
 
 .tp-dialog-text-warning {
-  color: var(--yellow-400);
+  color: var(--status-warning);
 }
 
 .tp-dialog-mt-3 {
@@ -2701,12 +2701,12 @@
 
 /* --- Delete action button (red) --- */
 .tp-dialog-delete-btn {
-  background-color: var(--red-600);
-  color: var(--grey-50);
+  background-color: var(--status-danger);
+  color: var(--on-surface-0);
 }
 
 .tp-dialog-delete-btn:hover {
-  background-color: var(--red-700);
+  background-color: var(--status-danger);
 }
 
 /* --- Auto-assign dialog max-width --- */
@@ -2776,16 +2776,16 @@
 }
 
 .tp-aa-checkbox-checked {
-  background-color: var(--yellow-400);
-  border-color: var(--yellow-400);
+  background-color: var(--status-warning);
+  border-color: var(--status-warning);
 }
 
 .tp-aa-checkbox-unchecked {
-  border-color: var(--grey-600);
+  border-color: var(--on-surface-6);
 }
 
 .group:hover .tp-aa-checkbox-unchecked {
-  border-color: var(--grey-500);
+  border-color: var(--on-surface-5);
 }
 
 /* --- Auto-assign checkbox label text --- */
@@ -2802,7 +2802,7 @@
 
 /* --- Check icon color override --- */
 .tp-check-icon-dark {
-  color: var(--grey-900);
+  color: var(--surface-2);
 }
 
 /* --- Inherited opacity helpers --- */

@@ -157,12 +157,12 @@ export function DualRangeSlider({
         <div
           className="dual-slider-thumb"
           style={{
-            background: 'var(--blue-900)',
+            background: 'var(--accent-primary-strong)',
             transform: 'rotate(45deg)',
             cursor: dragging === 'start' ? 'grabbing' : 'grab',
             boxShadow: dragging === 'start'
-              ? '0 0 0 3px color-mix(in srgb, var(--blue-900) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--grey-950) 35%, transparent)'
-              : '0 1px 4px color-mix(in srgb, var(--grey-950) 35%, transparent)',
+              ? '0 0 0 3px color-mix(in srgb, var(--focus-ring) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--shadow-color-overlay) 35%, transparent)'
+              : '0 1px 4px color-mix(in srgb, var(--shadow-color-overlay) 35%, transparent)',
           }}
         />
       </div>
@@ -178,12 +178,12 @@ export function DualRangeSlider({
         <div
           className="dual-slider-thumb"
           style={{
-            background: 'var(--blue-900)',
+            background: 'var(--accent-primary-strong)',
             transform: 'rotate(45deg)',
             cursor: dragging === 'end' ? 'grabbing' : 'grab',
             boxShadow: dragging === 'end'
-              ? '0 0 0 3px color-mix(in srgb, var(--blue-900) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--grey-950) 35%, transparent)'
-              : '0 1px 4px color-mix(in srgb, var(--grey-950) 35%, transparent)',
+              ? '0 0 0 3px color-mix(in srgb, var(--focus-ring) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--shadow-color-overlay) 35%, transparent)'
+              : '0 1px 4px color-mix(in srgb, var(--shadow-color-overlay) 35%, transparent)',
           }}
         />
       </div>

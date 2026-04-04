@@ -25,27 +25,27 @@
 }
 
 .auto-assign-zap-btn-enabled {
-  background: color-mix(in srgb, var(--blue-500) 20%, transparent);
-  color: var(--blue-500);
+  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  color: var(--accent-primary);
 }
 
 .auto-assign-zap-btn-enabled:hover {
-  background: color-mix(in srgb, var(--blue-500) 30%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
 .auto-assign-zap-btn-open {
-  background: var(--grey-700);
-  color: var(--grey-100);
+  background: var(--surface-4);
+  color: var(--on-surface-1);
 }
 
 .auto-assign-zap-btn-default {
   background: transparent;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .auto-assign-zap-btn-default:hover {
-  color: var(--grey-500);
-  background: var(--grey-800);
+  color: var(--on-surface-5);
+  background: var(--surface-3);
 }
 
 /* ── Toggle dropdown ── */
@@ -54,8 +54,8 @@
   left: 100%;
   top: 0;
   margin-left: 6px;
-  background: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  background: var(--surface-3);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   z-index: 50;
@@ -78,20 +78,20 @@
 }
 
 .auto-assign-dropdown-item-primary {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .auto-assign-dropdown-item-primary:hover {
-  background: var(--grey-800);
+  background: var(--surface-3);
 }
 
 .auto-assign-dropdown-item-secondary {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .auto-assign-dropdown-item-secondary:hover {
-  background: var(--grey-800);
-  color: var(--grey-100);
+  background: var(--surface-3);
+  color: var(--on-surface-1);
 }
 
 /* ── Toggle switch ── */
@@ -105,12 +105,12 @@
 }
 
 .auto-assign-toggle-on {
-  background: var(--blue-500);
+  background: var(--accent-primary);
   justify-content: flex-end;
 }
 
 .auto-assign-toggle-off {
-  background: var(--grey-700);
+  background: var(--surface-4);
   justify-content: flex-start;
 }
 
@@ -118,7 +118,7 @@
   width: 14px;
   height: 14px;
   border-radius: var(--radius-full);
-  background: var(--grey-50);
+  background: var(--on-surface-0);
   margin: 0 2px;
   transition: all 200ms;
 }
@@ -126,8 +126,8 @@
 /* ── Re-apply badge ── */
 .auto-assign-badge {
   margin-left: auto;
-  background: color-mix(in srgb, var(--blue-500) 20%, transparent);
-  color: var(--blue-500);
+  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  color: var(--accent-primary);
   font-size: 11px;
   padding: 2px 6px;
   border-radius: var(--radius-full);
@@ -141,8 +141,8 @@
 .auto-assign-popup {
   position: absolute;
   z-index: 50;
-  background: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  background: var(--surface-3);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-2xl);
 }
@@ -152,7 +152,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  border-bottom: 1px solid var(--grey-800);
+  border-bottom: 1px solid var(--surface-3);
 }
 
 .auto-assign-popup-header-left {
@@ -163,11 +163,11 @@
 
 .auto-assign-popup-title {
   font-size: 12px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .auto-assign-popup-close {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   background: none;
   border: none;
   cursor: pointer;
@@ -175,7 +175,7 @@
 }
 
 .auto-assign-popup-close:hover {
-  color: var(--grey-500);
+  color: var(--on-surface-5);
 }
 
 .auto-assign-popup-body {
@@ -188,7 +188,7 @@
 /* ── Form fields ── */
 .auto-assign-label {
   font-size: 11px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -201,22 +201,22 @@
 
 .auto-assign-text-input {
   width: 100%;
-  background: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  background: var(--surface-3);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-md);
   padding: 6px 10px;
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   outline: none;
   transition: border-color 150ms;
 }
 
 .auto-assign-text-input:focus {
-  border-color: var(--blue-500);
+  border-color: var(--accent-primary);
 }
 
 .auto-assign-text-input::placeholder {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 .auto-assign-text-input-center {
@@ -225,19 +225,19 @@
 }
 
 .auto-assign-text-input-disabled {
-  border-color: var(--grey-600);
-  color: var(--grey-600);
+  border-color: var(--on-surface-6);
+  color: var(--on-surface-6);
 }
 
 /* ── Dropdown select button ── */
 .auto-assign-select-btn {
   width: 100%;
-  background: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  background: var(--surface-3);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-md);
   padding: 6px 10px;
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -246,7 +246,7 @@
 }
 
 .auto-assign-select-btn:hover {
-  border-color: var(--grey-600);
+  border-color: var(--on-surface-6);
 }
 
 /* ── Dropdown options ── */
@@ -256,8 +256,8 @@
   right: 0;
   top: 100%;
   margin-top: 4px;
-  background: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  background: var(--surface-3);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-xl);
   z-index: 50;
@@ -281,15 +281,15 @@
   border: none;
   background: none;
   cursor: pointer;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 .auto-assign-option:hover {
-  background: var(--grey-800);
+  background: var(--surface-3);
 }
 
 .auto-assign-option-active {
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .auto-assign-option-truncate {
@@ -300,7 +300,7 @@
 
 /* ── Divider in suffix dropdown ── */
 .auto-assign-options-divider {
-  border-top: 1px solid var(--grey-800);
+  border-top: 1px solid var(--surface-3);
   margin: 4px 0;
 }
 
@@ -314,14 +314,14 @@
 
 .auto-assign-increment-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   flex-shrink: 0;
 }
 
 /* ── Start from hint ── */
 .auto-assign-hint {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ── New group checkbox ── */
@@ -337,7 +337,7 @@
   width: 16px;
   height: 16px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--grey-600);
+  border: 1px solid var(--on-surface-6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -346,36 +346,36 @@
 }
 
 .auto-assign-checkbox:hover {
-  border-color: var(--grey-600);
+  border-color: var(--on-surface-6);
 }
 
 .auto-assign-checkbox-checked {
-  background: var(--blue-500);
-  border-color: var(--blue-500);
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
 }
 
 .auto-assign-checkbox-label {
   font-size: 12px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   user-select: none;
   transition: color 150ms;
 }
 
 .auto-assign-checkbox-row:hover .auto-assign-checkbox-label {
-  color: var(--grey-100);
+  color: var(--on-surface-1);
 }
 
 /* ── Preview box ── */
 .auto-assign-preview {
-  background: var(--grey-800);
+  background: var(--surface-3);
   border-radius: var(--radius-md);
   padding: 8px 10px;
-  border: 1px solid var(--grey-800);
+  border: 1px solid var(--surface-3);
 }
 
 .auto-assign-preview-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 4px;
@@ -384,29 +384,29 @@
 .auto-assign-preview-text {
   font-size: 12px;
   font-family: var(--font-mono);
-  color: var(--grey-400);
+  color: var(--on-surface-4);
 }
 
 .auto-assign-preview-ellipsis {
-  color: var(--grey-600);
+  color: var(--on-surface-6);
 }
 
 /* ── Read-only display ── */
 .auto-assign-ro-value {
   font-size: 13px;
-  color: var(--grey-100);
+  color: var(--on-surface-1);
   font-family: var(--font-mono);
-  background: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  background: var(--surface-3);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-md);
   padding: 6px 10px;
 }
 
 .auto-assign-ro-plain {
   font-size: 13px;
-  color: var(--grey-100);
-  background: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  color: var(--on-surface-1);
+  background: var(--surface-3);
+  border: 1px solid var(--surface-3);
   border-radius: var(--radius-md);
   padding: 6px 10px;
 }
@@ -420,30 +420,30 @@
 /* ── Children info ── */
 .auto-assign-children-info {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .auto-assign-children-excluded {
-  color: color-mix(in srgb, var(--yellow-400) 70%, transparent);
+  color: color-mix(in srgb, var(--status-warning) 70%, transparent);
 }
 
 .auto-assign-ro-notice {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-6);
   text-align: center;
   padding-top: 4px;
-  border-top: 1px solid var(--grey-800);
+  border-top: 1px solid var(--surface-3);
 }
 
 /* ── Excluded nodes box ── */
 .auto-assign-excluded-box {
-  background: color-mix(in srgb, var(--orange-900) 45%, var(--grey-950));
+  background: color-mix(in srgb, var(--utility-build) 14%, var(--surface-0));
   border-radius: var(--radius-md);
   padding: 8px 10px;
-  border: 1px solid color-mix(in srgb, var(--orange-700) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--utility-build) 28%, transparent);
 }
 
 .auto-assign-excluded-header {
@@ -455,7 +455,7 @@
 
 .auto-assign-excluded-title {
   font-size: 11px;
-  color: color-mix(in srgb, var(--yellow-400) 80%, transparent);
+  color: color-mix(in srgb, var(--status-warning) 80%, transparent);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -475,7 +475,7 @@
 
 .auto-assign-excluded-name {
   font-size: 11px;
-  color: var(--orange-400);
+  color: var(--utility-build);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -483,7 +483,7 @@
 
 .auto-assign-excluded-reinclude {
   font-size: 11px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   flex-shrink: 0;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
@@ -494,21 +494,21 @@
 }
 
 .auto-assign-excluded-reinclude:hover {
-  color: var(--grey-100);
-  background: var(--grey-800);
+  color: var(--on-surface-1);
+  background: var(--surface-3);
 }
 
 /* ── Change summary ── */
 .auto-assign-changes {
-  background: color-mix(in srgb, var(--blue-500) 8%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
   border-radius: var(--radius-md);
   padding: 8px 10px;
-  border: 1px solid color-mix(in srgb, var(--blue-500) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .auto-assign-changes-title {
   font-size: 11px;
-  color: color-mix(in srgb, var(--blue-500) 70%, transparent);
+  color: color-mix(in srgb, var(--accent-primary) 70%, transparent);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 4px;
@@ -516,7 +516,7 @@
 
 .auto-assign-change-item {
   font-size: 11px;
-  color: color-mix(in srgb, var(--blue-500) 90%, transparent);
+  color: color-mix(in srgb, var(--accent-primary) 90%, transparent);
   display: flex;
   align-items: flex-start;
   gap: 6px;
@@ -529,15 +529,15 @@
 
 .auto-assign-changes-note {
   font-size: 11px;
-  color: var(--grey-500);
+  color: var(--on-surface-5);
   margin-top: 4px;
 }
 
 /* ── Apply button ── */
 .auto-assign-apply-btn {
   width: 100%;
-  background: var(--blue-500);
-  color: var(--grey-50);
+  background: var(--accent-primary);
+  color: var(--on-surface-0);
   font-size: 13px;
   border-radius: var(--radius-md);
   padding: 6px 0;
@@ -551,5 +551,5 @@
 }
 
 .auto-assign-apply-btn:hover {
-  background: var(--blue-600);
+  background: var(--accent-primary);
 }

@@ -13,19 +13,19 @@
 }
 
 .ai-settings-toggle-icon-on {
-  color: var(--green-500);
+  color: var(--status-success);
 }
 
 .ai-settings-toggle-btn:hover .ai-settings-toggle-icon-on {
-  color: var(--green-300);
+  color: var(--status-success);
 }
 
 .ai-settings-toggle-icon-off {
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
 }
 
 .ai-settings-toggle-btn:hover .ai-settings-toggle-icon-off {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 /* ─── Service Section ─── */
@@ -59,8 +59,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  background: color-mix(in srgb, var(--green-500) 8%, transparent);
-  color: var(--green-500);
+  background: color-mix(in srgb, var(--status-success) 8%, transparent);
+  color: var(--status-success);
 }
 
 .ai-settings-service-badge-dot {
@@ -68,15 +68,15 @@
   height: 4px;
   border-radius: 9999px;
   display: inline-block;
-  background: var(--green-500);
+  background: var(--status-success);
 }
 
 .ai-settings-service-free-tier {
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--green-500) 8%, transparent);
-  color: var(--green-500);
+  background: color-mix(in srgb, var(--status-success) 8%, transparent);
+  color: var(--status-success);
 }
 
 .ai-settings-service-set-active {
@@ -85,13 +85,13 @@
   border-radius: var(--radius);
   cursor: pointer;
   transition: background-color 0.15s ease;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   background: none;
   border: none;
 }
 
 .ai-settings-service-set-active:hover {
-  background: color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 .ai-settings-service-body {
@@ -103,7 +103,7 @@
 
 .ai-settings-service-description {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   line-height: 1.625;
 }
 
@@ -111,7 +111,7 @@
 
 .ai-settings-key-label {
   font-size: 10px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: block;
@@ -134,14 +134,14 @@
   padding: 0 10px;
   border-radius: var(--radius-md);
   font-size: 11px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   outline: none;
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
 }
 
 .ai-settings-key-input::placeholder {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .ai-settings-key-mask {
@@ -153,8 +153,8 @@
   display: flex;
   align-items: center;
   cursor: text;
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
 }
 
 .ai-settings-key-toggle {
@@ -166,18 +166,18 @@
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: background-color 0.15s ease;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   background: none;
   border: none;
 }
 
 .ai-settings-key-toggle:hover {
-  background: color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 .ai-settings-key-url {
   font-size: 10px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   margin-top: 4px;
   display: inline-block;
   transition: color 0.15s ease;
@@ -185,12 +185,12 @@
 }
 
 .ai-settings-key-url:hover {
-  color: var(--grey-500);
+  color: var(--on-surface-3);
 }
 
 .ai-settings-key-free-note {
   font-size: 10px;
-  color: color-mix(in srgb, var(--green-500) 60%, transparent);
+  color: color-mix(in srgb, var(--status-success) 60%, transparent);
   margin-top: 4px;
   display: flex;
   align-items: flex-start;
@@ -206,7 +206,7 @@
 
 .ai-settings-model-label {
   font-size: 10px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: block;
@@ -224,12 +224,12 @@
   padding-right: 28px;
   border-radius: var(--radius-md);
   font-size: 11px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   outline: none;
   cursor: pointer;
   appearance: none;
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
 }
 
 .ai-settings-model-chevron {
@@ -238,7 +238,7 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .ai-settings-model-custom-input {
@@ -248,14 +248,14 @@
   margin-top: 6px;
   border-radius: var(--radius-md);
   font-size: 11px;
-  color: var(--grey-400);
+  color: var(--on-surface-2);
   outline: none;
-  background: color-mix(in srgb, var(--grey-50) 3%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .ai-settings-model-custom-input::placeholder {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 /* ─── Settings Content Container ─── */
@@ -276,11 +276,11 @@
 }
 
 .ai-settings-header--modal {
-  border-bottom: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
 }
 
 .ai-settings-header--inline {
-  border-bottom: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .ai-settings-header-top {
@@ -292,19 +292,19 @@
 
 .ai-settings-header-title {
   font-size: 14px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   font-weight: 500;
 }
 
 .ai-settings-header-subtitle {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   margin-top: 2px;
 }
 
 .ai-settings-header-subtitle--inline {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   margin-bottom: 12px;
 }
 
@@ -312,13 +312,13 @@
   padding: 6px;
   border-radius: var(--radius-md);
   cursor: pointer;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   background: none;
   border: none;
 }
 
 .ai-settings-close-btn:hover {
-  background: color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 /* ─── Tab Bar ─── */
@@ -352,7 +352,7 @@
   right: 4px;
   height: 2px;
   border-radius: 9999px;
-  background: var(--blue-500);
+  background: var(--accent-primary);
 }
 
 /* ─── Content Area ─── */
@@ -385,8 +385,8 @@
 .ai-settings-active-model-card {
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 .ai-settings-active-model-inner {
@@ -402,7 +402,7 @@
 
 .ai-settings-active-model-label {
   font-size: 10px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -411,7 +411,7 @@
   font-size: 11px;
   font-family: var(--font-mono, monospace);
   font-variant-numeric: tabular-nums;
-  color: var(--blue-500);
+  color: var(--accent-primary);
 }
 
 .ai-settings-active-model-select-wrap {
@@ -425,12 +425,12 @@
   padding-right: 28px;
   border-radius: var(--radius-md);
   font-size: 11px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
   outline: none;
   cursor: pointer;
   appearance: none;
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
 }
 
 .ai-settings-active-model-chevron {
@@ -439,12 +439,12 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .ai-settings-active-model-name {
   font-size: 11px;
-  color: var(--grey-100);
+  color: var(--on-surface-0);
 }
 
 /* ─── Context Usage Bar (active model) ─── */
@@ -458,7 +458,7 @@
   align-items: center;
   justify-content: space-between;
   font-size: 10px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   margin-bottom: 4px;
 }
 
@@ -471,7 +471,7 @@
   height: 6px;
   border-radius: 9999px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .ai-settings-context-usage-fill {
@@ -483,14 +483,14 @@
 .ai-settings-context-usage-warning {
   font-size: 10px;
   margin-top: 4px;
-  color: var(--red-500);
+  color: var(--status-danger);
 }
 
 /* ─── Tier Selector ─── */
 
 .ai-settings-tier-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: block;
@@ -540,7 +540,7 @@
 
 .ai-settings-tier-detail {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   margin-top: 8px;
   line-height: 1.625;
   padding: 0 2px;
@@ -550,7 +550,7 @@
 
 .ai-settings-sources-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: block;
@@ -560,8 +560,8 @@
 .ai-settings-sources-card {
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 .ai-settings-source-row {
@@ -569,7 +569,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .ai-settings-source-row--total {
@@ -577,7 +577,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
 }
 
 .ai-settings-source-info {
@@ -599,21 +599,21 @@
   font-size: 11px;
   padding: 1px 4px;
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--indigo-400) 15%, transparent);
-  color: var(--blue-500);
+  background: color-mix(in srgb, var(--surface-accent-hover) 15%, transparent);
+  color: var(--accent-primary);
 }
 
 .ai-settings-source-kb-badge {
   font-size: 11px;
   padding: 2px 6px;
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
-  color: var(--grey-600);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
+  color: var(--on-surface-4);
 }
 
 .ai-settings-source-desc {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   margin-top: 2px;
 }
 
@@ -638,13 +638,13 @@
 
 .ai-settings-total-label {
   font-size: 11px;
-  color: var(--grey-500);
+  color: var(--on-surface-3);
   font-weight: 500;
 }
 
 .ai-settings-total-detail {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
   margin-top: 2px;
 }
 
@@ -660,8 +660,8 @@
 .ai-settings-budget-card {
   border-radius: var(--radius-lg);
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 5%, transparent);
 }
 
 .ai-settings-budget-header {
@@ -673,7 +673,7 @@
 
 .ai-settings-budget-label {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .ai-settings-budget-value {
@@ -687,7 +687,7 @@
   border-radius: 9999px;
   overflow: hidden;
   display: flex;
-  background: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
 }
 
 .ai-settings-budget-segment {
@@ -715,7 +715,7 @@
 
 .ai-settings-budget-legend-text {
   font-size: 11px;
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 /* ─── How It Works ─── */
@@ -723,13 +723,13 @@
 .ai-settings-how-it-works {
   border-radius: var(--radius-lg);
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--indigo-400) 4%, transparent);
-  border: 1px solid color-mix(in srgb, var(--indigo-400) 8%, transparent);
+  background: color-mix(in srgb, var(--surface-accent-hover) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--surface-accent-hover) 8%, transparent);
 }
 
 .ai-settings-how-it-works-text {
   font-size: 11px;
-  color: color-mix(in srgb, var(--blue-500) 70%, transparent);
+  color: color-mix(in srgb, var(--accent-primary) 70%, transparent);
   line-height: 1.625;
 }
 
@@ -749,7 +749,7 @@
 
 .ai-settings-footer-text {
   font-size: 11px;
-  color: var(--grey-700);
+  color: var(--border-on-surface-0);
 }
 
 .ai-settings-footer-status {
@@ -773,7 +773,7 @@
 .ai-settings-popup-backdrop {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--grey-950) 60%, transparent);
+  background: color-mix(in srgb, var(--surface-0) 60%, transparent);
   backdrop-filter: blur(4px);
 }
 
@@ -785,17 +785,17 @@
   flex-direction: column;
   width: min(580px, 92vw);
   height: min(740px, 90vh);
-  background: var(--grey-925);
-  border: 1px solid var(--grey-800);
-  box-shadow: 0 24px 80px color-mix(in srgb, var(--grey-950) 60%, transparent);
+  background: var(--surface-1);
+  border: 1px solid var(--surface-3);
+  box-shadow: 0 24px 80px color-mix(in srgb, var(--surface-0) 60%, transparent);
 }
 
 /* ─── Utility: faint text color ─── */
 
 .ai-settings-text-faint {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }
 
 .ai-settings-text-dim {
-  color: var(--grey-600);
+  color: var(--on-surface-4);
 }

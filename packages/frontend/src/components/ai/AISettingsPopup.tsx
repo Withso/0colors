@@ -36,9 +36,9 @@ interface AISettingsPopupProps {
 }
 
 const TIER_COLORS: Record<ContextTier, string> = {
-  small: 'var(--red-500)',
+  small: 'var(--text-critical)',
   medium: 'var(--indigo-400)',
-  large: 'var(--green-500)',
+  large: 'var(--text-success)',
 };
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -101,13 +101,13 @@ function ServiceSection({
       className="ai-settings-service"
       style={{
         background: isActiveService ? 'color-mix(in srgb, var(--indigo-400) 4%, transparent)' : 'transparent',
-        borderBottom: '1px solid color-mix(in srgb, var(--grey-50) 4%, transparent)',
+        borderBottom: '1px solid var(--border-faint)',
       }}
     >
       {/* Header */}
       <div className="ai-settings-service-header">
         <div className="ai-settings-service-header-left">
-          <span className="ai-settings-service-label" style={{ color: hasKey ? 'var(--grey-100)' : 'var(--grey-500)' }}>
+          <span className="ai-settings-service-label" style={{ color: hasKey ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
             {definition.label}
           </span>
           {hasKey && (
@@ -154,7 +154,7 @@ function ServiceSection({
               ) : (
                 <div
                   className="ai-settings-key-mask"
-                  style={{ color: hasKey ? 'var(--grey-600)' : 'var(--grey-600)' }}
+                  style={{ color: hasKey ? 'var(--text-disabled)' : 'var(--text-disabled)' }}
                   onClick={onToggleShowKey}
                 >
                   {hasKey ? maskKey(config!.apiKey) : definition.keyHint}
@@ -369,7 +369,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className="ai-settings-tab"
-                style={{ color: isActive ? 'var(--grey-100)' : 'var(--grey-600)' }}
+                style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-disabled)' }}
               >
                 <Icon size={12} />
                 {tab.label}
@@ -470,7 +470,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                               className="ai-settings-context-usage-fill"
                               style={{
                                 width: `${Math.min((tokenBreakdown.totalWithResponse / activeCtx) * 100, 100)}%`,
-                                background: tokenBreakdown.totalWithResponse > activeCtx ? 'var(--red-500)' : 'var(--blue-400)',
+                                background: tokenBreakdown.totalWithResponse > activeCtx ? 'var(--status-critical)' : 'var(--accent-primary-hover)',
                               }}
                             />
                           </div>
@@ -502,19 +502,19 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                         style={{
                           background: isSelected
                             ? `color-mix(in srgb, ${color} 6%, transparent)`
-                            : 'color-mix(in srgb, var(--grey-50) 2%, transparent)',
+                            : 'var(--surface-hover)',
                           border: isSelected
                             ? `1px solid color-mix(in srgb, ${color} 25%, transparent)`
-                            : '1px solid color-mix(in srgb, var(--grey-50) 5%, transparent)',
+                            : '1px solid var(--border-faint)',
                         }}
                       >
                         <div className="ai-settings-tier-btn-header">
-                          <div className="ai-settings-tier-dot" style={{ background: isSelected ? color : 'var(--grey-700)' }} />
-                          <span className="ai-settings-tier-name" style={{ color: isSelected ? color : 'var(--grey-500)' }}>
+                          <div className="ai-settings-tier-dot" style={{ background: isSelected ? color : 'var(--on-surface-disabled)' }} />
+                          <span className="ai-settings-tier-name" style={{ color: isSelected ? color : 'var(--text-tertiary)' }}>
                             {info.label}
                           </span>
                         </div>
-                        <p className="ai-settings-tier-desc" style={{ color: isSelected ? 'var(--grey-500)' : 'var(--grey-600)' }}>
+                        <p className="ai-settings-tier-desc" style={{ color: isSelected ? 'var(--text-tertiary)' : 'var(--text-disabled)' }}>
                           {info.description}
                         </p>
                       </button>
@@ -535,7 +535,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                   <div className="ai-settings-source-row">
                     <div className="ai-settings-source-info">
                       <div className="ai-settings-source-name-row">
-                        <span className="ai-settings-source-name" style={{ color: contextToggles.knowledgeBase ? 'var(--grey-100)' : 'var(--grey-600)' }}>
+                        <span className="ai-settings-source-name" style={{ color: contextToggles.knowledgeBase ? 'var(--text-primary)' : 'var(--text-disabled)' }}>
                           Knowledge Base
                         </span>
                         <span className="ai-settings-source-kb-badge">
@@ -546,7 +546,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                     </div>
                     <div className="ai-settings-source-right">
                       <span className="ai-settings-source-token-count" style={{
-                        color: contextToggles.knowledgeBase ? TIER_COLORS[contextTier] : 'var(--grey-700)',
+                        color: contextToggles.knowledgeBase ? TIER_COLORS[contextTier] : 'var(--text-disabled)',
                       }}>
                         {contextToggles.knowledgeBase ? formatTokens(tokenBreakdown.kbTokens) : '0'}
                       </span>
@@ -558,7 +558,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                   <div className="ai-settings-source-row">
                     <div className="ai-settings-source-info">
                       <div className="ai-settings-source-name-row">
-                        <span className="ai-settings-source-name" style={{ color: contextToggles.projectContext ? 'var(--grey-100)' : 'var(--grey-600)' }}>
+                        <span className="ai-settings-source-name" style={{ color: contextToggles.projectContext ? 'var(--text-primary)' : 'var(--text-disabled)' }}>
                           Project Data
                         </span>
                         {tokenBreakdown.projectRawTokens > tokenBreakdown.projectBudget && contextToggles.projectContext && (
@@ -576,7 +576,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                     </div>
                     <div className="ai-settings-source-right">
                       <span className="ai-settings-source-token-count" style={{
-                        color: contextToggles.projectContext ? TIER_COLORS[contextTier] : 'var(--grey-700)',
+                        color: contextToggles.projectContext ? TIER_COLORS[contextTier] : 'var(--text-disabled)',
                       }}>
                         {contextToggles.projectContext ? formatTokens(tokenBreakdown.projectEffective) : '0'}
                       </span>
@@ -588,7 +588,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                   <div className="ai-settings-source-row">
                     <div className="ai-settings-source-info">
                       <div className="ai-settings-source-name-row">
-                        <span className="ai-settings-source-name" style={{ color: contextToggles.conversationHistory ? 'var(--grey-100)' : 'var(--grey-600)' }}>
+                        <span className="ai-settings-source-name" style={{ color: contextToggles.conversationHistory ? 'var(--text-primary)' : 'var(--text-disabled)' }}>
                           Conversation History
                         </span>
                         {tokenBreakdown.convTokens > tokenBreakdown.convBudget && contextToggles.conversationHistory && (
@@ -606,7 +606,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                     </div>
                     <div className="ai-settings-source-right">
                       <span className="ai-settings-source-token-count" style={{
-                        color: contextToggles.conversationHistory ? TIER_COLORS[contextTier] : 'var(--grey-700)',
+                        color: contextToggles.conversationHistory ? TIER_COLORS[contextTier] : 'var(--text-disabled)',
                       }}>
                         {contextToggles.conversationHistory ? formatTokens(tokenBreakdown.convEffective) : '0'}
                       </span>
@@ -666,36 +666,36 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                 </div>
                 <div className="ai-settings-budget-bar">
                   {tokenBreakdown.activeKB > 0 && (
-                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeKB / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--purple-500)' }}
+                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeKB / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--utility-knowledge)' }}
                       title={`Knowledge Base: ${formatTokens(tokenBreakdown.activeKB)}`} />
                   )}
                   {tokenBreakdown.activeProject > 0 && (
-                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--blue-500)' }}
+                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--utility-project)' }}
                       title={`Project: ${formatTokens(tokenBreakdown.activeProject)}`} />
                   )}
                   {tokenBreakdown.activeConv > 0 && (
-                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeConv / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--green-500)' }}
+                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeConv / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--utility-conversation)' }}
                       title={`Conversation: ${formatTokens(tokenBreakdown.activeConv)}`} />
                   )}
                   <div className="ai-settings-budget-segment"
-                    style={{ width: `${((tokenBreakdown.tailTokens + tokenBreakdown.maxResponse) / tokenBreakdown.totalBudget) * 100}%`, background: 'color-mix(in srgb, var(--grey-50) 8%, transparent)' }}
+                    style={{ width: `${((tokenBreakdown.tailTokens + tokenBreakdown.maxResponse) / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--surface-hover-strong)' }}
                     title={`System + Response: ${formatTokens(tokenBreakdown.tailTokens + tokenBreakdown.maxResponse)}`} />
                 </div>
                 <div className="ai-settings-budget-legend">
                   <div className="ai-settings-budget-legend-item">
-                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--purple-500)' }} />
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--utility-knowledge)' }} />
                     <span className="ai-settings-budget-legend-text">KB</span>
                   </div>
                   <div className="ai-settings-budget-legend-item">
-                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--blue-500)' }} />
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--utility-project)' }} />
                     <span className="ai-settings-budget-legend-text">Project</span>
                   </div>
                   <div className="ai-settings-budget-legend-item">
-                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--green-500)' }} />
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--utility-conversation)' }} />
                     <span className="ai-settings-budget-legend-text">Conversation</span>
                   </div>
                   <div className="ai-settings-budget-legend-item">
-                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'color-mix(in srgb, var(--grey-50) 15%, transparent)' }} />
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--surface-hover-strong)' }} />
                     <span className="ai-settings-budget-legend-text">System + Response</span>
                   </div>
                 </div>
@@ -718,14 +718,14 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
       <div className={`ai-settings-footer ${inline ? '' : 'ai-settings-footer--modal'}`}
         style={{
           borderTop: inline
-            ? '1px solid color-mix(in srgb, var(--grey-50) 4%, transparent)'
-            : '1px solid color-mix(in srgb, var(--grey-50) 6%, transparent)',
+            ? '1px solid var(--border-faint)'
+            : '1px solid var(--border-subtle)',
         }}
       >
         <p className="ai-settings-footer-text">
           Keys encrypted locally before cloud sync
         </p>
-        <div className="ai-settings-footer-status" style={{ color: saveState === 'saved' ? 'var(--green-500)' : 'var(--grey-700)' }}>
+        <div className="ai-settings-footer-status" style={{ color: saveState === 'saved' ? 'var(--text-success)' : 'var(--text-disabled)' }}>
           {saveState === 'saved' && <><Check size={10} /> Saved</>}
           {saveState === 'saving' && 'Saving...'}
         </div>
