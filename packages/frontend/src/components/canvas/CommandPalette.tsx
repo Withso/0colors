@@ -3,6 +3,7 @@ import { Search, Palette, Tag, Workflow, Plus, FileText, Layers, Hash, CircleDot
 import { ColorNode, DesignToken, TokenGroup, Page, Theme } from '../../types';
 import { hslToRgb, rgbToHex } from '../../utils/color-conversions';
 import { hctToHex } from '../../utils/hct-utils';
+import './CommandPalette.css';
 
 /** Fixed width per layout pass: square cap on large screens (matches panel height), fluid 40vw with floor, never wider than viewport padding. */
 const CMDK_PANEL_WIDTH = 'min(440px, calc(100vw - 2rem), max(280px, 40vw))';
@@ -568,8 +569,8 @@ export function CommandPalette({
 
   // ── Icon Renderer ─────────────────────────────────────────────────────
   const renderIcon = (r: SearchResult) => {
-    if (r.hexColor) return <div className="w-3 h-3 rounded-[3px] shrink-0" style={{ backgroundColor: r.hexColor }} />;
-    const cls = "w-3.5 h-3.5 text-dim shrink-0";
+    if (r.hexColor) return <div className="cmd-palette-color-swatch" style={{ backgroundColor: r.hexColor }} />;
+    const cls = "cmd-palette-icon";
     switch (r.icon) {
       case 'color-node': return <CircleDot className={cls} />;
       case 'palette': return <Palette className={cls} />;
@@ -590,56 +591,53 @@ export function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
+      className="cmd-palette-backdrop"
       onClick={handleBackdropClick}
       onKeyDown={handleKeyDown}
     >
       <div
-        className="box-border flex shrink-0 grow-0 flex-col overflow-hidden rounded-xl bg-background shadow-2xl"
+        className="cmd-palette-panel"
         style={{
           width: CMDK_PANEL_WIDTH,
           minWidth: CMDK_PANEL_WIDTH,
           maxWidth: CMDK_PANEL_WIDTH,
           flex: `0 0 ${CMDK_PANEL_WIDTH}`,
-          height: '440px',
-          boxShadow: '0 0 0 1px rgba(255,255,255,0.06), 0 24px 68px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4)',
-          animation: 'cmdkSlideIn 0.15s ease-out',
         }}
       >
         {/* Search input */}
-        <div className="flex items-center gap-2.5 px-3.5 h-[42px] border-b border-secondary">
-          <Search className="w-[14px] h-[14px] text-dim shrink-0" />
-          <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search nodes, tokens, palettes, or type an action..." className="flex-1 bg-transparent text-foreground text-[13px] placeholder:text-dim outline-none" autoComplete="off" autoCorrect="off" spellCheck={false} />
+        <div className="cmd-palette-search">
+          <Search className="cmd-palette-search-icon" />
+          <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search nodes, tokens, palettes, or type an action..." className="cmd-palette-search-input" autoComplete="off" autoCorrect="off" spellCheck={false} />
           {query && (
-            <span className="text-[11px] text-ghost tabular-nums shrink-0">
+            <span className="cmd-palette-result-count">
               {dataResultCount > 0 ? `${dataResultCount} result${dataResultCount !== 1 ? 's' : ''}` : 'No results'}
             </span>
           )}
         </div>
 
         {/* Results */}
-        <div ref={listRef} className="flex-1 overflow-y-auto overscroll-contain py-1" style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--border) transparent' }}>
+        <div ref={listRef} className="cmd-palette-results">
           {groupedResults.length === 0 && query.trim() && (
-            <div className="flex flex-col items-center justify-center py-12 gap-2">
-              <Search className="w-6 h-6 text-elevated" />
-              <span className="text-[13px] text-ghost">No results for "{query}"</span>
-              <span className="text-[11px] text-ghost">Try a node name, token name, hex value, or color space</span>
+            <div className="cmd-palette-empty">
+              <Search className="cmd-palette-empty-icon" />
+              <span className="cmd-palette-empty-text">No results for "{query}"</span>
+              <span className="cmd-palette-empty-hint">Try a node name, token name, hex value, or color space</span>
             </div>
           )}
 
           {groupedResults.map(grp => (
             <div key={grp.category}>
-              <div className="px-3.5 pt-2 pb-0.5 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  {grp.category === 'pinned' && <Star className="w-2.5 h-2.5 text-ghost" />}
-                  {grp.category === 'recent' && <Clock className="w-2.5 h-2.5 text-ghost" />}
-                  <span className="text-[11px] text-ghost font-medium">{grp.label}</span>
+              <div className="cmd-palette-group-header">
+                <div className="cmd-palette-group-label-area">
+                  {grp.category === 'pinned' && <Star className="cmd-palette-group-icon" />}
+                  {grp.category === 'recent' && <Clock className="cmd-palette-group-icon" />}
+                  <span className="cmd-palette-group-label">{grp.label}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-ghost tabular-nums">{grp.results.length}</span>
+                <div className="cmd-palette-group-actions">
+                  <span className="cmd-palette-group-count">{grp.results.length}</span>
                   {grp.canClear && (
-                    <button onClick={clearRecent} className="text-[11px] text-ghost hover:text-faint transition-colors cursor-pointer" title="Clear recent">
-                      <X className="w-2.5 h-2.5" />
+                    <button onClick={clearRecent} className="cmd-palette-clear-recent" title="Clear recent">
+                      <X className="cmd-palette-group-icon" />
                     </button>
                   )}
                 </div>
@@ -654,40 +652,40 @@ export function CommandPalette({
                   <div
                     key={`${grp.category}-${result.id}`}
                     ref={el => { if (el) itemRefs.current.set(ci, el); }}
-                    className={`group/row mx-1.5 px-2.5 py-[5px] rounded-lg flex items-center gap-2.5 cursor-pointer transition-colors ${sel ? 'bg-secondary' : 'hover:bg-card'}`}
+                    className={`cmd-palette-row ${sel ? 'cmd-palette-row-selected' : ''}`}
                     onClick={() => executeResult(result)}
                     onMouseEnter={() => setSelectedIndex(ci)}
                   >
-                    <div className="flex items-center justify-center w-[22px] h-[22px] rounded-md bg-secondary shrink-0">
+                    <div className="cmd-palette-row-icon-box">
                       {renderIcon(result)}
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[13px] truncate ${sel ? 'text-foreground' : 'text-subtle'}`}>
+                    <div className="cmd-palette-row-content">
+                      <div className="cmd-palette-row-title-area">
+                        <span className={`cmd-palette-row-title ${sel ? 'cmd-palette-row-title-selected' : ''}`}>
                           {result.title}
                         </span>
                         {result.colorSpace && (
-                          <span className="text-[11px] text-ghost px-1 py-px rounded bg-[#141414] shrink-0">{result.colorSpace}</span>
+                          <span className="cmd-palette-row-cs-badge">{result.colorSpace}</span>
                         )}
                       </div>
-                      <div className="text-[11px] text-ghost truncate">{result.subtitle}</div>
+                      <div className="cmd-palette-row-subtitle">{result.subtitle}</div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[11px] text-elevated w-[76px] text-right truncate hidden sm:block">{result.locationHint}</span>
+                    <div className="cmd-palette-row-right">
+                      <span className="cmd-palette-location-hint">{result.locationHint}</span>
                       <button
                         onClick={(e) => { e.stopPropagation(); togglePin(result.id); }}
-                        className={`w-5 h-5 flex items-center justify-center rounded transition-all cursor-pointer ${
+                        className={`cmd-palette-pin-btn ${
                           isPinned
-                            ? 'text-warning opacity-100'
+                            ? 'cmd-palette-pin-btn-pinned'
                             : sel
-                              ? 'text-ghost hover:text-subtle opacity-100'
-                              : 'text-ghost hover:text-faint opacity-0 group-hover/row:opacity-100'
+                              ? 'cmd-palette-pin-btn-selected'
+                              : 'cmd-palette-pin-btn-default'
                         }`}
                         title={isPinned ? 'Unpin' : 'Pin (⌘↵)'}
                       >
-                        <Star className={`w-2.5 h-2.5 ${isPinned ? 'fill-warning' : ''}`} />
+                        <Star className={`cmd-palette-group-icon ${isPinned ? 'cmd-palette-pin-icon-filled' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -698,39 +696,32 @@ export function CommandPalette({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-3.5 min-h-[42px] py-2 border-t border-secondary bg-background">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="flex items-center gap-0.5">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">↑</kbd>
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">↓</kbd>
-              <span className="text-[11px] text-ghost ml-0.5">Navigate</span>
+        <div className="cmd-palette-footer">
+          <div className="cmd-palette-footer-left">
+            <div className="cmd-palette-shortcut-group">
+              <kbd className="cmd-palette-kbd">↑</kbd>
+              <kbd className="cmd-palette-kbd">↓</kbd>
+              <span className="cmd-palette-shortcut-label">Navigate</span>
             </div>
-            <div className="flex items-center gap-0.5">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">↵</kbd>
-              <span className="text-[11px] text-ghost ml-0.5">Open</span>
+            <div className="cmd-palette-shortcut-group">
+              <kbd className="cmd-palette-kbd">↵</kbd>
+              <span className="cmd-palette-shortcut-label">Open</span>
             </div>
-            <div className="flex items-center gap-0.5">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">⌘↵</kbd>
-              <span className="text-[11px] text-ghost ml-0.5">Pin</span>
+            <div className="cmd-palette-shortcut-group">
+              <kbd className="cmd-palette-kbd">⌘↵</kbd>
+              <span className="cmd-palette-shortcut-label">Pin</span>
             </div>
-            <div className="flex items-center gap-0.5">
-              <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">Esc</kbd>
-              <span className="text-[11px] text-ghost ml-0.5">Close</span>
+            <div className="cmd-palette-shortcut-group">
+              <kbd className="cmd-palette-kbd">Esc</kbd>
+              <span className="cmd-palette-shortcut-label">Close</span>
             </div>
           </div>
-          <div className="flex items-center gap-0.5 shrink-0">
-            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">⌘</kbd>
-            <kbd className="h-[18px] min-w-[18px] px-1 flex items-center justify-center rounded bg-secondary text-[11px] text-ghost">K</kbd>
+          <div className="cmd-palette-footer-right">
+            <kbd className="cmd-palette-kbd">⌘</kbd>
+            <kbd className="cmd-palette-kbd">K</kbd>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes cmdkSlideIn {
-          from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-      `}</style>
     </div>
   );
 }

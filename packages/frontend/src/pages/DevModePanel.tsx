@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { DevConfig, ColorNode, Theme, TokenProject } from '../types';
 import { encryptPAT, decryptPAT } from '../utils/crypto';
 import { SERVER_BASE } from '../utils/supabase/client';
+import './DevModePanel.css';
 
 interface DevModePanelProps {
   devConfig: DevConfig;
@@ -26,9 +27,9 @@ interface DevModePanelProps {
 const BASE_URL = SERVER_BASE;
 
 // Geist-style input component
-function GeistInput({ 
+function GeistInput({
   value, onChange, placeholder, type = 'text', mono = false, disabled = false, className = ''
-}: { 
+}: {
   value: string; onChange: (v: string) => void; placeholder?: string; type?: string; mono?: boolean; disabled?: boolean; className?: string;
 }) {
   return (
@@ -38,7 +39,7 @@ function GeistInput({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
-      className={`w-full h-8 px-3 bg-background border border-secondary rounded-md text-[12px] text-foreground placeholder:text-ghost focus:outline-none focus:border-border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${mono ? 'font-mono' : ''} ${className}`}
+      className={`dev-mode-input ${mono ? 'dev-mode-input--mono' : ''} ${className}`}
     />
   );
 }
@@ -48,18 +49,18 @@ function GeistSelect({ value, onChange, options, disabled = false }: {
   value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; disabled?: boolean;
 }) {
   return (
-    <div className="relative">
+    <div className="dev-mode-select-wrapper">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full h-8 px-3 pr-8 bg-background border border-secondary rounded-md text-[12px] text-foreground focus:outline-none focus:border-border transition-colors appearance-none cursor-pointer disabled:opacity-40"
+        className="dev-mode-select"
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </select>
-      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-dim pointer-events-none" />
+      <ChevronDown className="dev-mode-select-chevron" />
     </div>
   );
 }
@@ -72,13 +73,9 @@ function GeistToggle({ checked, onChange, disabled = false }: {
     <button
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
-      className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-        checked ? 'bg-[#ededed]' : 'bg-border'
-      }`}
+      className={`dev-mode-toggle ${checked ? 'dev-mode-toggle--on' : 'dev-mode-toggle--off'}`}
     >
-      <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform ${
-        checked ? 'translate-x-4 bg-background' : 'translate-x-0 bg-faint'
-      }`} />
+      <div className={`dev-mode-toggle-knob ${checked ? 'dev-mode-toggle-knob--on' : 'dev-mode-toggle-knob--off'}`} />
     </button>
   );
 }
@@ -92,9 +89,9 @@ function CopyButton({ text }: { text: string }) {
     setTimeout(() => setCopied(false), 2000);
   }, [text]);
   return (
-    <button onClick={handleCopy} className="h-8 px-2.5 bg-background border border-secondary rounded-md text-faint hover:text-foreground hover:border-border transition-colors cursor-pointer flex items-center gap-1.5">
-      {copied ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
-      <span className="text-[11px]">{copied ? 'Copied' : 'Copy'}</span>
+    <button onClick={handleCopy} className="dev-mode-copy-btn">
+      {copied ? <Check className="dev-mode-copy-icon--success" /> : <Copy className="dev-mode-copy-icon" />}
+      <span className="dev-mode-copy-text">{copied ? 'Copied' : 'Copy'}</span>
     </button>
   );
 }
@@ -104,12 +101,12 @@ function SectionHeader({ icon: Icon, title, badge, children }: {
   icon: any; title: string; badge?: string; children?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between mb-3">
-      <div className="flex items-center gap-2">
-        <Icon className="h-3.5 w-3.5 text-faint" />
-        <span className="text-[12px] font-medium text-subtle uppercase tracking-wider">{title}</span>
+    <div className="dev-mode-section-header">
+      <div className="dev-mode-section-header-left">
+        <Icon className="dev-mode-section-header-icon" />
+        <span className="dev-mode-section-header-title">{title}</span>
         {badge && (
-          <span className="text-[11px] px-1.5 py-0.5 rounded bg-secondary border border-secondary text-faint">{badge}</span>
+          <span className="dev-mode-section-header-badge">{badge}</span>
         )}
       </div>
       {children}
@@ -120,10 +117,10 @@ function SectionHeader({ icon: Icon, title, badge, children }: {
 // Field row
 function FieldRow({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   return (
-    <div className="mb-3 last:mb-0">
-      <label className="block text-[11px] text-faint mb-1.5">{label}</label>
+    <div className="dev-mode-field">
+      <label className="dev-mode-field-label">{label}</label>
       {children}
-      {hint && <p className="text-[11px] text-ghost mt-1">{hint}</p>}
+      {hint && <p className="dev-mode-field-hint">{hint}</p>}
     </div>
   );
 }
@@ -148,9 +145,9 @@ export function DevModePanel({
   // Derived values
   const webhookUrl = `${BASE_URL}/webhook/${activeProjectId}`;
   const pullApiUrl = `${BASE_URL}/tokens/${activeProjectId}`;
-  
+
   // Get selectable nodes for target node dropdown
-  const allSelectableNodes = useMemo(() => 
+  const allSelectableNodes = useMemo(() =>
     nodes.filter(n => n.projectId === activeProjectId && !n.isPalette && !n.isSpacing),
     [nodes, activeProjectId]
   );
@@ -179,7 +176,7 @@ export function DevModePanel({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15 }}
-        className="fixed inset-0 z-[80] flex items-center justify-center"
+        className="dev-mode-backdrop"
         style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
@@ -189,65 +186,61 @@ export function DevModePanel({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.98 }}
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="w-[580px] max-h-[85vh] bg-card border border-secondary rounded-xl shadow-xl overflow-hidden flex flex-col"
+          className="dev-mode-panel"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 h-12 border-b border-[#141414] shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Terminal className="h-4 w-4 text-faint" />
-                <span className="text-[13px] font-medium text-foreground">Dev Mode</span>
+          <div className="dev-mode-header">
+            <div className="dev-mode-header-left">
+              <div className="dev-mode-header-title-group">
+                <Terminal className="dev-mode-header-icon" />
+                <span className="dev-mode-header-title">Dev Mode</span>
               </div>
-              <span className="text-[11px] text-ghost">—</span>
-              <span className="text-[11px] text-dim truncate max-w-[200px]">{projectName}</span>
+              <span className="dev-mode-header-separator">&mdash;</span>
+              <span className="dev-mode-header-project-name">{projectName}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="dev-mode-header-right">
               {/* Last run status */}
               {devConfig.lastRunAt && (
-                <div className="flex items-center gap-1.5 text-[11px]">
+                <div className="dev-mode-last-run">
                   {devConfig.lastRunStatus === 'success' ? (
-                    <CheckCircle2 className="h-3 w-3 text-success" />
+                    <CheckCircle2 className="dev-mode-last-run-icon--success" />
                   ) : devConfig.lastRunStatus === 'error' ? (
-                    <AlertCircle className="h-3 w-3 text-destructive" />
+                    <AlertCircle className="dev-mode-last-run-icon--error" />
                   ) : null}
-                  <span className="text-dim">{lastRunDisplay}</span>
+                  <span className="dev-mode-last-run-text">{lastRunDisplay}</span>
                 </div>
               )}
-              <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-secondary text-dim hover:text-foreground transition-colors cursor-pointer">
-                <X className="h-4 w-4" />
+              <button onClick={onClose} className="dev-mode-close-btn">
+                <X className="dev-mode-close-icon" />
               </button>
             </div>
           </div>
 
           {/* Tab Switcher */}
-          <div className="flex px-5 border-b border-[#141414] shrink-0">
+          <div className="dev-mode-tabs">
             <button
               onClick={() => setActiveTab('output')}
-              className={`relative px-4 py-2.5 text-[12px] font-medium transition-colors cursor-pointer ${
-                activeTab === 'output' ? 'text-foreground' : 'text-dim hover:text-subtle'
-              }`}
+              className={`dev-mode-tab ${activeTab === 'output' ? 'dev-mode-tab--active' : 'dev-mode-tab--inactive'}`}
             >
               Code Sync
               {activeTab === 'output' && (
-                <motion.div layoutId="dev-tab" className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#ededed]" />
+                <motion.div layoutId="dev-tab" className="dev-mode-tab-indicator" />
               )}
             </button>
             <button
               onClick={() => setActiveTab('input')}
-              className={`relative px-4 py-2.5 text-[12px] font-medium transition-colors cursor-pointer ${
-                activeTab === 'input' ? 'text-foreground' : 'text-dim hover:text-subtle'
-              }`}
+              className={`dev-mode-tab ${activeTab === 'input' ? 'dev-mode-tab--active' : 'dev-mode-tab--inactive'}`}
             >
               Webhook Input
               {activeTab === 'input' && (
-                <motion.div layoutId="dev-tab" className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#ededed]" />
+                <motion.div layoutId="dev-tab" className="dev-mode-tab-indicator" />
               )}
             </button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-5 py-4">
+          <div className="dev-mode-content">
             {activeTab === 'output' ? (
               <OutputTab
                 devConfig={devConfig}
@@ -274,28 +267,28 @@ export function DevModePanel({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-5 h-14 border-t border-[#141414] shrink-0 bg-[#0d0d0d]">
-            <div className="flex items-center gap-2">
+          <div className="dev-mode-footer">
+            <div className="dev-mode-footer-left">
               {devConfig.lastRunStatus === 'error' && devConfig.lastRunError && (
-                <div className="flex items-center gap-1.5 text-[11px] text-destructive max-w-[250px] truncate">
-                  <AlertCircle className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{devConfig.lastRunError}</span>
+                <div className="dev-mode-footer-error">
+                  <AlertCircle className="dev-mode-footer-error-icon" />
+                  <span className="dev-mode-footer-error-text">{devConfig.lastRunError}</span>
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="dev-mode-footer-right">
               <button
                 onClick={onTestWebhook}
-                className="h-8 px-3 bg-background border border-secondary rounded-md text-[11px] text-subtle hover:text-foreground hover:border-border transition-colors cursor-pointer flex items-center gap-1.5"
+                className="dev-mode-test-btn"
               >
-                <TestTube className="h-3 w-3" />
+                <TestTube className="dev-mode-test-icon" />
                 Test
               </button>
               <button
                 onClick={onRunNow}
-                className="h-8 px-4 bg-[#ededed] hover:bg-white rounded-md text-[11px] font-medium text-[#0a0a0a] transition-colors cursor-pointer flex items-center gap-1.5"
+                className="dev-mode-run-btn"
               >
-                <Play className="h-3 w-3" />
+                <Play className="dev-mode-run-icon" />
                 Run Now
               </button>
             </div>
@@ -333,11 +326,11 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="dev-mode-sections">
       {/* Format & Theme */}
-      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
+      <div className="dev-mode-section">
         <SectionHeader icon={Code2} title="Output Format" />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="dev-mode-grid-2col">
           <FieldRow label="Format">
             <GeistSelect
               value={devConfig.outputFormat}
@@ -356,13 +349,13 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
       </div>
 
       {/* GitHub */}
-      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
+      <div className="dev-mode-section">
         <SectionHeader icon={Github} title="GitHub" badge="Push">
           <GeistToggle checked={devConfig.githubEnabled} onChange={(v) => update({ githubEnabled: v })} />
         </SectionHeader>
         {devConfig.githubEnabled && (
-          <div className="space-y-0">
-            <div className="grid grid-cols-2 gap-3">
+          <div>
+            <div className="dev-mode-grid-2col">
               <FieldRow label="Repository">
                 <GeistInput
                   value={devConfig.githubRepo}
@@ -389,8 +382,8 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
               />
             </FieldRow>
             <FieldRow label="Personal Access Token" hint="Encrypted client-side (AES-256-GCM). Never sent to our server in plaintext.">
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
+              <div className="dev-mode-pat-row">
+                <div className="dev-mode-pat-input-wrapper">
                   <GeistInput
                     value={patInput}
                     onChange={setPatInput}
@@ -411,20 +404,20 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
                     }
                   }}
                   disabled={!patInput || !userId}
-                  className="h-8 px-2.5 bg-[#2BBD68]/10 border border-[#2BBD68]/30 rounded-md text-[11px] text-success hover:bg-[#2BBD68]/20 hover:border-[#2BBD68]/40 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="dev-mode-pat-set-btn"
                 >
                   Set
                 </button>
                 <button
                   onClick={() => setShowPAT(!showPAT)}
-                  className="h-8 px-2 bg-background border border-secondary rounded-md text-dim hover:text-foreground hover:border-border transition-colors cursor-pointer"
+                  className="dev-mode-pat-toggle-btn"
                 >
-                  {showPAT ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                  {showPAT ? <EyeOff className="dev-mode-pat-toggle-icon" /> : <Eye className="dev-mode-pat-toggle-icon" />}
                 </button>
               </div>
               {devConfig.githubPATEncrypted && (
-                <p className="text-[11px] text-success/60 mt-1 flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3" /> PAT encrypted and saved
+                <p className="dev-mode-pat-saved">
+                  <CheckCircle2 className="dev-mode-pat-saved-icon" /> PAT encrypted and saved
                 </p>
               )}
             </FieldRow>
@@ -433,7 +426,7 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
       </div>
 
       {/* Webhook Output */}
-      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
+      <div className="dev-mode-section">
         <SectionHeader icon={Send} title="Webhook" badge="Push">
           <GeistToggle checked={devConfig.webhookOutputEnabled} onChange={(v) => update({ webhookOutputEnabled: v })} />
         </SectionHeader>
@@ -450,15 +443,15 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
       </div>
 
       {/* Pull API */}
-      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
+      <div className="dev-mode-section">
         <SectionHeader icon={Globe} title="Pull API" badge="Cached">
           <GeistToggle checked={devConfig.pullApiEnabled} onChange={(v) => update({ pullApiEnabled: v })} />
         </SectionHeader>
         {devConfig.pullApiEnabled && (
           <div>
             <FieldRow label="Endpoint" hint="Returns cached token output. Responses include Cache-Control headers (5 min default). Rate limited to 100 req/hr per project.">
-              <div className="flex gap-2">
-                <div className="flex-1">
+              <div className="dev-mode-secret-row">
+                <div className="dev-mode-secret-input-wrapper">
                   <GeistInput
                     value={`${pullApiUrl}/${devConfig.outputFormat}`}
                     onChange={() => {}}
@@ -469,10 +462,10 @@ function OutputTab({ devConfig, update, themes, activeProjectId, pullApiUrl, sho
                 <CopyButton text={`${pullApiUrl}/${devConfig.outputFormat}`} />
               </div>
             </FieldRow>
-            <div className="mt-2 p-2.5 rounded-md bg-background border border-[#141414]">
-              <p className="text-[11px] text-dim leading-relaxed">
-                <span className="text-faint font-medium">Recommended:</span> Use webhook push instead of polling. 
-                Pull API is rate-limited and consumes Supabase invocations. For real-time updates, 
+            <div className="dev-mode-recommended-note">
+              <p className="dev-mode-recommended-note-text">
+                <span className="dev-mode-recommended-note-label">Recommended:</span> Use webhook push instead of polling.
+                Pull API is rate-limited and consumes Supabase invocations. For real-time updates,
                 enable webhook output above and receive tokens on your server.
               </p>
             </div>
@@ -507,17 +500,17 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
   };
 
   return (
-    <div className="space-y-5">
+    <div className="dev-mode-sections">
       {/* Webhook Input */}
-      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
+      <div className="dev-mode-section">
         <SectionHeader icon={Webhook} title="Webhook Input">
           <GeistToggle checked={devConfig.webhookEnabled} onChange={(v) => update({ webhookEnabled: v })} />
         </SectionHeader>
         {devConfig.webhookEnabled && (
-          <div className="space-y-0">
+          <div>
             <FieldRow label="Webhook URL">
-              <div className="flex gap-2">
-                <div className="flex-1">
+              <div className="dev-mode-secret-row">
+                <div className="dev-mode-secret-input-wrapper">
                   <GeistInput value={webhookUrl} onChange={() => {}} disabled mono />
                 </div>
                 <CopyButton text={webhookUrl} />
@@ -525,10 +518,10 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
             </FieldRow>
 
             <FieldRow label="Secret" hint="Include as X-Webhook-Secret header in your POST requests.">
-              <div className="flex gap-2">
-                <div className="flex-1">
+              <div className="dev-mode-secret-row">
+                <div className="dev-mode-secret-input-wrapper">
                   <GeistInput
-                    value={showSecret ? devConfig.webhookSecret : '••••••••••••••••••••••••••••••••'}
+                    value={showSecret ? devConfig.webhookSecret : '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'}
                     onChange={() => {}}
                     disabled
                     mono
@@ -536,9 +529,9 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                 </div>
                 <button
                   onClick={() => setShowSecret(!showSecret)}
-                  className="h-8 px-2 bg-background border border-secondary rounded-md text-dim hover:text-foreground hover:border-border transition-colors cursor-pointer"
+                  className="dev-mode-secret-toggle-btn"
                 >
-                  {showSecret ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                  {showSecret ? <EyeOff className="dev-mode-secret-toggle-icon" /> : <Eye className="dev-mode-secret-toggle-icon" />}
                 </button>
                 <CopyButton text={devConfig.webhookSecret} />
               </div>
@@ -553,7 +546,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
             </FieldRow>
 
             <FieldRow label="Accepted Formats">
-              <div className="flex flex-wrap gap-1.5">
+              <div className="dev-mode-formats-row">
                 {(['hex', 'hsl', 'rgb', 'oklch', 'hct'] as const).map(fmt => {
                   const isActive = devConfig.webhookAcceptFormats.includes(fmt);
                   return (
@@ -565,11 +558,7 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                           : [...devConfig.webhookAcceptFormats, fmt];
                         if (formats.length > 0) update({ webhookAcceptFormats: formats });
                       }}
-                      className={`h-6 px-2 rounded text-[11px] font-mono font-medium transition-colors cursor-pointer ${
-                        isActive
-                          ? 'bg-elevated text-foreground border border-elevated'
-                          : 'bg-background text-ghost border border-[#141414] hover:text-faint hover:border-secondary'
-                      }`}
+                      className={`dev-mode-format-chip ${isActive ? 'dev-mode-format-chip--active' : 'dev-mode-format-chip--inactive'}`}
                     >
                       {formatLabels[fmt]}
                     </button>
@@ -579,9 +568,9 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
             </FieldRow>
 
             {/* Example cURL */}
-            <div className="mt-3 p-3 rounded-md bg-background border border-[#141414]">
-              <p className="text-[11px] text-dim mb-2 font-medium">Example Request</p>
-              <pre className="text-[11px] text-faint font-mono leading-relaxed whitespace-pre-wrap break-all">
+            <div className="dev-mode-example">
+              <p className="dev-mode-example-title">Example Request</p>
+              <pre className="dev-mode-example-code">
 {`curl -X POST ${webhookUrl} \\
   -H "Content-Type: application/json" \\
   -H "X-Webhook-Secret: ${showSecret ? devConfig.webhookSecret : '<secret>'}" \\
@@ -591,27 +580,27 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
 
             {/* Per-Node Webhook URLs (Option B) */}
             {webhookInputNodes.length > 0 && (
-              <div className="mt-3 p-3 rounded-md bg-[#0a0a0a] border border-[#FBBF24]/20">
-                <p className="text-[11px] text-[#FBBF24]/80 mb-2 font-medium flex items-center gap-1.5">
+              <div className="dev-mode-per-node-section">
+                <p className="dev-mode-per-node-title">
                   <span>{'\u26A1'}</span> Per-Node Webhook URLs
                 </p>
-                <div className="space-y-2">
+                <div className="dev-mode-per-node-list">
                   {webhookInputNodes.map(node => {
                     const nodeUrl = `${webhookUrl}/${node.id}`;
                     return (
-                      <div key={node.id} className="flex items-center gap-2">
-                        <span className="text-[11px] text-subtle truncate min-w-[80px] max-w-[120px]">
+                      <div key={node.id} className="dev-mode-per-node-row">
+                        <span className="dev-mode-per-node-name">
                           {node.referenceName || `Node ${node.id.slice(0, 6)}`}
                         </span>
-                        <div className="flex-1">
-                          <GeistInput value={nodeUrl} onChange={() => {}} disabled mono className="!text-[11px] !h-6" />
+                        <div className="dev-mode-per-node-input-wrapper">
+                          <GeistInput value={nodeUrl} onChange={() => {}} disabled mono className="dev-mode-per-node-input" />
                         </div>
                         <CopyButton text={nodeUrl} />
                       </div>
                     );
                   })}
                 </div>
-                <p className="text-[11px] text-ghost mt-2">
+                <p className="dev-mode-per-node-hint">
                   Mark nodes as webhook inputs on the canvas (click the badge in Dev Mode). Each gets a unique URL.
                 </p>
               </div>
@@ -621,16 +610,16 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
       </div>
 
       {/* Schedule */}
-      <div className="p-4 rounded-lg border border-[#141414] bg-[#0d0d0d]">
+      <div className="dev-mode-section">
         <SectionHeader icon={Clock} title="Schedule" badge="Cron">
           <GeistToggle checked={devConfig.scheduleEnabled} onChange={(v) => update({ scheduleEnabled: v })} />
         </SectionHeader>
         {devConfig.scheduleEnabled && (
-          <div className="space-y-0">
+          <div>
             <FieldRow label="Interval">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-dim">Every</span>
-                <div className="w-20">
+              <div className="dev-mode-interval-row">
+                <span className="dev-mode-interval-label">Every</span>
+                <div className="dev-mode-interval-input-wrapper">
                   <GeistInput
                     value={String(devConfig.scheduleIntervalMinutes)}
                     onChange={(v) => {
@@ -640,29 +629,21 @@ function InputTab({ devConfig, update, nodes, webhookUrl, showSecret, setShowSec
                     type="number"
                   />
                 </div>
-                <span className="text-[11px] text-dim">minute(s)</span>
+                <span className="dev-mode-interval-label">minute(s)</span>
               </div>
             </FieldRow>
 
             <FieldRow label="Source">
-              <div className="flex gap-2 mb-3">
+              <div className="dev-mode-source-row">
                 <button
                   onClick={() => update({ scheduleSource: 'values' })}
-                  className={`flex-1 h-8 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
-                    devConfig.scheduleSource === 'values'
-                      ? 'bg-elevated text-foreground border border-elevated'
-                      : 'bg-background text-dim border border-[#141414] hover:border-secondary'
-                  }`}
+                  className={`dev-mode-source-btn ${devConfig.scheduleSource === 'values' ? 'dev-mode-source-btn--active' : 'dev-mode-source-btn--inactive'}`}
                 >
                   Value List
                 </button>
                 <button
                   onClick={() => update({ scheduleSource: 'api' })}
-                  className={`flex-1 h-8 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
-                    devConfig.scheduleSource === 'api'
-                      ? 'bg-elevated text-foreground border border-elevated'
-                      : 'bg-background text-dim border border-[#141414] hover:border-secondary'
-                  }`}
+                  className={`dev-mode-source-btn ${devConfig.scheduleSource === 'api' ? 'dev-mode-source-btn--active' : 'dev-mode-source-btn--inactive'}`}
                 >
                   API Endpoint
                 </button>

@@ -1,0 +1,16 @@
+/* Tip — tooltip content bubble */
+
+.tip-content {
+  z-index: 200;
+  padding: 6px 10px;
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  color: var(--grey-100);
+  background-color: rgba(38, 38, 38, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  user-select: none;
+  white-space: nowrap;
+}

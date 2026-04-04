@@ -1,0 +1,359 @@
+/* CommandPalette — Cmd+K search overlay */
+
+@keyframes cmdkSlideIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Backdrop ── */
+.cmd-palette-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+/* ── Panel ── */
+.cmd-palette-panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-shrink: 0;
+  flex-grow: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--grey-900);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06),
+              0 24px 68px rgba(0, 0, 0, 0.6),
+              0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: cmdkSlideIn 0.15s ease-out;
+  height: 440px;
+}
+
+/* ── Search header ── */
+.cmd-palette-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 42px;
+  border-bottom: 1px solid var(--grey-800);
+}
+
+.cmd-palette-search-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--grey-600);
+  flex-shrink: 0;
+}
+
+.cmd-palette-search-input {
+  flex: 1;
+  background: transparent;
+  color: var(--grey-100);
+  font-size: 13px;
+  outline: none;
+}
+
+.cmd-palette-search-input::placeholder {
+  color: var(--grey-600);
+}
+
+.cmd-palette-result-count {
+  font-size: 11px;
+  color: var(--grey-700);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ── Results list ── */
+.cmd-palette-results {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--grey-700) transparent;
+}
+
+.cmd-palette-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  gap: 8px;
+}
+
+.cmd-palette-empty-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--grey-800);
+}
+
+.cmd-palette-empty-text {
+  font-size: 13px;
+  color: var(--grey-700);
+}
+
+.cmd-palette-empty-hint {
+  font-size: 11px;
+  color: var(--grey-700);
+}
+
+/* ── Category group ── */
+.cmd-palette-group-header {
+  padding: 8px 14px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cmd-palette-group-label-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cmd-palette-group-icon {
+  width: 10px;
+  height: 10px;
+  color: var(--grey-700);
+}
+
+.cmd-palette-group-label {
+  font-size: 11px;
+  color: var(--grey-700);
+  font-weight: 500;
+}
+
+.cmd-palette-group-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cmd-palette-group-count {
+  font-size: 11px;
+  color: var(--grey-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.cmd-palette-clear-recent {
+  font-size: 11px;
+  color: var(--grey-700);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 150ms;
+}
+
+.cmd-palette-clear-recent:hover {
+  color: var(--grey-600);
+}
+
+/* ── Result row ── */
+.cmd-palette-row {
+  margin: 0 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+.cmd-palette-row:hover {
+  background: var(--grey-800);
+}
+
+.cmd-palette-row-selected {
+  background: var(--grey-800);
+}
+
+.cmd-palette-row-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-md);
+  background: var(--grey-800);
+  flex-shrink: 0;
+}
+
+.cmd-palette-color-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.cmd-palette-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--grey-600);
+  flex-shrink: 0;
+}
+
+.cmd-palette-row-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.cmd-palette-row-title-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cmd-palette-row-title {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--grey-500);
+}
+
+.cmd-palette-row-title-selected {
+  color: var(--grey-100);
+}
+
+.cmd-palette-row-cs-badge {
+  font-size: 11px;
+  color: var(--grey-700);
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  background: var(--grey-900);
+  flex-shrink: 0;
+}
+
+.cmd-palette-row-subtitle {
+  font-size: 11px;
+  color: var(--grey-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmd-palette-row-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.cmd-palette-location-hint {
+  font-size: 11px;
+  color: var(--grey-800);
+  width: 76px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hide on small screens */
+@media (max-width: 640px) {
+  .cmd-palette-location-hint {
+    display: none;
+  }
+}
+
+.cmd-palette-pin-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all 150ms;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.cmd-palette-pin-btn-pinned {
+  color: var(--yellow-400);
+  opacity: 1;
+}
+
+.cmd-palette-pin-btn-selected {
+  color: var(--grey-700);
+  opacity: 1;
+}
+
+.cmd-palette-pin-btn-selected:hover {
+  color: var(--grey-500);
+}
+
+.cmd-palette-pin-btn-default {
+  color: var(--grey-700);
+  opacity: 0;
+}
+
+.cmd-palette-pin-btn-default:hover {
+  color: var(--grey-600);
+}
+
+.cmd-palette-row:hover .cmd-palette-pin-btn-default {
+  opacity: 1;
+}
+
+.cmd-palette-pin-icon-filled {
+  fill: var(--yellow-400);
+}
+
+/* ── Footer ── */
+.cmd-palette-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  min-height: 42px;
+  border-top: 1px solid var(--grey-800);
+  background: var(--grey-900);
+}
+
+.cmd-palette-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cmd-palette-shortcut-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.cmd-palette-kbd {
+  height: 18px;
+  min-width: 18px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--grey-800);
+  font-size: 11px;
+  color: var(--grey-700);
+}
+
+.cmd-palette-shortcut-label {
+  font-size: 11px;
+  color: var(--grey-700);
+  margin-left: 2px;
+}
+
+.cmd-palette-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}

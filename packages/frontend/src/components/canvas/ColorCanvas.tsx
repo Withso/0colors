@@ -24,6 +24,7 @@ import {
   TokenColor,
 } from '../../utils/advanced-logic-engine';
 import { tokenColorToNativeCSS } from '../../utils/tokenFormatters';
+import './ColorCanvas.css';
 
 // ─── Reference Name Utilities ──────────────────────────────────
 
@@ -276,8 +277,7 @@ function NodeReferenceLabel({
 
   return (
     <div
-      className={`absolute left-0 z-30 flex items-center justify-between transition-opacity duration-150 ${containerVisible ? 'opacity-100' : 'opacity-0'
-        }`}
+      className={`color-canvas-ref-label ${containerVisible ? 'color-canvas-ref-label-visible' : 'color-canvas-ref-label-hidden'}`}
       style={{ top: `${topOffset}px`, width: `${nodeWidth}px`, paddingBottom: 8 }}
       onMouseDown={(e) => {
         // Allow drag handle mouseDown to propagate to canvas
@@ -288,11 +288,11 @@ function NodeReferenceLabel({
       onClick={(e) => e.stopPropagation()}
     >
       {/* Left: Reference name label with drag handle */}
-      <div className="group/nodelabel flex-1 min-w-0 flex items-center gap-0">
+      <div className="color-canvas-ref-name-area">
         {/* Drag handle — appears on hover of the name area */}
         {onDragMouseDown && !isEditing && fullName && (
           <div
-            className="cursor-move opacity-0 group-hover/nodelabel:opacity-100 text-dim hover:!text-foreground transition-all shrink-0 -ml-2"
+            className="color-canvas-drag-handle"
             onMouseDown={(e) => {
               e.stopPropagation();
               onDragMouseDown(e);
@@ -301,14 +301,14 @@ function NodeReferenceLabel({
             data-drag-handle="true"
             title="Drag to move"
           >
-            <GripVertical className="h-4 w-4" />
+            <GripVertical className="color-canvas-drag-icon" />
           </div>
         )}
-        <div className="min-w-0">
+        <div className="color-canvas-ref-name-inner">
           {fullName && (
             <>
               {isEditing ? (
-                <div className="flex items-center gap-0 bg-secondary rounded-md border border-elevated px-1 max-w-full">
+                <div className="color-canvas-edit-wrapper">
                   <input
                     ref={inputRef}
                     type="text"
@@ -317,15 +317,15 @@ function NodeReferenceLabel({
                     onBlur={handleFinishEditing}
                     onKeyDown={handleKeyDown}
                     maxLength={MAX_NODE_NAME}
-                    className="bg-transparent text-[16px] text-foreground outline-none py-0.5 min-w-[36px] max-w-[160px]"
+                    className="color-canvas-edit-input"
                     style={{ width: `${Math.max(36, editValue.length * 10)}px` }}
                     onMouseDown={(e) => e.stopPropagation()}
                   />
-                  <span className="text-[16px] text-faint select-none shrink-0">{fixedSuffix}</span>
+                  <span className="color-canvas-edit-suffix">{fixedSuffix}</span>
                 </div>
               ) : (
                 <span
-                  className={`text-[16px] text-subtle truncate cursor-default transition-colors px-1 py-0.5 rounded block ${isPrimaryTheme && !readOnly ? 'hover:text-[#bbb]' : ''}`}
+                  className={`color-canvas-ref-display ${isPrimaryTheme && !readOnly ? 'color-canvas-ref-display-editable' : ''}`}
                   onDoubleClick={isPrimaryTheme && !readOnly ? handleStartEditing : undefined}
                   title={isPrimaryTheme && !readOnly ? `${fullName} (double-click to rename)` : fullName}
                 >
@@ -373,9 +373,9 @@ function NodeReferenceLabel({
         return (
           <Tip label={isPrefix ? 'Convert to token' : 'Convert to prefix'} side="top">
             <button
-              className={`shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-md cursor-pointer transition-all border ${isPrefix
-                  ? 'bg-brand/10 border-brand/30 text-[#7B8FFF] hover:bg-brand/20 hover:border-brand/50'
-                  : 'bg-transparent border-elevated text-dim hover:bg-secondary hover:border-border hover:text-subtle'
+              className={`color-canvas-prefix-btn ${isPrefix
+                  ? 'color-canvas-prefix-btn-active'
+                  : 'color-canvas-prefix-btn-inactive'
                 }`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -384,10 +384,10 @@ function NodeReferenceLabel({
               onMouseDown={(e) => e.stopPropagation()}
             >
               {isPrefix
-                ? <ToggleRight className="w-3.5 h-3.5" />
-                : <ToggleLeft className="w-3.5 h-3.5" />
+                ? <ToggleRight className="color-canvas-prefix-icon" />
+                : <ToggleLeft className="color-canvas-prefix-icon" />
               }
-              <span className="text-[11px] tracking-wider uppercase select-none">
+              <span className="color-canvas-prefix-label">
                 Prefix
               </span>
             </button>
@@ -2844,13 +2844,13 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
     <div
       ref={canvasRef}
       tabIndex={-1}
-      className="flex-1 relative overflow-hidden outline-none"
+      className="color-canvas-root"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onMouseDown={handleCanvasMouseDown}
       style={{
-        background: '#141414',
+        background: 'var(--grey-900)',
         backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.02) 0.1em, transparent 0.1em), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0.1em, transparent 0.1em)`,
         backgroundSize: `${1.5 * zoom}em ${1.5 * zoom}em`,
         backgroundPosition: `${safePan.x}px ${safePan.y}px`,
@@ -2860,20 +2860,15 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       }}
     >
       <div
-        className="relative canvas-background"
+        className="color-canvas-transform canvas-background"
         style={{
           transform: `translate(${safePan.x}px, ${safePan.y}px) scale(${zoom})`,
-          transformOrigin: '0 0',
-          width: '20000px',
-          height: '20000px',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
           willChange: isPanning || draggedNode || isAnimating ? 'transform' : 'auto',
         }}
       >
         {/* SVG for connections */}
         <svg
-          className="absolute pointer-events-none"
+          className="color-canvas-svg"
           width="20000"
           height="20000"
           overflow="visible"
@@ -2922,7 +2917,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
             // Check if this wire connects to any selected node (single or multi-selection)
             const isSelectedWire = (selectedNodeId && (conn.parentId === selectedNodeId || conn.childId === selectedNodeId)) ||
               (selectedNodeIds.length > 0 && (selectedNodeIds.includes(conn.parentId) || selectedNodeIds.includes(conn.childId)));
-            const wireColor = isSelectedWire ? 'var(--brand)' : 'var(--dim)';
+            const wireColor = isSelectedWire ? 'var(--indigo-500)' : 'var(--grey-600)';
 
             const connKey = `${conn.parentId}__${conn.childId}`;
             return (
@@ -2951,7 +2946,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
             const toX = wireMousePosition.x;
             const toY = wireMousePosition.y;
-            const wireColor = wireHoverNodeId ? 'var(--brand)' : 'var(--dim)';
+            const wireColor = wireHoverNodeId ? 'var(--indigo-500)' : 'var(--grey-600)';
 
             // Helper to compute the "from" position for a given node
             const getFromPosition = (nodeId: string): { x: number; y: number } | null => {
@@ -3017,7 +3012,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                 width={width}
                 height={height}
                 fill="rgba(0, 108, 255, 0.1)"
-                stroke="var(--brand)"
+                stroke="var(--indigo-500)"
                 strokeWidth="1"
                 strokeDasharray="4,4"
               />
@@ -3050,7 +3045,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                   return (
                     <div
                       key={node.id}
-                      className="pointer-events-auto"
+                      className="color-canvas-node-wrapper"
                       data-node-wrapper-id={node.id}
                       style={{
                         position: 'absolute',
@@ -3124,7 +3119,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
                         return (
                           <div
-                            className="absolute -top-10 left-0 flex items-center justify-center shadow-lg text-white text-sm z-50 rounded-[20px]"
+                            className="color-canvas-conn-error"
                             style={{
                               backgroundColor: bgColor,
                               width: `${nodeWidth}px`,
@@ -3371,7 +3366,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                       {/* Auto-assign prompt bubble — floats below node card without
                       affecting wrapper height (zero-height container + position:absolute)
                       so it doesn't trigger ResizeObserver shifts */}
-                      <div className="relative" style={{ height: 0, overflow: 'visible' }}>
+                      <div className="color-canvas-prompt-container">
                         <AnimatePresence>
                           {isPrimaryTheme &&
                             !readOnly &&
@@ -3387,23 +3382,24 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: -4, scale: 0.98 }}
                                 transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                                className="flex justify-center pt-2.5 relative z-40"
+                                className="color-canvas-prompt-wrapper"
                                 onMouseDown={(e) => e.stopPropagation()}
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {/* Upward caret connecting to the node */}
-                                <div className="absolute top-[4px] left-1/2 -translate-x-1/2">
+                                <div className="color-canvas-prompt-caret">
                                   <div
-                                    className="w-0 h-0"
                                     style={{
+                                      width: 0,
+                                      height: 0,
                                       borderLeft: '6px solid transparent',
                                       borderRight: '6px solid transparent',
-                                      borderBottom: '6px solid var(--elevated)',
+                                      borderBottom: '6px solid var(--grey-800)',
                                     }}
                                   />
                                 </div>
                                 <button
-                                  className="group flex items-center gap-2.5 bg-secondary/95 backdrop-blur-sm border border-elevated rounded-lg px-3.5 py-2 shadow-lg shadow-black/30 hover:border-brand/40 hover:shadow-[0_0_12px_rgba(70,91,254,0.08)] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                                  className="color-canvas-prompt-btn"
                                   onClick={() => {
                                     // Select the node so the label row stays visible
                                     onSelectNode(node.id);
@@ -3413,13 +3409,13 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                                     dismissAutoAssignPrompt();
                                   }}
                                 >
-                                  <div className="flex items-center justify-center w-5 h-5 rounded bg-brand/15 shrink-0">
-                                    <Zap size={11} className="text-brand" />
+                                  <div className="color-canvas-prompt-icon-box">
+                                    <Zap size={11} style={{ color: 'var(--indigo-500)' }} />
                                   </div>
-                                  <span className="text-[13px] text-foreground group-hover:text-foreground transition-colors">
+                                  <span className="color-canvas-prompt-text">
                                     Auto-assign tokens
                                   </span>
-                                  <svg width="5" height="8" viewBox="0 0 5 8" fill="none" className="text-dim group-hover:text-subtle transition-colors ml-0.5">
+                                  <svg width="5" height="8" viewBox="0 0 5 8" fill="none" className="color-canvas-prompt-arrow">
                                     <path d="M1 1L4 4L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                   </svg>
                                 </button>
@@ -3446,7 +3442,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0"
+            className="color-canvas-overlay"
             style={{ zIndex: 9000, pointerEvents: 'all' }}
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}

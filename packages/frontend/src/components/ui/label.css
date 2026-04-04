@@ -1,0 +1,29 @@
+/* ============================================
+ * LABEL.CSS — Co-located styles for Label
+ * Uses [data-slot="label"] selector.
+ * All values from variables.css tokens only.
+ * ============================================ */
+
+[data-slot="label"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: 1;
+  color: var(--grey-300);
+  user-select: none;
+}
+
+/* Disabled via parent group */
+[data-disabled="true"] [data-slot="label"],
+[data-slot="label"][data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Disabled via peer (sibling input) */
+:disabled + [data-slot="label"] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

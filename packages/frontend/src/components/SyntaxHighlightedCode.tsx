@@ -1,13 +1,14 @@
 import { useMemo, useRef, useState, useCallback } from 'react';
+import './SyntaxHighlightedCode.css';
 
 // ───── Geist-inspired syntax color palette ─────
 const COLORS = {
   // Base
-  bg: 'var(--background)',
-  gutterBg: 'var(--background)',
+  bg: 'var(--grey-900)',
+  gutterBg: 'var(--grey-900)',
   gutterBorder: '#141414',
-  lineNumber: 'var(--ghost)',
-  lineNumberActive: 'var(--faint)',
+  lineNumber: 'var(--grey-700)',
+  lineNumberActive: 'var(--grey-600)',
   lineHighlight: 'rgba(255,255,255,0.03)',
   text: '#abb2bf',
 
@@ -409,19 +410,16 @@ export function SyntaxHighlightedCode({ code, language: forcedLanguage, classNam
   return (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden ${className}`}
+      className={`syntax-container ${className}`}
       style={{ background: COLORS.bg }}
       onMouseLeave={handleContainerLeave}
     >
       {/* Code area with line numbers */}
       <div
-        className="overflow-auto font-mono text-[13px] leading-[22px]"
+        className="syntax-scroll"
         style={{ tabSize: 2 }}
       >
-        <table
-          className="w-full border-collapse"
-          style={{ borderSpacing: 0 }}
-        >
+        <table className="syntax-table">
           <tbody>
             {tokenizedLines.map((tokens, idx) => {
               const isHovered = hoveredLine === idx;
@@ -435,7 +433,7 @@ export function SyntaxHighlightedCode({ code, language: forcedLanguage, classNam
                 >
                   {/* Line number gutter */}
                   <td
-                    className="select-none text-right align-top shrink-0 sticky left-0"
+                    className="syntax-gutter"
                     style={{
                       color: isHovered ? COLORS.lineNumberActive : COLORS.lineNumber,
                       width: `${gutterWidth + 2}ch`,
@@ -446,8 +444,6 @@ export function SyntaxHighlightedCode({ code, language: forcedLanguage, classNam
                       paddingBottom: idx === lineCount - 1 ? '16px' : undefined,
                       background: COLORS.gutterBg,
                       borderRight: `1px solid ${COLORS.gutterBorder}`,
-                      transition: 'color 0.1s',
-                      userSelect: 'none',
                     }}
                   >
                     {idx + 1}
@@ -455,7 +451,7 @@ export function SyntaxHighlightedCode({ code, language: forcedLanguage, classNam
 
                   {/* Code content */}
                   <td
-                    className="align-top whitespace-pre"
+                    className="syntax-code"
                     style={{
                       paddingLeft: '1.5ch',
                       paddingRight: '2ch',

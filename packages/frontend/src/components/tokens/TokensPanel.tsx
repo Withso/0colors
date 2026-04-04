@@ -5,6 +5,7 @@ import { copyTextToClipboard } from '../../utils/clipboard';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import namer from 'color-namer';
+import "./TokensPanel.css";
 
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -53,12 +54,12 @@ function TokenName({ name, onDoubleClick, panelWidth, hasCheckbox }: { name: str
 
   return (
     <div
-      className="text-xs text-foreground cursor-default overflow-hidden whitespace-nowrap px-2 flex items-center gap-1"
+      className="tokens-panel-token-name"
       style={{ maxWidth: `${dynamicMaxWidth}px`, textOverflow: 'ellipsis' }}
       onDoubleClick={onDoubleClick}
       title={name}
     >
-      <span className="overflow-hidden" style={{ textOverflow: 'ellipsis' }}>{name}</span>
+      <span className="tokens-panel-token-name-inner" style={{ textOverflow: 'ellipsis' }}>{name}</span>
     </div>
   );
 }
@@ -188,61 +189,61 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
   // ── Token node group token tooltip ──
   if (isTokenNode) {
     return (
-      <div className="min-w-[190px] max-w-[300px]">
+      <div className="tokens-panel-tooltip-wrapper-wide">
         {/* Header: Tag icon + own token name */}
-        <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
-          <Tag className="w-3 h-3 shrink-0 text-dim" />
-          <span className="text-[11px] text-foreground truncate">{name}</span>
+        <div className="tokens-panel-tooltip-header">
+          <Tag className="tokens-panel-tooltip-tag-icon" />
+          <span className="tokens-panel-tooltip-name">{name}</span>
         </div>
         {/* CSS variable line */}
-        <div className="h-px bg-hairline mx-2" />
-        <div className="px-3 pt-1.5 pb-1.5">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-[11px] text-faint uppercase tracking-wide shrink-0">VAR</span>
-            <span className="text-[11px] font-mono text-subtle truncate">--{name.toLowerCase().replace(/\s+/g, '-')}</span>
+        <div className="tokens-panel-tooltip-divider" />
+        <div className="tokens-panel-tooltip-var-row">
+          <div className="tokens-panel-tooltip-var-inner">
+            <span className="tokens-panel-tooltip-label">VAR</span>
+            <span className="tokens-panel-tooltip-mono">--{name.toLowerCase().replace(/\s+/g, '-')}</span>
           </div>
         </div>
         {/* Value token reference */}
         {valueTokenRef ? (
           <>
-            <div className="h-px bg-hairline mx-2" />
-            <div className="px-3 pt-2 pb-1.5">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[11px] text-dim uppercase tracking-wide">Value</span>
-                <Link2 className="w-2.5 h-2.5 text-dim" />
+            <div className="tokens-panel-tooltip-divider" />
+            <div className="tokens-panel-tooltip-value-section">
+              <div className="tokens-panel-tooltip-value-label-row">
+                <span className="tokens-panel-tooltip-value-label">Value</span>
+                <Link2 className="tokens-panel-tooltip-link-icon" />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="tokens-panel-tooltip-value-row">
                 {valueTokenRef.isChainRef ? (
-                  <Tag className="w-3 h-3 shrink-0 text-dim" />
+                  <Tag className="tokens-panel-tooltip-tag-icon" />
                 ) : valueTokenRef.color ? (
-                  <div className="w-3 h-3 rounded-[3px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: valueTokenRef.color }} />
+                  <div className="tokens-panel-tooltip-swatch" style={{ backgroundColor: valueTokenRef.color }} />
                 ) : (
-                  <div className="w-3 h-3 rounded-[3px] shrink-0 border border-line/50 opacity-40" />
+                  <div className="tokens-panel-tooltip-swatch-empty" />
                 )}
-                <span className="text-[11px] text-foreground truncate">{valueTokenRef.name}</span>
+                <span className="tokens-panel-tooltip-name">{valueTokenRef.name}</span>
               </div>
             </div>
             {/* Value token's color info */}
             {!!(valueTokenRef.spaceName || valueTokenRef.hex) && (
               <>
-                <div className="h-px bg-hairline mx-2" />
-                <div className="px-3 pt-1.5 pb-2.5 space-y-1">
+                <div className="tokens-panel-tooltip-divider" />
+                <div className="tokens-panel-tooltip-info-section">
                   {valueTokenRef.spaceName && valueTokenRef.spaceValue && (
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-[11px] text-faint uppercase tracking-wide">{valueTokenRef.spaceName}</span>
-                      <span className="text-[11px] font-mono text-subtle">{valueTokenRef.spaceValue}</span>
+                    <div className="tokens-panel-tooltip-info-row">
+                      <span className="tokens-panel-tooltip-label">{valueTokenRef.spaceName}</span>
+                      <span className="tokens-panel-tooltip-mono">{valueTokenRef.spaceValue}</span>
                     </div>
                   )}
                   {valueTokenRef.hex && (
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-[11px] text-faint uppercase tracking-wide">HEX</span>
-                      <span className="text-[11px] font-mono text-subtle">{valueTokenRef.hex}</span>
+                    <div className="tokens-panel-tooltip-info-row">
+                      <span className="tokens-panel-tooltip-label">HEX</span>
+                      <span className="tokens-panel-tooltip-mono">{valueTokenRef.hex}</span>
                     </div>
                   )}
                   {valueTokenRef.alpha !== undefined && valueTokenRef.alpha < 100 && (
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-[11px] text-faint uppercase tracking-wide">ALPHA</span>
-                      <span className="text-[11px] font-mono text-subtle">{Math.round(valueTokenRef.alpha)}%</span>
+                    <div className="tokens-panel-tooltip-info-row">
+                      <span className="tokens-panel-tooltip-label">ALPHA</span>
+                      <span className="tokens-panel-tooltip-mono">{Math.round(valueTokenRef.alpha)}%</span>
                     </div>
                   )}
                 </div>
@@ -251,9 +252,9 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
           </>
         ) : (
           <>
-            <div className="h-px bg-hairline mx-2" />
-            <div className="px-3 pt-2 pb-2.5">
-              <span className="text-[11px] text-dim italic">No value assigned</span>
+            <div className="tokens-panel-tooltip-divider" />
+            <div className="tokens-panel-tooltip-no-value">
+              <span className="tokens-panel-tooltip-no-value-text">No value assigned</span>
             </div>
           </>
         )}
@@ -263,39 +264,39 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
 
   // ── Regular token tooltip (unchanged) ──
   return (
-    <div className="min-w-[180px] max-w-[280px]">
-      <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
+    <div className="tokens-panel-tooltip-wrapper">
+      <div className="tokens-panel-tooltip-header">
         {color ? (
-          <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: color }} />
+          <div className="tokens-panel-tooltip-swatch-lg" style={{ backgroundColor: color }} />
         ) : (
-          <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-dashed border-line/50 opacity-40" />
+          <div className="tokens-panel-tooltip-swatch-lg-empty" />
         )}
-        <span className="text-[11px] text-foreground truncate">{name}</span>
+        <span className="tokens-panel-tooltip-name">{name}</span>
       </div>
       {isEmpty && !hasColorInfo && (
         <>
-          <div className="h-px bg-hairline mx-2" />
-          <div className="px-3 pt-2 pb-2.5">
-            <span className="text-[11px] text-dim italic">Empty — no color values assigned</span>
+          <div className="tokens-panel-tooltip-divider" />
+          <div className="tokens-panel-tooltip-no-value">
+            <span className="tokens-panel-tooltip-no-value-text">Empty — no color values assigned</span>
           </div>
         </>
       )}
       {hasColorInfo && (
         <>
-          <div className="h-px bg-hairline mx-2" />
-          <div className="px-3 pt-2 pb-2.5 space-y-1">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-[11px] text-faint uppercase tracking-wide">{spaceName}</span>
-              <span className="text-[11px] font-mono text-subtle">{spaceValue}</span>
+          <div className="tokens-panel-tooltip-divider" />
+          <div className="tokens-panel-tooltip-color-section">
+            <div className="tokens-panel-tooltip-info-row">
+              <span className="tokens-panel-tooltip-label">{spaceName}</span>
+              <span className="tokens-panel-tooltip-mono">{spaceValue}</span>
             </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-[11px] text-faint uppercase tracking-wide">HEX</span>
-              <span className="text-[11px] font-mono text-subtle">{hex}</span>
+            <div className="tokens-panel-tooltip-info-row">
+              <span className="tokens-panel-tooltip-label">HEX</span>
+              <span className="tokens-panel-tooltip-mono">{hex}</span>
             </div>
             {showAlpha && (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-[11px] text-faint uppercase tracking-wide">ALPHA</span>
-                <span className="text-[11px] font-mono text-subtle">{Math.round(alpha)}%</span>
+              <div className="tokens-panel-tooltip-info-row">
+                <span className="tokens-panel-tooltip-label">ALPHA</span>
+                <span className="tokens-panel-tooltip-mono">{Math.round(alpha)}%</span>
               </div>
             )}
           </div>
@@ -2166,11 +2167,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
 
   // Drop indicator line shown during drag-to-reorder
   const renderDropIndicator = () => (
-    <div className="h-[2px] bg-brand rounded-full mx-2 my-[1px] pointer-events-none" />
+    <div className="tokens-panel-drop-indicator" />
   );
   // Drop indicator line for group-level reordering
   const renderGroupDropIndicator = () => (
-    <div className="h-[2px] bg-brand rounded-full mx-1 my-[2px] pointer-events-none" />
+    <div className="tokens-panel-group-drop-indicator" />
   );
   const shouldShowGroupDropBefore = (index: number, type: 'regular' | 'palette') =>
     groupDropIndicator !== null && groupDropIndicator.type === type && groupDropIndicator.index === index;
@@ -2344,15 +2345,15 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                 tokenRefs.current.delete(token.id);
               }
             }}
-            className={`group/token ${isSelected ? 'rounded-r-md' : 'rounded-md'} transition-all overflow-hidden w-full relative ${reorderDropIndicator?.dragTokenIds.includes(token.id) ? '!opacity-40' : ''
+            className={`tokens-panel-token-row ${isSelected ? 'tokens-panel-token-row-selected' : ''} ${reorderDropIndicator?.dragTokenIds.includes(token.id) ? 'tokens-panel-token-row-dragging' : ''
               } ${highlightedTokenId === token.id
-                ? 'ring-1 ring-brand/60 bg-brand/[0.12]'
+                ? 'tokens-panel-token-row-highlighted'
                 : isSelected
-                  ? 'bg-brand/[0.08]'
+                  ? 'tokens-panel-token-row-selected'
                   : contextMenuOpenTokenId === token.id
-                    ? 'bg-[#ffffff]/[0.04]'
-                    : 'hover:bg-[#ffffff]/[0.03] cursor-pointer'
-              } ${inherited && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${tokenIsHidden ? 'opacity-[0.4] hover:opacity-70' : ''} ${tokenNodeHiddenOnCanvas && !tokenIsHidden ? 'opacity-[0.4] hover:opacity-70' : ''} ${focusedTokenId === token.id && isSelected ? 'ring-1 ring-brand/40' : ''}`}
+                    ? 'tokens-panel-token-row-context'
+                    : 'tokens-panel-token-row-idle'
+              } ${inherited && !showAllVisible ? 'tokens-panel-token-row-inherited' : ''} ${tokenIsHidden ? 'tokens-panel-token-row-hidden' : ''} ${tokenNodeHiddenOnCanvas && !tokenIsHidden ? 'tokens-panel-token-row-hidden' : ''} ${focusedTokenId === token.id && isSelected ? 'tokens-panel-token-row-focused' : ''}`}
             onClick={(e) => {
               const target = e.target as HTMLElement;
               if (
@@ -2375,40 +2376,41 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
               if (isPrimaryTheme && !isReadOnly && !isTokenNodeToken) startEditing(token.id, token.name, 'token');
             }}
           >
-            {isSelected && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand" />}
+            {isSelected && <div className="tokens-panel-selection-bar" />}
             <Tooltip delayDuration={400} open={editingId === token.id ? false : undefined}>
               <TooltipTrigger asChild>
-                <div className="relative flex items-center gap-2 w-full min-w-0 overflow-hidden px-2.5 py-[7px]">
+                <div className="tokens-panel-token-inner">
                   {isPrimaryTheme && (
                     <div
                       data-drag-handle
-                      className="shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover/token:opacity-100 transition-opacity -ml-1 mr-[-4px]"
+                      className="tokens-panel-drag-handle"
                       onMouseDown={(e) => handleGripMouseDown(e, token.id, token.groupId)}
                     >
-                      <GripVertical className="h-3 w-3 text-ghost" />
+                      <GripVertical className="tokens-panel-drag-handle-icon" />
                     </div>
                   )}
                   {!isPrimaryTheme && (
-                    <div className="shrink-0 -ml-1 mr-[-4px] w-3 flex items-center justify-center">
+                    <div className="tokens-panel-crown-col">
                       {isTokenValueChanged(token.id) && (
-                        <Crown className="h-2.5 w-2.5 text-brand fill-brand" />
+                        <Crown className="tokens-panel-crown-icon" />
                       )}
                     </div>
                   )}
                   {isTokenNodeToken ? (
                     valueTokenInfo?.color && valueTokenInfo.color !== 'transparent' ? (
                       <div
-                        className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${isSelected ? 'ring-1.5 ring-brand' : ''}`}
+                        className={`tokens-panel-swatch ${isSelected ? 'tokens-panel-swatch-selected' : ''}`}
                         style={{ backgroundColor: valueTokenInfo.color }}
                       />
                     ) : (
                       <div
-                        className={`w-3.5 h-3.5 rounded-[3px] shrink-0 border border-dashed border-line/50 opacity-40 ${isSelected ? 'ring-1.5 ring-brand' : ''}`}
+                        className={`tokens-panel-swatch tokens-panel-swatch-empty ${isSelected ? 'tokens-panel-swatch-selected' : ''}`}
+                        style={{ opacity: 0.4 }}
                       />
                     )
                   ) : (
                     <div
-                      className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${(nodesUsingToken.length === 0 || isEmptyToken) ? 'border border-dashed border-line/50' : ''} ${isSelected ? 'ring-1.5 ring-brand' : ''}`}
+                      className={`tokens-panel-swatch ${(nodesUsingToken.length === 0 || isEmptyToken) ? 'tokens-panel-swatch-unassigned' : ''} ${isSelected ? 'tokens-panel-swatch-selected' : ''}`}
                       style={{ backgroundColor: (nodesUsingToken.length > 0 && !isEmptyToken) ? hslValue : 'transparent', opacity: (nodesUsingToken.length === 0 || isEmptyToken) ? 0.4 : 1 }}
                     />
                   )}
@@ -2431,8 +2433,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       onBlur={saveName}
                       onClick={(e) => e.stopPropagation()}
                       onDoubleClick={(e) => e.stopPropagation()}
-                      className="bg-transparent border-none text-foreground px-2 py-0 m-0 min-w-0 flex-1 outline-none caret-brand select-text"
-                      style={{ fontSize: '12px', lineHeight: 'normal', height: 'auto' }}
+                      className="tokens-panel-token-edit-input"
                     />
                   ) : (
                     <TokenName
@@ -2444,44 +2445,41 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                   )}
 
                   {isTokenNodeToken ? (
-                    <div className="flex items-center gap-[3px] ml-auto shrink-0">
+                    <div className="tokens-panel-token-badges">
                       {/* Hidden-on-canvas indicator for token node tokens (non-interactive) */}
                       {tokenNodeHiddenOnCanvas && (
                         <Tip label="Hidden on canvas" side="left">
-                          <div className="shrink-0 text-dim">
-                            <EyeOff className="h-3 w-3" />
+                          <div className="tokens-panel-hidden-indicator">
+                            <EyeOff className="tokens-panel-hidden-indicator-icon" />
                           </div>
                         </Tip>
                       )}
                       {/* "LOGIC" badge — shown when token has active advanced condition logic */}
                       {tokensWithActiveLogic.has(token.id) ? (
-                        <span className="text-[11px] font-mono text-warning/70 px-1 py-px rounded bg-warning/[0.08] shrink-0 uppercase tracking-wider">
+                        <span className="tokens-panel-logic-badge">
                           logic
                         </span>
                       ) : valueTokenInfo ? (
-                        <span className="text-[11px] font-mono text-dim px-1 py-px rounded bg-[#ffffff]/[0.04] shrink-0">
+                        <span className="tokens-panel-token-badge">
                           TOKEN
                         </span>
                       ) : null}
 
                     </div>
                   ) : nodesUsingToken.length > 0 && (() => {
-                    const badgeTextColor = nodeInheritanceState === 'modified' ? 'text-brand'
-                      : nodeInheritanceState === 'inherited' ? 'text-[#d4a017]'
-                        : 'text-dim';
-                    const badgeBgColor = nodeInheritanceState === 'modified' ? 'bg-brand/[0.12]'
-                      : nodeInheritanceState === 'inherited' ? 'bg-warning/[0.10]'
-                        : 'bg-[#ffffff]/[0.04]';
+                    const badgeClass = nodeInheritanceState === 'modified' ? 'tokens-panel-node-badge-modified'
+                      : nodeInheritanceState === 'inherited' ? 'tokens-panel-node-badge-inherited'
+                        : 'tokens-panel-node-badge-default';
 
                     return (
-                      <div className="flex items-center gap-[3px] ml-auto shrink-0">
+                      <div className="tokens-panel-token-badges">
                         {/* Eye visibility toggle — only for tokens with assigned nodes */}
                         {tokenHasAssignedNodes && (
                           <button
-                            className={`shrink-0 p-0 border-none bg-transparent transition-all ${tokenIsHidden
-                                ? 'opacity-100 text-brand'
-                                : 'opacity-0 group-hover/token:opacity-100 text-dim hover:text-foreground'
-                              } ${tokenForcedHidden ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                            className={`tokens-panel-eye-btn ${tokenIsHidden
+                                ? 'tokens-panel-eye-btn-hidden'
+                                : 'tokens-panel-eye-btn-visible'
+                              } ${tokenForcedHidden ? 'tokens-panel-eye-btn-locked' : 'tokens-panel-eye-btn-unlocked'}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               if (tokenForcedHidden) return; // Locked by hidden node
@@ -2497,18 +2495,18 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             }
                             disabled={tokenForcedHidden}
                           >
-                            {tokenIsHidden ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                            {tokenIsHidden ? <EyeOff className="tokens-panel-eye-icon" /> : <Eye className="tokens-panel-eye-icon" />}
                           </button>
                         )}
                         {nodeType && nodeType === 'spacing' ? (
                           <>
-                            <span className="text-xs font-mono text-dim shrink-0">
+                            <span className="tokens-panel-spacing-value">
                               {`${themeValues.value ?? 16}${themeValues.unit ?? 'px'}`}
                             </span>
                           </>
                         ) : nodeType ? (
                           <>
-                            <span className={`text-[11px] font-mono ${badgeTextColor} px-1 py-px rounded ${badgeBgColor} shrink-0`}>
+                            <span className={`tokens-panel-node-badge ${badgeClass}`}>
                               {nodeType}
                             </span>
 
@@ -2523,7 +2521,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                 <TooltipPrimitive.Content
                   side="right"
                   sideOffset={8}
-                  className="z-50 bg-secondary/95 backdrop-blur-md border border-hairline rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-in fade-in-0 zoom-in-95 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2"
+                  className="tokens-panel-tooltip-content"
                 >
                   <TokenTooltipBody
                     name={token.name}
@@ -2541,12 +2539,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
             </Tooltip>
           </div>
         </ContextMenuTrigger>
-        <ContextMenuContent className="bg-[#0e0e0e] border border-[#141414] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1 min-w-[160px]">
+        <ContextMenuContent className="tokens-panel-context-menu">
           {/* If mixed selection (token-node + normal tokens), show nothing actionable */}
           {selectionHasMixedTokenNodeTypes && isSelected ? (
             <ContextMenuItem
               disabled
-              className="text-dim cursor-default rounded-lg px-2.5 py-2 text-xs gap-2"
+              className="tokens-panel-context-item-disabled"
             >
               Mixed selection — no actions available
             </ContextMenuItem>
@@ -2555,24 +2553,24 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
               {/* Token node group token: limited context menu */}
               <ContextMenuItem
                 onClick={() => toggleTokenSelection(token.id)}
-                className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                className="tokens-panel-context-item"
               >
-                <Check className={`h-3.5 w-3.5 ${isSelected ? 'text-foreground' : 'text-dim'}`} />
+                <Check className={isSelected ? 'tokens-panel-context-check-active' : 'tokens-panel-context-check-inactive'} />
                 {isSelected ? 'Deselect' : 'Select'}
               </ContextMenuItem>
               {/* Navigate to the owning token node on the canvas */}
               {tokenNodeOnCanvas && onNavigateToNode && tokenNodeOnCanvas.pageId === activePageId && (
                 <ContextMenuItem
                   onClick={() => onNavigateToNode(tokenNodeOnCanvas.id)}
-                  className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                  className="tokens-panel-context-item"
                 >
-                  <Target className="h-3.5 w-3.5 text-dim" />
+                  <Target className="tokens-panel-context-icon" />
                   Navigate to node
                 </ContextMenuItem>
               )}
               {isPrimaryTheme && (
                 <>
-                  <ContextMenuSeparator className="bg-[#1e1e1e] my-1" />
+                  <ContextMenuSeparator className="tokens-panel-context-separator" />
                   <ContextMenuItem
                     onClick={() => {
                       if (selectedTokens.size > 0 && isSelected) {
@@ -2581,9 +2579,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                         moveSingleToken(token.id, 'up');
                       }
                     }}
-                    className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                    className="tokens-panel-context-item"
                   >
-                    <ArrowUp className="h-3.5 w-3.5 text-dim" />
+                    <ArrowUp className="tokens-panel-context-icon" />
                     Move up
                   </ContextMenuItem>
                   <ContextMenuItem
@@ -2594,9 +2592,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                         moveSingleToken(token.id, 'down');
                       }
                     }}
-                    className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                    className="tokens-panel-context-item"
                   >
-                    <ArrowDown className="h-3.5 w-3.5 text-dim" />
+                    <ArrowDown className="tokens-panel-context-icon" />
                     Move down
                   </ContextMenuItem>
                 </>
@@ -2607,9 +2605,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
               {/* Normal token context menu */}
               <ContextMenuItem
                 onClick={() => toggleTokenSelection(token.id)}
-                className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                className="tokens-panel-context-item"
               >
-                <Check className={`h-3.5 w-3.5 ${isSelected ? 'text-foreground' : 'text-dim'}`} />
+                <Check className={isSelected ? 'tokens-panel-context-check-active' : 'tokens-panel-context-check-inactive'} />
                 {isSelected ? 'Deselect' : 'Select'}
               </ContextMenuItem>
               {nodesUsingToken.length > 0 && onNavigateToNode && (
@@ -2620,9 +2618,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       onNavigateToNode(nodesOnCurrentPage[0].id);
                     }
                   }}
-                  className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                  className="tokens-panel-context-item"
                 >
-                  <Target className="h-3.5 w-3.5 text-dim" />
+                  <Target className="tokens-panel-context-icon" />
                   Navigate to node
                 </ContextMenuItem>
               )}
@@ -2630,12 +2628,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                 <>
                   <ContextMenuItem
                     onClick={() => startEditing(token.id, token.name, 'token')}
-                    className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                    className="tokens-panel-context-item"
                   >
-                    <Edit2 className="h-3.5 w-3.5 text-dim" />
+                    <Edit2 className="tokens-panel-context-icon" />
                     Rename
                   </ContextMenuItem>
-                  <ContextMenuSeparator className="bg-[#1e1e1e] my-1" />
+                  <ContextMenuSeparator className="tokens-panel-context-separator" />
                   <ContextMenuItem
                     onClick={() => {
                       if (selectedTokens.size > 0 && isSelected) {
@@ -2644,9 +2642,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                         moveSingleToken(token.id, 'up');
                       }
                     }}
-                    className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                    className="tokens-panel-context-item"
                   >
-                    <ArrowUp className="h-3.5 w-3.5 text-dim" />
+                    <ArrowUp className="tokens-panel-context-icon" />
                     Move up
                   </ContextMenuItem>
                   <ContextMenuItem
@@ -2657,18 +2655,18 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                         moveSingleToken(token.id, 'down');
                       }
                     }}
-                    className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                    className="tokens-panel-context-item"
                   >
-                    <ArrowDown className="h-3.5 w-3.5 text-dim" />
+                    <ArrowDown className="tokens-panel-context-icon" />
                     Move down
                   </ContextMenuItem>
-                  <ContextMenuSeparator className="bg-[#1e1e1e] my-1" />
+                  <ContextMenuSeparator className="tokens-panel-context-separator" />
                   <ContextMenuSub>
-                    <ContextMenuSubTrigger className="text-foreground focus:bg-hairline focus:text-foreground data-[state=open]:bg-hairline cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2">
-                      <Folder className="h-3.5 w-3.5 text-dim" />
+                    <ContextMenuSubTrigger className="tokens-panel-context-sub-trigger">
+                      <Folder className="tokens-panel-context-icon" />
                       {selectedTokens.size > 1 && isSelected ? `Move ${selectedTokens.size} to group` : 'Move to group'}
                     </ContextMenuSubTrigger>
-                    <ContextMenuSubContent className="bg-[#0e0e0e] border border-[#141414] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1 min-w-[140px] max-h-[300px] overflow-y-auto">
+                    <ContextMenuSubContent className="tokens-panel-context-sub-content">
                       <ContextMenuItem
                         onClick={() => {
                           if (selectedTokens.size > 0 && isSelected) {
@@ -2679,11 +2677,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             moveTokensCrossGroup([token.id], null, getTokensForGroup(null).length);
                           }
                         }}
-                        className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs"
+                        className="tokens-panel-context-item"
                       >
                         No group
                       </ContextMenuItem>
-                      {regularGroups.length > 0 && <ContextMenuSeparator className="bg-[#1e1e1e] my-1" />}
+                      {regularGroups.length > 0 && <ContextMenuSeparator className="tokens-panel-context-separator" />}
                       {regularGroups.map(g => (
                         <ContextMenuItem
                           key={g.id}
@@ -2696,13 +2694,13 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                               moveTokensCrossGroup([token.id], g.id, getTokensForGroup(g.id).length);
                             }
                           }}
-                          className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                          className="tokens-panel-context-item"
                         >
-                          <Folder className="h-3 w-3 text-dim" />
+                          <Folder className="tokens-panel-context-icon-sm" />
                           {g.name}
                         </ContextMenuItem>
                       ))}
-                      <ContextMenuSeparator className="bg-[#1e1e1e] my-1" />
+                      <ContextMenuSeparator className="tokens-panel-context-separator" />
                       <ContextMenuItem
                         onClick={() => {
                           if (selectedTokens.size > 0 && isSelected) {
@@ -2713,14 +2711,14 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             createGroupAndMoveTokens([token.id]);
                           }
                         }}
-                        className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                        className="tokens-panel-context-item"
                       >
-                        <FolderPlus className="h-3 w-3 text-dim" />
+                        <FolderPlus className="tokens-panel-context-icon-sm" />
                         New group
                       </ContextMenuItem>
                     </ContextMenuSubContent>
                   </ContextMenuSub>
-                  <ContextMenuSeparator className="bg-[#1e1e1e] my-1" />
+                  <ContextMenuSeparator className="tokens-panel-context-separator" />
                   <ContextMenuItem
                     onClick={() => {
                       if (selectedTokens.size > 1 && isSelected) {
@@ -2729,9 +2727,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                         handleTokenDelete(token.id);
                       }
                     }}
-                    className="text-destructive focus:bg-hairline focus:text-[#FF7A90] cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                    className="tokens-panel-context-item-destructive"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="tokens-panel-context-icon" />
                     {selectedTokens.size > 1 && isSelected ? `Delete ${selectedTokens.size} variables` : 'Delete'}
                   </ContextMenuItem>
                 </>
@@ -2747,20 +2745,19 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
     <TooltipProvider delayDuration={300}>
       <div
         ref={panelRef}
-        className="flex flex-col gap-2 h-full relative"
+        className="tokens-panel-root"
         style={{
           width: `${panelWidth}px`,
-          zIndex: 50,
         }}
         onWheel={(e) => e.stopPropagation()}
       >
         {/* Projects Island */}
-        <div className="shrink-0 rounded-2xl px-3 h-14 flex items-center w-full min-w-0" style={{ backgroundColor: 'var(--card)' }}>
-          <div className="flex items-center justify-between w-full min-w-0">
-            <h2 className="flex items-center gap-2 text-white text-sm min-w-0 flex-1 truncate">
+        <div className="tokens-panel-projects-island">
+          <div className="tokens-panel-projects-header">
+            <h2 className="tokens-panel-project-title">
               <Tip label="All Projects" side="bottom">
                 <Home
-                  className="h-4 w-4 shrink-0 cursor-pointer hover:text-foreground transition-colors"
+                  className="tokens-panel-home-icon"
                   onClick={() => onNavigateToProjects && onNavigateToProjects()}
                 />
               </Tip>
@@ -2779,11 +2776,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                     }
                   }}
                   onBlur={saveProjectName}
-                  className="bg-secondary text-white text-sm px-2 py-0.5 rounded border border-transparent focus:border-brand focus:outline-none min-w-0 flex-1"
+                  className="tokens-panel-project-name-input"
                 />
               ) : (
                 <span
-                  className={`truncate ${isReadOnly ? 'cursor-default' : 'cursor-text hover:text-foreground'} transition-colors`}
+                  className={`tokens-panel-project-name-text ${isReadOnly ? 'tokens-panel-project-name-text-readonly' : 'tokens-panel-project-name-text-editable'}`}
                   title={projects.find(c => c.id === activeProjectId)?.name || 'Variables'}
                   onDoubleClick={isReadOnly ? undefined : startEditingProjectName}
                 >
@@ -2791,7 +2788,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                 </span>
               )}
             </h2>
-            <div className="flex gap-1 shrink-0">
+            <div className="tokens-panel-sync-group">
               {/* Cloud sync is always visible — it syncs ALL themes/pages/tokens
                 in the project, not just the active view, so it must be accessible
                 from any theme (including non-primary / read-only themes). */}
@@ -2807,9 +2804,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
         </div>
 
         {/* Tokens Island */}
-        <div className="flex-1 flex flex-col overflow-hidden rounded-2xl min-h-0 relative" style={{ backgroundColor: 'var(--card)' }}>
+        <div className="tokens-panel-tokens-island">
           {/* Search + Filters */}
-          <div className="px-2 pt-2 pb-1 shrink-0">
+          <div className="tokens-panel-search-area">
             <TokenSearchBar
               searchQuery={searchQuery}
               onSearchQueryChange={setSearchQuery}
@@ -2820,13 +2817,13 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
           </div>
 
           {/* View Filter Tabs */}
-          <div className="px-2 pb-1.5 shrink-0 flex gap-1">
+          <div className="tokens-panel-tabs">
             {isSearchOrFilterActive ? (
               /* Combined mode: single label showing both counts when search/filter is active */
-              <div className="px-2.5 py-[3px] rounded-md text-[11px] flex items-center gap-1.5 bg-hairline text-foreground">
+              <div className="tokens-panel-tab-label">
                 All Results
                 {(filteredRegularGroups.length + filteredUngroupedTokens.length + filteredPaletteEntries.length) > 0 && (
-                  <span className="text-[11px] text-subtle">
+                  <span className="tokens-panel-tab-label-count">
                     {filteredRegularGroups.length + filteredUngroupedTokens.length + filteredPaletteEntries.length}
                   </span>
                 )}
@@ -2835,28 +2832,28 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
               <>
                 <button
                   onClick={() => setViewFilter('tokens')}
-                  className={`px-2.5 py-[3px] rounded-md text-[11px] transition-colors flex items-center gap-1.5 ${viewFilter === 'tokens'
-                      ? 'bg-hairline text-foreground'
-                      : 'text-dim hover:text-subtle hover:bg-[#ffffff]/[0.03]'
+                  className={`tokens-panel-tab ${viewFilter === 'tokens'
+                      ? 'tokens-panel-tab-active'
+                      : 'tokens-panel-tab-inactive'
                     }`}
                 >
                   Tokens
                   {(filteredRegularGroups.length + filteredUngroupedTokens.length) > 0 && (
-                    <span className={`text-[11px] ${viewFilter === 'tokens' ? 'text-subtle' : 'text-ghost'}`}>
+                    <span className={viewFilter === 'tokens' ? 'tokens-panel-tab-count-active' : 'tokens-panel-tab-count-inactive'}>
                       {filteredRegularGroups.length + filteredUngroupedTokens.length}
                     </span>
                   )}
                 </button>
                 <button
                   onClick={() => setViewFilter('palettes')}
-                  className={`px-2.5 py-[3px] rounded-md text-[11px] transition-colors flex items-center gap-1.5 ${viewFilter === 'palettes'
-                      ? 'bg-hairline text-foreground'
-                      : 'text-dim hover:text-subtle hover:bg-[#ffffff]/[0.03]'
+                  className={`tokens-panel-tab ${viewFilter === 'palettes'
+                      ? 'tokens-panel-tab-active'
+                      : 'tokens-panel-tab-inactive'
                     }`}
                 >
                   Color Palettes
                   {filteredPaletteEntries.length > 0 && (
-                    <span className={`text-[11px] ${viewFilter === 'palettes' ? 'text-subtle' : 'text-ghost'}`}>
+                    <span className={viewFilter === 'palettes' ? 'tokens-panel-tab-count-active' : 'tokens-panel-tab-count-inactive'}>
                       {filteredPaletteEntries.length}
                     </span>
                   )}
@@ -2865,11 +2862,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
             )}
           </div>
 
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0 px-1 pt-1 pb-2">
-            <ScrollArea className="flex-1 h-full">
+          <div className="tokens-panel-scroll-wrapper">
+            <ScrollArea className="tp-scroll-area">
               <div
                 ref={scrollAreaRef}
-                className="space-y-px w-full min-w-0 px-1 relative select-none"
+                className="tokens-panel-scroll-content"
                 onMouseDown={handleMouseDown}
               >
                 {/* Drag Selection Rectangle */}
@@ -2882,29 +2879,29 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       width: Math.abs(dragEnd.x - dragStart.x),
                       height: Math.abs(dragEnd.y - dragStart.y),
                       backgroundColor: 'rgba(70, 91, 254, 0.1)',
-                      border: '1px solid var(--brand)',
+                      border: '1px solid var(--indigo-500)',
                       pointerEvents: 'none',
                       zIndex: 1000,
                     }}
                   />
                 )}
                 {!activeProject ? (
-                  <div className="text-center py-8 text-dim">
-                    <p className="text-xs">No project selected</p>
+                  <div className="tokens-panel-no-project">
+                    <p className="tokens-panel-no-project-text">No project selected</p>
                   </div>
                 ) : (
                   <>
                     {/* Project Header */}
-                    <div className="mb-1 min-w-0">
-                      <div className="flex items-center gap-1 group/project w-full min-w-0 pl-0.5 pr-1">
+                    <div className="tokens-panel-project-header">
+                      <div className="tokens-panel-project-header-inner">
                         <button
                           onClick={() => toggleProject(activeProject.id)}
-                          className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0"
+                          className="tokens-panel-chevron-btn"
                         >
                           {activeProject.isExpanded ? (
-                            <ChevronDown className="h-3 w-3 text-dim" />
+                            <ChevronDown className="tokens-panel-chevron-icon" />
                           ) : (
-                            <ChevronRight className="h-3 w-3 text-dim" />
+                            <ChevronRight className="tokens-panel-chevron-icon" />
                           )}
                         </button>
                         {((editingId === activeProject.id && editingType === 'project') || (editingId === activePage?.id && editingType === 'page')) ? (
@@ -2925,12 +2922,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             }}
                             onBlur={saveName}
                             onClick={(e) => e.stopPropagation()}
-                            className="h-6 text-xs min-w-0 flex-1 bg-secondary border-transparent text-foreground select-text"
+                            className="tokens-panel-project-edit-input"
                           />
                         ) : (
-                          <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="tokens-panel-page-name-wrapper">
                             <span
-                              className={`text-xs text-subtle ${isReadOnly ? 'cursor-default' : 'cursor-text hover:text-foreground'} transition-colors px-1 py-0.5 rounded ${isReadOnly ? '' : 'hover:bg-[#ffffff]/[0.04]'} block truncate`}
+                              className={`tokens-panel-page-name ${isReadOnly ? 'tokens-panel-page-name-readonly' : 'tokens-panel-page-name-editable'}`}
                               onDoubleClick={isReadOnly ? undefined : () => activePage && startEditing(activePage.id, activePage.name, 'page')}
                               title={activePage?.name || activeProject.name}
                             >
@@ -2943,17 +2940,17 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             <Tip label="New Group" side="bottom">
                               <button
                                 onClick={() => addGroup(activeProjectId)}
-                                className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0 ml-auto"
+                                className="tokens-panel-header-action-btn tokens-panel-header-action-btn-ml"
                               >
-                                <Folder className="h-3 w-3 text-dim" />
+                                <Folder className="tokens-panel-header-action-icon" />
                               </button>
                             </Tip>
                             <Tip label="New Variable" side="bottom">
                               <button
                                 onClick={() => onAddToken(undefined, null, activeProjectId)}
-                                className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0"
+                                className="tokens-panel-header-action-btn"
                               >
-                                <Plus className="h-3 w-3 text-dim" />
+                                <Plus className="tokens-panel-header-action-icon" />
                               </button>
                             </Tip>
                           </>
@@ -2985,11 +2982,10 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             const anyShadeModifiedA = !isPrimaryTheme && paletteTokens.some(t => isTokenValueChanged(t.id));
                             const palFmtA = paletteNode?.paletteColorFormat || 'HEX';
                             const groupColorSpaceA = palFmtA === 'OKLCH' ? 'OKLCH' : palFmtA === 'RGBA' ? 'RGBA' : 'HSL';
-                            const groupBadgeTextA = anyShadeModifiedA ? 'text-brand' : isPalInherited ? 'text-warning' : 'text-dim';
-                            const groupBadgeBgA = anyShadeModifiedA ? 'bg-brand/[0.12]' : isPalInherited ? 'bg-warning/[0.12]' : 'bg-[#ffffff]/[0.04]';
+                            const groupBadgeClassA = anyShadeModifiedA ? 'tokens-panel-palette-badge-brand' : isPalInherited ? 'tokens-panel-palette-badge-warning' : 'tokens-panel-palette-badge-dim';
 
                             return (
-                              <div key={group.id} className={`mb-0.5 min-w-0 ${isPalHiddenA ? 'opacity-[0.4]' : ''}`} style={palInheritedStyle}>
+                              <div key={group.id} className={`tokens-panel-palette-entry ${isPalHiddenA ? 'tokens-panel-palette-entry-hidden' : ''}`} style={palInheritedStyle}>
                                 {shouldShowGroupDropBefore(itemIdx, 'palette') && renderGroupDropIndicator()}
                                 <ContextMenu>
                                   <ContextMenuTrigger asChild>
@@ -3003,34 +2999,34 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                           moveGroupInDirection(group.id, e.key === 'ArrowUp' ? 'up' : 'down');
                                         }
                                       }}
-                                      className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-md hover:bg-[#ffffff]/[0.03] transition-colors w-full min-w-0 group outline-none focus-visible:ring-1 focus-visible:ring-brand/50"
+                                      className="tokens-panel-palette-header"
                                     >
                                       {!isReadOnly && isPrimaryTheme && (
                                         <div
-                                          className="cursor-grab active:cursor-grabbing p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                          className="tp-drag-handle"
                                           onMouseDown={(e) => handleGroupGripMouseDown(e, group.id, 'palette')}
                                         >
-                                          <GripVertical className="h-3 w-3 text-dim" />
+                                          <GripVertical className="tp-icon-3 tp-icon-dim" />
                                         </div>
                                       )}
                                       {!isPrimaryTheme && (
-                                        <div className="shrink-0 w-3 flex items-center justify-center">
+                                        <div className="tp-crown-col">
                                           {anyShadeModifiedA && (
-                                            <Crown className="h-2.5 w-2.5 text-brand fill-brand" />
+                                            <Crown className="tp-icon-2\.5 tp-icon-brand-fill" />
                                           )}
                                         </div>
                                       )}
                                       <button
                                         onClick={() => toggleGroup(group.id)}
-                                        className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0"
+                                        className="tp-chevron-btn"
                                       >
                                         {group.isExpanded ? (
-                                          <ChevronDown className="h-3 w-3 text-dim" />
+                                          <ChevronDown className="tp-icon-3 tp-icon-dim" />
                                         ) : (
-                                          <ChevronRight className="h-3 w-3 text-dim" />
+                                          <ChevronRight className="tp-icon-3 tp-icon-dim" />
                                         )}
                                       </button>
-                                      <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                      <div className="tp-palette-content-col">
                                         {editingId === paletteNode.id && editingType === 'group' ? (
                                           <Input
                                             ref={editInputRef}
@@ -3061,13 +3057,13 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                               setEditingType(null);
                                             }}
                                             onClick={(e) => e.stopPropagation()}
-                                            className="h-auto text-xs bg-secondary border-transparent text-foreground px-2 py-0 min-w-[120px] flex-1 select-text"
+                                            className="tp-palette-edit-input tp-palette-edit-input-wrap"
                                           />
                                         ) : (
-                                          <div className="flex items-center gap-1 w-full">
-                                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                          <div className="tp-palette-name-row">
+                                            <div className="tp-palette-name-inner">
                                               <span
-                                                className={`text-xs text-subtle truncate ${isReadOnly ? 'cursor-default' : 'cursor-text hover:text-foreground'} transition-colors`}
+                                                className={`tp-name-subtle ${isReadOnly ? 'tp-cursor-default' : 'tp-name-subtle-editable'}`}
                                                 onDoubleClick={isReadOnly ? undefined : () => {
                                                   setEditingId(paletteNode.id);
                                                   setEditingName(paletteNode.paletteName || group.name);
@@ -3077,11 +3073,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                               >
                                                 {paletteNode.paletteName || group.name}
                                               </span>
-                                              <span className={`text-[11px] font-mono ${groupBadgeTextA} px-1 py-px rounded ${groupBadgeBgA} shrink-0`}>
+                                              <span className={`tokens-panel-palette-badge ${groupBadgeClassA}`}>
                                                 {groupColorSpaceA}
                                               </span>
                                               {isPalHiddenA && (
-                                                <EyeOff className="h-2.5 w-2.5 text-dim shrink-0" />
+                                                <EyeOff className="tp-icon-2\.5 tp-icon-dim tp-eyeoff-icon" />
                                               )}
                                             </div>
                                             {!isReadOnly && (
@@ -3093,12 +3089,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                       onUpdateNode(paletteNode.id, { paletteNameLocked: !paletteNode.paletteNameLocked });
                                                     }
                                                   }}
-                                                  className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0 opacity-0 group-hover:opacity-100"
+                                                  className="tp-palette-action-btn"
                                                 >
                                                   {paletteNode.paletteNameLocked ? (
-                                                    <Lock className="w-3 h-3 text-brand" />
+                                                    <Lock className="tp-icon-3 tp-icon-brand" />
                                                   ) : (
-                                                    <Unlock className="w-3 h-3 text-dim" />
+                                                    <Unlock className="tp-icon-3 tp-icon-dim" />
                                                   )}
                                                 </button>
                                               </Tip>
@@ -3110,23 +3106,23 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                     e.stopPropagation();
                                                     deletePaletteGroup(group.id, paletteNode.id);
                                                   }}
-                                                  className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0 opacity-0 group-hover:opacity-100"
+                                                  className="tp-palette-action-btn"
                                                 >
-                                                  <Trash2 className="w-3 h-3 text-dim hover:text-destructive" />
+                                                  <Trash2 className="tp-icon-3 tp-icon-dim-hover-destructive" />
                                                 </button>
                                               </Tip>
                                             )}
                                           </div>
                                         )}
                                         {/* Gradient showing all shades */}
-                                        <div className="w-full h-5 rounded-[3px] flex overflow-hidden">
+                                        <div className="tp-palette-gradient">
                                           {shadeNodes.sort((a, b) => a.position.y - b.position.y).map((shade, idx) => {
                                             const ec = getShadeEffectiveColor(shade);
                                             const color = `hsla(${ec.hue}, ${ec.saturation}%, ${ec.lightness}%, ${ec.alpha / 100})`;
                                             return (
                                               <div
                                                 key={shade.id}
-                                                className="flex-1 h-full"
+                                                className="tp-palette-gradient-swatch"
                                                 style={{ backgroundColor: color }}
                                                 title={`${ec.lightness.toFixed(0)}%`}
                                               />
@@ -3136,40 +3132,40 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                       </div>
                                     </div>
                                   </ContextMenuTrigger>
-                                  <ContextMenuContent className="min-w-[160px] bg-secondary/95 backdrop-blur-md border border-hairline rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.5)] p-1">
+                                  <ContextMenuContent className="tp-context-menu">
                                     {!isReadOnly && (
                                       <>
                                         <ContextMenuItem
                                           onClick={() => moveGroupInDirection(group.id, 'up')}
-                                          className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                          className="tokens-panel-context-item"
                                         >
-                                          <ArrowUp className="h-3.5 w-3.5 text-dim" />
+                                          <ArrowUp className="tokens-panel-context-icon" />
                                           Move up
                                         </ContextMenuItem>
                                         <ContextMenuItem
                                           onClick={() => moveGroupInDirection(group.id, 'down')}
-                                          className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                          className="tokens-panel-context-item"
                                         >
-                                          <ArrowDown className="h-3.5 w-3.5 text-dim" />
+                                          <ArrowDown className="tokens-panel-context-icon" />
                                           Move down
                                         </ContextMenuItem>
-                                        <ContextMenuSeparator className="bg-[#1e1e1e] my-1" />
+                                        <ContextMenuSeparator className="tokens-panel-context-separator" />
                                         <ContextMenuItem
                                           onClick={() => {
                                             setEditingId(paletteNode.id);
                                             setEditingName(paletteNode.paletteName || group.name);
                                             setEditingType('group');
                                           }}
-                                          className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                          className="tokens-panel-context-item"
                                         >
-                                          <Edit2 className="h-3.5 w-3.5 text-dim" />
+                                          <Edit2 className="tokens-panel-context-icon" />
                                           Rename
                                         </ContextMenuItem>
                                         <ContextMenuItem
                                           onClick={() => deletePaletteGroup(group.id, paletteNode.id)}
-                                          className="text-destructive focus:bg-hairline focus:text-destructive cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                          className="tokens-panel-context-item-destructive"
                                         >
-                                          <Trash2 className="h-3.5 w-3.5" />
+                                          <Trash2 className="tokens-panel-context-icon" />
                                           Delete palette
                                         </ContextMenuItem>
                                       </>
@@ -3178,7 +3174,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                 </ContextMenu>
                                 {/* Expanded: list of shade tokens — auto-expand when search/filter is active to show individual matching tokens */}
                                 {(group.isExpanded || isSearchOrFilterActive) && paletteTokens.length > 0 && (
-                                  <div className="ml-3 mt-0.5">
+                                  <div className="tp-shade-list">
                                     {shadeNodes.sort((a, b) => a.position.y - b.position.y).map((shade) => {
                                       const shadeTokenId = getShadeTokenId(shade);
                                       const shadeToken = shadeTokenId ? paletteTokens.find(t => t.id === shadeTokenId) : null;
@@ -3206,12 +3202,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                   tokenRefs.current.delete(shadeToken.id);
                                                 }
                                               }}
-                                              className={`flex items-center gap-2 px-2.5 py-[6px] ${shadeIsSelected1 ? 'rounded-r-md' : 'rounded-md'} transition-all cursor-pointer relative ${highlightedTokenId === shadeToken.id
-                                                  ? 'ring-1 ring-brand/60 bg-brand/[0.12]'
+                                              className={`tp-shade-row ${shadeIsSelected1 ? 'tp-shade-row-selected' : ''} ${highlightedTokenId === shadeToken.id
+                                                  ? 'tp-shade-highlight'
                                                   : shadeIsSelected1
-                                                    ? 'bg-brand/[0.08]'
-                                                    : 'hover:bg-[#ffffff]/[0.03]'
-                                                } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${focusedTokenId === shadeToken.id && shadeIsSelected1 ? 'ring-1 ring-brand/40' : ''}`}
+                                                    ? 'tp-shade-selected'
+                                                    : ''
+                                                } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'tp-inherited-dim' : ''} ${focusedTokenId === shadeToken.id && shadeIsSelected1 ? 'tp-shade-focus-ring' : ''}`}
                                               onClick={(e) => {
                                                 const target = e.target as HTMLElement;
                                                 if (target.closest('input')) return;
@@ -3226,9 +3222,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                 if (isPrimaryTheme && !isReadOnly) startEditing(shadeToken.id, shadeToken.name, 'token');
                                               }}
                                             >
-                                              {shadeIsSelected1 && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand" />}
+                                              {shadeIsSelected1 && <div className="tp-shade-select-bar-indicator tp-shade-select-bar" />}
                                               <div
-                                                className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${shadeIsSelected1 ? 'ring-1.5 ring-brand' : ''}`}
+                                                className={`tp-shade-swatch ${shadeIsSelected1 ? 'tp-shade-swatch-ring' : ''}`}
                                                 style={{ backgroundColor: shadeColor }}
                                               />
                                               {editingId === shadeToken.id && editingType === 'token' ? (
@@ -3244,12 +3240,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                   onBlur={saveName}
                                                   onClick={(e) => e.stopPropagation()}
                                                   onDoubleClick={(e) => e.stopPropagation()}
-                                                  className="bg-transparent border-none text-foreground px-0 py-0 m-0 min-w-0 flex-1 outline-none caret-brand select-text"
+                                                  className="tp-shade-edit-input tp-shade-edit-input-wrap"
                                                   style={{ fontSize: '12px', lineHeight: 'normal', height: 'auto' }}
                                                   maxLength={MAX_TOKEN_NAME}
                                                 />
                                               ) : (
-                                                <span className="text-xs text-foreground truncate flex-1 min-w-0" title={shadeToken.name}>
+                                                <span className="tp-shade-name tp-shade-name-label" title={shadeToken.name}>
                                                   {shadeToken.name}
                                                 </span>
                                               )}
@@ -3259,7 +3255,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                             <TooltipPrimitive.Content
                                               side="right"
                                               sideOffset={8}
-                                              className="z-50 bg-secondary/95 backdrop-blur-md border border-hairline rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-in fade-in-0 zoom-in-95 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2"
+                                              className="tp-shade-tooltip tp-shade-tooltip-portal"
                                             >
                                               <TokenTooltipBody
                                                 name={shadeToken.name}
@@ -3310,30 +3306,29 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             const anyShadeModifiedB = !isPrimaryTheme && palTokens.some(t => isTokenValueChanged(t.id));
                             const palFmtB = paletteNode?.paletteColorFormat || 'HEX';
                             const groupColorSpaceB = palFmtB === 'OKLCH' ? 'OKLCH' : palFmtB === 'RGBA' ? 'RGBA' : 'HSL';
-                            const groupBadgeTextB = anyShadeModifiedB ? 'text-brand' : isPaletteInherited ? 'text-warning' : 'text-dim';
-                            const groupBadgeBgB = anyShadeModifiedB ? 'bg-brand/[0.12]' : isPaletteInherited ? 'bg-warning/[0.12]' : 'bg-[#ffffff]/[0.04]';
+                            const groupBadgeClassB = anyShadeModifiedB ? 'tokens-panel-palette-badge-brand' : isPaletteInherited ? 'tokens-panel-palette-badge-warning' : 'tokens-panel-palette-badge-dim';
 
                             return (
-                              <div key={group.id} className={`mb-0.5 min-w-0 ${isPalHiddenB ? 'opacity-[0.4]' : ''}`} style={paletteInheritedStyle}>
-                                <div className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-md hover:bg-[#ffffff]/[0.03] transition-colors w-full min-w-0 group">
+                              <div key={group.id} className={`tp-group-wrapper ${isPalHiddenB ? 'tp-pal-hidden' : ''}`} style={paletteInheritedStyle}>
+                                <div className="tp-palette-header-row group">
                                   {!isPrimaryTheme && (
-                                    <div className="shrink-0 w-3 flex items-center justify-center">
+                                    <div className="tp-crown-col">
                                       {anyShadeModifiedB && (
-                                        <Crown className="h-2.5 w-2.5 text-brand fill-brand" />
+                                        <Crown className="tp-icon-2\.5 tp-icon-brand-fill" />
                                       )}
                                     </div>
                                   )}
                                   <button
                                     onClick={() => toggleGroup(group.id)}
-                                    className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0"
+                                    className="tp-chevron-btn"
                                   >
                                     {group.isExpanded ? (
-                                      <ChevronDown className="h-3 w-3 text-dim" />
+                                      <ChevronDown className="tp-icon-3 tp-icon-dim" />
                                     ) : (
-                                      <ChevronRight className="h-3 w-3 text-dim" />
+                                      <ChevronRight className="tp-icon-3 tp-icon-dim" />
                                     )}
                                   </button>
-                                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                  <div className="tp-palette-content-col">
                                     {editingId === paletteNode.id && editingType === 'group' ? (
                                       <Input
                                         ref={editInputRef}
@@ -3364,13 +3359,13 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                           setEditingType(null);
                                         }}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="h-auto text-xs bg-secondary border-transparent text-foreground px-2 py-0 min-w-[120px] flex-1 select-text"
+                                        className="tp-palette-edit-input tp-palette-edit-input-wrap"
                                       />
                                     ) : (
-                                      <div className="flex items-center gap-1 w-full">
-                                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                      <div className="tp-palette-name-row">
+                                        <div className="tp-palette-name-inner">
                                           <span
-                                            className={`text-xs text-subtle truncate ${isReadOnly ? 'cursor-default' : 'cursor-text hover:text-foreground'} transition-colors`}
+                                            className={`tp-name-subtle ${isReadOnly ? 'tp-cursor-default' : 'tp-name-subtle-editable'}`}
                                             onDoubleClick={isReadOnly ? undefined : () => {
                                               setEditingId(paletteNode.id);
                                               setEditingName(paletteNode.paletteName || group.name);
@@ -3380,11 +3375,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                           >
                                             {paletteNode.paletteName || group.name}
                                           </span>
-                                          <span className={`text-[11px] font-mono ${groupBadgeTextB} px-1 py-px rounded ${groupBadgeBgB} shrink-0`}>
+                                          <span className={`tokens-panel-palette-badge ${groupBadgeClassB}`}>
                                             {groupColorSpaceB}
                                           </span>
                                           {isPalHiddenB && (
-                                            <EyeOff className="h-2.5 w-2.5 text-dim shrink-0" />
+                                            <EyeOff className="tp-icon-2\.5 tp-icon-dim tp-eyeoff-icon" />
                                           )}
                                         </div>
                                         {!isReadOnly && (
@@ -3396,12 +3391,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                   onUpdateNode(paletteNode.id, { paletteNameLocked: !paletteNode.paletteNameLocked });
                                                 }
                                               }}
-                                              className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0"
+                                              className="tp-palette-action-btn-static"
                                             >
                                               {paletteNode.paletteNameLocked ? (
-                                                <Lock className="w-3 h-3 text-brand" />
+                                                <Lock className="tp-icon-3 tp-icon-brand" />
                                               ) : (
-                                                <Unlock className="w-3 h-3 text-dim" />
+                                                <Unlock className="tp-icon-3 tp-icon-dim" />
                                               )}
                                             </button>
                                           </Tip>
@@ -3413,23 +3408,23 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                 e.stopPropagation();
                                                 deletePaletteGroup(group.id, paletteNode.id);
                                               }}
-                                              className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0"
+                                              className="tp-palette-action-btn-static"
                                             >
-                                              <Trash2 className="w-3 h-3 text-dim hover:text-destructive" />
+                                              <Trash2 className="tp-icon-3 tp-icon-dim-hover-destructive" />
                                             </button>
                                           </Tip>
                                         )}
                                       </div>
                                     )}
                                     {/* Gradient showing all shades */}
-                                    <div className="w-full h-5 rounded-[3px] flex overflow-hidden">
+                                    <div className="tp-palette-gradient">
                                       {shadeNodes.sort((a, b) => a.position.y - b.position.y).map((shade, idx) => {
                                         const ec = getShadeEffectiveColor(shade);
                                         const color = `hsla(${ec.hue}, ${ec.saturation}%, ${ec.lightness}%, ${ec.alpha / 100})`;
                                         return (
                                           <div
                                             key={shade.id}
-                                            className="flex-1 h-full"
+                                            className="tp-palette-gradient-swatch"
                                             style={{ backgroundColor: color }}
                                             title={`${ec.lightness.toFixed(0)}%`}
                                           />
@@ -3440,7 +3435,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                 </div>
                                 {/* Expanded: list of shade tokens — auto-expand when search/filter is active to show individual matching tokens */}
                                 {(group.isExpanded || isSearchOrFilterActive) && palTokens.length > 0 && (
-                                  <div className="ml-3 mt-0.5">
+                                  <div className="tp-shade-list">
                                     {shadeNodes.sort((a, b) => a.position.y - b.position.y).map((shade) => {
                                       const shadeTokenId = getShadeTokenId(shade);
                                       const shadeToken = shadeTokenId ? palTokens.find(t => t.id === shadeTokenId) : null;
@@ -3468,12 +3463,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                   tokenRefs.current.delete(shadeToken.id);
                                                 }
                                               }}
-                                              className={`flex items-center gap-2 px-2.5 py-[6px] ${shadeIsSelected2 ? 'rounded-r-md' : 'rounded-md'} transition-all cursor-pointer relative ${highlightedTokenId === shadeToken.id
-                                                  ? 'ring-1 ring-brand/60 bg-brand/[0.12]'
+                                              className={`tp-shade-row ${shadeIsSelected2 ? 'tp-shade-row-selected' : ''} ${highlightedTokenId === shadeToken.id
+                                                  ? 'tp-shade-highlight'
                                                   : shadeIsSelected2
-                                                    ? 'bg-brand/[0.08]'
-                                                    : 'hover:bg-[#ffffff]/[0.03]'
-                                                } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${focusedTokenId === shadeToken.id && shadeIsSelected2 ? 'ring-1 ring-brand/40' : ''}`}
+                                                    ? 'tp-shade-selected'
+                                                    : ''
+                                                } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'tp-inherited-dim' : ''} ${focusedTokenId === shadeToken.id && shadeIsSelected2 ? 'tp-shade-focus-ring' : ''}`}
                                               onClick={(e) => {
                                                 const target = e.target as HTMLElement;
                                                 if (target.closest('input')) return;
@@ -3488,9 +3483,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                 if (isPrimaryTheme && !isReadOnly) startEditing(shadeToken.id, shadeToken.name, 'token');
                                               }}
                                             >
-                                              {shadeIsSelected2 && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand" />}
+                                              {shadeIsSelected2 && <div className="tp-shade-select-bar-indicator tp-shade-select-bar" />}
                                               <div
-                                                className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${shadeIsSelected2 ? 'ring-1.5 ring-brand' : ''}`}
+                                                className={`tp-shade-swatch ${shadeIsSelected2 ? 'tp-shade-swatch-ring' : ''}`}
                                                 style={{ backgroundColor: shadeColor }}
                                               />
                                               {editingId === shadeToken.id && editingType === 'token' ? (
@@ -3506,12 +3501,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                   onBlur={saveName}
                                                   onClick={(e) => e.stopPropagation()}
                                                   onDoubleClick={(e) => e.stopPropagation()}
-                                                  className="bg-transparent border-none text-foreground px-0 py-0 m-0 min-w-0 flex-1 outline-none caret-brand select-text"
+                                                  className="tp-shade-edit-input tp-shade-edit-input-wrap"
                                                   style={{ fontSize: '12px', lineHeight: 'normal', height: 'auto' }}
                                                   maxLength={MAX_TOKEN_NAME}
                                                 />
                                               ) : (
-                                                <span className="text-xs text-foreground truncate flex-1 min-w-0" title={shadeToken.name}>
+                                                <span className="tp-shade-name tp-shade-name-label" title={shadeToken.name}>
                                                   {shadeToken.name}
                                                 </span>
                                               )}
@@ -3521,7 +3516,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                             <TooltipPrimitive.Content
                                               side="right"
                                               sideOffset={8}
-                                              className="z-50 bg-secondary/95 backdrop-blur-md border border-hairline rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-in fade-in-0 zoom-in-95 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2"
+                                              className="tp-shade-tooltip tp-shade-tooltip-portal"
                                             >
                                               <TokenTooltipBody
                                                 name={shadeToken.name}
@@ -3544,7 +3539,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                           }
 
                           return (
-                            <div key={group.id} className="mb-0.5 min-w-0 rounded-md pb-1">
+                            <div key={group.id} className="tp-group-wrapper">
                               {shouldShowGroupDropBefore(itemIdx, 'regular') && renderGroupDropIndicator()}
                               {/* Group Header */}
                               <ContextMenu>
@@ -3559,24 +3554,24 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                         moveGroupInDirection(group.id, e.key === 'ArrowUp' ? 'up' : 'down');
                                       }
                                     }}
-                                    className="flex items-center gap-1 group/group w-full min-w-0 py-1.5 pl-0.5 pr-1 outline-none focus-visible:ring-1 focus-visible:ring-brand/50 rounded"
+                                    className="tp-group-header tp-group-focus-ring group/group"
                                   >
                                     {isPrimaryTheme && (
                                       <div
-                                        className="cursor-grab active:cursor-grabbing p-0.5 opacity-0 group-hover/group:opacity-100 transition-opacity shrink-0"
+                                        className="tp-group-drag-handle"
                                         onMouseDown={(e) => handleGroupGripMouseDown(e, group.id, 'regular')}
                                       >
-                                        <GripVertical className="h-3 w-3 text-dim" />
+                                        <GripVertical className="tp-icon-3 tp-icon-dim" />
                                       </div>
                                     )}
                                     <button
                                       onClick={() => toggleGroup(group.id)}
-                                      className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0"
+                                      className="tp-chevron-btn"
                                     >
                                       {group.isExpanded ? (
-                                        <ChevronDown className="h-3 w-3 text-dim" />
+                                        <ChevronDown className="tp-icon-3 tp-icon-dim" />
                                       ) : (
-                                        <ChevronRight className="h-3 w-3 text-dim" />
+                                        <ChevronRight className="tp-icon-3 tp-icon-dim" />
                                       )}
                                     </button>
                                     {editingId === group.id && editingType === 'group' && !isTokenNodeGrp ? (
@@ -3597,12 +3592,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                         onBlur={saveName}
                                         onClick={(e) => e.stopPropagation()}
                                         maxLength={MAX_GROUP_NAME}
-                                        className="h-6 text-xs min-w-0 flex-1 bg-secondary border-transparent text-foreground select-text"
+                                        className="tp-group-edit-input tp-group-edit-input-wrap"
                                       />
                                     ) : (
-                                      <div className="flex-1 min-w-0 overflow-hidden">
+                                      <div className="tp-group-name-wrap">
                                         <span
-                                          className={`text-xs text-subtle ${isReadOnly || isTokenNodeGrp ? 'cursor-default' : 'cursor-text hover:text-foreground'} transition-colors px-1 py-0.5 rounded ${isReadOnly || isTokenNodeGrp ? '' : 'hover:bg-[#ffffff]/[0.04]'} block truncate`}
+                                          className={`tp-group-name-text tp-name-subtle ${isReadOnly || isTokenNodeGrp ? 'tp-cursor-default' : 'tp-name-subtle-editable tp-group-name-text-editable'}`}
                                           onDoubleClick={isReadOnly || isTokenNodeGrp ? undefined : () => startEditing(group.id, group.name, 'group')}
                                           title={group.name}
                                         >
@@ -3615,9 +3610,9 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                         <Tip label="Delete Group" side="bottom">
                                           <button
                                             onClick={() => requestDeleteGroup(group.id)}
-                                            className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0 opacity-0 group-hover/group:opacity-100 transition-opacity ml-auto"
+                                            className="tp-group-action-btn tp-group-action-btn-first"
                                           >
-                                            <Trash2 className="h-3 w-3 text-dim hover:text-destructive" />
+                                            <Trash2 className="tp-icon-3 tp-icon-dim-hover-destructive" />
                                           </button>
                                         </Tip>
                                         <Tip label="Add Variable to Group" side="bottom">
@@ -3626,47 +3621,47 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                               ensureGroupExpanded(group.id);
                                               onAddToken(undefined, group.id, activeProjectId);
                                             }}
-                                            className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0 opacity-0 group-hover/group:opacity-100 transition-opacity"
+                                            className="tp-group-action-btn"
                                           >
-                                            <Plus className="h-3 w-3 text-dim" />
+                                            <Plus className="tp-icon-3 tp-icon-dim" />
                                           </button>
                                         </Tip>
                                       </>
                                     )}
                                   </div>
                                 </ContextMenuTrigger>
-                                <ContextMenuContent className="min-w-[160px] bg-secondary/95 backdrop-blur-md border border-hairline rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.5)] p-1">
+                                <ContextMenuContent className="tp-context-menu">
                                   {!isReadOnly && (
                                     <>
                                       <ContextMenuItem
                                         onClick={() => moveGroupInDirection(group.id, 'up')}
-                                        className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                        className="tokens-panel-context-item"
                                       >
-                                        <ArrowUp className="h-3.5 w-3.5 text-dim" />
+                                        <ArrowUp className="tokens-panel-context-icon" />
                                         Move up
                                       </ContextMenuItem>
                                       <ContextMenuItem
                                         onClick={() => moveGroupInDirection(group.id, 'down')}
-                                        className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                        className="tokens-panel-context-item"
                                       >
-                                        <ArrowDown className="h-3.5 w-3.5 text-dim" />
+                                        <ArrowDown className="tokens-panel-context-icon" />
                                         Move down
                                       </ContextMenuItem>
                                       {!isTokenNodeGrp && (
                                         <>
-                                          <ContextMenuSeparator className="bg-[#1e1e1e] my-1" />
+                                          <ContextMenuSeparator className="tokens-panel-context-separator" />
                                           <ContextMenuItem
                                             onClick={() => startEditing(group.id, group.name, 'group')}
-                                            className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                            className="tokens-panel-context-item"
                                           >
-                                            <Edit2 className="h-3.5 w-3.5 text-dim" />
+                                            <Edit2 className="tokens-panel-context-icon" />
                                             Rename
                                           </ContextMenuItem>
                                           <ContextMenuItem
                                             onClick={() => requestDeleteGroup(group.id)}
-                                            className="text-destructive focus:bg-hairline focus:text-destructive cursor-pointer rounded-lg px-2.5 py-2 text-xs gap-2"
+                                            className="tokens-panel-context-item-destructive"
                                           >
-                                            <Trash2 className="h-3.5 w-3.5" />
+                                            <Trash2 className="tokens-panel-context-icon" />
                                             Delete group
                                           </ContextMenuItem>
                                         </>
@@ -3677,11 +3672,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                               </ContextMenu>
 
                               {group.isExpanded && (
-                                <div data-group-zone={!isColorPaletteGroup ? group.id : undefined} className="space-y-px w-full min-w-0 mt-0.5">
+                                <div data-group-zone={!isColorPaletteGroup ? group.id : undefined} className="tp-group-zone">
                                   {isColorPaletteGroup ? (
                                     // Render palette entries for Color Palette group
                                     paletteEntries.length === 0 ? (
-                                      <div className="text-xs text-dim py-1.5 px-3">
+                                      <div className="tp-empty-dim tp-empty-text">
                                         No palettes yet
                                       </div>
                                     ) : (
@@ -3705,38 +3700,37 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                         const anyShadeModifiedC = !isPrimaryTheme && entryPalTokens.some(t => isTokenValueChanged(t.id));
                                         const palFmtC = paletteNode?.paletteColorFormat || 'HEX';
                                         const groupColorSpaceC = palFmtC === 'OKLCH' ? 'OKLCH' : palFmtC === 'RGBA' ? 'RGBA' : 'HSL';
-                                        const groupBadgeTextC = anyShadeModifiedC ? 'text-brand' : isPalEntryInherited ? 'text-warning' : 'text-dim';
-                                        const groupBadgeBgC = anyShadeModifiedC ? 'bg-brand/[0.12]' : isPalEntryInherited ? 'bg-warning/[0.12]' : 'bg-[#ffffff]/[0.04]';
+                                        const groupBadgeClassC = anyShadeModifiedC ? 'tokens-panel-palette-badge-brand' : isPalEntryInherited ? 'tokens-panel-palette-badge-warning' : 'tokens-panel-palette-badge-dim';
 
                                         return (
-                                          <div key={entry.id} className={`mb-0.5 min-w-0 w-full ${isPalHiddenC ? 'opacity-[0.4]' : ''}`} style={palEntryInheritedStyle}>
-                                            <div className="flex items-center gap-1.5 py-1.5 rounded-md hover:bg-[#ffffff]/[0.03] transition-colors w-full min-w-0 group">
+                                          <div key={entry.id} className={`tp-group-wrapper ${isPalHiddenC ? 'tp-pal-hidden' : ''}`} style={palEntryInheritedStyle}>
+                                            <div className="tp-palette-header-row group">
                                               {!isPrimaryTheme && (
-                                                <div className="shrink-0 w-3 flex items-center justify-center">
+                                                <div className="tp-crown-col">
                                                   {anyShadeModifiedC && (
-                                                    <Crown className="h-2.5 w-2.5 text-brand fill-brand" />
+                                                    <Crown className="tp-icon-2\.5 tp-icon-brand-fill" />
                                                   )}
                                                 </div>
                                               )}
                                               <button
                                                 onClick={() => toggleGroup(entry.id)}
-                                                className="p-0.5 hover:bg-[#ffffff]/[0.06] rounded shrink-0"
+                                                className="tp-chevron-btn"
                                               >
                                                 {entry.isExpanded ? (
-                                                  <ChevronDown className="h-3 w-3 text-dim" />
+                                                  <ChevronDown className="tp-icon-3 tp-icon-dim" />
                                                 ) : (
-                                                  <ChevronRight className="h-3 w-3 text-dim" />
+                                                  <ChevronRight className="tp-icon-3 tp-icon-dim" />
                                                 )}
                                               </button>
-                                              <div className="flex-1 min-w-0 flex flex-col gap-1">
-                                                <div className="flex items-center gap-1 w-full">
-                                                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                                    <span className="text-xs text-subtle truncate">{paletteNode.paletteName || entry.name}</span>
-                                                    <span className={`text-[11px] font-mono ${groupBadgeTextC} px-1 py-px rounded ${groupBadgeBgC} shrink-0`}>
+                                              <div className="tp-palette-content-col">
+                                                <div className="tp-palette-name-row">
+                                                  <div className="tp-palette-name-inner">
+                                                    <span className="tp-name-subtle tp-shade-name-label">{paletteNode.paletteName || entry.name}</span>
+                                                    <span className={`tokens-panel-palette-badge ${groupBadgeClassC}`}>
                                                       {groupColorSpaceC}
                                                     </span>
                                                     {isPalHiddenC && (
-                                                      <EyeOff className="h-2.5 w-2.5 text-dim shrink-0" />
+                                                      <EyeOff className="tp-icon-2\.5 tp-icon-dim tp-eyeoff-icon" />
                                                     )}
                                                   </div>
                                                   {!isReadOnly && (
@@ -3748,12 +3742,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                             onUpdateNode(paletteNode.id, { paletteNameLocked: !paletteNode.paletteNameLocked });
                                                           }
                                                         }}
-                                                        className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0 opacity-0 group-hover:opacity-100"
+                                                        className="tp-palette-action-btn"
                                                       >
                                                         {paletteNode.paletteNameLocked ? (
-                                                          <Lock className="w-3 h-3 text-brand" />
+                                                          <Lock className="tp-icon-3 tp-icon-brand" />
                                                         ) : (
-                                                          <Unlock className="w-3 h-3 text-dim" />
+                                                          <Unlock className="tp-icon-3 tp-icon-dim" />
                                                         )}
                                                       </button>
                                                     </Tip>
@@ -3765,22 +3759,22 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                           e.stopPropagation();
                                                           deletePaletteGroup(entry.id, paletteNode.id);
                                                         }}
-                                                        className="w-5 h-5 rounded transition-colors flex items-center justify-center hover:bg-[#ffffff]/[0.06] shrink-0 opacity-0 group-hover:opacity-100"
+                                                        className="tp-palette-action-btn"
                                                       >
-                                                        <Trash2 className="w-3 h-3 text-dim hover:text-destructive" />
+                                                        <Trash2 className="tp-icon-3 tp-icon-dim-hover-destructive" />
                                                       </button>
                                                     </Tip>
                                                   )}
                                                 </div>
                                                 {/* Gradient showing all shades */}
-                                                <div className="w-full h-5 rounded-[3px] flex overflow-hidden">
+                                                <div className="tp-palette-gradient">
                                                   {shadeNodes.map((shade) => {
                                                     const ec = getShadeEffectiveColor(shade);
                                                     const color = `hsla(${ec.hue}, ${ec.saturation}%, ${ec.lightness}%, ${ec.alpha / 100})`;
                                                     return (
                                                       <div
                                                         key={shade.id}
-                                                        className="flex-1 h-full"
+                                                        className="tp-palette-gradient-swatch"
                                                         style={{ backgroundColor: color }}
                                                         title={`${ec.lightness.toFixed(0)}%`}
                                                       />
@@ -3791,7 +3785,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                             </div>
                                             {/* Expanded: list of shade tokens */}
                                             {entry.isExpanded && entryPalTokens.length > 0 && (
-                                              <div className="ml-3 mt-0.5">
+                                              <div className="tp-shade-list">
                                                 {shadeNodes.map((shade) => {
                                                   const shadeTokenId = getShadeTokenId(shade);
                                                   const shadeToken = shadeTokenId ? entryPalTokens.find(t => t.id === shadeTokenId) : null;
@@ -3816,10 +3810,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                               tokenRefs.current.delete(shadeToken.id);
                                                             }
                                                           }}
-                                                          className={`flex items-center gap-2 px-2.5 py-[6px] ${selectedTokens.has(shadeToken.id) ? 'rounded-r-md' : 'rounded-md'} transition-all cursor-pointer relative ${selectedTokens.has(shadeToken.id)
-                                                              ? 'bg-brand/[0.08]'
-                                                              : 'hover:bg-[#ffffff]/[0.03]'
-                                                            } ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'opacity-[0.55] hover:opacity-100' : ''} ${focusedTokenId === shadeToken.id && selectedTokens.has(shadeToken.id) ? 'ring-1 ring-brand/40' : ''}`}
+                                                          className={`tp-shade-row ${selectedTokens.has(shadeToken.id) ? 'tp-shade-row-selected tp-shade-selected' : ''} ${isTokenInherited(shadeToken.id) && !showAllVisible ? 'tp-inherited-dim' : ''} ${focusedTokenId === shadeToken.id && selectedTokens.has(shadeToken.id) ? 'tp-shade-focus-ring' : ''}`}
                                                           onClick={(e) => {
                                                             e.stopPropagation();
                                                             if (wasDraggingRef.current) return;
@@ -3832,12 +3823,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                             if (isPrimaryTheme && !isReadOnly) startEditing(shadeToken.id, shadeToken.name, 'token');
                                                           }}
                                                         >
-                                                          {selectedTokens.has(shadeToken.id) && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand" />}
+                                                          {selectedTokens.has(shadeToken.id) && <div className="tp-shade-select-bar-indicator tp-shade-select-bar" />}
                                                           <div
-                                                            className={`w-3.5 h-3.5 rounded-[3px] shrink-0 transition-shadow ${selectedTokens.has(shadeToken.id) ? 'ring-1.5 ring-brand' : ''}`}
+                                                            className={`tp-shade-swatch ${selectedTokens.has(shadeToken.id) ? 'tp-shade-swatch-ring' : ''}`}
                                                             style={{ backgroundColor: shadeColor }}
                                                           />
-                                                          <span className="text-xs text-foreground truncate flex-1 min-w-0">
+                                                          <span className="tp-shade-name tp-shade-name-label">
                                                             {shadeToken.name}
                                                           </span>
                                                         </div>
@@ -3846,7 +3837,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                                         <TooltipPrimitive.Content
                                                           side="right"
                                                           sideOffset={8}
-                                                          className="z-50 bg-secondary/95 backdrop-blur-md border border-hairline rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-in fade-in-0 zoom-in-95 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2"
+                                                          className="tp-shade-tooltip tp-shade-tooltip-portal"
                                                         >
                                                           <TokenTooltipBody
                                                             name={shadeToken.name}
@@ -3868,7 +3859,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                       })
                                     )
                                   ) : groupTokens.length === 0 ? (
-                                    <div className="text-xs text-dim py-1 px-3">
+                                    <div className="tp-empty-dim tp-empty-text-sm">
                                       {reorderDropIndicator?.groupId === group.id && renderDropIndicator()}
                                       No variables in this group
                                     </div>
@@ -3897,7 +3888,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                           <div data-group-zone="__null__">
                             {filteredUngroupedTokens.length === 0 && reorderDropIndicator?.groupId === null && renderDropIndicator()}
                             {filteredUngroupedTokens.map((token, tIdx) => (
-                              <div key={token.id} className="px-[5px]">
+                              <div key={token.id} className="tp-ungrouped-token">
                                 {shouldShowDropBefore(null, tIdx) && renderDropIndicator()}
                                 {renderToken(token)}
                                 {tIdx === filteredUngroupedTokens.length - 1 && shouldShowDropAfterLast(null, filteredUngroupedTokens.length) && renderDropIndicator()}
@@ -3908,13 +3899,13 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
 
                         {/* Empty state */}
                         {unifiedItems.length === 0 && filteredUngroupedTokens.length === 0 && (
-                          <div className="text-center py-8 text-dim">
-                            <p className="text-xs">
+                          <div className="tp-empty-dim tp-empty-state">
+                            <p className="tp-empty-state-text">
                               {isSearchOrFilterActive
                                 ? 'No matching results'
                                 : viewFilter === 'palettes' ? 'No color palettes yet' : 'No variables yet'}
                             </p>
-                            <p className="text-xs mt-1 text-ghost">
+                            <p className="tp-empty-ghost tp-empty-state-hint">
                               {isSearchOrFilterActive
                                 ? hasActiveFilters(searchFilters) ? 'Try adjusting your filters' : 'Try a different search term'
                                 : viewFilter === 'palettes' ? 'Add a palette node on the canvas to get started' : 'Create variables to organize your colors'}
@@ -3931,15 +3922,15 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
 
           {/* Bulk Actions Panel - Show at bottom when tokens are selected */}
           {selectedTokens.size > 0 && (
-            <div className="border-t border-[#141414] bg-[#111111] shrink-0">
+            <div className="tp-bulk-panel">
               {/* Header */}
-              <div className={`px-3 py-2 ${!isReadOnly ? 'border-b border-[#141414]' : ''} flex items-center justify-between`}>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-brand">{selectedTokens.size} variable{selectedTokens.size > 1 ? 's' : ''} selected</span>
+              <div className={`tp-bulk-header ${!isReadOnly ? 'tp-bulk-header-bordered' : ''}`}>
+                <div className="tp-bulk-header-left">
+                  <span className="tp-bulk-count">{selectedTokens.size} variable{selectedTokens.size > 1 ? 's' : ''} selected</span>
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-7 px-3 text-xs text-subtle hover:text-foreground hover:bg-[#ffffff]/[0.04]"
+                    className="tp-bulk-select-all tp-bulk-select-all-wrap"
                     onClick={() => {
                       const tokensInProject = tokens.filter(t => t.projectId === activeProjectId);
                       const allSelected = selectedTokens.size === tokensInProject.length && tokensInProject.length > 0;
@@ -3957,7 +3948,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                     })()}
                   </Button>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="tp-bulk-header-right">
                   {/* Bulk visibility toggle (shown in both primary and non-primary themes) — hidden for mixed/token-node selections */}
                   {isReadOnly && !selectionHasMixedTokenNodeTypes && !selectionAllTokenNodeTokens && (() => {
                     const selectedTokenList = tokens.filter(t => selectedTokens.has(t.id));
@@ -3969,11 +3960,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                     return (
                       <Tip label={allTokensVisible ? 'Hide selected' : allTokensHidden ? 'Show selected' : 'Mixed visibility'} side="bottom">
                         <button
-                          className={`flex items-center justify-center h-6 w-6 rounded-md transition-all ${mixedTokenVis
-                              ? 'text-ghost cursor-not-allowed'
+                          className={`tp-bulk-vis-btn ${mixedTokenVis
+                              ? 'tp-bulk-vis-ghost'
                               : allTokensHidden
-                                ? 'text-brand hover:bg-brand/10'
-                                : 'text-faint hover:text-foreground hover:bg-[#ffffff]/[0.06]'
+                                ? 'tp-bulk-vis-brand'
+                                : 'tp-bulk-vis-faint'
                             }`}
                           disabled={mixedTokenVis}
                           onClick={(e) => {
@@ -3990,7 +3981,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             });
                           }}
                         >
-                          {allTokensHidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                          {allTokensHidden ? <EyeOff className="tp-icon-3\.5" /> : <Eye className="tp-icon-3\.5" />}
                         </button>
                       </Tip>
                     );
@@ -3999,13 +3990,13 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 w-6 p-0 text-dim hover:text-foreground hover:bg-[#ffffff]/[0.06]"
+                      className="tp-bulk-clear tp-bulk-clear-wrap"
                       onClick={(e) => {
                         e.stopPropagation();
                         deselectAllTokens();
                       }}
                     >
-                      <X className="h-3 w-3" />
+                      <X className="tp-icon-3" />
                     </Button>
                   </Tip>
                 </div>
@@ -4013,58 +4004,58 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
 
               {/* Panel Content — primary theme only (move to group, visibility, delete) */}
               {!isReadOnly && (
-                <div className="px-3 py-2.5">
+                <div className="tp-bulk-content">
                   {/* When mixed selection or all-token-node selection, disable all bulk actions */}
                   {selectionHasMixedTokenNodeTypes ? (
-                    <div className="flex items-center justify-center">
-                      <span className="text-[11px] text-dim">Mixed selection — actions disabled</span>
+                    <div className="tp-bulk-info-row">
+                      <span className="tp-bulk-info tp-bulk-info-text">Mixed selection — actions disabled</span>
                     </div>
                   ) : selectionAllTokenNodeTokens ? (
-                    <div className="flex items-center justify-center">
-                      <span className="text-[11px] text-dim">Token node variables — managed on canvas</span>
+                    <div className="tp-bulk-info-row">
+                      <span className="tp-bulk-info tp-bulk-info-text">Token node variables — managed on canvas</span>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="tp-bulk-actions-row">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 px-3 text-xs bg-secondary border-transparent hover:bg-[#222] text-foreground"
+                            className="tp-move-btn tp-move-btn-wrap"
                           >
-                            <Folder className="h-3 w-3 mr-1.5" />
+                            <Folder className="tp-icon-3 tp-icon-mr-1\.5" />
                             Move to group
-                            <ChevronDown className="h-3 w-3 ml-1.5" />
+                            <ChevronDown className="tp-icon-3 tp-icon-ml-1\.5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-secondary border-transparent max-h-[300px] overflow-y-auto">
+                        <DropdownMenuContent align="end" className="tp-move-dropdown tp-move-dropdown-wrap">
                           <DropdownMenuItem
                             onClick={() => bulkMoveToGroup(null)}
-                            className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer"
+                            className="tp-move-dropdown-item"
                           >
                             No group
                           </DropdownMenuItem>
-                          {regularGroups.length > 0 && <DropdownMenuSeparator className="bg-[#1e1e1e]" />}
+                          {regularGroups.length > 0 && <DropdownMenuSeparator className="tp-dropdown-separator" />}
                           {regularGroups.map(group => (
                             <DropdownMenuItem
                               key={group.id}
                               onClick={() => bulkMoveToGroup(group.id)}
-                              className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer"
+                              className="tp-move-dropdown-item"
                             >
-                              <Folder className="h-3 w-3 mr-2" />
+                              <Folder className="tp-icon-3 tp-icon-mr-2" />
                               {group.name}
                             </DropdownMenuItem>
                           ))}
-                          <DropdownMenuSeparator className="bg-[#1e1e1e]" />
+                          <DropdownMenuSeparator className="tp-dropdown-separator" />
                           <DropdownMenuItem
                             onClick={() => {
                               const ids = [...selectedTokens];
                               createGroupAndMoveTokens(ids);
                               deselectAllTokens();
                             }}
-                            className="text-foreground focus:bg-hairline focus:text-foreground cursor-pointer"
+                            className="tp-move-dropdown-item"
                           >
-                            <FolderPlus className="h-3 w-3 mr-2" />
+                            <FolderPlus className="tp-icon-3 tp-icon-mr-2" />
                             New group
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -4083,11 +4074,11 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                             <Button
                               size="sm"
                               variant="outline"
-                              className={`h-8 w-8 p-0 text-xs border-transparent ${mixedTokenVis
-                                  ? 'text-ghost cursor-not-allowed bg-secondary'
+                              className={`tp-bulk-vis-btn-lg ${mixedTokenVis
+                                  ? 'tp-bulk-vis-ghost-btn'
                                   : allTokensHidden
-                                    ? 'text-brand bg-brand/10 border-brand/20 hover:bg-brand/15'
-                                    : 'text-foreground bg-secondary hover:bg-[#222]'
+                                    ? 'tp-bulk-vis-brand-active'
+                                    : 'tp-bulk-vis-default-btn'
                                 }`}
                               disabled={mixedTokenVis}
                               onClick={() => {
@@ -4103,7 +4094,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                                 });
                               }}
                             >
-                              {allTokensHidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                              {allTokensHidden ? <EyeOff className="tp-icon-3\.5" /> : <Eye className="tp-icon-3\.5" />}
                             </Button>
                           </Tip>
                         );
@@ -4113,10 +4104,10 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-8 w-8 p-0 text-xs bg-[#FF4D6A]/10 border-[#FF4D6A]/20 hover:bg-[#FF4D6A]/15 text-destructive hover:text-[#FF7A90]"
+                          className="tp-bulk-delete-btn tp-bulk-delete-btn-wrap"
                           onClick={handleBulkDeleteTokens}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="tokens-panel-context-icon" />
                         </Button>
                       </Tip>
                     </div>
@@ -4128,7 +4119,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
 
           {/* Resize Handle */}
           <div
-            className="absolute bottom-2 right-2 w-4 h-4 cursor-nwse-resize group z-50 bg-[rgba(91,91,91,0)]"
+            className="tp-resize-handle group"
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -4137,10 +4128,10 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
             title="Resize panel"
           >
             <svg
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 transition-colors"
+              className="tp-resize-svg"
               viewBox="0 0 12 12"
               fill="none"
-              style={{ color: 'var(--ghost)' }}
+              style={{ color: 'var(--grey-700)' }}
             >
               <path d="M10 2L2 10M10 6L6 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
@@ -4150,28 +4141,28 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
 
       {/* Delete Group Confirmation Dialog */}
       <AlertDialog open={deleteGroupDialogOpen} onOpenChange={setDeleteGroupDialogOpen}>
-        <AlertDialogContent className="bg-[#111111] border-line">
+        <AlertDialogContent className="tp-dialog-content">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-foreground">Delete Group?</AlertDialogTitle>
+            <AlertDialogTitle className="tp-dialog-title">Delete Group?</AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="text-muted-foreground space-y-2">
+              <div className="tp-dialog-desc tp-dialog-space-y-2">
                 {groupToDelete && (
                   <>
                     <div>
-                      You are about to delete the group <span className="font-semibold text-foreground">"{groupToDelete.name}"</span>.
+                      You are about to delete the group <span className="tp-dialog-highlight tp-dialog-font-semibold">"{groupToDelete.name}"</span>.
                     </div>
                     <div>
-                      This group contains <span className="font-semibold text-foreground">{groupToDelete.tokenCount} token{groupToDelete.tokenCount !== 1 ? 's' : ''}</span>.
+                      This group contains <span className="tp-dialog-highlight tp-dialog-font-semibold">{groupToDelete.tokenCount} token{groupToDelete.tokenCount !== 1 ? 's' : ''}</span>.
                     </div>
                     {groupToDelete.assignedCount > 0 && (
-                      <div className="text-warning">
-                        ⚠️ <span className="font-semibold">{groupToDelete.assignedCount} token{groupToDelete.assignedCount !== 1 ? 's are' : ' is'}</span> currently assigned to nodes and will be removed from those nodes.
+                      <div className="tp-dialog-text-warning">
+                        ⚠️ <span className="tp-dialog-font-semibold">{groupToDelete.assignedCount} token{groupToDelete.assignedCount !== 1 ? 's are' : ' is'}</span> currently assigned to nodes and will be removed from those nodes.
                       </div>
                     )}
-                    <div className="mt-3 font-semibold text-destructive">
+                    <div className="tp-dialog-destructive tp-dialog-font-semibold tp-dialog-mt-3">
                       All tokens in this group will be permanently deleted.
                     </div>
-                    <div className="text-sm">
+                    <div className="tp-dialog-text-sm">
                       This action cannot be undone.
                     </div>
                   </>
@@ -4180,12 +4171,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-secondary border-transparent text-foreground hover:bg-[#222]">
+            <AlertDialogCancel className="tp-dialog-cancel">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => groupToDelete && confirmDeleteGroup(groupToDelete.id)}
-              className="bg-[#EA0B2D] text-white hover:bg-[#C00924]"
+              className="tp-dialog-delete-btn"
             >
               Delete Group & Tokens
             </AlertDialogAction>
@@ -4198,25 +4189,25 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
         open={autoAssignDeleteDialog.open}
         onOpenChange={(open) => setAutoAssignDeleteDialog(prev => ({ ...prev, open }))}
       >
-        <AlertDialogContent className="bg-[#111111] border-line max-w-[400px]">
+        <AlertDialogContent className="tp-aa-dialog-content tp-aa-dialog-content-wrap">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-foreground flex items-center gap-2">
-              <Zap size={14} className="text-brand" />
+            <AlertDialogTitle className="tp-dialog-title tp-aa-dialog-title-row">
+              <Zap size={14} className="tp-aa-dialog-zap" />
               {autoAssignDeleteDialog.items.length === 1
                 ? 'Delete auto-assigned token?'
                 : `Delete ${autoAssignDeleteDialog.items.length} auto-assigned tokens?`}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="text-muted-foreground space-y-3">
+              <div className="tp-dialog-desc tp-dialog-space-y-3">
                 {autoAssignDeleteDialog.items.length === 1 ? (
                   <>
                     <div>
-                      The token <span className="text-foreground font-mono text-[12px] bg-secondary px-1.5 py-0.5 rounded">
+                      The token <span className="tp-aa-dialog-highlight-mono">
                         {autoAssignDeleteDialog.items[0]?.tokenName}
                       </span> will be permanently deleted from the token panel.
                     </div>
-                    <div className="text-[12px] text-subtle">
-                      This token was auto-assigned to node <span className="text-foreground">{autoAssignDeleteDialog.items[0]?.nodeName}</span>.
+                    <div className="tp-aa-dialog-subtle tp-aa-dialog-text-12">
+                      This token was auto-assigned to node <span className="tp-dialog-highlight">{autoAssignDeleteDialog.items[0]?.nodeName}</span>.
                       It may be recreated if the parent node&apos;s auto-assign is re-applied.
                     </div>
                   </>
@@ -4225,33 +4216,33 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                     <div>
                       The following auto-assigned tokens will be permanently deleted from the token panel:
                     </div>
-                    <div className="space-y-1 max-h-[120px] overflow-y-auto">
+                    <div className="tp-aa-dialog-list">
                       {autoAssignDeleteDialog.items.map(item => (
-                        <div key={item.tokenId} className="flex items-center gap-2 text-[12px]">
-                          <Zap size={10} className="text-brand shrink-0" />
-                          <span className="text-foreground font-mono bg-secondary px-1.5 py-0.5 rounded truncate">
+                        <div key={item.tokenId} className="tp-aa-dialog-item-row">
+                          <Zap size={10} className="tp-aa-dialog-zap tp-eyeoff-icon" />
+                          <span className="tp-aa-dialog-highlight-mono tp-truncate">
                             {item.tokenName}
                           </span>
-                          <span className="text-dim">&rarr;</span>
-                          <span className="text-subtle truncate">{item.nodeName}</span>
+                          <span className="tp-aa-dialog-arrow">&rarr;</span>
+                          <span className="tp-aa-dialog-subtle tp-truncate">{item.nodeName}</span>
                         </div>
                       ))}
                     </div>
                     {autoAssignDeleteDialog.nonAutoTokenIds.length > 0 && (
-                      <div className="text-[12px] text-subtle">
+                      <div className="tp-aa-dialog-subtle tp-aa-dialog-text-12">
                         + {autoAssignDeleteDialog.nonAutoTokenIds.length} other token{autoAssignDeleteDialog.nonAutoTokenIds.length > 1 ? 's' : ''} will also be deleted.
                       </div>
                     )}
-                    <div className="text-[12px] text-subtle">
+                    <div className="tp-aa-dialog-subtle tp-aa-dialog-text-12">
                       These tokens may be recreated if the parent node&apos;s auto-assign is re-applied.
                     </div>
                   </>
                 )}
-                <label className="flex items-start gap-2.5 cursor-pointer group bg-secondary rounded-lg px-3 py-2.5 border border-transparent hover:border-line transition-colors">
+                <label className="tp-aa-dialog-checkbox-label tp-aa-dialog-checkbox-wrap group">
                   <div
-                    className={`w-4 h-4 mt-[1px] rounded border flex items-center justify-center transition-colors shrink-0 ${autoAssignDeleteDialog.excludeFromAutoAssign
-                        ? 'bg-[#FBBF24] border-[#FBBF24]'
-                        : 'border-[#555] group-hover:border-[#777]'
+                    className={`tp-aa-checkbox ${autoAssignDeleteDialog.excludeFromAutoAssign
+                        ? 'tp-aa-checkbox-checked'
+                        : 'tp-aa-checkbox-unchecked'
                       }`}
                     onClick={(e) => {
                       e.preventDefault();
@@ -4262,7 +4253,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                     }}
                   >
                     {autoAssignDeleteDialog.excludeFromAutoAssign && (
-                      <Check size={10} className="text-[#111]" />
+                      <Check size={10} className="tp-check-icon-dark" />
                     )}
                   </div>
                   <div
@@ -4274,10 +4265,10 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       }));
                     }}
                   >
-                    <div className="text-[12px] text-foreground select-none">
+                    <div className="tp-dialog-highlight tp-aa-checkbox-label">
                       Don&apos;t auto-assign {autoAssignDeleteDialog.items.length === 1 ? 'token for this node' : 'tokens for these nodes'}
                     </div>
-                    <div className="text-[11px] text-faint select-none mt-0.5">
+                    <div className="tp-aa-dialog-faint tp-aa-checkbox-hint">
                       Future re-apply or updates will skip {autoAssignDeleteDialog.items.length === 1 ? 'this node' : 'these nodes'}
                     </div>
                   </div>
@@ -4286,12 +4277,12 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-secondary border-transparent text-foreground hover:bg-[#222]">
+            <AlertDialogCancel className="tp-dialog-cancel">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmAutoAssignDelete}
-              className="bg-[#EA0B2D] text-white hover:bg-[#C00924]"
+              className="tp-dialog-delete-btn"
             >
               {autoAssignDeleteDialog.items.length === 1
                 ? 'Delete Token'

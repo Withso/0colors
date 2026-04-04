@@ -1,0 +1,260 @@
+/* PaletteShadesGrid — co-located styles */
+
+/* ══════════════════════════════════════════════
+   PropertyHeader toggle buttons
+   ══════════════════════════════════════════════ */
+
+.psg-toggle-active {
+  color: var(--indigo-500);
+}
+
+.psg-toggle-active:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.psg-toggle-inactive {
+  color: var(--grey-400);
+}
+
+.psg-toggle-inactive:hover {
+  color: var(--grey-100);
+  background-color: var(--grey-800);
+}
+
+/* ══════════════════════════════════════════════
+   Labels & icons
+   ══════════════════════════════════════════════ */
+
+.psg-label-foreground {
+  color: var(--grey-100);
+}
+
+.psg-icon-foreground {
+  color: var(--grey-100);
+}
+
+/* ══════════════════════════════════════════════
+   Popover
+   ══════════════════════════════════════════════ */
+
+.psg-popover-content {
+  width: 268px;
+  padding: 16px;
+  background-color: var(--grey-800);
+  border-color: var(--grey-800);
+}
+
+/* ══════════════════════════════════════════════
+   PropertyControls layout
+   ══════════════════════════════════════════════ */
+
+.psg-property-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(229, 229, 229, 0);
+}
+
+.psg-control-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.psg-icon-3-5 {
+  width: 14px;
+  height: 14px;
+}
+
+.psg-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-left: auto;
+}
+
+.psg-diff-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.psg-diff-strikethrough-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.psg-diff-strikethrough-line {
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: rotate(-45deg);
+  border-radius: 9999px;
+}
+
+/* ══════════════════════════════════════════════
+   Grid outer wrapper
+   ══════════════════════════════════════════════ */
+
+.psg-outer {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.psg-container {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: 12px;
+}
+
+.psg-connection-dot {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+}
+
+.psg-shade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ══════════════════════════════════════════════
+   Shade row
+   ══════════════════════════════════════════════ */
+
+.psg-shade-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.psg-connection-error {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  color: #fff;
+  font-size: 14px;
+  z-index: 50;
+  border-radius: var(--radius-lg);
+}
+
+.psg-shade-name {
+  font-size: 14px;
+  flex: 1;
+}
+
+.psg-color-picker-btn {
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════
+   Color picker popover controls
+   ══════════════════════════════════════════════ */
+
+.psg-picker-stack-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.psg-picker-stack-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.psg-picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.psg-scrubber-input {
+  width: 64px;
+  height: 28px;
+  font-size: 14px;
+}
+
+.psg-range-input {
+  width: 100%;
+  height: 8px;
+  border-radius: var(--radius-lg);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════
+   Color format badge
+   ══════════════════════════════════════════════ */
+
+.psg-color-format-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+/* ══════════════════════════════════════════════
+   Add-child / wire button (right edge)
+   ══════════════════════════════════════════════ */
+
+.psg-wire-btn {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background-color 0.15s;
+  box-shadow: var(--shadow-md);
+}
+
+.psg-wire-btn--success {
+  background-color: var(--green-500);
+}
+
+.psg-wire-btn--default {
+  background-color: var(--grey-700);
+}
+
+.psg-wire-btn--default:hover {
+  background-color: var(--grey-600);
+}
+
+.psg-icon-3 {
+  width: 12px;
+  height: 12px;
+}
+
+.psg-icon-white {
+  color: #fff;
+}

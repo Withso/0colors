@@ -17,6 +17,7 @@ import { evaluateAllTokenAssignments, TokenAssignExportResult } from '../utils/a
 import { MAX_PAGE_NAME, MAX_THEME_NAME } from '../utils/textLimits';
 import { getVisibleTokens } from '../utils/visibility';
 import type { ProjectComputedTokens } from '../utils/computed-tokens';
+import './MultiPageExport.css';
 
 type CodeFormat = 'css' | 'dtcg' | 'tailwind' | 'figma';
 
@@ -232,44 +233,44 @@ export function MultiPageExport({
   const isDisabled = selectedPageIds.size === 0 || selectedThemeIds.size === 0;
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0c0c0c] overflow-hidden">
+    <div className="export-root">
       {/* ──── Top Bar ──── */}
-      <div className="flex items-center justify-between px-5 h-[44px] shrink-0 border-b border-[#141414] bg-[#0c0c0c] select-none">
+      <div className="export-top-bar">
         {/* Left: Info */}
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="text-[11px] text-faint uppercase tracking-widest shrink-0">Multi-Page Export</span>
-          <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
-          <span className="text-[11px] text-dim tabular-nums">
+        <div className="export-top-bar-left">
+          <span className="export-top-bar-label">Multi-Page Export</span>
+          <div className="export-top-bar-divider" />
+          <span className="export-top-bar-stat">
             {selectedPageIds.size} page{selectedPageIds.size !== 1 ? 's' : ''}
           </span>
-          <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
-          <span className="text-[11px] text-dim tabular-nums">
+          <div className="export-top-bar-divider" />
+          <span className="export-top-bar-stat">
             {selectedThemeIds.size} theme{selectedThemeIds.size !== 1 ? 's' : ''}
           </span>
           {/* Figma theme preview selector (inline in top bar) */}
           {selectedFormat === 'figma' && selectedThemeIds.size > 0 && (
             <>
-              <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
-              <span className="text-[11px] text-dim shrink-0">Preview:</span>
+              <div className="export-top-bar-divider" />
+              <span className="export-top-bar-preview-label">Preview:</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 h-[24px] px-2 rounded bg-[#141414] border border-[#181818] hover:bg-secondary text-[11px] text-faint hover:text-muted-foreground transition-colors outline-none cursor-pointer max-w-[140px]">
-                    <span className="truncate" title={projectThemes.find(t => t.id === previewThemeId)?.name || 'Select'}>{projectThemes.find(t => t.id === previewThemeId)?.name || 'Select'}</span>
-                    <ChevronDown className="h-2.5 w-2.5 opacity-40 shrink-0" />
+                  <button className="export-figma-preview-btn">
+                    <span className="export-figma-preview-btn-text" title={projectThemes.find(t => t.id === previewThemeId)?.name || 'Select'}>{projectThemes.find(t => t.id === previewThemeId)?.name || 'Select'}</span>
+                    <ChevronDown className="export-figma-preview-chevron" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[180px] bg-card border-secondary p-1 shadow-lg">
+                <DropdownMenuContent align="start" className="export-dropdown-content--narrow">
                   {projectThemes.filter(t => selectedThemeIds.has(t.id)).map(theme => (
                     <DropdownMenuItem
                       key={theme.id}
                       onClick={() => setPreviewThemeId(theme.id)}
-                      className="text-xs cursor-pointer focus:bg-hairline focus:text-foreground"
+                      className="export-dropdown-theme-item"
                     >
-                      <span className={`truncate ${theme.id === previewThemeId ? 'text-foreground' : 'text-subtle'}`} title={theme.name}>
+                      <span className={theme.id === previewThemeId ? 'export-figma-theme-label--active' : 'export-figma-theme-label--inactive'} title={theme.name}>
                         {theme.name}
                       </span>
-                      {theme.isPrimary && <span className="ml-2 text-[11px] text-ghost">(Primary)</span>}
-                      {theme.id === previewThemeId && <Check className="h-3 w-3 text-dim ml-auto" />}
+                      {theme.isPrimary && <span className="export-sidebar-item-badge" style={{ marginLeft: 8 }}>(Primary)</span>}
+                      {theme.id === previewThemeId && <Check className="export-format-dropdown-check" style={{ marginLeft: 'auto' }} />}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -279,53 +280,51 @@ export function MultiPageExport({
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1.5">
+        <div className="export-top-bar-right">
           {/* Format Selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
-                className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-secondary hover:bg-secondary text-[11px] text-subtle hover:text-foreground transition-colors outline-none cursor-pointer"
-              >
+              <button className="export-action-btn">
                 <span>{formatLabels[selectedFormat]}</span>
-                <ChevronDown className="h-3 w-3 opacity-40" />
+                <ChevronDown className="export-action-icon" style={{ opacity: 0.4 }} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[220px] bg-card border-secondary p-1 shadow-lg">
+            <DropdownMenuContent align="end" className="export-dropdown-content">
               {(Object.keys(formatLabels) as CodeFormat[]).map(fmt => (
                 <DropdownMenuItem
                   key={fmt}
                   onClick={() => setSelectedFormat(fmt)}
-                  className="flex items-center justify-between text-xs cursor-pointer focus:bg-hairline focus:text-foreground"
+                  className="export-dropdown-menu-item"
                 >
-                  <div className="flex flex-col">
-                    <span className={fmt === selectedFormat ? 'text-foreground' : 'text-subtle'}>
+                  <div className="export-format-dropdown-item">
+                    <span className={fmt === selectedFormat ? 'export-format-dropdown-item-label--active' : 'export-format-dropdown-item-label--inactive'}>
                       {formatLabels[fmt]}
                     </span>
-                    <span className="text-[11px] text-ghost">{formatDescriptions[fmt]}</span>
+                    <span className="export-format-dropdown-item-desc">{formatDescriptions[fmt]}</span>
                   </div>
-                  {fmt === selectedFormat && <Check className="h-3 w-3 text-dim" />}
+                  {fmt === selectedFormat && <Check className="export-format-dropdown-check" />}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
           {/* Divider */}
-          <div className="w-px h-4 bg-[#1f1f1f] mx-0.5" />
+          <div className="export-divider-v" />
 
           {/* Copy */}
           <button
             onClick={copyToClipboard}
             disabled={isDisabled}
-            className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-secondary hover:bg-secondary text-[11px] text-subtle hover:text-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+            className="export-action-btn"
           >
             {copied ? (
               <>
-                <Check className="h-3 w-3 text-success" />
-                <span className="text-success">Copied</span>
+                <Check className="export-action-icon--success" />
+                <span className="export-action-text--success">Copied</span>
               </>
             ) : (
               <>
-                <Copy className="h-3 w-3" />
+                <Copy className="export-action-icon" />
                 <span>Copy</span>
               </>
             )}
@@ -335,90 +334,90 @@ export function MultiPageExport({
           <button
             onClick={downloadFile}
             disabled={isDisabled}
-            className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-secondary hover:bg-secondary text-[11px] text-subtle hover:text-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+            className="export-action-btn"
           >
-            <Download className="h-3 w-3" />
+            <Download className="export-action-icon" />
             <span>Download</span>
           </button>
         </div>
       </div>
 
       {/* ──── Main Content: Sidebar + Code ──── */}
-      <div className="flex flex-1 overflow-hidden min-h-0">
+      <div className="export-main">
         {/* ──── Left Sidebar ──── */}
-        <div className="w-[200px] flex flex-col shrink-0 border-r border-[#141414] bg-[#0c0c0c]">
-          <ScrollArea className="flex-1">
+        <div className="export-sidebar">
+          <ScrollArea className="export-sidebar-scroll">
             {/* Pages Section */}
-            <div className="px-4 pt-4 pb-2">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] text-faint uppercase tracking-widest">Pages</span>
+            <div className="export-sidebar-section-header">
+              <div className="export-sidebar-section-title-row">
+                <span className="export-sidebar-section-title">Pages</span>
                 <button
                   onClick={toggleAllPages}
-                  className="text-[11px] text-dim hover:text-subtle transition-colors cursor-pointer"
+                  className="export-sidebar-toggle-all-btn"
                 >
                   {selectedPageIds.size === projectPages.length ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
-              <span className="text-[11px] text-ghost tabular-nums">
+              <span className="export-sidebar-section-count">
                 {selectedPageIds.size} of {projectPages.length} selected
               </span>
             </div>
 
-            <div className="px-2 pb-2">
+            <div className="export-sidebar-list">
               {projectPages.map(page => (
                 <div
                   key={page.id}
-                  className="flex items-center gap-2.5 px-2 py-[6px] rounded-md hover:bg-[#ffffff]/[0.03] cursor-pointer transition-colors group"
+                  className="export-sidebar-item"
                   onClick={() => togglePage(page.id)}
                 >
                   <Checkbox
                     checked={selectedPageIds.has(page.id)}
                     onCheckedChange={() => togglePage(page.id)}
-                    className="pointer-events-none"
+                    className="export-checkbox-wrapper"
                   />
-                  <span className={`text-[12px] flex-1 transition-colors truncate ${
-                    selectedPageIds.has(page.id) ? 'text-subtle' : 'text-ghost'
+                  <span className={`export-sidebar-item-label ${
+                    selectedPageIds.has(page.id) ? 'export-sidebar-item-label--selected' : 'export-sidebar-item-label--unselected'
                   }`} title={page.name}>{page.name}</span>
                 </div>
               ))}
             </div>
 
             {/* Divider */}
-            <div className="mx-4 border-t border-[#141414]" />
+            <div className="export-sidebar-divider" />
 
             {/* Themes Section */}
-            <div className="px-4 pt-3 pb-2">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] text-faint uppercase tracking-widest">Themes</span>
+            <div className="export-sidebar-section-header--themes">
+              <div className="export-sidebar-section-title-row">
+                <span className="export-sidebar-section-title">Themes</span>
                 <button
                   onClick={toggleAllThemes}
-                  className="text-[11px] text-dim hover:text-subtle transition-colors cursor-pointer"
+                  className="export-sidebar-toggle-all-btn"
                 >
                   {selectedThemeIds.size === projectThemes.length ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
-              <span className="text-[11px] text-ghost tabular-nums">
+              <span className="export-sidebar-section-count">
                 {selectedThemeIds.size} of {projectThemes.length} selected
               </span>
             </div>
 
-            <div className="px-2 pb-4">
+            <div className="export-sidebar-list--themes">
               {projectThemes.map(theme => (
                 <div
                   key={theme.id}
-                  className="flex items-center gap-2.5 px-2 py-[6px] rounded-md hover:bg-[#ffffff]/[0.03] cursor-pointer transition-colors group"
+                  className="export-sidebar-item"
                   onClick={() => toggleTheme(theme.id)}
                 >
                   <Checkbox
                     checked={selectedThemeIds.has(theme.id)}
                     onCheckedChange={() => toggleTheme(theme.id)}
-                    className="pointer-events-none"
+                    className="export-checkbox-wrapper"
                   />
-                  <span className={`text-[12px] flex-1 transition-colors truncate ${
-                    selectedThemeIds.has(theme.id) ? 'text-subtle' : 'text-ghost'
+                  <span className={`export-sidebar-item-label ${
+                    selectedThemeIds.has(theme.id) ? 'export-sidebar-item-label--selected' : 'export-sidebar-item-label--unselected'
                   }`} title={theme.name}>{theme.name}</span>
                   {theme.isPrimary && (
-                    <span className="text-[11px] text-ghost">(Primary)</span>
+                    <span className="export-sidebar-item-badge">(Primary)</span>
                   )}
                 </div>
               ))}
@@ -427,35 +426,35 @@ export function MultiPageExport({
             {/* Show as Hex Section — hidden for Figma Variables (always hex) */}
             {selectedFormat !== 'figma' && (
               <>
-                <div className="mx-4 border-t border-[#141414]" />
+                <div className="export-sidebar-divider" />
 
-                <div className="px-4 pt-3 pb-2">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Hash className="h-3 w-3 text-dim" />
-                    <span className="text-[11px] text-faint uppercase tracking-widest">Show as Hex</span>
+                <div className="export-sidebar-section-header--hex">
+                  <div className="export-sidebar-hex-title-row">
+                    <Hash className="export-sidebar-hex-icon" />
+                    <span className="export-sidebar-section-title">Show as Hex</span>
                   </div>
-                  <span className="text-[11px] text-ghost">
+                  <span className="export-sidebar-hex-hint">
                     Convert color spaces to hex
                   </span>
                 </div>
 
-                <div className="px-2 pb-4">
+                <div className="export-sidebar-list--hex">
                   {([
                     { key: 'hsl', label: 'HSL' },
                     { key: 'oklch', label: 'OKLCH' },
                   ] as const).map(({ key, label }) => (
                     <div
                       key={key}
-                      className="flex items-center gap-2.5 px-2 py-[6px] rounded-md hover:bg-[#ffffff]/[0.03] cursor-pointer transition-colors"
+                      className="export-sidebar-item"
                       onClick={() => toggleHexOverride(key)}
                     >
-                      <div className="pointer-events-none shrink-0">
+                      <div className="export-checkbox-wrapper" style={{ flexShrink: 0 }}>
                         <Checkbox
                           checked={hexOverrideSpaces.has(key)}
                         />
                       </div>
-                      <span className={`text-[12px] flex-1 transition-colors ${
-                        hexOverrideSpaces.has(key) ? 'text-subtle' : 'text-ghost'
+                      <span className={`export-sidebar-item-label ${
+                        hexOverrideSpaces.has(key) ? 'export-sidebar-item-label--selected' : 'export-sidebar-item-label--unselected'
                       }`}>{label}</span>
                     </div>
                   ))}
@@ -466,29 +465,29 @@ export function MultiPageExport({
         </div>
 
         {/* ──── Right Panel — Code Preview ──── */}
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0 bg-background">
+        <div className="export-code-panel">
           {/* Code Display */}
-          <div className="flex-1 overflow-auto min-h-0">
+          <div className="export-code-display">
             {selectedPageIds.size === 0 ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <div className="w-10 h-10 rounded-lg bg-card border border-[#181818] flex items-center justify-center mx-auto mb-3">
-                    <FileText className="h-5 w-5 text-ghost" />
+              <div className="export-empty">
+                <div className="export-empty-inner">
+                  <div className="export-empty-icon-wrapper">
+                    <FileText className="export-empty-icon" />
                   </div>
-                  <p className="text-dim text-[13px] mb-1">No pages selected</p>
-                  <p className="text-ghost text-[11px]">
+                  <p className="export-empty-title">No pages selected</p>
+                  <p className="export-empty-subtitle">
                     Select at least one page to export tokens
                   </p>
                 </div>
               </div>
             ) : selectedThemeIds.size === 0 ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <div className="w-10 h-10 rounded-lg bg-card border border-[#181818] flex items-center justify-center mx-auto mb-3">
-                    <Palette className="h-5 w-5 text-ghost" />
+              <div className="export-empty">
+                <div className="export-empty-inner">
+                  <div className="export-empty-icon-wrapper">
+                    <Palette className="export-empty-icon" />
                   </div>
-                  <p className="text-dim text-[13px] mb-1">No themes selected</p>
-                  <p className="text-ghost text-[11px]">
+                  <p className="export-empty-title">No themes selected</p>
+                  <p className="export-empty-subtitle">
                     Select at least one theme to export tokens
                   </p>
                 </div>
@@ -503,14 +502,14 @@ export function MultiPageExport({
 
           {/* ──── Footer ──── */}
           <div
-            className="flex items-center justify-between px-5 h-[30px] shrink-0 select-none"
-            style={{ borderTop: '1px solid #141414' }}
+            className="export-footer"
+            style={{ borderTop: '1px solid var(--grey-900)' }}
           >
-            <span className="text-[11px] text-ghost tabular-nums">
+            <span className="export-footer-left">
               {!isDisabled && <>{lineCount} line{lineCount !== 1 ? 's' : ''} {'\u00b7'} </>}
               {formatLabels[selectedFormat]}
             </span>
-            <span className="text-[11px] text-ghost uppercase tracking-wider">
+            <span className="export-footer-right">
               Read-only
             </span>
           </div>

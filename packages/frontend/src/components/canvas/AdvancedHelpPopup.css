@@ -1,0 +1,445 @@
+/* AdvancedHelpPopup — expression system reference modal */
+
+/* ── Shared inline code pill ── */
+.help-popup-code {
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ── FnCard ── */
+.help-popup-fn-card {
+  border-radius: var(--radius-lg);
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: all 150ms;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.help-popup-fn-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms;
+  border: none;
+  background: none;
+}
+
+.help-popup-fn-header:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.help-popup-fn-chevron {
+  flex-shrink: 0;
+  transition: transform 150ms;
+  color: var(--grey-600);
+}
+
+.help-popup-fn-name {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.help-popup-fn-desc {
+  font-size: 11px;
+  color: var(--grey-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.help-popup-fn-body {
+  overflow: hidden;
+}
+
+.help-popup-fn-body-inner {
+  padding: 0 12px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.help-popup-fn-syntax {
+  margin-bottom: 8px;
+  margin-top: 8px;
+}
+
+.help-popup-fn-syntax-box {
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--grey-400);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.help-popup-fn-usecases {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.help-popup-fn-usecase {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.help-popup-fn-usecase-bullet {
+  font-size: 11px;
+  color: var(--grey-700);
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 6px;
+}
+
+.help-popup-fn-usecase-content {
+  min-width: 0;
+}
+
+.help-popup-fn-usecase-label {
+  font-size: 11px;
+  color: var(--grey-600);
+  display: block;
+}
+
+.help-popup-fn-usecase-code {
+  font-size: 9.5px;
+  font-family: var(--font-mono);
+  display: block;
+  margin-top: 2px;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  color: var(--grey-500);
+}
+
+/* ── Section header ── */
+.help-popup-section {
+  margin-bottom: 12px;
+  padding-top: 4px;
+  scroll-margin-top: 16px;
+}
+
+.help-popup-section-title {
+  font-size: 13px;
+  color: var(--grey-100);
+  margin-bottom: 2px;
+}
+
+.help-popup-section-subtitle {
+  font-size: 11px;
+  color: var(--grey-600);
+}
+
+.help-popup-section-rule {
+  height: 1px;
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Backdrop ── */
+.help-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+}
+
+.help-popup-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+/* ── Modal container ── */
+.help-popup-modal {
+  position: relative;
+  display: flex;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  width: min(820px, 90vw);
+  height: min(620px, 85vh);
+  background: var(--grey-800);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6),
+              0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+/* ── Left sidebar ── */
+.help-popup-sidebar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 12px 0;
+  width: 180px;
+  background: rgba(0, 0, 0, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.help-popup-sidebar-header {
+  padding: 0 12px 8px;
+  margin-bottom: 4px;
+}
+
+.help-popup-sidebar-title-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.help-popup-sidebar-title {
+  font-size: 13px;
+  color: var(--grey-100);
+}
+
+.help-popup-sidebar-subtitle {
+  font-size: 9.5px;
+  color: var(--grey-700);
+  display: block;
+  margin-top: 2px;
+}
+
+.help-popup-sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.help-popup-nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: background-color 150ms, color 150ms;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
+.help-popup-nav-btn-active {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--grey-100);
+}
+
+.help-popup-nav-btn-inactive {
+  color: var(--grey-600);
+}
+
+.help-popup-nav-label {
+  font-size: 10.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.help-popup-sidebar-footer {
+  padding: 8px 12px 0;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.help-popup-sidebar-tip {
+  font-size: 11px;
+  color: var(--grey-700);
+}
+
+.help-popup-kbd {
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Right content area ── */
+.help-popup-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.help-popup-content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.help-popup-content-title {
+  font-size: 14px;
+  color: var(--grey-100);
+}
+
+.help-popup-content-subtitle {
+  font-size: 11px;
+  color: var(--grey-700);
+  margin-top: 2px;
+}
+
+.help-popup-close-btn {
+  padding: 6px;
+  border-radius: var(--radius-md);
+  transition: background-color 150ms;
+  cursor: pointer;
+  color: var(--grey-600);
+  border: none;
+  background: none;
+}
+
+.help-popup-close-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.help-popup-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+/* ── Info box (overview paragraphs) ── */
+.help-popup-info-box {
+  border-radius: var(--radius-lg);
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.help-popup-info-text {
+  font-size: 10.5px;
+  color: var(--grey-500);
+  line-height: 1.6;
+}
+
+.help-popup-info-bold {
+  color: var(--grey-400);
+  font-weight: 600;
+}
+
+/* ── Comparison / math operator grid ── */
+.help-popup-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.help-popup-op-card {
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.help-popup-op-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.help-popup-op-desc {
+  font-size: 11px;
+  color: var(--grey-600);
+}
+
+.help-popup-op-example {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--grey-600);
+  display: block;
+}
+
+.help-popup-op-use {
+  font-size: 11px;
+  color: var(--grey-700);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ── Power combos ── */
+.help-popup-combos {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.help-popup-combo-card {
+  border-radius: var(--radius-lg);
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.help-popup-combo-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.help-popup-combo-icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.help-popup-combo-title {
+  font-size: 10.5px;
+  color: var(--grey-400);
+  display: block;
+}
+
+.help-popup-combo-desc {
+  font-size: 9.5px;
+  color: var(--grey-600);
+  display: block;
+}
+
+.help-popup-combo-code {
+  font-size: 9.5px;
+  font-family: var(--font-mono);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--grey-500);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ── Spacer ── */
+.help-popup-spacer {
+  height: 32px;
+}
+
+/* ── Section group spacing ── */
+.help-popup-section-group {
+  margin-bottom: 20px;
+}
+
+.help-popup-info-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

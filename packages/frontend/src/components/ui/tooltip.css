@@ -1,0 +1,28 @@
+/* ============================================
+ * TOOLTIP.CSS — Co-located styles for Tooltip
+ * Uses [data-slot="tooltip-*"] selectors.
+ * All values from variables.css tokens only.
+ * ============================================ */
+
+/* ─── Content ─── */
+[data-slot="tooltip-content"] {
+  z-index: 50;
+  width: fit-content;
+  padding: 4px 8px;
+  background-color: var(--grey-700);
+  color: var(--grey-100);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  text-wrap: balance;
+  transform-origin: var(--radix-tooltip-content-transform-origin);
+}
+
+/* ─── Arrow ─── */
+[data-slot="tooltip-arrow"] {
+  z-index: 50;
+  width: 10px;
+  height: 10px;
+  fill: var(--grey-700);
+}

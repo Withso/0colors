@@ -8,6 +8,7 @@ import { hslToRgb, rgbToHex, oklchToSrgb } from '../../utils/color-conversions';
 import { rgbToHct, hctToRgb, hctToHex } from '../../utils/hct-utils';
 import namer from 'color-namer';
 import { registerAdvancedDraft, unregisterAdvancedDraft } from '../../utils/advanced-draft-registry';
+import './AdvancedPopup.css';
 
 import {
   evaluateChannelLogic,
@@ -904,7 +905,7 @@ function TokenPill({
   onContextMenu?: (e: React.MouseEvent) => void;
   vtIndex?: number;
 }) {
-  const color = TOKEN_COLORS[token.type] || 'var(--faint)';
+  const color = TOKEN_COLORS[token.type] || 'var(--grey-600)';
   const label = isMerged ? mergedLabel! : (token.displayLabel || token.value);
 
   // Merged ref+property uses reference color; tokenRef+property uses tokenRef color
@@ -915,13 +916,13 @@ function TokenPill({
 
   // Special color for `locked` keyword — distinct amber to differentiate from control flow
   const isLocked = token.type === 'keyword' && token.value === 'locked';
-  const finalColor = isLocked ? 'var(--warning)' : pillColor;
+  const finalColor = isLocked ? 'var(--yellow-400)' : pillColor;
 
   return (
     <span
-      className="inline-flex items-center gap-0.5 text-[11px] font-mono px-1.5 py-[1px] rounded-[4px] whitespace-nowrap transition-all cursor-pointer select-none"
+      className="advanced-pill"
       style={{
-        color: '#fff',
+        color: 'var(--grey-50)',
         backgroundColor: isSelected ? `${finalColor}44` : `${finalColor}22`,
         border: 'none',
         outline: isSelected ? `1px solid ${finalColor}` : 'none',
@@ -934,20 +935,20 @@ function TokenPill({
       data-vt-index={vtIndex}
     >
       {isLocked && (
-        <svg width="8" height="8" viewBox="0 0 16 16" fill="none" className="shrink-0 opacity-70">
+        <svg width="8" height="8" viewBox="0 0 16 16" fill="none" className="advanced-pill-lock-icon">
           <rect x="3" y="7" width="10" height="7" rx="1.5" fill={finalColor} />
           <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke={finalColor} strokeWidth="1.5" fill="none" />
         </svg>
       )}
       {isTokenRef && !isMerged && token.refTokenColor && (
         <span
-          className="inline-block w-[7px] h-[7px] rounded-[2px] shrink-0"
+          className="advanced-pill-swatch"
           style={{ backgroundColor: token.refTokenColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }}
         />
       )}
       {isTokenRef && !isMerged && !token.refTokenColor && (
         <span
-          className="inline-block w-[7px] h-[7px] rounded-[2px] shrink-0"
+          className="advanced-pill-swatch"
           style={{ backgroundColor: 'transparent', boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }}
         />
       )}
@@ -1035,21 +1036,13 @@ function DropdownPortal({
       <div
         ref={dropdownRef}
         onScroll={handleDropdownScroll}
-        style={{
-          background: 'var(--card)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '8px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-          maxHeight: `${maxH}px`,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-        }}
+        className="advanced-dropdown-inner"
+        style={{ maxHeight: `${maxH}px` }}
       >
         {Object.entries(groupedItems).map(([category, items]) => (
           <div key={category}>
             <div
-              className="px-3 py-1.5 text-[11px] tracking-widest uppercase text-ghost select-none sticky top-0"
-              style={{ background: 'var(--card)', zIndex: 1 }}
+              className="advanced-dropdown-category"
             >
               {category}
             </div>
@@ -1060,7 +1053,7 @@ function DropdownPortal({
                 <button
                   key={item.id}
                   data-highlighted={isHighlighted}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors cursor-pointer"
+                  className="advanced-dropdown-item"
                   style={{
                     background: isHighlighted ? 'rgba(255,255,255,0.06)' : 'transparent',
                   }}
@@ -1073,32 +1066,32 @@ function DropdownPortal({
                 >
                   {item.tokenType === 'tokenRef' && item.refTokenColor && (
                     <span
-                      className="inline-block w-[8px] h-[8px] rounded-[2px] shrink-0"
+                      className="advanced-dropdown-item-swatch"
                       style={{ backgroundColor: item.refTokenColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }}
                     />
                   )}
                   {item.tokenType === 'tokenRef' && !item.refTokenColor && (
                     <span
-                      className="inline-block w-[8px] h-[8px] rounded-[2px] shrink-0"
+                      className="advanced-dropdown-item-swatch"
                       style={{ backgroundColor: 'transparent', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.15)' }}
                     />
                   )}
                   <span
-                    className="text-[11px] font-mono shrink-0"
-                    style={{ color: (item.tokenType === 'keyword' && item.tokenValue === 'locked') ? 'var(--warning)' : (TOKEN_COLORS[item.tokenType] || 'var(--subtle)') }}
+                    className="advanced-dropdown-item-label"
+                    style={{ color: (item.tokenType === 'keyword' && item.tokenValue === 'locked') ? 'var(--yellow-400)' : (TOKEN_COLORS[item.tokenType] || 'var(--grey-500)') }}
                   >
                     {item.label}
                   </span>
                   {item.description && (
-                    <span className="text-[11px] text-ghost truncate">
+                    <span className="advanced-dropdown-item-desc">
                       {item.description}
                     </span>
                   )}
                   {item.tokenType === 'reference' && !item.refProperty && !item.isBareRef && (
-                    <ChevronRight size={10} className="ml-auto text-ghost" />
+                    <ChevronRight size={10} className="advanced-dropdown-item-chevron" />
                   )}
                   {item.tokenType === 'tokenRef' && !item.refProperty && !item.isBareRef && (
-                    <ChevronRight size={10} className="ml-auto text-ghost" />
+                    <ChevronRight size={10} className="advanced-dropdown-item-chevron" />
                   )}
                 </button>
               );
@@ -2028,7 +2021,7 @@ function ConditionRowEditor({
   const renderGap = (targetCursorPos: number, key: string) => (
     <span
       key={key}
-      className="inline-block w-[4px] h-[18px] shrink-0 cursor-text"
+      className="advanced-row-gap"
       onClick={(e) => {
         e.stopPropagation();
         setCursorPos(targetCursorPos);
@@ -2164,7 +2157,7 @@ function ConditionRowEditor({
     <input
       key={key}
       ref={inputRef}
-      className="bg-transparent border-none outline-none text-[11px] font-mono text-subtle max-w-full"
+      className="advanced-row-input"
       style={{ width: `${Math.max(row.tokens.length > 0 ? 6 : 60, inputText.length * 7 + 4)}px`, minWidth: row.tokens.length > 0 ? '6px' : '60px' }}
       placeholder={row.tokens.length === 0 ? 'Type expression...' : ''}
       value={inputText}
@@ -2196,12 +2189,11 @@ function ConditionRowEditor({
   );
 
   return (
-    <div ref={rowRef} className="group relative" data-palette-open={showPalette || undefined}>
+    <div ref={rowRef} className="advanced-row" data-palette-open={showPalette || undefined}>
       <div
-        className="flex items-start gap-1.5 px-2 py-1.5 rounded-md transition-colors"
+        className="advanced-row-inner"
         style={{
           background: row.enabled ? 'rgba(255,255,255,0.02)' : 'transparent',
-          border: '1px solid transparent',
         }}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.04)';
@@ -2212,13 +2204,13 @@ function ConditionRowEditor({
       >
         {/* Enable/disable dot */}
         <button
-          className="mt-[3px] shrink-0 cursor-pointer"
+          className="advanced-row-enable-btn"
           onClick={() => onUpdate({ ...row, enabled: !row.enabled })}
           title={row.enabled ? 'Disable condition' : 'Enable condition'}
         >
           <Circle
             size={8}
-            fill={row.enabled ? 'var(--success)' : 'var(--border)'}
+            fill={row.enabled ? 'var(--green-500)' : 'var(--grey-700)'}
             stroke="none"
           />
         </button>
@@ -2226,7 +2218,7 @@ function ConditionRowEditor({
         {/* Expression tokens + cursor-positioned input */}
         <div
           ref={expressionContainerRef}
-          className="flex-1 flex flex-wrap items-center gap-[3px] min-h-[22px] cursor-text relative"
+          className="advanced-row-expression"
           onClick={(e) => {
             // Click in the container background (not on a pill or gap) → move cursor to end
             if (e.target === e.currentTarget) {
@@ -2242,13 +2234,7 @@ function ConditionRowEditor({
           {/* Selection count badge */}
           {selectedPills.size > 1 && (
             <span
-              className="absolute -top-2.5 -right-1 px-1 py-0 text-[11px] font-mono rounded-full pointer-events-none z-10"
-              style={{
-                background: 'rgba(123,143,255,0.25)',
-                color: '#7B8FFF',
-                border: 'none',
-                lineHeight: '13px',
-              }}
+              className="advanced-row-selection-badge"
             >
               {selectedPills.size} sel
             </span>
@@ -2256,10 +2242,10 @@ function ConditionRowEditor({
         </div>
 
         {/* Copy + Delete buttons — visible on row hover */}
-        <div className="flex items-center gap-0.5 shrink-0 mt-[2px] opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="advanced-row-actions">
           {onCopy && (
             <button
-              className="text-ghost hover:text-[#7B8FFF] cursor-pointer"
+              className="advanced-row-copy-btn"
               onClick={onCopy}
               title="Copy condition"
             >
@@ -2267,7 +2253,7 @@ function ConditionRowEditor({
             </button>
           )}
           <button
-            className="text-ghost hover:text-destructive cursor-pointer"
+            className="advanced-row-delete-btn"
             onClick={onDelete}
             title="Delete condition"
           >
@@ -2279,39 +2265,37 @@ function ConditionRowEditor({
       {/* ── Context menu on pills (portal) ── */}
       {ctxMenu && createPortal(
         <div
-          className="fixed z-[9999] min-w-[120px] py-1 rounded-md shadow-xl"
+          className="advanced-ctx-menu"
           style={{
             left: ctxMenu.x,
             top: ctxMenu.y,
-            background: '#1e1e1e',
-            border: '1px solid rgba(255,255,255,0.08)',
           }}
           onMouseDown={(e) => e.stopPropagation()}
         >
           <button
-            className="w-full px-3 py-1 text-left text-[11px] text-foreground hover:bg-white/[0.08] flex items-center gap-2 cursor-pointer"
+            className="advanced-ctx-menu-item"
             onClick={() => {
               _expressionClipboard = getSelectedTokens();
               setCtxMenu(null);
             }}
           >
-            <Copy size={11} className="text-[#7B8FFF]" /> Copy
-            <span className="ml-auto text-[11px] text-dim">⌘C</span>
+            <Copy size={11} style={{ color: 'var(--indigo-400)' }} /> Copy
+            <span className="advanced-ctx-menu-shortcut">⌘C</span>
           </button>
           <button
-            className="w-full px-3 py-1 text-left text-[11px] text-foreground hover:bg-white/[0.08] flex items-center gap-2 cursor-pointer"
+            className="advanced-ctx-menu-item"
             onClick={() => {
               cutSelectedPills();
               setCtxMenu(null);
             }}
           >
-            <Scissors size={11} className="text-warning" /> Cut
-            <span className="ml-auto text-[11px] text-dim">⌘X</span>
+            <Scissors size={11} style={{ color: 'var(--yellow-400)' }} /> Cut
+            <span className="advanced-ctx-menu-shortcut">⌘X</span>
           </button>
           {((_expressionClipboard && _expressionClipboard.length > 0) ||
             (_conditionClipboard && _conditionClipboard.rows.length > 0 && _conditionClipboard.rows[0].tokens.length > 0)) && (
             <button
-              className="w-full px-3 py-1 text-left text-[11px] text-foreground hover:bg-white/[0.08] flex items-center gap-2 cursor-pointer"
+              className="advanced-ctx-menu-item"
               onClick={() => {
                 // Prefer expression clipboard; fall back to condition clipboard tokens
                 const sourceTokens = (_expressionClipboard && _expressionClipboard.length > 0)
@@ -2338,20 +2322,20 @@ function ConditionRowEditor({
                 setCtxMenu(null);
               }}
             >
-              <ClipboardPaste size={11} className="text-success" /> Paste
-              <span className="ml-auto text-[11px] text-dim">⌘V</span>
+              <ClipboardPaste size={11} style={{ color: 'var(--green-500)' }} /> Paste
+              <span className="advanced-ctx-menu-shortcut">⌘V</span>
             </button>
           )}
-          <div className="h-px bg-white/[0.06] my-0.5" />
+          <div className="advanced-ctx-menu-divider" />
           <button
-            className="w-full px-3 py-1 text-left text-[11px] text-foreground hover:bg-white/[0.08] flex items-center gap-2 cursor-pointer"
+            className="advanced-ctx-menu-item"
             onClick={() => {
               deleteSelectedPills();
               setCtxMenu(null);
             }}
           >
-            <Trash2 size={11} className="text-destructive" /> Delete
-            <span className="ml-auto text-[11px] text-dim">⌫</span>
+            <Trash2 size={11} style={{ color: 'var(--red-500)' }} /> Delete
+            <span className="advanced-ctx-menu-shortcut">⌫</span>
           </button>
         </div>,
         document.body,
@@ -2389,7 +2373,7 @@ function OutputNameInput({ value, defaultName, onChange }: {
 
   return (
     <input
-      className="bg-transparent border-none outline-none text-[11px] font-mono text-dim w-full min-w-[30px] max-w-[60px]"
+      className="advanced-output-name-input"
       value={displayValue}
       onChange={(e) => {
         setLocalValue(e.target.value);
@@ -2576,7 +2560,7 @@ function ChannelColumn({
 
   return (
     <div
-      className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden"
+      className="advanced-channel-col"
       style={{
         borderRight: isLast ? 'none' : '1px solid rgba(255,255,255,0.04)',
         outline: columnHovered ? '1px solid rgba(139,180,224,0.08)' : 'none',
@@ -2586,22 +2570,21 @@ function ChannelColumn({
     >
       {/* Column header */}
       <div
-        className="px-3 py-2 shrink-0 flex items-center justify-between"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+        className="advanced-channel-header"
         onMouseEnter={onHeaderEnter}
         onMouseLeave={() => setHeaderHovered(false)}
       >
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] text-dim tracking-wide uppercase select-none">
+        <div className="advanced-channel-header-left">
+          <span className="advanced-channel-label">
             {channelDef.label}
           </span>
           {hasRows && (
             <button
-              className="flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer hover:bg-white/[0.08]"
+              className="advanced-channel-play-btn"
               onClick={() => onSaveChannel(channelKey)}
               title="Re-evaluate and apply logic"
             >
-              <Play size={8} className="text-success" fill="var(--success)" />
+              <Play size={8} style={{ color: 'var(--green-500)' }} fill="var(--green-500)" />
             </button>
           )}
           {/* Copy / Paste column buttons — visible on header hover */}
@@ -2609,62 +2592,55 @@ function ChannelColumn({
             <>
               {hasRows && (
                 <button
-                  className="flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer hover:bg-white/[0.08]"
+                  className="advanced-channel-copy-btn"
                   onClick={handleCopyColumn}
                   title={`Copy all ${channelDef.label} conditions (⌘C)`}
                 >
-                  <Copy size={8} className="text-dim" />
+                  <Copy size={8} style={{ color: 'var(--grey-600)' }} />
                 </button>
               )}
               {hasClipboard && (
                 <button
-                  className="flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer hover:bg-white/[0.08]"
+                  className="advanced-channel-paste-btn"
                   onClick={(e) => handlePasteColumn(e.shiftKey)}
                   title={`Paste${_conditionClipboard?.sourceLabel ? ` from ${_conditionClipboard.sourceLabel}` : ''} (${_conditionClipboard?.rows.length} row${(_conditionClipboard?.rows.length ?? 0) > 1 ? 's' : ''}) · ⌘V · Shift = append`}
                 >
-                  <ClipboardPaste size={8} className="text-[#7B8FFF]" />
+                  <ClipboardPaste size={8} style={{ color: 'var(--indigo-400)' }} />
                 </button>
               )}
             </>
           )}
           {channelHasUnsaved && (
-            <span className="text-[11px] text-warning select-none">unsaved</span>
+            <span className="advanced-channel-unsaved">unsaved</span>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-mono text-dim select-none">
+        <div className="advanced-channel-header-right">
+          <span className="advanced-channel-base-value">
             {fmtVal(baseValue, channelKey)}{getUnit(channelKey, colorSpace)}
           </span>
           {/* Per-column save button with text */}
           {channelHasUnsaved ? (
             <button
-              className="flex items-center gap-1 px-1.5 h-5 rounded transition-colors cursor-pointer"
-              style={{
-                background: 'rgba(43,189,104,0.15)',
-                border: 'none',
-              }}
+              className="advanced-channel-save-btn"
               onClick={() => onSaveChannel(channelKey)}
               title={`Save ${channelDef.label} logic`}
             >
-              <Save size={9} className="text-success" />
-              <span className="text-[11px] text-success select-none">Save</span>
+              <Save size={9} style={{ color: 'var(--green-500)' }} />
+              <span className="advanced-channel-save-label">Save</span>
             </button>
           ) : channelSaveFlash ? (
-            <span className="flex items-center gap-1 px-1.5 h-5 rounded" style={{
-              background: 'rgba(43,189,104,0.08)',
-              border: 'none',
-            }}>
+            <span className="advanced-channel-saved-badge">
               <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6l3 3 5-5" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 6l3 3 5-5" stroke="var(--green-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span className="text-[11px] text-success select-none">Saved</span>
+              <span className="advanced-channel-saved-label">Saved</span>
             </span>
           ) : null}
         </div>
       </div>
 
       {/* Column body — condition rows with per-row outputs */}
-      <div className="flex-1 overflow-y-auto px-1 py-2 space-y-0 min-h-0">
+      <div className="advanced-channel-body">
         {logic.rows.map((row, index) => {
           const rowOutput = rowOutputMap.get(row.id);
           const outputName = row.outputName || `out_${index + 1}`;
@@ -2683,28 +2659,22 @@ function ChannelColumn({
                 availableLocals={logic.rows.slice(0, index).map((r, i) => r.outputName || `out_${i + 1}`)}
               />
               {/* Per-row output box */}
-              <div
-                className="mx-2 mb-2 flex items-center justify-between gap-1 px-2 py-1 rounded"
-                style={{
-                  background: 'rgba(255,255,255,0.015)',
-                  border: '1px solid rgba(255,255,255,0.04)',
-                }}
-              >
-                <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-[11px] text-ghost select-none shrink-0">$</span>
+              <div className="advanced-row-output">
+                <div className="advanced-row-output-left">
+                  <span className="advanced-row-output-dollar">$</span>
                   <OutputNameInput
                     value={row.outputName}
                     defaultName={`out_${index + 1}`}
                     onChange={(name) => updateRowOutputName(index, name)}
                   />
                 </div>
-                <span className="text-[11px] font-mono shrink-0 select-none" style={{
-                  color: rowOutput?.error ? 'var(--destructive)'
-                    : rowOutput?.skipped ? 'var(--border)'
-                    : rowOutput?.isNaN ? 'var(--dim)'
-                    : rowOutput?.isBoolean ? 'var(--ai)'
-                    : rowOutput?.value !== null ? 'var(--subtle)'
-                    : 'var(--border)',
+                <span className="advanced-row-output-value" style={{
+                  color: rowOutput?.error ? 'var(--red-500)'
+                    : rowOutput?.skipped ? 'var(--grey-700)'
+                    : rowOutput?.isNaN ? 'var(--grey-600)'
+                    : rowOutput?.isBoolean ? 'var(--indigo-400)'
+                    : rowOutput?.value !== null ? 'var(--grey-500)'
+                    : 'var(--grey-700)',
                 }}>
                   {rowOutput?.error ? 'err'
                     : rowOutput?.skipped ? '—'
@@ -2723,7 +2693,7 @@ function ChannelColumn({
 
         {/* Add condition row */}
         <button
-          className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-ghost hover:text-dim hover:bg-white/[0.02] rounded-md transition-colors cursor-pointer select-none"
+          className="advanced-add-condition-btn"
           onClick={addRow}
         >
           <Plus size={10} />
@@ -2785,7 +2755,7 @@ function ChannelColumn({
             {/* ── Constraint Bar — shows when raw value exceeds channel range ── */}
             {showConstraintBar && (
               <div
-                className="shrink-0 px-3 py-1.5"
+                className="advanced-constraint-bar"
                 style={{
                   borderTop: '1px solid rgba(251,191,36,0.2)',
                   background: isAutoConstrain
@@ -2793,34 +2763,34 @@ function ChannelColumn({
                     : 'rgba(212,114,114,0.04)',
                 }}
               >
-                <div className="flex items-center justify-between gap-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
+                <div className="advanced-constraint-bar-inner">
+                  <div className="advanced-constraint-bar-left">
                     {/* Shield/constrain icon */}
-                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="advanced-constraint-icon">
                       <path
                         d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z"
                         fill={isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(212,114,114,0.2)'}
-                        stroke={isAutoConstrain ? 'var(--warning)' : 'var(--destructive)'}
+                        stroke={isAutoConstrain ? 'var(--yellow-400)' : 'var(--red-500)'}
                         strokeWidth="1.2"
                       />
                     </svg>
-                    <span className="text-[11px] tracking-wide uppercase select-none" style={{
-                      color: isAutoConstrain ? 'var(--warning)' : 'var(--destructive)',
+                    <span className="advanced-constraint-label" style={{
+                      color: isAutoConstrain ? 'var(--yellow-400)' : 'var(--red-500)',
                     }}>
                       {isAutoConstrain ? 'Auto-Constrain' : 'Out of Range'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="advanced-constraint-bar-right">
                     {/* Raw → Constrained display */}
-                    <span className="text-[11px] font-mono select-none" style={{
-                      color: isAutoConstrain ? 'var(--warning)' : 'var(--destructive)',
+                    <span className="advanced-constraint-values" style={{
+                      color: isAutoConstrain ? 'var(--yellow-400)' : 'var(--red-500)',
                     }}>
                       {constraintInfo && (
                         <>
                           <span style={{ opacity: 0.6 }}>{Math.round(constraintInfo.raw * 100) / 100}{unit}</span>
                           <span style={{ opacity: 0.4 }}>{' \u2192 '}</span>
                           <span>{Math.round(constraintInfo.constrained * 100) / 100}{unit}</span>
-                          <span className="ml-1" style={{ opacity: 0.5 }}>
+                          <span style={{ opacity: 0.5, marginLeft: '4px' }}>
                             ({constraintInfo.mode === 'wrap' ? 'wrapped' : 'clamped'})
                           </span>
                         </>
@@ -2828,7 +2798,7 @@ function ChannelColumn({
                     </span>
                     {/* Toggle button */}
                     <button
-                      className="shrink-0 flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer"
+                      className="advanced-constraint-toggle"
                       style={{
                         background: isAutoConstrain
                           ? 'rgba(251,191,36,0.15)'
@@ -2848,17 +2818,17 @@ function ChannelColumn({
                     >
                       {isAutoConstrain ? (
                         <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
-                          <path d="M2 6l3 3 5-5" stroke="var(--warning)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M2 6l3 3 5-5" stroke="var(--yellow-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       ) : (
-                        <X size={7} className="text-dim" />
+                        <X size={7} style={{ color: 'var(--grey-600)' }} />
                       )}
                     </button>
                   </div>
                 </div>
                 {/* Range info line */}
                 {!isAutoConstrain && constraint && (
-                  <div className="mt-1 text-[11px] text-destructive select-none" style={{ opacity: 0.7 }}>
+                  <div className="advanced-constraint-range-info">
                     {Math.round(constraintInfo!.raw * 100) / 100}{unit} exceeds {channelKey} range ({constraint.min}–{constraint.max})
                   </div>
                 )}
@@ -2866,18 +2836,15 @@ function ChannelColumn({
             )}
 
             {/* ── Final Output bar ── */}
-            <div className="relative shrink-0">
+            <div className="advanced-final-output-wrapper">
               {/* Warning floated above the final output bar */}
               {warningMessage && (
-                <div
-                  className="absolute left-0 right-0 px-3 py-1 text-[11px] text-destructive select-none pointer-events-none"
-                  style={{ bottom: '100%' }}
-                >
+                <div className="advanced-final-output-warning">
                   {warningMessage}
                 </div>
               )}
               <div
-                className="px-3 py-2"
+                className="advanced-final-output"
                 style={{
                   borderTop: showConstraintBar
                     ? 'none'
@@ -2887,24 +2854,24 @@ function ChannelColumn({
                     : 'rgba(255,255,255,0.02)',
                 }}
               >
-                <div className="flex items-center justify-between">
+                <div className="advanced-final-output-inner">
                   {/* Left side: label + inline dropdown */}
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[11px] tracking-wide uppercase select-none shrink-0" style={{
-                      color: resolvedSource === 'logic' ? 'var(--success)' : 'var(--ghost)',
+                  <div className="advanced-final-output-left">
+                    <span className="advanced-final-output-label" style={{
+                      color: resolvedSource === 'logic' ? 'var(--green-500)' : 'var(--grey-700)',
                     }}>
                       Final Output
                     </span>
                     {/* Inline dropdown selector */}
                     {availableOutputs.length > 0 && (
-                      <div className="relative" style={{ minWidth: 0 }}>
+                      <div className="advanced-final-output-select-wrapper">
                         <select
-                          className="appearance-none cursor-pointer rounded px-1.5 py-0.5 pr-4 text-[11px] font-mono outline-none"
+                          className="advanced-final-output-select"
                           style={{
                             background: (hasValidationError || hasBooleanWarning)
                               ? 'rgba(212,114,114,0.12)'
                               : 'rgba(43,189,104,0.12)',
-                            color: (hasValidationError || hasBooleanWarning) ? 'var(--destructive)' : 'var(--success)',
+                            color: (hasValidationError || hasBooleanWarning) ? 'var(--red-500)' : 'var(--green-500)',
                             border: `1px solid ${(hasValidationError || hasBooleanWarning) ? 'rgba(212,114,114,0.25)' : 'rgba(43,189,104,0.25)'}`,
                           }}
                           value={selectedVar || '__last__'}
@@ -2923,8 +2890,8 @@ function ChannelColumn({
                         </select>
                         <ChevronDown
                           size={8}
-                          className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2"
-                          style={{ color: (hasValidationError || hasBooleanWarning) ? 'var(--destructive)' : 'var(--success)' }}
+                          className="advanced-final-output-chevron"
+                          style={{ color: (hasValidationError || hasBooleanWarning) ? 'var(--red-500)' : 'var(--green-500)' }}
                         />
                       </div>
                     )}
@@ -2932,16 +2899,16 @@ function ChannelColumn({
 
                   {/* Right side: value */}
                   {detailedResult?.finalError && !selectedVarUsable ? (
-                    <span className="text-[11px] font-mono text-destructive select-none shrink-0" title={detailedResult.finalError}>
+                    <span className="advanced-final-output-value-error" title={detailedResult.finalError}>
                       Error
                     </span>
                   ) : (
-                    <span className="text-[11px] font-mono select-none shrink-0" style={{
-                      color: resolvedSource === 'logic' ? 'var(--success)' : 'var(--dim)',
+                    <span className="advanced-final-output-value" style={{
+                      color: resolvedSource === 'logic' ? 'var(--green-500)' : 'var(--grey-600)',
                     }}>
                       {displayValue !== undefined ? `${Math.round(displayValue * 100) / 100}${getUnit(channelKey, colorSpace)}` : '—'}
                       {resolvedSource === 'fallback' && (
-                        <span className="text-ghost ml-1">(fallback)</span>
+                        <span className="advanced-final-output-fallback">(fallback)</span>
                       )}
                     </span>
                   )}
@@ -2953,14 +2920,11 @@ function ChannelColumn({
       })()}
 
       {/* Fallback */}
-      <div
-        className="px-3 py-2 shrink-0 flex items-center justify-between"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
-      >
-        <span className="text-[11px] tracking-wide uppercase text-ghost select-none">
+      <div className="advanced-fallback-bar">
+        <span className="advanced-fallback-label">
           Fallback
         </span>
-        <span className="text-[11px] font-mono text-ghost select-none">
+        <span className="advanced-fallback-value">
           {logic.fallbackMode === 'custom' && logic.fallbackValue !== undefined
             ? Math.round(logic.fallbackValue * 100) / 100
             : fmtVal(baseValue, channelKey)
@@ -3063,26 +3027,26 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
   // Helper to get CSS color for a token ID
   const getTokenCssColor = useCallback((tokenId: string): string => {
     const t = tokens.find(tk => tk.id === tokenId);
-    if (!t) return 'var(--faint)';
+    if (!t) return 'var(--grey-600)';
     if (t.themeValues) {
       const fv = Object.values(t.themeValues)[0];
       if (fv) return `hsla(${fv.hue ?? 0}, ${fv.saturation ?? 0}%, ${fv.lightness ?? 50}%, ${(fv.alpha ?? 100) / 100})`;
     }
-    return 'var(--faint)';
+    return 'var(--grey-600)';
   }, [tokens]);
 
   // ── Row output rendering helper ──
   const renderRowOutputValue = (ro: TokenRowOutput, row: ConditionRow) => {
-    if (ro.skipped) return <span className="text-[11px] font-mono text-ghost select-none">—</span>;
-    if (ro.isNaN) return <span className="text-[11px] font-mono text-dim select-none">skip</span>;
-    if (!ro.result) return <span className="text-[11px] font-mono text-ghost select-none">—</span>;
-    if (ro.result.type === 'error') return <span className="text-[11px] font-mono text-destructive select-none" title={ro.result.message}>err</span>;
+    if (ro.skipped) return <span className="advanced-token-row-label" style={{ color: 'var(--grey-700)' }}>—</span>;
+    if (ro.isNaN) return <span className="advanced-token-row-label" style={{ color: 'var(--grey-600)' }}>skip</span>;
+    if (!ro.result) return <span className="advanced-token-row-label" style={{ color: 'var(--grey-700)' }}>—</span>;
+    if (ro.result.type === 'error') return <span className="advanced-token-row-label" style={{ color: 'var(--red-500)' }} title={ro.result.message}>err</span>;
     if (ro.result.type === 'tokenRef') {
       const css = getTokenCssColor(ro.result.tokenId);
       return (
-        <span className="flex items-center gap-1 shrink-0">
-          <span className="inline-block w-[7px] h-[7px] rounded-[2px] shrink-0" style={{ backgroundColor: css, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }} />
-          <span className="text-[11px] font-mono select-none" style={{ color: TOKEN_COLORS.tokenRef }}>
+        <span className="advanced-token-row-output-wrap">
+          <span className="advanced-token-row-swatch" style={{ backgroundColor: css, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }} />
+          <span className="advanced-token-row-label" style={{ color: TOKEN_COLORS.tokenRef }}>
             {'{' + ro.result.tokenName + '}'}
           </span>
         </span>
@@ -3092,19 +3056,19 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
       const rowCs = getRowColorSpace(row);
       const displayStr = formatColorDisplay(ro.result.color, rowCs);
       return (
-        <span className="flex items-center gap-1 shrink-0">
-          <span className="inline-block w-[7px] h-[7px] rounded-[2px] shrink-0" style={{ backgroundColor: ro.result.cssColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }} />
-          <span className="text-[11px] font-mono text-subtle select-none">{displayStr}</span>
+        <span className="advanced-token-row-output-wrap">
+          <span className="advanced-token-row-swatch" style={{ backgroundColor: ro.result.cssColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }} />
+          <span className="advanced-token-row-label" style={{ color: 'var(--grey-500)' }}>{displayStr}</span>
         </span>
       );
     }
     if (ro.result.type === 'number') {
-      return <span className="text-[11px] font-mono text-subtle select-none">{Math.round(ro.result.value * 100) / 100}</span>;
+      return <span className="advanced-token-row-label" style={{ color: 'var(--grey-500)' }}>{Math.round(ro.result.value * 100) / 100}</span>;
     }
     if (ro.result.type === 'boolean') {
-      return <span className="text-[11px] font-mono text-ai select-none">{ro.result.value ? 'true' : 'false'}</span>;
+      return <span className="advanced-token-row-label" style={{ color: 'var(--indigo-400)' }}>{ro.result.value ? 'true' : 'false'}</span>;
     }
-    return <span className="text-[11px] font-mono text-ghost select-none">—</span>;
+    return <span className="advanced-token-row-label" style={{ color: 'var(--grey-700)' }}>—</span>;
   };
 
   const addRow = useCallback(() => {
@@ -3197,54 +3161,53 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
   }, [tokenColumnHovered, handleCopyTokenColumn, handlePasteTokenColumn, logic.rows.length]);
 
   return (
-    <div className="flex flex-1 min-h-0">
+    <div className="advanced-token-panel">
       {/* Column 1: Token Info */}
-      <div className="flex flex-col shrink-0 p-3 overflow-y-auto" style={{ width: '15%', minWidth: 120, maxWidth: 200, borderRight: '1px solid rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.01)' }}>
-        <div className="text-[11px] tracking-widest uppercase text-ghost mb-2 select-none">Token Info</div>
-        <div className="flex flex-col gap-2">
+      <div className="advanced-token-info-col">
+        <div className="advanced-token-info-title">Token Info</div>
+        <div className="advanced-token-info-group">
           <div>
-            <div className="text-[11px] text-dim uppercase tracking-wide mb-0.5 select-none">Name</div>
-            <div className="text-[11px] font-mono text-foreground px-2 py-1 rounded" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.04)' }}>{tokenName}</div>
+            <div className="advanced-token-info-label">Name</div>
+            <div className="advanced-token-info-name">{tokenName}</div>
           </div>
           {currentValueToken && (
             <div>
-              <div className="text-[11px] text-dim uppercase tracking-wide mb-0.5 select-none">Current Value</div>
-              <div className="text-[11px] font-mono px-2 py-1 rounded truncate" style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}11`, border: `1px solid ${TOKEN_COLORS.tokenRef}33` }}>
+              <div className="advanced-token-info-label">Current Value</div>
+              <div className="advanced-token-info-value" style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}11`, border: `1px solid ${TOKEN_COLORS.tokenRef}33` }}>
                 {'{' + currentValueToken + '}'}
               </div>
             </div>
           )}
           {logic.rows.length > 0 && (
             <div>
-              <div className="text-[11px] text-dim uppercase tracking-wide mb-0.5 select-none">Rows</div>
-              <div className="text-[11px] font-mono text-subtle">{logic.rows.length}</div>
+              <div className="advanced-token-info-label">Rows</div>
+              <div className="advanced-token-info-rows">{logic.rows.length}</div>
             </div>
           )}
         </div>
       </div>
       {/* Column 2: Assign Token */}
       <div
-        className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden"
+        className="advanced-token-assign-col"
         style={{ outline: tokenColumnHovered ? '1px solid rgba(139,180,224,0.08)' : 'none' }}
         onMouseEnter={() => setTokenColumnHovered(true)}
         onMouseLeave={() => setTokenColumnHovered(false)}
       >
         {/* Column header */}
         <div
-          className="flex items-center justify-between px-3 py-2 shrink-0"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+          className="advanced-token-assign-header"
           onMouseEnter={onTokenHeaderEnter}
           onMouseLeave={() => setTokenHeaderHovered(false)}
         >
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] tracking-wide uppercase text-dim select-none">Assign Token</span>
+          <div className="advanced-token-assign-header-left">
+            <span className="advanced-token-assign-label">Assign Token</span>
             {hasRows && (
               <button
-                className="flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer hover:bg-white/[0.08]"
+                className="advanced-channel-play-btn"
                 onClick={onPlay}
                 title="Re-evaluate and apply logic"
               >
-                <Play size={8} className="text-success" fill="var(--success)" />
+                <Play size={8} style={{ color: 'var(--green-500)' }} fill="var(--green-500)" />
               </button>
             )}
             {/* Copy / Paste column buttons — visible on header hover */}
@@ -3252,64 +3215,57 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
               <>
                 {hasRows && (
                   <button
-                    className="flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer hover:bg-white/[0.08]"
+                    className="advanced-channel-copy-btn"
                     onClick={handleCopyTokenColumn}
                     title="Copy all conditions (⌘C)"
                   >
-                    <Copy size={8} className="text-dim" />
+                    <Copy size={8} style={{ color: 'var(--grey-600)' }} />
                   </button>
                 )}
                 {tokenHasClipboard && (
                   <button
-                    className="flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer hover:bg-white/[0.08]"
+                    className="advanced-channel-paste-btn"
                     onClick={(e) => handlePasteTokenColumn(e.shiftKey)}
                     title={`Paste${_conditionClipboard?.sourceLabel ? ` from ${_conditionClipboard.sourceLabel}` : ''} (${_conditionClipboard?.rows.length} row${(_conditionClipboard?.rows.length ?? 0) > 1 ? 's' : ''}) · ⌘V · Shift = append`}
                   >
-                    <ClipboardPaste size={8} className="text-[#7B8FFF]" />
+                    <ClipboardPaste size={8} style={{ color: 'var(--indigo-400)' }} />
                   </button>
                 )}
               </>
             )}
             {hasUnsaved && (
-              <span className="text-[11px] text-warning select-none">unsaved</span>
+              <span className="advanced-channel-unsaved">unsaved</span>
             )}
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="advanced-token-assign-header-right">
             {/* Per-column save button with text */}
             {hasUnsaved ? (
               <button
-                className="flex items-center gap-1 px-1.5 h-5 rounded transition-colors cursor-pointer"
-                style={{
-                  background: 'rgba(43,189,104,0.15)',
-                  border: 'none',
-                }}
+                className="advanced-channel-save-btn"
                 onClick={onSave}
                 title="Save token assignment logic"
               >
-                <Save size={9} className="text-success" />
-                <span className="text-[11px] text-success select-none">Save</span>
+                <Save size={9} style={{ color: 'var(--green-500)' }} />
+                <span className="advanced-channel-save-label">Save</span>
               </button>
             ) : saveFlash ? (
-              <span className="flex items-center gap-1 px-1.5 h-5 rounded" style={{
-                background: 'rgba(43,189,104,0.08)',
-                border: 'none',
-              }}>
+              <span className="advanced-channel-saved-badge">
                 <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 6l3 3 5-5" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 6l3 3 5-5" stroke="var(--green-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className="text-[11px] text-success select-none">Saved</span>
+                <span className="advanced-channel-saved-label">Saved</span>
               </span>
             ) : null}
           </div>
         </div>
 
         {/* Column body — condition rows with per-row outputs */}
-        <div className="flex-1 overflow-y-auto px-1 py-2 space-y-0 min-h-0">
+        <div className="advanced-token-assign-body">
           {logic.rows.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-[11px] text-ghost select-none">
-              <div className="text-center">
-                <div className="mb-1">No assignment rules yet</div>
-                <button className="text-[11px] px-2 py-1 rounded cursor-pointer" style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15`, border: 'none' }} onClick={addRow}>+ Add Rule</button>
+            <div className="advanced-token-assign-empty">
+              <div className="advanced-token-assign-empty-inner">
+                <div className="advanced-token-assign-empty-text">No assignment rules yet</div>
+                <button className="advanced-token-assign-add-btn" style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15` }} onClick={addRow}>+ Add Rule</button>
               </div>
             </div>
           ) : (
@@ -3328,15 +3284,9 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                       pages={pages}
                     />
                     {/* Per-row output box */}
-                    <div
-                      className="mx-2 mb-2 flex items-center justify-between gap-1 px-2 py-1 rounded"
-                      style={{
-                        background: 'rgba(255,255,255,0.015)',
-                        border: '1px solid rgba(255,255,255,0.04)',
-                      }}
-                    >
-                      <div className="flex items-center gap-1 min-w-0">
-                        <span className="text-[11px] text-ghost select-none shrink-0">$</span>
+                    <div className="advanced-row-output">
+                      <div className="advanced-row-output-left">
+                        <span className="advanced-row-output-dollar">$</span>
                         <OutputNameInput
                           value={row.outputName}
                           defaultName={`out_${idx + 1}`}
@@ -3351,7 +3301,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
 
               {/* Add condition row */}
               <button
-                className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] text-ghost hover:text-dim hover:bg-white/[0.02] rounded-md transition-colors cursor-pointer select-none"
+                className="advanced-add-condition-btn"
                 onClick={addRow}
               >
                 <Plus size={10} />
@@ -3464,10 +3414,10 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
             if (hasAnyWarning || !resolvedResult) {
               // Fallback display
               return (
-                <span className="flex items-center gap-1 text-[11px] font-mono text-dim select-none shrink-0">
+                <span className="advanced-token-final-fallback">
                   {currentValueToken ? `{${currentValueToken}}` : '—'}
                   {resolvedSource === 'fallback' && currentValueToken && (
-                    <span className="text-ghost">(fallback)</span>
+                    <span className="advanced-token-final-fallback-note">(fallback)</span>
                   )}
                 </span>
               );
@@ -3475,9 +3425,9 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
             if (resolvedResult.type === 'tokenRef') {
               const css = getTokenCssColor(resolvedResult.tokenId);
               return (
-                <span className="flex items-center gap-1 shrink-0">
-                  <span className="inline-block w-[8px] h-[8px] rounded-[2px] shrink-0" style={{ backgroundColor: css, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }} />
-                  <span className="text-[11px] font-mono select-none" style={{ color: 'var(--success)' }}>
+                <span className="advanced-token-row-output-wrap">
+                  <span className="advanced-token-final-swatch" style={{ backgroundColor: css, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }} />
+                  <span className="advanced-token-final-label" style={{ color: 'var(--green-500)' }}>
                     {'{' + resolvedResult.tokenName + '}'}
                   </span>
                 </span>
@@ -3486,13 +3436,13 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
             if (resolvedResult.type === 'computedColor') {
               const finalDisplayStr = formatColorDisplay(resolvedResult.color, finalColorSpace);
               return (
-                <span className="flex items-center gap-1 shrink-0">
-                  <span className="inline-block w-[8px] h-[8px] rounded-[2px] shrink-0" style={{ backgroundColor: resolvedResult.cssColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }} />
-                  <span className="text-[11px] font-mono text-success select-none">{finalDisplayStr}</span>
+                <span className="advanced-token-row-output-wrap">
+                  <span className="advanced-token-final-swatch" style={{ backgroundColor: resolvedResult.cssColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }} />
+                  <span className="advanced-token-final-label" style={{ color: 'var(--green-500)' }}>{finalDisplayStr}</span>
                 </span>
               );
             }
-            return <span className="text-[11px] font-mono text-ghost select-none">—</span>;
+            return <span className="advanced-token-final-label" style={{ color: 'var(--grey-700)' }}>—</span>;
           };
 
           return (
@@ -3500,7 +3450,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
               {/* ── Auto-Constrain Bar — shows when computedColor has out-of-range channels ── */}
               {showConstraintBar && (
                 <div
-                  className="shrink-0 px-3 py-1.5"
+                  className="advanced-constraint-bar"
                   style={{
                     borderTop: '1px solid rgba(251,191,36,0.2)',
                     background: isAutoConstrain
@@ -3508,26 +3458,26 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                       : 'rgba(212,114,114,0.04)',
                   }}
                 >
-                  <div className="flex items-center justify-between gap-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="advanced-constraint-bar-inner">
+                    <div className="advanced-constraint-bar-left">
                       {/* Shield/constrain icon */}
-                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="advanced-constraint-icon">
                         <path
                           d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z"
                           fill={isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(212,114,114,0.2)'}
-                          stroke={isAutoConstrain ? 'var(--warning)' : 'var(--destructive)'}
+                          stroke={isAutoConstrain ? 'var(--yellow-400)' : 'var(--red-500)'}
                           strokeWidth="1.2"
                         />
                       </svg>
-                      <span className="text-[11px] tracking-wide uppercase select-none" style={{
-                        color: isAutoConstrain ? 'var(--warning)' : 'var(--destructive)',
+                      <span className="advanced-constraint-label" style={{
+                        color: isAutoConstrain ? 'var(--yellow-400)' : 'var(--red-500)',
                       }}>
                         {isAutoConstrain ? 'Auto-Constrain' : 'Out of Range'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-mono select-none" style={{
-                        color: isAutoConstrain ? 'var(--warning)' : 'var(--destructive)',
+                    <div className="advanced-constraint-bar-right">
+                      <span className="advanced-token-constraint-issues" style={{
+                        color: isAutoConstrain ? 'var(--yellow-400)' : 'var(--red-500)',
                       }}>
                         {constraintIssues.map((ci, i) => (
                           <span key={ci.channel}>
@@ -3542,7 +3492,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                       </span>
                       {/* Toggle button */}
                       <button
-                        className="shrink-0 flex items-center justify-center w-4 h-4 rounded transition-colors cursor-pointer"
+                        className="advanced-constraint-toggle"
                         style={{
                           background: isAutoConstrain
                             ? 'rgba(251,191,36,0.15)'
@@ -3562,10 +3512,10 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                       >
                         {isAutoConstrain ? (
                           <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
-                            <path d="M2 6l3 3 5-5" stroke="var(--warning)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M2 6l3 3 5-5" stroke="var(--yellow-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         ) : (
-                          <X size={7} className="text-dim" />
+                          <X size={7} style={{ color: 'var(--grey-600)' }} />
                         )}
                       </button>
                     </div>
@@ -3574,18 +3524,15 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
               )}
 
               {/* ── Final Output bar ── */}
-              <div className="relative shrink-0">
+              <div className="advanced-final-output-wrapper">
                 {/* Warning floated above the final output bar */}
                 {warningMessage && (
-                  <div
-                    className="absolute left-0 right-0 px-3 py-1 text-[11px] text-destructive select-none pointer-events-none"
-                    style={{ bottom: '100%' }}
-                  >
+                  <div className="advanced-final-output-warning">
                     {warningMessage}
                   </div>
                 )}
                 <div
-                  className="px-3 py-2"
+                  className="advanced-final-output"
                   style={{
                     borderTop: showConstraintBar
                       ? 'none'
@@ -3595,24 +3542,24 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                       : 'rgba(255,255,255,0.02)',
                   }}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="advanced-final-output-inner">
                     {/* Left side: label + inline dropdown */}
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-[11px] tracking-wide uppercase select-none shrink-0" style={{
-                        color: resolvedSource === 'logic' ? 'var(--success)' : 'var(--ghost)',
+                    <div className="advanced-final-output-left">
+                      <span className="advanced-final-output-label" style={{
+                        color: resolvedSource === 'logic' ? 'var(--green-500)' : 'var(--grey-700)',
                       }}>
                         Final Output
                       </span>
                       {/* Inline dropdown selector */}
                       {availableOutputs.length > 0 && (
-                        <div className="relative" style={{ minWidth: 0 }}>
+                        <div className="advanced-final-output-select-wrapper">
                           <select
-                            className="appearance-none cursor-pointer rounded px-1.5 py-0.5 pr-4 text-[11px] font-mono outline-none"
+                            className="advanced-final-output-select"
                             style={{
                               background: hasAnyWarning
                                 ? 'rgba(212,114,114,0.12)'
                                 : 'rgba(43,189,104,0.12)',
-                              color: hasAnyWarning ? 'var(--destructive)' : 'var(--success)',
+                              color: hasAnyWarning ? 'var(--red-500)' : 'var(--green-500)',
                               border: `1px solid ${hasAnyWarning ? 'rgba(212,114,114,0.25)' : 'rgba(43,189,104,0.25)'}`,
                             }}
                             value={selectedVar || '__last__'}
@@ -3631,8 +3578,8 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                           </select>
                           <ChevronDown
                             size={8}
-                            className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2"
-                            style={{ color: hasAnyWarning ? 'var(--destructive)' : 'var(--success)' }}
+                            className="advanced-final-output-chevron"
+                            style={{ color: hasAnyWarning ? 'var(--red-500)' : 'var(--green-500)' }}
                           />
                         </div>
                       )}
@@ -3648,12 +3595,9 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
         })()}
 
         {/* Fallback */}
-        <div
-          className="px-3 py-2 shrink-0 flex items-center justify-between"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
-        >
-          <span className="text-[11px] tracking-wide uppercase text-ghost select-none">Fallback</span>
-          <span className="text-[11px] font-mono text-ghost select-none">{currentValueToken ? `{${currentValueToken}}` : 'Manual assignment'}</span>
+        <div className="advanced-fallback-bar">
+          <span className="advanced-fallback-label">Fallback</span>
+          <span className="advanced-fallback-value">{currentValueToken ? `{${currentValueToken}}` : 'Manual assignment'}</span>
         </div>
       </div>
     </div>
@@ -3799,24 +3743,21 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
     <div>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-1.5 w-full text-left group"
+        className="advanced-nodeview-toggle"
       >
-        {isExpanded ? <ChevronDown size={10} className="text-dim" /> : <ChevronRight size={10} className="text-dim" />}
-        <span className="text-[11px] uppercase tracking-wider text-dim group-hover:text-subtle transition-colors select-none">
+        {isExpanded ? <ChevronDown size={10} className="advanced-nodeview-chevron" /> : <ChevronRight size={10} className="advanced-nodeview-chevron" />}
+        <span className="advanced-nodeview-label">
           Node View
         </span>
         {activeCount > 0 && (
-          <span
-            className="text-[11px] px-1 py-[0px] rounded select-none ml-auto"
-            style={{ color: '#8a9b77', background: 'rgba(138,155,119,0.1)', border: '1px solid rgba(138,155,119,0.2)' }}
-          >
+          <span className="advanced-nodeview-badge">
             {activeCount}
           </span>
         )}
       </button>
 
       {isExpanded && (
-        <div className="mt-2 space-y-1.5">
+        <div className="advanced-nodeview-body">
           {allChannels.map(ch => {
             const c = config[ch.key] || {};
             const isHidden = !!c.hidden;
@@ -3825,18 +3766,18 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
             const range = CHANNEL_ABSOLUTE_RANGE[ch.key] || { min: 0, max: 100 };
 
             return (
-              <div key={ch.key} className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-faint select-none">{ch.label}</span>
-                  <div className="flex items-center gap-1">
+              <div key={ch.key} style={{ marginTop: '4px' }}>
+                <div className="advanced-nodeview-channel-row">
+                  <span className="advanced-nodeview-channel-label">{ch.label}</span>
+                  <div className="advanced-nodeview-channel-actions">
                     {/* Hide toggle */}
                     <button
                       onClick={() => toggleHidden(ch.key)}
                       disabled={readOnly}
-                      className={`text-[11px] px-1.5 py-[1px] rounded transition-colors cursor-pointer select-none ${
+                      className={`advanced-nodeview-hide-btn ${
                         isHidden
-                          ? 'text-[#8a9b77] bg-[rgba(138,155,119,0.12)] border border-[rgba(138,155,119,0.25)]'
-                          : 'text-dim hover:text-subtle bg-transparent border border-transparent hover:border-[rgba(255,255,255,0.04)]'
+                          ? 'advanced-nodeview-hide-btn--active'
+                          : 'advanced-nodeview-hide-btn--inactive'
                       }`}
                       title={isHidden ? 'Channel hidden in node UI — click to show' : 'Hide this channel in node UI'}
                     >
@@ -3856,10 +3797,10 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
                           }
                         }}
                         disabled={readOnly}
-                        className={`text-[11px] px-1.5 py-[1px] rounded transition-colors cursor-pointer select-none ${
+                        className={`advanced-nodeview-slider-btn ${
                           hasSlider
-                            ? 'text-[#8a9b77] bg-[rgba(138,155,119,0.12)] border border-[rgba(138,155,119,0.25)]'
-                            : 'text-dim hover:text-subtle bg-transparent border border-transparent hover:border-[rgba(255,255,255,0.04)]'
+                            ? 'advanced-nodeview-slider-btn--active'
+                            : 'advanced-nodeview-slider-btn--inactive'
                         }`}
                         title={hasSlider ? `slider(${c.sliderMin}, ${c.sliderMax}) — click to remove` : 'Set custom slider range'}
                       >
@@ -3871,36 +3812,36 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
 
                 {/* Slider range editor */}
                 {isEditingThis && !isHidden && (
-                  <div className="flex items-center gap-1 pl-1">
-                    <span className="text-[11px] text-dim select-none">(</span>
+                  <div className="advanced-nodeview-slider-editor">
+                    <span className="advanced-nodeview-slider-sep">(</span>
                     <input
                       type="number"
                       value={editingSlider[ch.key]?.min ?? ''}
                       onChange={(e) => setEditingSlider(prev => ({ ...prev, [ch.key]: { ...prev[ch.key], min: e.target.value } }))}
                       onKeyDown={(e) => { if (e.key === 'Enter') commitSlider(ch.key); if (e.key === 'Escape') setEditingSlider(prev => { const n = { ...prev }; delete n[ch.key]; return n; }); }}
-                      className="w-10 h-5 text-[11px] text-center bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.05)] rounded text-foreground outline-none focus:border-[rgba(139,92,246,0.4)]"
+                      className="advanced-nodeview-slider-input"
                       min={range.min}
                       max={range.max}
                       step={1}
                       placeholder={String(range.min)}
                       autoFocus
                     />
-                    <span className="text-[11px] text-dim select-none">,</span>
+                    <span className="advanced-nodeview-slider-sep">,</span>
                     <input
                       type="number"
                       value={editingSlider[ch.key]?.max ?? ''}
                       onChange={(e) => setEditingSlider(prev => ({ ...prev, [ch.key]: { ...prev[ch.key], max: e.target.value } }))}
                       onKeyDown={(e) => { if (e.key === 'Enter') commitSlider(ch.key); if (e.key === 'Escape') setEditingSlider(prev => { const n = { ...prev }; delete n[ch.key]; return n; }); }}
-                      className="w-10 h-5 text-[11px] text-center bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.05)] rounded text-foreground outline-none focus:border-[rgba(139,92,246,0.4)]"
+                      className="advanced-nodeview-slider-input"
                       min={range.min}
                       max={range.max}
                       step={1}
                       placeholder={String(range.max)}
                     />
-                    <span className="text-[11px] text-dim select-none">)</span>
+                    <span className="advanced-nodeview-slider-sep">)</span>
                     <button
                       onClick={() => commitSlider(ch.key)}
-                      className="text-[11px] px-1 py-[0px] rounded text-[#8a9b77] hover:bg-[rgba(138,155,119,0.1)] cursor-pointer select-none"
+                      className="advanced-nodeview-slider-apply"
                       title="Apply slider range"
                     >
                       &#10003;
@@ -3911,11 +3852,11 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
                 {/* Show current slider range if set and not editing */}
                 {hasSlider && !isEditingThis && !isHidden && (
                   <div
-                    className="flex items-center gap-1 pl-1 cursor-pointer group/sr"
+                    className="advanced-nodeview-slider-display"
                     onClick={() => { if (!readOnly) startEditingSlider(ch.key); }}
                     title="Click to edit slider range"
                   >
-                    <span className="text-[11px] text-[#8a9b77]/60 group-hover/sr:text-[#8a9b77] transition-colors select-none">
+                    <span className="advanced-nodeview-slider-display-text">
                       slider({c.sliderMin}, {c.sliderMax})
                     </span>
                   </div>
@@ -3926,10 +3867,10 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
 
           {/* Token Section hide — only when no tokens are assigned */}
           {!hasTokensAssigned && (
-            <div className="space-y-1 mt-1.5 pt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] text-faint select-none">Token Section</span>
-                <div className="flex items-center gap-1">
+            <div className="advanced-nodeview-token-section">
+              <div className="advanced-nodeview-channel-row">
+                <span className="advanced-nodeview-channel-label">Token Section</span>
+                <div className="advanced-nodeview-channel-actions">
                   <button
                     onClick={() => {
                       if (readOnly) return;
@@ -3944,10 +3885,10 @@ function NodeViewSection({ colorSpace, channelDefs, config, onUpdateConfig, read
                       }
                     }}
                     disabled={readOnly}
-                    className={`text-[11px] px-1.5 py-[1px] rounded transition-colors cursor-pointer select-none ${
+                    className={`advanced-nodeview-hide-btn ${
                       config['_tokenSection']?.hidden
-                        ? 'text-[#8a9b77] bg-[rgba(138,155,119,0.12)] border border-[rgba(138,155,119,0.25)]'
-                        : 'text-dim hover:text-subtle bg-transparent border border-transparent hover:border-[rgba(255,255,255,0.04)]'
+                        ? 'advanced-nodeview-hide-btn--active'
+                        : 'advanced-nodeview-hide-btn--inactive'
                     }`}
                     title={config['_tokenSection']?.hidden ? 'Token section hidden in node UI — click to show' : 'Hide the token assignment section from node UI'}
                   >
@@ -5053,7 +4994,7 @@ export function AdvancedPopup({
       }}
       exit={{ y: 40, opacity: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="flex flex-col"
+      className="advanced-popup"
       style={{
         position: 'fixed',
         zIndex: 9999,
@@ -5061,7 +5002,7 @@ export function AdvancedPopup({
         overflow: 'hidden',
         border: '1px solid rgba(255,255,255,0.05)',
         borderBottom: 'none',
-        background: '#0A0A0A',
+        background: 'var(--grey-900)',
         boxShadow: '0 -8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
         userSelect: isDragging || isResizing ? 'none' : 'auto',
       }}
@@ -5073,15 +5014,14 @@ export function AdvancedPopup({
 
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-1.5 shrink-0"
+        className="advanced-popup-header"
         style={{
-          background: '#0E0E0E',
           borderBottom: isMinimized ? 'none' : '1px solid rgba(255,255,255,0.04)',
           cursor: isMinimized ? 'default' : (isDragging ? 'grabbing' : 'grab'),
         }}
         onMouseDown={isMinimized ? undefined : handleDragStart}
       >
-        <div className="flex items-center gap-2">
+        <div className="advanced-popup-header-left">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="14"
@@ -5092,38 +5032,31 @@ export function AdvancedPopup({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-faint"
+            className="advanced-popup-header-icon"
           >
             <path d="M3 19a2 2 0 0 0 2 2c2 0 2 -4 3 -9s1 -9 3 -9a2 2 0 0 1 2 2" />
             <path d="M5 12h6" />
             <path d="M15 12l6 6" />
             <path d="M15 18l6 -6" />
           </svg>
-          <span className="text-[13px] text-subtle select-none">Advanced</span>
-          <span
-            className="text-[11px] px-1.5 py-[2px] rounded select-none"
-            style={{
-              color: 'var(--subtle)',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.05)',
-            }}
-          >
+          <span className="advanced-popup-header-title">Advanced</span>
+          <span className="advanced-popup-header-node-badge">
             {nodeDisplayName || node.referenceName || node.id.slice(0, 8)}
           </span>
           {isTokenNodeChild && (
             <span
-              className="text-[11px] px-1.5 py-[1px] rounded select-none"
-              style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15`, border: 'none' }}
+              className="advanced-popup-header-token-badge"
+              style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15` }}
             >
               Token
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="advanced-popup-header-right">
           {/* Minimize / Expand toggle */}
           <button
-            className="flex items-center justify-center w-6 h-6 rounded-md text-dim hover:text-foreground hover:bg-white/[0.06] transition-colors cursor-pointer"
+            className="advanced-popup-header-btn"
             onClick={isMinimized ? handleExpandClick : handleMinimizeClick}
             title={isMinimized ? 'Expand' : 'Minimize'}
           >
@@ -5131,7 +5064,7 @@ export function AdvancedPopup({
           </button>
           {/* Close */}
           <button
-            className="flex items-center justify-center w-6 h-6 rounded-md text-dim hover:text-foreground hover:bg-white/[0.06] transition-colors cursor-pointer"
+            className="advanced-popup-header-btn"
             onClick={(e) => {
               e.stopPropagation();
               onClose();
@@ -5144,49 +5077,26 @@ export function AdvancedPopup({
 
       {/* Sandbox banner */}
       {readOnly && !isMinimized && (
-        <div className="flex items-center justify-center px-4 py-1.5 shrink-0 select-none" style={{ background: 'rgba(43,189,104,0.04)', borderBottom: '1px solid rgba(43,189,104,0.10)' }}>
-          <span className="text-[11px] tracking-wide uppercase" style={{ color: 'rgba(43,189,104,0.6)' }}>Sandbox — explore freely, changes won't be saved</span>
+        <div className="advanced-sandbox-banner">
+          <span className="advanced-sandbox-text">Sandbox — explore freely, changes won't be saved</span>
         </div>
       )}
 
       {/* ── Minimized state ── */}
       {isMinimized ? (
-        <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.95) 100%)',
-              pointerEvents: 'none',
-            }}
-          />
+        <div className="advanced-minimized-overlay">
+          <div className="advanced-minimized-gradient" />
           <button
-            className="relative z-10 flex items-center gap-2 px-5 py-2 rounded-lg transition-all cursor-pointer select-none"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'var(--subtle)',
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              el.style.background = 'rgba(255,255,255,0.1)';
-              el.style.color = 'var(--foreground)';
-              el.style.borderColor = 'rgba(255,255,255,0.18)';
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              el.style.background = 'rgba(255,255,255,0.06)';
-              el.style.color = 'var(--subtle)';
-              el.style.borderColor = 'rgba(255,255,255,0.08)';
-            }}
+            className="advanced-minimized-expand-btn"
             onClick={handleExpandClick}
           >
             <Maximize2 size={14} />
-            <span className="text-[12px]">Expand</span>
+            <span className="advanced-minimized-expand-label">Expand</span>
           </button>
         </div>
       ) : (
         /* ── Normal body ── */
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="advanced-body">
         {isTokenNodeChild ? (
           /* ── Token Node: 2-column layout ── */
           <TokenAssignmentPanel
@@ -5206,60 +5116,40 @@ export function AdvancedPopup({
             pages={pages}
           />
         ) : colorInfo ? (
-          <div className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 flex min-h-0">
+          <div className="advanced-color-layout">
+            <div className="advanced-color-columns">
               {/* ── Column 1: Info ── */}
-              <div
-                className="flex flex-col shrink-0 overflow-hidden"
-                style={{
-                  width: '200px',
-                  borderRight: '1px solid rgba(255,255,255,0.04)',
-                }}
-              >
-                <div className="px-4 pt-4 pb-3 flex-1 overflow-y-auto min-h-0">
+              <div className="advanced-info-col">
+                <div className="advanced-info-col-inner">
                   {/* Color swatch + space badge */}
-                  <div className="flex items-center gap-2.5 mb-4">
+                  <div className="advanced-info-swatch-row">
                     <div
-                      className="w-8 h-8 rounded-lg shrink-0"
+                      className="advanced-info-swatch"
                       style={{
                         backgroundColor: colorInfo.cssColor,
                         boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)',
                       }}
                     />
-                    <span
-                      className="text-[11px] tracking-widest uppercase px-1.5 py-0.5 rounded select-none"
-                      style={{
-                        color: 'var(--faint)',
-                        background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid rgba(255,255,255,0.04)',
-                      }}
-                    >
+                    <span className="advanced-info-cs-badge">
                       {colorInfo.colorSpace.toUpperCase()}
                     </span>
                   </div>
 
                   {/* Channel values */}
-                  <div className="space-y-2">
+                  <div className="advanced-info-channels">
                     {channelDefs.map((ch, i) => {
                       const chLogic = draftChannels[ch.key];
                       const isConditioned = chLogic && chLogic.rows.length > 0;
                       return (
-                        <div key={ch.key} className="flex items-center justify-between">
-                          <span className="text-[11px] text-dim select-none">{ch.label}</span>
+                        <div key={ch.key} className="advanced-info-channel-row">
+                          <span className="advanced-info-channel-label">{ch.label}</span>
                           {isConditioned ? (
-                            <span
-                              className="text-[11px] font-mono px-1.5 py-[1px] rounded select-none"
-                              style={{
-                                color: 'var(--success)',
-                                background: 'rgba(43,189,104,0.1)',
-                                border: 'none',
-                              }}
-                            >
+                            <span className="advanced-info-channel-value--active">
                               {fmtVal(colorInfo.channels[i], ch.key)}
                               {getUnit(ch.key, colorInfo.colorSpace)}
                             </span>
                           ) : (
-                            <span className="text-[11px] text-subtle font-mono select-none">
+                            <span className="advanced-info-channel-value">
                               {fmtVal(colorInfo.channels[i], ch.key)}
                               {getUnit(ch.key, colorInfo.colorSpace)}
                             </span>
@@ -5271,21 +5161,14 @@ export function AdvancedPopup({
                       const alphaLogic = draftChannels.alpha;
                       const isAlphaConditioned = alphaLogic && alphaLogic.rows.length > 0;
                       return (
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-dim select-none">Alpha</span>
+                        <div className="advanced-info-channel-row">
+                          <span className="advanced-info-channel-label">Alpha</span>
                           {isAlphaConditioned ? (
-                            <span
-                              className="text-[11px] font-mono px-1.5 py-[1px] rounded select-none"
-                              style={{
-                                color: 'var(--success)',
-                                background: 'rgba(43,189,104,0.1)',
-                                border: 'none',
-                              }}
-                            >
+                            <span className="advanced-info-channel-value--active">
                               {Math.round(colorInfo.alpha)}%
                             </span>
                           ) : (
-                            <span className="text-[11px] text-subtle font-mono select-none">
+                            <span className="advanced-info-channel-value">
                               {Math.round(colorInfo.alpha)}%
                             </span>
                           )}
@@ -5294,11 +5177,11 @@ export function AdvancedPopup({
                     })()}
                   </div>
 
-                  <div className="h-px my-3" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                  <div className="advanced-info-divider" />
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-dim select-none">Hex</span>
-                    <span className="text-[11px] text-subtle font-mono select-none">
+                  <div className="advanced-info-hex-row">
+                    <span className="advanced-info-hex-label">Hex</span>
+                    <span className="advanced-info-hex-value">
                       {colorInfo.hex}
                     </span>
                   </div>
@@ -5306,10 +5189,10 @@ export function AdvancedPopup({
                   {/* Active logic indicator */}
                   {activeChannelCount > 0 && (
                     <>
-                      <div className="h-px my-3" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                      <div className="flex items-center gap-1.5">
-                        <Circle size={6} fill="var(--success)" stroke="none" />
-                        <span className="text-[11px] text-dim select-none">
+                      <div className="advanced-info-divider" />
+                      <div className="advanced-info-active-indicator">
+                        <Circle size={6} fill="var(--green-500)" stroke="none" />
+                        <span className="advanced-info-active-text">
                           {activeChannelCount} active channel{activeChannelCount !== 1 ? 's' : ''}
                         </span>
                       </div>
@@ -5317,7 +5200,7 @@ export function AdvancedPopup({
                   )}
 
                   {/* ── Node View section ── */}
-                  <div className="h-px my-3" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                  <div className="advanced-info-divider" />
                   <NodeViewSection
                     colorSpace={colorInfo.colorSpace}
                     channelDefs={channelDefs}
@@ -5334,26 +5217,14 @@ export function AdvancedPopup({
                 </div>
 
                 {/* Help button — pushed to bottom */}
-                <div className="mt-auto px-4 pb-3 pt-2 shrink-0">
+                <div className="advanced-info-help-footer">
                   <button
                     onClick={() => setShowHelp(true)}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors cursor-pointer group"
-                    style={{
-                      background: 'rgba(255,255,255,0.02)',
-                      border: '1px solid rgba(255,255,255,0.04)',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)';
-                    }}
+                    className="advanced-info-help-btn"
                     title="Logic Reference Guide"
                   >
-                    <HelpCircle size={12} style={{ color: 'var(--ghost)' }} className="group-hover:!text-faint transition-colors" />
-                    <span className="text-[11px] text-ghost group-hover:text-faint transition-colors select-none">Reference Guide</span>
+                    <HelpCircle size={12} className="advanced-info-help-icon" />
+                    <span className="advanced-info-help-text">Reference Guide</span>
                   </button>
                 </div>
               </div>
@@ -5396,8 +5267,8 @@ export function AdvancedPopup({
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-auto p-6">
-            <div className="text-[13px] text-ghost select-none text-center mt-12">
+          <div className="advanced-empty-state">
+            <div className="advanced-empty-text">
               Advanced options for this node will appear here.
             </div>
           </div>

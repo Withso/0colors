@@ -11,6 +11,7 @@ import { OklchGamutSlider } from './OklchGamutSlider';
 import { DualRangeSlider } from './DualRangeSlider';
 import { Switch } from '../ui/switch';
 import { MAX_PALETTE_NAME } from '../../utils/textLimits';
+import './PaletteNodeCard.css';
 
 // ─── Color Utilities ───────────────────────────────────────────
 // hslToRgb, rgbToHex, rgbToHsl, hslToOklch, oklchToHsl imported from ../utils/color-conversions
@@ -271,27 +272,27 @@ function CurveVisualizer({
       width={W}
       height={H}
       viewBox={`0 0 ${W} ${H}`}
-      className="w-full"
+      className="palette-card-curve-svg"
       style={{ height: '100px' }}
     >
       {/* Grid lines */}
-      <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke="var(--secondary)" strokeWidth="0.5" />
-      <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke="var(--secondary)" strokeWidth="0.5" />
+      <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke="var(--grey-800)" strokeWidth="0.5" />
+      <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke="var(--grey-800)" strokeWidth="0.5" />
       {/* 50% lightness guide */}
       <line
         x1={PAD}
         y1={PAD + (1 - 0.5) * (H - PAD * 2)}
         x2={W - PAD}
         y2={PAD + (1 - 0.5) * (H - PAD * 2)}
-        stroke="var(--secondary)"
+        stroke="var(--grey-800)"
         strokeWidth="0.5"
         strokeDasharray="2,3"
       />
       {/* 25% and 75% guides */}
-      <line x1={PAD} y1={PAD + 0.25 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.25 * (H - PAD * 2)} stroke="var(--card)" strokeWidth="0.5" strokeDasharray="1,4" />
-      <line x1={PAD} y1={PAD + 0.75 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.75 * (H - PAD * 2)} stroke="var(--card)" strokeWidth="0.5" strokeDasharray="1,4" />
+      <line x1={PAD} y1={PAD + 0.25 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.25 * (H - PAD * 2)} stroke="var(--grey-800)" strokeWidth="0.5" strokeDasharray="1,4" />
+      <line x1={PAD} y1={PAD + 0.75 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.75 * (H - PAD * 2)} stroke="var(--grey-800)" strokeWidth="0.5" strokeDasharray="1,4" />
       {/* Curve path */}
-      <path d={pathParts.join(' ')} fill="none" stroke="var(--brand)" strokeWidth="1.5" opacity="0.8" />
+      <path d={pathParts.join(' ')} fill="none" stroke="var(--indigo-500)" strokeWidth="1.5" opacity="0.8" />
       {/* Shade dots — always draggable */}
       {dots.map((dot, i) => (
         <g key={i}>
@@ -309,7 +310,7 @@ function CurveVisualizer({
             cy={dot.y}
             r={draggingIndex !== null ? 5 : 4}
             fill={dot.color}
-            stroke={draggingIndex === i ? 'var(--brand)' : '#000'}
+            stroke={draggingIndex === i ? 'var(--indigo-500)' : 'var(--grey-900)'}
             strokeWidth={draggingIndex === i ? 2 : 1}
             style={{ cursor: 'ns-resize' }}
             onMouseDown={(e) => handleDotMouseDown(e, i)}
@@ -319,7 +320,7 @@ function CurveVisualizer({
             <text
               x={dot.x}
               y={dot.y - 10}
-              fill="var(--foreground)"
+              fill="var(--grey-100)"
               fontSize="9"
               fontFamily="var(--font-mono)"
               textAnchor="middle"
@@ -330,8 +331,8 @@ function CurveVisualizer({
         </g>
       ))}
       {/* Axis labels */}
-      <text x={PAD} y={H - 2} fill="var(--ghost)" fontSize="7" fontFamily="var(--font-mono)">L</text>
-      <text x={W - PAD - 6} y={H - 2} fill="var(--ghost)" fontSize="7" fontFamily="var(--font-mono)">R</text>
+      <text x={PAD} y={H - 2} fill="var(--grey-700)" fontSize="7" fontFamily="var(--font-mono)">L</text>
+      <text x={W - PAD - 6} y={H - 2} fill="var(--grey-700)" fontSize="7" fontFamily="var(--font-mono)">R</text>
     </svg>
   );
 }
@@ -355,15 +356,15 @@ function ShadePreviewStrip({
   }, []);
 
   return (
-    <div className="space-y-1.5">
+    <div className="palette-card-shade-strip">
       {/* Continuous strip */}
-      <div className="flex rounded-lg overflow-hidden" style={{ height: '32px' }}>
+      <div className="palette-card-shade-row">
         {shadeColors.map((shade, i) => {
           const isModified = primaryShadeHexes && primaryShadeHexes[i] && primaryShadeHexes[i] !== shade.hex;
           return (
             <div
               key={i}
-              className="flex-1 relative group cursor-pointer transition-transform hover:scale-y-110"
+              className="palette-card-shade-cell"
               style={{ backgroundColor: shade.hex }}
               title={`${shade.name}: ${shade.displayValue}${isModified ? ' (modified)' : ''}`}
               onClick={(e) => {
@@ -373,11 +374,11 @@ function ShadePreviewStrip({
             >
               {/* Modification indicator dot */}
               {isModified && (
-                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-warning z-10" style={{ boxShadow: '0 0 2px rgba(0,0,0,0.5)' }} />
+                <div className="palette-card-shade-mod-dot" style={{ boxShadow: '0 0 2px rgba(0,0,0,0.5)' }} />
               )}
               {copiedIndex === i && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Check className="w-2.5 h-2.5" style={{ color: shade.lightness > 55 ? '#000' : '#fff' }} />
+                <div className="palette-card-shade-copied">
+                  <Check className="palette-card-shade-check" style={{ color: shade.lightness > 55 ? 'var(--grey-900)' : 'var(--grey-50)' }} />
                 </div>
               )}
             </div>
@@ -404,17 +405,17 @@ function Island({
 }) {
   return (
     <div
-      className={`rounded-xl overflow-hidden transition-all duration-150 ${className}`}
+      className={`palette-card-island ${className}`}
       style={{
-        backgroundColor: '#0e0e0e',
-        border: `1px solid ${isSelected || isMultiSelected ? 'rgba(70, 91, 254, 0.5)' : '#141414'}`,
+        backgroundColor: 'var(--grey-900)',
+        border: `1px solid ${isSelected || isMultiSelected ? 'rgba(70, 91, 254, 0.5)' : 'var(--grey-900)'}`,
         boxShadow: isSelected
           ? '0 0 0 1px rgba(70,91,254,0.3), 0 4px 16px rgba(0,0,0,0.4)'
           : '0 2px 8px rgba(0,0,0,0.3)',
       }}
     >
       {noPadding ? children : (
-        <div className="px-4 py-3">
+        <div className="palette-card-island-inner">
           {children}
         </div>
       )}
@@ -787,7 +788,7 @@ export function PaletteNodeCard({
   // ─── Render: Island Layout ────────────────────────────────────
   return (
     <div
-      className="relative select-none palette-node-card"
+      className="palette-card-root palette-node-card"
       data-node-card
       style={{ width: `${nodeWidth}px` }}
       onMouseDown={(e) => {
@@ -803,12 +804,12 @@ export function PaletteNodeCard({
       {/* Visibility toggle */}
       {onToggleVisibility && (
         <div
-          className={`absolute top-[10px] -left-[22px] z-10 transition-all cursor-pointer ${
+          className={`palette-card-visibility ${
             isNodeHidden
-              ? 'opacity-100 text-brand'
+              ? 'palette-card-visibility--hidden'
               : isHovered
-                ? 'opacity-100 text-muted-foreground hover:text-foreground'
-                : 'opacity-0'
+                ? 'palette-card-visibility--hovered'
+                : 'palette-card-visibility--default'
           }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -816,41 +817,41 @@ export function PaletteNodeCard({
           }}
           title={isNodeHidden ? 'Show palette' : 'Hide palette'}
         >
-          {isNodeHidden ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+          {isNodeHidden ? <EyeOff className="palette-card-visibility-icon" /> : <Eye className="palette-card-visibility-icon" />}
         </div>
       )}
 
       {/* Inheritance Toggle Bar for Non-Primary Themes — flow-based bar above the card */}
       {showInheritanceIcon && !isPrimaryTheme && (
         <div
-          className="z-20 flex items-center gap-2 px-2.5 py-1.5 rounded-[20px] transition-opacity duration-200 mb-1"
-          style={{ width: `${nodeWidth}px`, backgroundColor: '#0E0E0E', ...(barDimOpacity !== undefined ? { opacity: barDimOpacity } : {}) }}
+          className="palette-card-inherit-bar"
+          style={{ width: `${nodeWidth}px`, backgroundColor: 'var(--grey-900)', ...(barDimOpacity !== undefined ? { opacity: barDimOpacity } : {}) }}
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
           onMouseEnter={() => { if (colorNeedsHover) setHoveredSection('color'); }}
           onMouseLeave={() => { if (hoveredSection === 'color') setHoveredSection(null); }}
         >
-          <Crown 
-            className={`h-3 w-3 shrink-0 transition-all ${
+          <Crown
+            className={`palette-card-inherit-crown ${
               isLinkedToPrimary()
-                ? 'text-warning fill-warning'
+                ? 'palette-card-inherit-crown--linked'
                 : hasColorBeenModified
-                  ? 'text-brand fill-brand'
-                  : 'text-dim fill-none'
+                  ? 'palette-card-inherit-crown--modified'
+                  : 'palette-card-inherit-crown--dim'
             }`}
             fill={isLinkedToPrimary() ? 'currentColor' : hasColorBeenModified ? 'currentColor' : 'none'}
           />
           <Switch
             checked={isLinkedToPrimary()}
             onCheckedChange={() => handleToggleLinkToPrimary()}
-            className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-border dark:data-[state=unchecked]:bg-border h-[16px] w-[30px] shrink-0"
+            className="palette-card-inherit-switch"
           />
-          <span className={`text-[11px] select-none transition-colors ${
-            isLinkedToPrimary() ? 'text-subtle' : hasColorBeenModified ? 'text-subtle' : 'text-faint'
+          <span className={`palette-card-inherit-label ${
+            isLinkedToPrimary() ? 'palette-card-inherit-label--linked' : hasColorBeenModified ? 'palette-card-inherit-label--modified' : 'palette-card-inherit-label--dim'
           }`}>
-            {isLinkedToPrimary() 
-              ? 'Node is inherited' 
-              : hasColorBeenModified 
+            {isLinkedToPrimary()
+              ? 'Node is inherited'
+              : hasColorBeenModified
                 ? 'Node is modified'
                 : 'Node is not-inherited'}
           </span>
@@ -861,7 +862,7 @@ export function PaletteNodeCard({
       <Island isSelected={isSelected} isMultiSelected={isMultiSelected} noPadding>
         {/* Header: Color Swatch */}
         <div
-          className="h-24 flex items-center justify-center relative"
+          className="palette-card-swatch"
           style={{
             backgroundColor: `hsl(${eHue}, ${eSat}%, ${eLit}%)`,
             borderRadius: '11px 11px 0 0',
@@ -870,28 +871,27 @@ export function PaletteNodeCard({
           {/* Inherited dim overlay on swatch — sits above content but below the crown */}
           {isAllInputDisabled && !showAllVisible && (
             <div
-              className="absolute inset-0 z-[1]"
+              className="palette-card-swatch-overlay"
               style={{
                 backgroundColor: 'rgba(0, 0, 0, 0.55)',
                 borderRadius: '11px 11px 0 0',
-                pointerEvents: 'none',
               }}
             />
           )}
-          <div className="relative flex items-center" style={isAllInputDisabled && !showAllVisible ? { opacity: 0.4 } : undefined}>
+          <div className="palette-card-swatch-inner" style={isAllInputDisabled && !showAllVisible ? { opacity: 0.4 } : undefined}>
             <button
-              className={`absolute right-full mr-1 p-1 rounded transition-all ${isLightBackground ? 'hover:bg-[#0a0a0a]/10' : 'hover:bg-white/20'} ${isHovered || copiedHex ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              className={`palette-card-copy-btn ${isLightBackground ? 'palette-card-copy-btn--light' : 'palette-card-copy-btn--dark'} ${isHovered || copiedHex ? 'palette-card-copy-btn--visible' : 'palette-card-copy-btn--hidden'}`}
               onClick={(e) => { e.stopPropagation(); handleCopyHex(); }}
               onMouseDown={(e) => e.stopPropagation()}
               title="Copy hex"
             >
               {copiedHex ? (
-                <Check className={`w-4 h-4 ${isLightBackground ? 'text-[#444444]/80' : 'text-white/80'}`} />
+                <Check className={`palette-card-copy-icon ${isLightBackground ? 'palette-card-copy-icon--light' : 'palette-card-copy-icon--dark'}`} />
               ) : (
-                <Copy className={`w-4 h-4 ${isLightBackground ? 'text-[#444444]/60' : 'text-white/60'}`} />
+                <Copy className={`palette-card-copy-icon ${isLightBackground ? 'palette-card-copy-icon--light-dim' : 'palette-card-copy-icon--dark-dim'}`} />
               )}
             </button>
-            <span className="font-mono drop-shadow-md" style={{ color: isLightBackground ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)' }}>
+            <span className="palette-card-swatch-value" style={{ color: isLightBackground ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)' }}>
               {displayColorValue}
             </span>
           </div>
@@ -900,32 +900,31 @@ export function PaletteNodeCard({
         {/* ── All palette controls below the swatch — disabled entirely when inherited ── */}
         <div style={{ ...(isAllInputDisabled ? { pointerEvents: 'none' as const, opacity: showAllVisible ? 1 : 0.45 } : {}) }}>
         {/* ── NAME ── */}
-        <div className="border-t border-[#141414] transition-opacity">
+        <div className="palette-card-section">
           <div
-            className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors"
+            className="palette-card-section-header"
             onClick={(e) => { e.stopPropagation(); toggleSection('name'); }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Name</span>
-            <div className="flex items-center gap-1.5">
+            <span className="palette-card-section-label">Name</span>
+            <div className="palette-card-name-actions">
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateNode(node.id, { paletteNameLocked: !node.paletteNameLocked }); }}
-                className="w-5 h-5 rounded flex items-center justify-center transition-colors hover:bg-secondary"
+                className="palette-card-lock-btn"
                 title={node.paletteNameLocked ? 'Unlock name' : 'Lock name'}
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                {node.paletteNameLocked ? <Lock className="w-3 h-3 text-brand" /> : <Unlock className="w-3 h-3 text-ghost" />}
+                {node.paletteNameLocked ? <Lock className="palette-card-lock-icon palette-card-lock-icon--locked" /> : <Unlock className="palette-card-lock-icon palette-card-lock-icon--unlocked" />}
               </button>
-              <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.name ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`palette-card-chevron ${expandedSections.name ? 'palette-card-chevron--open' : ''}`} />
             </div>
           </div>
           {expandedSections.name && (
-            <div className="px-4 pb-3">
+            <div className="palette-card-section-body">
               <Input
                 value={paletteName}
                 onChange={(e) => { setIsManuallyEdited(true); onUpdateNode(node.id, { paletteName: e.target.value, paletteNameLocked: true }); }}
-                className="h-7 bg-card border-[#181818] text-foreground text-xs rounded-lg"
-                style={{ fontFamily: 'var(--font-sans)' }}
+                className="palette-card-name-input"
                 placeholder="Palette name"
                 onMouseDown={(e) => e.stopPropagation()}
                 maxLength={MAX_PALETTE_NAME}
@@ -936,29 +935,29 @@ export function PaletteNodeCard({
 
         {/* ── COLOR ── */}
         <div
-          className="border-t border-[#141414] transition-opacity"
+          className="palette-card-section--color"
           style={{ opacity: colorDimOpacity }}
           onMouseEnter={() => colorNeedsHover && setHoveredSection('color')}
           onMouseLeave={() => colorNeedsHover && setHoveredSection(null)}
         >
           <button
-            className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors"
+            className="palette-card-section-header"
             onClick={(e) => { e.stopPropagation(); toggleSection('color'); }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Color</span>
-              {isColorChanged && <div className="w-1.5 h-1.5 rounded-full bg-warning" title="Modified from primary" />}
+            <div className="palette-card-color-header-left">
+              <span className="palette-card-section-label">Color</span>
+              {isColorChanged && <div className="palette-card-color-modified-dot" title="Modified from primary" />}
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-4 rounded border border-elevated" style={{ backgroundColor: `hsl(${eHue}, ${eSat}%, ${eLit}%)` }} />
-              <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.color ? 'rotate-180' : ''}`} />
+            <div className="palette-card-color-header-right">
+              <div className="palette-card-color-preview" style={{ backgroundColor: `hsl(${eHue}, ${eSat}%, ${eLit}%)` }} />
+              <ChevronDown className={`palette-card-chevron ${expandedSections.color ? 'palette-card-chevron--open' : ''}`} />
             </div>
           </button>
           {expandedSections.color && (
-            <div className="px-4 pb-3">
+            <div className="palette-card-section-body">
               {/* ── Per-property gradient sliders ── */}
-              <div className="space-y-2 mt-1">
+              <div className="palette-card-color-sliders">
                 {colorFormat === 'OKLCH' ? (
                   <OklchGamutSlider type="hue" value={Math.round(oklchValues.h)} lightness={Math.round(oklchValues.l)} chroma={Math.round(oklchValues.c / 0.4)} hue={Math.round(oklchValues.h)} onChange={handleOklchHChange} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled} />
                 ) : (
@@ -967,7 +966,7 @@ export function PaletteNodeCard({
                     onChange={(e) => handleHueChange(parseInt(e.target.value))}
                     onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()}
                     disabled={isColorInputDisabled}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                    className="palette-card-color-slider color-slider"
                     style={{
                       background: `linear-gradient(to right, hsl(0, ${eSat}%, ${eLit}%), hsl(60, ${eSat}%, ${eLit}%), hsl(120, ${eSat}%, ${eLit}%), hsl(180, ${eSat}%, ${eLit}%), hsl(240, ${eSat}%, ${eLit}%), hsl(300, ${eSat}%, ${eLit}%), hsl(360, ${eSat}%, ${eLit}%))`,
                       '--slider-thumb-color': `hsl(${eHue}, ${eSat}%, ${eLit}%)`,
@@ -980,29 +979,29 @@ export function PaletteNodeCard({
                     onChange={(e) => handleAlphaChange(parseInt(e.target.value))}
                     onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()}
                     disabled={isColorInputDisabled}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                    className="palette-card-color-slider color-slider"
                     style={{
-                      backgroundImage: `linear-gradient(to right, hsla(${eHue}, ${eSat}%, ${eLit}%, 0), hsla(${eHue}, ${eSat}%, ${eLit}%, 1)), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)`,
+                      backgroundImage: `linear-gradient(to right, hsla(${eHue}, ${eSat}%, ${eLit}%, 0), hsla(${eHue}, ${eSat}%, ${eLit}%, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`,
                       backgroundSize: '100% 100%, 8px 8px, 8px 8px',
                       backgroundPosition: '0 0, 0 0, 4px 4px',
-                      backgroundColor: '#999999',
+                      backgroundColor: 'var(--grey-400)',
                       '--slider-thumb-color': `hsla(${eHue}, ${eSat}%, ${eLit}%, ${(eAlpha ?? 100) / 100})`,
                     } as React.CSSProperties}
                   />
               </div>
 
               {/* ── Format selector + value display ── */}
-              <div className="flex gap-2 mt-2">
+              <div className="palette-card-color-format-row">
                 <Select value={colorFormat} onValueChange={(value) => onUpdateNode(node.id, { paletteColorFormat: value as any })}>
-                  <SelectTrigger className="w-[72px] bg-card border-[#181818] text-foreground text-[11px]" style={{ height: '28px' }} onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-card border-line">
-                    <SelectItem value="HEX" className="text-foreground text-xs">HEX</SelectItem>
-                    <SelectItem value="HSLA" className="text-foreground text-xs">HSLA</SelectItem>
-                    <SelectItem value="OKLCH" className="text-foreground text-xs">OKLCH</SelectItem>
-                    <SelectItem value="RGBA" className="text-foreground text-xs">RGBA</SelectItem>
+                  <SelectTrigger className="palette-card-select-trigger--format" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
+                  <SelectContent className="palette-card-select-content">
+                    <SelectItem value="HEX" className="palette-card-select-item">HEX</SelectItem>
+                    <SelectItem value="HSLA" className="palette-card-select-item">HSLA</SelectItem>
+                    <SelectItem value="OKLCH" className="palette-card-select-item">OKLCH</SelectItem>
+                    <SelectItem value="RGBA" className="palette-card-select-item">RGBA</SelectItem>
                   </SelectContent>
                 </Select>
-                <div className="flex-1 bg-card border border-[#181818] rounded-lg px-2.5 flex items-center text-foreground text-[11px] overflow-hidden" style={{ fontFamily: 'var(--font-mono)', height: '28px' }}>
+                <div className="palette-card-color-value-display">
                   {colorFormat === 'HEX' && hexColor}
                   {colorFormat === 'HSLA' && `hsla(${Math.round(eHue)}, ${Math.round(eSat)}%, ${Math.round(eLit)}%, ${(eAlpha ?? 100) / 100})`}
                   {colorFormat === 'OKLCH' && `oklch(${(oklchValues.l / 100).toFixed(2)} ${(oklchValues.c / 100).toFixed(3)} ${Math.round(oklchValues.h)})`}
@@ -1014,27 +1013,27 @@ export function PaletteNodeCard({
         </div>
 
         {/* ── DISTRIBUTION ── */}
-        <div className="border-t border-[#141414]">
-          <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('distribution'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Distribution</span>
-            <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.distribution ? 'rotate-180' : ''}`} />
+        <div className="palette-card-section">
+          <button className="palette-card-section-header" onClick={(e) => { e.stopPropagation(); toggleSection('distribution'); }} onMouseDown={(e) => e.stopPropagation()}>
+            <span className="palette-card-section-label">Distribution</span>
+            <ChevronDown className={`palette-card-chevron ${expandedSections.distribution ? 'palette-card-chevron--open' : ''}`} />
           </button>
           {expandedSections.distribution && (
-            <div className="px-4 pb-3">
+            <div className="palette-card-section-body">
               <Select value={curveType} onValueChange={handleCurveChange}>
-                <SelectTrigger className="bg-card border-[#181818] text-foreground h-7 text-xs mb-2" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-card border-line">
-                  <SelectItem value="linear" className="text-foreground text-xs">Linear</SelectItem>
-                  <SelectItem value="ease-in" className="text-foreground text-xs">Ease In</SelectItem>
-                  <SelectItem value="ease-out" className="text-foreground text-xs">Ease Out</SelectItem>
-                  <SelectItem value="ease-in-out" className="text-foreground text-xs">Ease In-Out</SelectItem>
-                  <SelectItem value="sine" className="text-foreground text-xs">Sine</SelectItem>
-                  <SelectItem value="exponential" className="text-foreground text-xs">Exponential</SelectItem>
-                  <SelectItem value="material" className="text-foreground text-xs">Material</SelectItem>
-                  <SelectItem value="custom" className="text-foreground text-xs">Custom</SelectItem>
+                <SelectTrigger className="palette-card-select-trigger" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
+                <SelectContent className="palette-card-select-content">
+                  <SelectItem value="linear" className="palette-card-select-item">Linear</SelectItem>
+                  <SelectItem value="ease-in" className="palette-card-select-item">Ease In</SelectItem>
+                  <SelectItem value="ease-out" className="palette-card-select-item">Ease Out</SelectItem>
+                  <SelectItem value="ease-in-out" className="palette-card-select-item">Ease In-Out</SelectItem>
+                  <SelectItem value="sine" className="palette-card-select-item">Sine</SelectItem>
+                  <SelectItem value="exponential" className="palette-card-select-item">Exponential</SelectItem>
+                  <SelectItem value="material" className="palette-card-select-item">Material</SelectItem>
+                  <SelectItem value="custom" className="palette-card-select-item">Custom</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="bg-[#080808] rounded-lg p-1.5 border border-[#151515]">
+              <div className="palette-card-curve-box">
                 <CurveVisualizer curveType={curveType} lightnessStart={lightnessStart} lightnessEnd={lightnessEnd} shadeCount={shadeCount} hue={eHue} saturation={eSat} customPoints={node.paletteCustomCurvePoints} onPointsDrag={(points) => onUpdateNode(node.id, { paletteCurveType: 'custom', paletteLightnessMode: 'curve' as any, paletteCustomCurvePoints: points })} />
               </div>
             </div>
@@ -1042,14 +1041,14 @@ export function PaletteNodeCard({
         </div>
 
         {/* ── LIGHTNESS SCALE ── */}
-        <div className="border-t border-[#141414]">
-          <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('lightnessScale'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Lightness Scale</span>
-            <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.lightnessScale ? 'rotate-180' : ''}`} />
+        <div className="palette-card-section">
+          <button className="palette-card-section-header" onClick={(e) => { e.stopPropagation(); toggleSection('lightnessScale'); }} onMouseDown={(e) => e.stopPropagation()}>
+            <span className="palette-card-section-label">Lightness Scale</span>
+            <ChevronDown className={`palette-card-chevron ${expandedSections.lightnessScale ? 'palette-card-chevron--open' : ''}`} />
           </button>
           {expandedSections.lightnessScale && (
-            <div className="px-4 pb-3">
-              <div className="relative pt-1 pb-1">
+            <div className="palette-card-section-body">
+              <div className="palette-card-slider-wrapper">
                 <DualRangeSlider
                   min={0}
                   max={100}
@@ -1060,9 +1059,9 @@ export function PaletteNodeCard({
                   fillStyle={`linear-gradient(to right, hsl(${eHue}, ${eSat}%, ${Math.min(lightnessStart, lightnessEnd)}%), hsl(${eHue}, ${eSat}%, ${Math.max(lightnessStart, lightnessEnd)}%))`}
                   markers={shadeColors.map((shade) => ({ position: shade.lightness, color: shade.hex }))}
                 />
-                <div className="flex justify-between mt-1">
-                  <span className="text-[11px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>L:{lightnessStart}%</span>
-                  <span className="text-[11px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>L:{lightnessEnd}%</span>
+                <div className="palette-card-slider-labels">
+                  <span className="palette-card-slider-label">L:{lightnessStart}%</span>
+                  <span className="palette-card-slider-label">L:{lightnessEnd}%</span>
                 </div>
               </div>
             </div>
@@ -1070,23 +1069,23 @@ export function PaletteNodeCard({
         </div>
 
         {/* ── SATURATION ── */}
-        <div className="border-t border-[#141414]">
-          <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('saturation'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Saturation</span>
-            <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.saturation ? 'rotate-180' : ''}`} />
+        <div className="palette-card-section">
+          <button className="palette-card-section-header" onClick={(e) => { e.stopPropagation(); toggleSection('saturation'); }} onMouseDown={(e) => e.stopPropagation()}>
+            <span className="palette-card-section-label">Saturation</span>
+            <ChevronDown className={`palette-card-chevron ${expandedSections.saturation ? 'palette-card-chevron--open' : ''}`} />
           </button>
           {expandedSections.saturation && (
-            <div className="px-4 pb-3">
+            <div className="palette-card-section-body">
               <Select value={satMode} onValueChange={(value) => onUpdateNode(node.id, { paletteSaturationMode: value as any })}>
-                <SelectTrigger className="bg-card border-[#181818] text-foreground h-7 text-xs mb-2" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-card border-line">
-                  <SelectItem value="constant" className="text-foreground text-xs">Constant</SelectItem>
-                  <SelectItem value="auto" className="text-foreground text-xs">Auto (perceptual)</SelectItem>
-                  <SelectItem value="manual" className="text-foreground text-xs">Manual range</SelectItem>
+                <SelectTrigger className="palette-card-select-trigger" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
+                <SelectContent className="palette-card-select-content">
+                  <SelectItem value="constant" className="palette-card-select-item">Constant</SelectItem>
+                  <SelectItem value="auto" className="palette-card-select-item">Auto (perceptual)</SelectItem>
+                  <SelectItem value="manual" className="palette-card-select-item">Manual range</SelectItem>
                 </SelectContent>
               </Select>
               {satMode === 'manual' && (
-                <div className="relative pt-1 pb-1">
+                <div className="palette-card-slider-wrapper">
                   <DualRangeSlider
                     min={0}
                     max={100}
@@ -1096,9 +1095,9 @@ export function PaletteNodeCard({
                     onEndChange={(v) => onUpdateNode(node.id, { paletteSaturationEnd: v })}
                     fillStyle={`linear-gradient(to right, hsl(${eHue}, ${Math.min(satStart, satEnd)}%, ${eLit}%), hsl(${eHue}, ${Math.max(satStart, satEnd)}%, ${eLit}%))`}
                   />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[11px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>S:{satStart}%</span>
-                    <span className="text-[11px] text-dim" style={{ fontFamily: 'var(--font-mono)' }}>S:{satEnd}%</span>
+                  <div className="palette-card-slider-labels">
+                    <span className="palette-card-slider-label">S:{satStart}%</span>
+                    <span className="palette-card-slider-label">S:{satEnd}%</span>
                   </div>
                 </div>
               )}
@@ -1107,50 +1106,50 @@ export function PaletteNodeCard({
         </div>
 
         {/* ── HUE SHIFT ── */}
-        <div className="border-t border-[#141414]">
-          <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('hueShift'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Hue Shift</span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-foreground" style={{ fontFamily: 'var(--font-mono)' }}>{hueShift > 0 ? '+' : ''}{hueShift}°</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.hueShift ? 'rotate-180' : ''}`} />
+        <div className="palette-card-section">
+          <button className="palette-card-section-header" onClick={(e) => { e.stopPropagation(); toggleSection('hueShift'); }} onMouseDown={(e) => e.stopPropagation()}>
+            <span className="palette-card-section-label">Hue Shift</span>
+            <div className="palette-card-hue-header-right">
+              <span className="palette-card-hue-value">{hueShift > 0 ? '+' : ''}{hueShift}°</span>
+              <ChevronDown className={`palette-card-chevron ${expandedSections.hueShift ? 'palette-card-chevron--open' : ''}`} />
             </div>
           </button>
           {expandedSections.hueShift && (
-            <div className="px-4 pb-3">
-              <input type="range" min="-30" max="30" value={hueShift} onChange={(e) => onUpdateNode(node.id, { paletteHueShift: parseInt(e.target.value) })} className="w-full h-2 bg-card rounded-full appearance-none cursor-pointer palette-range-slider" onMouseDown={(e) => e.stopPropagation()} />
+            <div className="palette-card-section-body">
+              <input type="range" min="-30" max="30" value={hueShift} onChange={(e) => onUpdateNode(node.id, { paletteHueShift: parseInt(e.target.value) })} className="palette-card-range-slider palette-range-slider" onMouseDown={(e) => e.stopPropagation()} />
             </div>
           )}
         </div>
 
         {/* ── PATTERN + SHADES ── (hidden for non-primary themes) */}
         {isPrimaryTheme && (
-        <div className="border-t border-[#141414]">
-          <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('pattern'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-4">
-              <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Pattern</span>
-              <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Shades</span>
+        <div className="palette-card-section">
+          <button className="palette-card-section-header" onClick={(e) => { e.stopPropagation(); toggleSection('pattern'); }} onMouseDown={(e) => e.stopPropagation()}>
+            <div className="palette-card-pattern-header-left">
+              <span className="palette-card-section-label">Pattern</span>
+              <span className="palette-card-section-label">Shades</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-foreground" style={{ fontFamily: 'var(--font-mono)' }}>{shadeCount}</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.pattern ? 'rotate-180' : ''}`} />
+            <div className="palette-card-pattern-header-right">
+              <span className="palette-card-pattern-value">{shadeCount}</span>
+              <ChevronDown className={`palette-card-chevron ${expandedSections.pattern ? 'palette-card-chevron--open' : ''}`} />
             </div>
           </button>
           {expandedSections.pattern && (
-            <div className="px-4 pb-3">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="palette-card-section-body">
+              <div className="palette-card-pattern-grid">
                 <div>
                   <Select value={namingPattern} onValueChange={(value) => onUpdateNode(node.id, { paletteNamingPattern: value as any })}>
-                    <SelectTrigger className="bg-card border-[#181818] text-foreground h-7 text-xs" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
-                    <SelectContent className="bg-card border-line">
-                      <SelectItem value="1-9" className="text-foreground text-xs">1-9</SelectItem>
-                      <SelectItem value="10-90" className="text-foreground text-xs">10-90</SelectItem>
-                      <SelectItem value="100-900" className="text-foreground text-xs">100-900</SelectItem>
-                      <SelectItem value="a-z" className="text-foreground text-xs">a-z</SelectItem>
+                    <SelectTrigger className="palette-card-select-trigger palette-card-select-trigger--no-mb" onMouseDown={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
+                    <SelectContent className="palette-card-select-content">
+                      <SelectItem value="1-9" className="palette-card-select-item">1-9</SelectItem>
+                      <SelectItem value="10-90" className="palette-card-select-item">10-90</SelectItem>
+                      <SelectItem value="100-900" className="palette-card-select-item">100-900</SelectItem>
+                      <SelectItem value="a-z" className="palette-card-select-item">a-z</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <input type="range" min="2" max="20" value={shadeCount} onChange={(e) => onUpdateNode(node.id, { paletteShadeCount: parseInt(e.target.value) })} className="w-full h-2 bg-card rounded-full appearance-none cursor-pointer palette-range-slider" onMouseDown={(e) => e.stopPropagation()} />
+                  <input type="range" min="2" max="20" value={shadeCount} onChange={(e) => onUpdateNode(node.id, { paletteShadeCount: parseInt(e.target.value) })} className="palette-card-range-slider palette-range-slider" onMouseDown={(e) => e.stopPropagation()} />
                 </div>
               </div>
             </div>
@@ -1159,13 +1158,13 @@ export function PaletteNodeCard({
         )}
 
         {/* ── PREVIEW ── */}
-        <div className="border-t border-[#141414]">
-          <button className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-card transition-colors" onClick={(e) => { e.stopPropagation(); toggleSection('preview'); }} onMouseDown={(e) => e.stopPropagation()}>
-            <span className="text-[11px] text-dim uppercase tracking-widest" style={{ fontFamily: 'var(--font-sans)' }}>Preview</span>
-            <ChevronDown className={`w-3.5 h-3.5 text-dim transition-transform ${expandedSections.preview ? 'rotate-180' : ''}`} />
+        <div className="palette-card-section">
+          <button className="palette-card-section-header" onClick={(e) => { e.stopPropagation(); toggleSection('preview'); }} onMouseDown={(e) => e.stopPropagation()}>
+            <span className="palette-card-section-label">Preview</span>
+            <ChevronDown className={`palette-card-chevron ${expandedSections.preview ? 'palette-card-chevron--open' : ''}`} />
           </button>
           {expandedSections.preview && (
-            <div className="px-4 pb-3">
+            <div className="palette-card-section-body">
               <ShadePreviewStrip shadeColors={shadeColors} shadeCount={shadeCount} primaryShadeHexes={primaryShadeHexes} />
             </div>
           )}
@@ -1175,7 +1174,7 @@ export function PaletteNodeCard({
 
       {/* ─── Left Connection Button (parent) — always interactive for wire connections ─── */}
       <div
-        className="absolute -left-3 top-7 z-20"
+        className="palette-card-connect-left"
         style={{ pointerEvents: 'auto' }}
         onMouseEnter={() => {
           if (isDraggingWire && wireStartButtonType === 'right' && !isStructurallyLocked) {
@@ -1185,12 +1184,12 @@ export function PaletteNodeCard({
         onMouseLeave={() => onWireHoverEnd()}
       >
         <button
-          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
+          className={`palette-card-connect-btn ${
             isStructurallyLocked
-              ? 'bg-[#222] cursor-not-allowed'
+              ? 'palette-card-connect-btn--locked'
               : isWireHovered && wireStartButtonType === 'right'
-                ? 'bg-success'
-                : 'bg-border hover:bg-border'
+                ? 'palette-card-connect-btn--hovered'
+                : 'palette-card-connect-btn--default'
           }`}
           onMouseDown={(e) => {
             e.stopPropagation();
@@ -1202,13 +1201,13 @@ export function PaletteNodeCard({
           data-button-type="left-connect"
           title={isStructurallyLocked ? "Inherited from primary — unlink from primary to modify" : "Connect to parent"}
         >
-          <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'right' ? 'text-white' : 'text-foreground'}`} />
+          <Plus className={`palette-card-connect-icon ${isStructurallyLocked ? 'palette-card-connect-icon--locked' : isWireHovered && wireStartButtonType === 'right' ? 'palette-card-connect-icon--hovered' : 'palette-card-connect-icon--default'}`} />
         </button>
       </div>
 
       {/* ─── Right Connection Button (add shade / child) — always interactive for wire connections ─── */}
       <div
-        className="absolute -right-3 top-7 z-20"
+        className="palette-card-connect-right"
         style={{ pointerEvents: 'auto' }}
         onMouseEnter={() => {
           if (isDraggingWire && wireStartButtonType === 'left' && !isStructurallyLocked) {
@@ -1218,12 +1217,12 @@ export function PaletteNodeCard({
         onMouseLeave={() => onWireHoverEnd()}
       >
         <button
-          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
+          className={`palette-card-connect-btn ${
             isStructurallyLocked
-              ? 'bg-[#222] cursor-not-allowed'
+              ? 'palette-card-connect-btn--locked'
               : isWireHovered && wireStartButtonType === 'left'
-                ? 'bg-success'
-                : 'bg-border hover:bg-border'
+                ? 'palette-card-connect-btn--hovered'
+                : 'palette-card-connect-btn--default'
           }`}
           onMouseDown={(e) => {
             e.stopPropagation();
@@ -1242,24 +1241,24 @@ export function PaletteNodeCard({
           data-button-type="right-connect"
           title={isStructurallyLocked ? "Inherited from primary — unlink from primary to modify" : "Add shade"}
         >
-          <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
+          <Plus className={`palette-card-connect-icon ${isStructurallyLocked ? 'palette-card-connect-icon--locked' : isWireHovered && wireStartButtonType === 'left' ? 'palette-card-connect-icon--hovered' : 'palette-card-connect-icon--default'}`} />
         </button>
       </div>
 
       {/* ─── Delete button — hidden when inherited ─── */}
       {!isAllInputDisabled && (
-        <div className="absolute -top-2 -right-2 z-30 opacity-0 hover:opacity-100 transition-opacity"
+        <div className="palette-card-delete-wrapper"
           style={{ opacity: isSelected ? undefined : 0 }}
         >
           <button
-            className="w-5 h-5 rounded-full bg-destructive flex items-center justify-center hover:bg-[#FF7A90] transition-colors"
+            className="palette-card-delete-btn"
             onClick={(e) => {
               e.stopPropagation();
               onDeleteNode(node.id);
             }}
             title="Delete palette"
           >
-            <Trash2 className="w-2.5 h-2.5 text-white" />
+            <Trash2 className="palette-card-delete-icon" />
           </button>
         </div>
       )}

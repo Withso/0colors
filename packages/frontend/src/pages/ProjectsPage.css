@@ -1,0 +1,583 @@
+/* ============================================
+ * ProjectsPage.css — Co-located styles
+ * Migrated from Tailwind utility classes.
+ * Uses ONLY var(--*) tokens from variables.css.
+ * ============================================ */
+
+/* ═══════════════════════════════════════════
+   Page layout
+   ═══════════════════════════════════════════ */
+
+.projects-page {
+  height: 100vh;
+  display: flex;
+  background-color: var(--grey-900);
+}
+
+/* ═══════════════════════════════════════════
+   Sidebar
+   ═══════════════════════════════════════════ */
+
+.projects-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--grey-900);
+  border-right: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+}
+
+/* Logo area */
+.projects-sidebar-logo {
+  padding: 20px 16px 16px;
+}
+
+.projects-sidebar-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.projects-sidebar-title {
+  font-size: 14px;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--grey-100);
+}
+
+.projects-sidebar-title-faint {
+  color: var(--grey-600);
+}
+
+.projects-sidebar-admin-badge {
+  font-size: 10px;
+  font-weight: var(--font-weight-semi-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.projects-sidebar-subtitle {
+  font-size: 11px;
+  color: var(--grey-600);
+  margin-top: 2px;
+}
+
+.projects-sidebar-subtitle-ghost {
+  color: var(--grey-700);
+}
+
+/* Navigation */
+.projects-sidebar-nav {
+  flex: 1;
+  padding: 4px 8px;
+}
+
+.projects-sidebar-divider {
+  margin: 8px;
+  border: none;
+  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+}
+
+/* Bottom actions */
+.projects-sidebar-bottom {
+  padding: 0 8px 12px;
+}
+
+/* ═══════════════════════════════════════════
+   NavItem
+   ═══════════════════════════════════════════ */
+
+.projects-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  transition: color 0.15s, background-color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--grey-500);
+}
+
+.projects-nav-item:hover {
+  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+  color: var(--grey-100);
+}
+
+.projects-nav-item.is-active {
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  color: var(--grey-100);
+}
+
+.projects-nav-item-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ═══════════════════════════════════════════
+   Sidebar auth buttons (sign in / sign out)
+   ═══════════════════════════════════════════ */
+
+.projects-sidebar-auth-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  transition: color 0.15s, background-color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--grey-600);
+}
+
+.projects-sidebar-auth-btn:hover {
+  color: var(--grey-100);
+  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+}
+
+.projects-sidebar-auth-btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.projects-sidebar-auth-btn-signin {
+  color: var(--indigo-500);
+}
+
+.projects-sidebar-auth-btn-signin:hover {
+  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+}
+
+/* ═══════════════════════════════════════════
+   Main content area
+   ═══════════════════════════════════════════ */
+
+.projects-main {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ═══════════════════════════════════════════
+   AI Settings section (inline wrapper)
+   ═══════════════════════════════════════════ */
+
+.projects-ai-settings-wrapper {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.projects-ai-settings-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.projects-section-title {
+  font-size: 20px;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--grey-100);
+  margin-bottom: 24px;
+}
+
+/* ═══════════════════════════════════════════
+   ProfileSection
+   ═══════════════════════════════════════════ */
+
+.projects-profile {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.projects-profile-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  overflow: hidden;
+}
+
+.projects-profile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+}
+
+.projects-profile-label {
+  font-size: 13px;
+  color: var(--grey-500);
+}
+
+.projects-profile-value {
+  font-size: 13px;
+  color: var(--grey-100);
+}
+
+.projects-profile-divider {
+  border: none;
+  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+}
+
+/* ═══════════════════════════════════════════
+   ProjectList
+   ═══════════════════════════════════════════ */
+
+.projects-list {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.projects-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.projects-list-title {
+  font-size: 20px;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--grey-100);
+}
+
+.projects-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.projects-import-btn {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--grey-500);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.15s, background-color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.projects-import-btn:hover {
+  color: var(--grey-100);
+  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+}
+
+.projects-import-btn-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ═══════════════════════════════════════════
+   Section (Templates / Cloud / Local)
+   ═══════════════════════════════════════════ */
+
+.projects-section {
+  margin-bottom: 32px;
+}
+
+.projects-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.projects-section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.projects-section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--grey-600);
+  font-weight: var(--font-weight-normal);
+}
+
+.projects-section-count {
+  font-size: 11px;
+  color: var(--grey-700);
+}
+
+.projects-section-syncing {
+  font-size: 11px;
+  color: var(--indigo-500);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.projects-section-refresh-btn {
+  font-size: 11px;
+  color: var(--grey-700);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s;
+  margin-left: 4px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.projects-section-refresh-btn:hover {
+  color: var(--indigo-500);
+}
+
+.projects-section-refresh-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.projects-section-create-btn {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--grey-600);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s, background-color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.projects-section-create-btn:hover {
+  color: var(--grey-100);
+  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
+}
+
+.projects-section-create-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Empty state */
+.projects-section-empty {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px dashed color-mix(in srgb, var(--grey-50) 6%, transparent);
+}
+
+.projects-section-empty-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+  font-size: 13px;
+  color: var(--grey-700);
+}
+
+/* ═══════════════════════════════════════════
+   ProjectRow
+   ═══════════════════════════════════════════ */
+
+.projects-row {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  border-bottom: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+}
+
+.projects-row:last-child {
+  border-bottom: none;
+}
+
+.projects-row:hover {
+  background-color: color-mix(in srgb, var(--grey-50) 3%, transparent);
+}
+
+.projects-row.when-highlighted {
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+}
+
+.projects-row-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.projects-row-name {
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-100);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.projects-row-badge-sample {
+  font-size: 11px;
+  color: var(--grey-600);
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.projects-row-badge-sample-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.projects-row-published-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--grey-600);
+  margin-right: 8px;
+}
+
+.projects-row-stats {
+  font-size: 12px;
+  color: var(--grey-700);
+  margin-right: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════
+   ProjectRow context menu
+   ═══════════════════════════════════════════ */
+
+.projects-row-menu-wrapper {
+  position: relative;
+}
+
+.projects-row-menu-trigger {
+  height: 28px;
+  width: 28px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--grey-700);
+  transition: color 0.15s, background-color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.projects-row-menu-trigger:hover {
+  color: var(--grey-100);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+}
+
+.projects-row-menu-trigger-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.projects-row-menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  width: 160px;
+  border-radius: var(--radius-lg);
+  background-color: var(--grey-800);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
+  box-shadow: var(--shadow-lg);
+  padding: 4px 0;
+  z-index: 50;
+}
+
+.projects-row-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 12px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--grey-100);
+  transition: background-color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.projects-row-menu-item:hover {
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+}
+
+.projects-row-menu-item-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--grey-600);
+}
+
+.projects-row-menu-item-destructive {
+  color: var(--red-500);
+}
+
+.projects-row-menu-item-destructive:hover {
+  background-color: color-mix(in srgb, var(--red-500) 10%, transparent);
+}
+
+.projects-row-menu-item-destructive .projects-row-menu-item-icon {
+  color: var(--red-500);
+}
+
+.projects-row-menu-divider {
+  margin: 4px 0;
+  border: none;
+  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
+}
+
+/* ═══════════════════════════════════════════
+   Delete dialog overrides
+   ═══════════════════════════════════════════ */
+
+.projects-delete-dialog {
+  background-color: var(--grey-800);
+  color: var(--grey-50);
+}
+
+.projects-delete-dialog-description {
+  color: var(--grey-500);
+}
+
+.projects-delete-dialog-cancel {
+  background-color: var(--grey-800);
+  color: var(--grey-50);
+}
+
+.projects-delete-dialog-cancel:hover {
+  background-color: var(--grey-800);
+}
+
+.projects-delete-dialog-confirm {
+  background-color: var(--red-600);
+  color: var(--grey-50);
+}
+
+.projects-delete-dialog-confirm:hover {
+  background-color: var(--red-700);
+}

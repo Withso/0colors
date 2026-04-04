@@ -12,7 +12,7 @@ import {
 } from '../ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
-import { cn } from '../ui/utils';
+import "./SpacingNodeCard.css";
 
 interface SpacingNodeCardProps {
   node: ColorNode;
@@ -79,10 +79,10 @@ export function SpacingNodeCard({
   const availableTokens = tokens.filter(t => {
     // Only show tokens from the current page
     if (t.pageId !== node.pageId) return false;
-    
+
     // Always show spacing tokens
     if (t.type === 'spacing') return true;
-    
+
     // Show tokens that are not assigned to any node
     const isAssignedToAnyNode = nodes.some(node => node.tokenIds?.includes(t.id));
     return !isAssignedToAnyNode;
@@ -92,13 +92,13 @@ export function SpacingNodeCard({
     const numValue = parseFloat(value);
     if (!isNaN(numValue) && numValue >= 0) {
       onUpdateNode(node.id, { spacingValue: numValue });
-      
+
       // Update assigned tokens
       if (node.tokenIds && node.tokenIds.length > 0) {
         node.tokenIds.forEach(tokenId => {
           const token = tokens.find(t => t.id === tokenId);
           if (token && token.type === 'spacing') {
-            onUpdateToken(tokenId, { 
+            onUpdateToken(tokenId, {
               value: numValue,
               unit: spacingUnit
             });
@@ -110,13 +110,13 @@ export function SpacingNodeCard({
 
   const handleUnitChange = (unit: 'px' | 'rem' | 'em') => {
     onUpdateNode(node.id, { spacingUnit: unit });
-    
+
     // Update assigned tokens
     if (node.tokenIds && node.tokenIds.length > 0) {
       node.tokenIds.forEach(tokenId => {
         const token = tokens.find(t => t.id === tokenId);
         if (token && token.type === 'spacing') {
-          onUpdateToken(tokenId, { 
+          onUpdateToken(tokenId, {
             value: spacingValue,
             unit: unit
           });
@@ -139,11 +139,11 @@ export function SpacingNodeCard({
   const handleAssignToken = (tokenId: string) => {
     const token = tokens.find(t => t.id === tokenId);
     if (!token) return;
-    
+
     onAssignToken(node.id, tokenId, true);
-    
+
     // Update token to become a spacing token with current node value
-    onUpdateToken(tokenId, { 
+    onUpdateToken(tokenId, {
       type: 'spacing',
       value: spacingValue,
       unit: spacingUnit
@@ -154,21 +154,21 @@ export function SpacingNodeCard({
   const handleResizeStart = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     if (!cardRef.current) return;
-    
+
     const initialWidth = node.width || 240;
     const initialX = e.clientX;
-    
+
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = moveEvent.clientX - initialX;
       const newWidth = Math.max(180, Math.min(600, initialWidth + deltaX));
-      
+
       // Update the width directly on the DOM element for smooth resizing
       if (cardRef.current) {
         cardRef.current.style.width = `${newWidth}px`;
       }
-      
+
       // Also update temporary state
       setTempWidth(newWidth);
     };
@@ -179,7 +179,7 @@ export function SpacingNodeCard({
         onUpdateNode(node.id, { width: tempWidth });
         setTempWidth(null);
       }
-      
+
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -198,11 +198,7 @@ export function SpacingNodeCard({
     <div
       ref={cardRef}
       data-node-card
-      className={`relative rounded-[19px] transition-all border ${
-        isSelected
-          ? 'border-brand'
-          : 'border-card'
-      }`}
+      className={`spacing-card-root${isSelected ? ' spacing-card-root--selected' : ''}`}
       style={{ width: `${node.width || 240}px` }}
       onMouseEnter={() => {
         setIsHovered(true);
@@ -220,7 +216,7 @@ export function SpacingNodeCard({
         <button
           data-button-type="left-connect"
           data-node-id={node.id}
-          className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-dim border-2 border-card hover:bg-brand hover:border-[#7B8FFF] transition-colors z-10"
+          className="spacing-card-connect-btn spacing-card-connect-btn--left"
           onMouseDown={(e) => {
             e.stopPropagation();
             onWireStartDrag(node.id, 'left', e);
@@ -233,7 +229,7 @@ export function SpacingNodeCard({
         <button
           data-button-type="right-connect"
           data-node-id={node.id}
-          className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-dim border-2 border-card hover:bg-brand hover:border-[#7B8FFF] transition-colors z-10"
+          className="spacing-card-connect-btn spacing-card-connect-btn--right"
           onMouseDown={(e) => {
             e.stopPropagation();
             onWireStartDrag(node.id, 'right', e);
@@ -241,33 +237,33 @@ export function SpacingNodeCard({
         />
       )}
 
-      <div className="bg-card rounded-[19px]">
+      <div className="spacing-card-body">
         {/* Top Section: Header and Value Input */}
-        <div className="p-4 bg-card rounded-tl-[19px] rounded-tr-[19px] relative">
+        <div className="spacing-card-top">
           {/* Drag Handle Icon */}
           <div
-            className={`cursor-move absolute top-2 -left-[22px] text-muted-foreground hover:text-foreground transition-all ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+            className={`spacing-card-drag-handle ${isHovered ? 'spacing-card-drag-handle--visible' : 'spacing-card-drag-handle--hidden'}`}
             onMouseDown={onMouseDown}
             onClick={(e) => e.stopPropagation()}
             data-drag-handle="true"
             title="Drag to move"
           >
-            <GripVertical className="h-5 w-5" />
+            <GripVertical className="spacing-card-drag-handle-icon" />
           </div>
 
           {/* Header with Icon and Name */}
-          <div className="flex items-center gap-2 mb-3">
-            <Ruler className="h-4 w-4 text-ai" />
+          <div className="spacing-card-header">
+            <Ruler className="spacing-card-ruler-icon" />
             <Input
               value={node.spacingName}
               onChange={(e) => handleNameChange(e.target.value)}
-              className="flex-1 h-7 bg-secondary border-transparent text-foreground text-sm"
+              className="spacing-card-name-input"
               placeholder="Spacing name"
             />
           </div>
 
           {/* Value Input */}
-          <div className="flex gap-2">
+          <div className="spacing-card-value-row">
             <Input
               type="text"
               inputMode="numeric"
@@ -278,41 +274,41 @@ export function SpacingNodeCard({
                   e.currentTarget.select();
                 }
               }}
-              className="flex-1 !h-7 !py-1 bg-secondary border-transparent text-foreground"
+              className="spacing-card-value-input"
             />
             <Select value={spacingUnit} onValueChange={handleUnitChange}>
-              <SelectTrigger className="w-20 !h-7 !py-1 bg-secondary border-transparent text-foreground">
+              <SelectTrigger className="spacing-card-unit-trigger">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-secondary border-secondary">
-                <SelectItem value="px" className="text-foreground">px</SelectItem>
-                <SelectItem value="rem" className="text-foreground">rem</SelectItem>
-                <SelectItem value="em" className="text-foreground">em</SelectItem>
+              <SelectContent className="spacing-card-unit-content">
+                <SelectItem value="px" className="spacing-card-unit-item">px</SelectItem>
+                <SelectItem value="rem" className="spacing-card-unit-item">rem</SelectItem>
+                <SelectItem value="em" className="spacing-card-unit-item">em</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
         {/* Bottom Section: Token Assignment */}
-        <div className="p-4 border-t border-secondary">
+        <div className="spacing-card-bottom">
           {/* Assigned Tokens */}
           {assignedTokens.length > 0 && (
-            <div className="space-y-2 mb-2">
+            <div className="spacing-card-tokens-list">
               {assignedTokens.map(token => (
                 <div
                   key={token.id}
-                  className="flex items-stretch gap-3 bg-transparent rounded-[0px] py-0 pr-[0px] pb-[0px] pl-[0px]"
+                  className="spacing-card-token-row"
                 >
-                  <span className="flex-1 text-foreground text-2xl py-[0px] text-[12px] bg-secondary px-[8px] py-[4px] rounded-[8px] flex items-center justify-start gap-[2px] min-w-0 truncate whitespace-nowrap">
+                  <span className="spacing-card-token-name">
                     {token.name}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 hover:bg-hairline flex-shrink-0"
+                    className="spacing-card-token-remove-btn"
                     onClick={() => handleRemoveToken(token.id)}
                   >
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    <Trash2 className="spacing-card-token-remove-icon" />
                   </Button>
                 </div>
               ))}
@@ -320,38 +316,38 @@ export function SpacingNodeCard({
           )}
 
           {/* Token Selector */}
-          <div className="flex items-center gap-2">
+          <div className="spacing-card-selector-row">
             <Popover open={tokenComboOpen} onOpenChange={setTokenComboOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={tokenComboOpen}
-                  className="flex-1 h-8 justify-between text-xs overflow-hidden bg-secondary text-foreground hover:bg-line hover:text-foreground"
+                  className="spacing-card-combo-btn"
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
                     onSelect(e);
                   }}
                 >
-                  <span className="text-[#878787]">Select token...</span>
-                  <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+                  <span className="spacing-card-combo-placeholder">Select token...</span>
+                  <ChevronsUpDown className="spacing-card-combo-chevron" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent 
-                className="w-[240px] p-0 bg-secondary border-secondary" 
+              <PopoverContent
+                className="spacing-card-popover"
                 side="bottom"
                 align="start"
                 onMouseDown={(e) => e.stopPropagation()}
                 onWheel={(e) => e.stopPropagation()}
               >
-                <Command className="bg-secondary" shouldFilter={false} loop={false}>
-                  <CommandInput 
+                <Command className="spacing-card-command" shouldFilter={false} loop={false}>
+                  <CommandInput
                     placeholder="Search tokens..."
-                    className="h-9 text-xs bg-secondary pl-[10px] m-[4px] text-foreground focus-visible:outline-none focus-visible:ring-0 hover:bg-secondary"
+                    className="spacing-card-command-input"
                   />
-                  <CommandList className="pb-[5px] max-h-[280px]">
-                    <CommandEmpty className="py-6 text-xs text-center text-[#878787]">
+                  <CommandList className="spacing-card-command-list">
+                    <CommandEmpty className="spacing-card-command-empty">
                       {availableTokens.length === 0 ? (
                         <>
                           No spacing tokens available.<br />
@@ -361,29 +357,29 @@ export function SpacingNodeCard({
                         'No tokens found.'
                       )}
                     </CommandEmpty>
-                    
+
                     {/* Grouped tokens */}
                     {(() => {
                       // Filter out palette groups and their tokens, and only show groups from current page
                       const paletteGroupIds = new Set(groups.filter(g => g.isPaletteEntry).map(g => g.id));
                       const nonPaletteGroups = groups.filter(g => !g.isPaletteEntry && g.pageId === node.pageId);
-                      
+
                       return nonPaletteGroups.map((group) => {
                         const groupTokens = availableTokens.filter(t => t.groupId === group.id && !paletteGroupIds.has(t.groupId || ''));
                       if (groupTokens.length === 0) return null;
-                      
+
                       return (
-                        <CommandGroup 
-                          key={group.id} 
+                        <CommandGroup
+                          key={group.id}
                           heading={group.name}
-                          className="[&_[cmdk-group-heading]]:text-[#cfcfcf] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:sticky [&_[cmdk-group-heading]]:top-0 [&_[cmdk-group-heading]]:z-10 [&_[cmdk-group-heading]]:pl-[12px] [&_[cmdk-group-heading]]:pr-2 p-0"
+                          className="spacing-card-command-group"
                         >
                           {groupTokens.map((token) => {
                             const isCurrentlyAssigned = node.tokenIds?.includes(token.id);
                             // Check if token is assigned to any OTHER node
                             const otherNode = nodes.find(n => n.id !== node.id && n.tokenIds?.includes(token.id));
                             const isAssignedToOther = !!otherNode;
-                            
+
                             return (
                               <CommandItem
                                 key={token.id}
@@ -397,23 +393,16 @@ export function SpacingNodeCard({
                                   }
                                   setTokenComboOpen(false);
                                 }}
-                                className={cn(
-                                  "text-xs mx-1 group relative",
-                                  isCurrentlyAssigned 
-                                    ? "hover:!bg-hairline data-[selected=true]:bg-transparent"
-                                    : "data-[selected=true]:bg-transparent hover:!bg-hairline"
-                                )}
+                                className="spacing-card-command-item"
                                 title={isAssignedToOther && otherNode ? `This variable is already assigned to another node. Reassigning it will remove it from that node. Previous node: ${otherNode.spacingName || `${otherNode.spacingValue}${otherNode.spacingUnit}`}` : undefined}
                               >
-                                <div className={cn("flex items-center gap-2 flex-1 min-w-0 px-[8px] rounded-[10px] py-[2px]", isCurrentlyAssigned ? "bg-[#ffffff]/[0.08]" : isAssignedToOther ? "bg-[#3548CC]" : "")}>
-                                  <div
-                                    className="w-3 h-3 rounded-full bg-ai shrink-0"
-                                  />
-                                  <div className="flex flex-col min-w-0 flex-1">
-                                    <span className={cn("truncate text-foreground group-hover:text-white transition-colors", isCurrentlyAssigned && "text-white font-medium")}>{token.name}</span>
+                                <div className={`spacing-card-item-inner${isCurrentlyAssigned ? ' spacing-card-item-inner--assigned' : isAssignedToOther ? ' spacing-card-item-inner--other' : ''}`}>
+                                  <div className="spacing-card-item-dot" />
+                                  <div className="spacing-card-item-text-col">
+                                    <span className={`spacing-card-item-label${isCurrentlyAssigned ? ' spacing-card-item-label--assigned' : ''}`}>{token.name}</span>
                                   </div>
                                   {isAssignedToOther && (
-                                    <Target className="h-4 w-4 text-[#7B8FFF] shrink-0" />
+                                    <Target className="spacing-card-item-target-icon" />
                                   )}
                                 </div>
                               </CommandItem>
@@ -429,15 +418,15 @@ export function SpacingNodeCard({
                       // Ungrouped tokens can't be palette tokens (palette tokens always have a groupId)
                       const ungroupedTokens = availableTokens.filter(t => !t.groupId);
                       if (ungroupedTokens.length === 0) return null;
-                      
+
                       return (
-                        <CommandGroup className="p-0">
+                        <CommandGroup className="spacing-card-command-group">
                           {ungroupedTokens.map((token) => {
                             const isCurrentlyAssigned = node.tokenIds?.includes(token.id);
                             // Check if token is assigned to any OTHER node
                             const otherNode = nodes.find(n => n.id !== node.id && n.tokenIds?.includes(token.id));
                             const isAssignedToOther = !!otherNode;
-                            
+
                             return (
                               <CommandItem
                                 key={token.id}
@@ -451,23 +440,16 @@ export function SpacingNodeCard({
                                   }
                                   setTokenComboOpen(false);
                                 }}
-                                className={cn(
-                                  "text-xs mx-1 group relative",
-                                  isCurrentlyAssigned 
-                                    ? "hover:!bg-hairline data-[selected=true]:bg-transparent"
-                                    : "data-[selected=true]:bg-transparent hover:!bg-hairline"
-                                )}
+                                className="spacing-card-command-item"
                                 title={isAssignedToOther && otherNode ? `This variable is already assigned to another node. Reassigning it will remove it from that node. Previous node: ${otherNode.spacingName || `${otherNode.spacingValue}${otherNode.spacingUnit}`}` : undefined}
                               >
-                                <div className={cn("flex items-center gap-2 flex-1 min-w-0 px-[8px] rounded-[10px] py-[2px]", isCurrentlyAssigned ? "bg-[#ffffff]/[0.08]" : isAssignedToOther ? "bg-[#3548CC]" : "")}>
-                                  <div
-                                    className="w-3 h-3 rounded-full bg-ai shrink-0"
-                                  />
-                                  <div className="flex flex-col min-w-0 flex-1">
-                                    <span className={cn("truncate text-foreground group-hover:text-white transition-colors", isCurrentlyAssigned && "text-white font-medium")}>{token.name}</span>
+                                <div className={`spacing-card-item-inner${isCurrentlyAssigned ? ' spacing-card-item-inner--assigned' : isAssignedToOther ? ' spacing-card-item-inner--other' : ''}`}>
+                                  <div className="spacing-card-item-dot" />
+                                  <div className="spacing-card-item-text-col">
+                                    <span className={`spacing-card-item-label${isCurrentlyAssigned ? ' spacing-card-item-label--assigned' : ''}`}>{token.name}</span>
                                   </div>
                                   {isAssignedToOther && (
-                                    <Target className="h-4 w-4 text-[#7B8FFF] shrink-0" />
+                                    <Target className="spacing-card-item-target-icon" />
                                   )}
                                 </div>
                               </CommandItem>
@@ -486,15 +468,15 @@ export function SpacingNodeCard({
 
       {/* Resize Handle */}
       <div
-        className="absolute -bottom-px -right-px w-4 h-4 cursor-nwse-resize group z-10 bg-[rgba(91,91,91,0)]"
+        className="spacing-card-resize-handle"
         onMouseDown={handleResizeStart}
         title="Resize node"
       >
-        <svg 
-          className="absolute top-1/2 left-1/2 -translate-x-[calc(50%+1px)] -translate-y-[calc(50%+1px)] w-3 h-3 transition-colors" 
-          viewBox="0 0 12 12" 
+        <svg
+          className="spacing-card-resize-svg"
+          viewBox="0 0 12 12"
           fill="none"
-          style={{ color: 'var(--secondary)' }}
+          style={{ color: 'var(--grey-800)' }}
         >
           <path d="M10 2L2 10M10 6L6 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>

@@ -1,0 +1,196 @@
+/* TokenSearchBar — search input + inline filter panel */
+
+/* ── Filter chip ── */
+.search-bar-chip {
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  transition: all 100ms;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+  color: var(--grey-600);
+  cursor: pointer;
+}
+
+.search-bar-chip:hover {
+  color: var(--grey-500);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.search-bar-chip-active {
+  background: var(--grey-900);
+  color: var(--sky-400);
+  border-color: rgba(42, 74, 106, 0.6);
+}
+
+/* ── Search input wrapper ── */
+.search-bar-input-wrapper {
+  position: relative;
+}
+
+.search-bar-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 12px;
+  width: 12px;
+  color: var(--grey-600);
+  pointer-events: none;
+}
+
+.search-bar-input {
+  width: 100%;
+  height: 28px;
+  padding-left: 28px;
+  font-size: var(--text-xs);
+  background: var(--grey-900);
+  color: var(--grey-100);
+  border-radius: var(--radius-md);
+  border: 0;
+  outline: none;
+  transition: all 150ms;
+}
+
+.search-bar-input::placeholder {
+  color: var(--grey-600);
+}
+
+.search-bar-input-expanded {
+  box-shadow: 0 0 0 1px var(--grey-800);
+}
+
+.search-bar-input-no-filters {
+  padding-right: 28px;
+}
+
+.search-bar-input-has-filters {
+  padding-right: 56px;
+}
+
+/* ── Right indicators ── */
+.search-bar-indicators {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.search-bar-badge {
+  font-size: 11px;
+  color: var(--sky-400);
+  background: var(--grey-900);
+  border-radius: var(--radius-sm);
+  padding: 1px 4px;
+}
+
+.search-bar-clear-btn {
+  color: var(--grey-600);
+  padding: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.search-bar-clear-btn:hover {
+  color: var(--grey-500);
+}
+
+.search-bar-filter-btn {
+  color: var(--grey-700);
+  padding: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.search-bar-filter-btn:hover {
+  color: var(--grey-600);
+}
+
+.search-bar-icon-sm {
+  height: 12px;
+  width: 12px;
+}
+
+/* ── Filter panel ── */
+.search-bar-panel {
+  margin-top: 6px;
+  background: var(--grey-900);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.search-bar-panel-body {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-bar-section-label {
+  font-size: 11px;
+  color: var(--grey-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.search-bar-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.search-bar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.search-bar-hint {
+  font-size: 11px;
+  color: var(--grey-700);
+  line-height: 1.625;
+}
+
+.search-bar-hint-label {
+  color: var(--grey-600);
+}
+
+.search-bar-hint-code {
+  color: var(--grey-600);
+  font-family: var(--font-mono);
+}
+
+/* ── Footer ── */
+.search-bar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: var(--grey-900);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.search-bar-footer-count {
+  font-size: 11px;
+  color: var(--grey-600);
+}
+
+.search-bar-footer-clear {
+  font-size: 11px;
+  color: var(--grey-600);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 150ms;
+}
+
+.search-bar-footer-clear:hover {
+  color: var(--grey-500);
+}

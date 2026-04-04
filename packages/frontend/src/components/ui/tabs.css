@@ -1,0 +1,73 @@
+/* ============================================
+ * TABS.CSS — Co-located styles for Tabs
+ * Uses [data-slot="tabs-*"] selectors.
+ * All values from variables.css tokens only.
+ * ============================================ */
+
+/* ─── Root ─── */
+[data-slot="tabs"] {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─── List ─── */
+[data-slot="tabs-list"] {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--grey-700);
+}
+
+/* ─── Trigger ─── */
+[data-slot="tabs-trigger"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: transparent;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-500);
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+[data-slot="tabs-trigger"]:hover {
+  color: var(--grey-300);
+}
+
+[data-slot="tabs-trigger"][data-state="active"] {
+  color: var(--grey-50);
+  border-bottom-color: var(--grey-50);
+}
+
+[data-slot="tabs-trigger"]:focus-visible {
+  outline: 2px solid var(--indigo-400);
+  outline-offset: -2px;
+}
+
+[data-slot="tabs-trigger"]:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+[data-slot="tabs-trigger"] svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Content ─── */
+[data-slot="tabs-content"] {
+  flex: 1;
+  padding: 16px;
+  outline: none;
+}

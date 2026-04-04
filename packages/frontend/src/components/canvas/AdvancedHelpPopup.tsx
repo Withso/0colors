@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronRight, Zap, Calculator, Palette, GitBranch, Scale, ArrowRightLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import './AdvancedHelpPopup.css';
 
 // ── Section IDs for navigation ──────────────────────────────────
 const SECTIONS = [
@@ -21,10 +22,10 @@ const PILL = {
   keyword: '#FFA0E6',
   fn: '#5CD88E',
   op: '#FF7A90',
-  ref: '#7B8FFF',
-  lit: '#A1A1A1',
-  bool: '#FBBF24',
-  prop: '#7B8FFF',
+  ref: 'var(--indigo-400)',
+  lit: 'var(--grey-400)',
+  bool: 'var(--yellow-400)',
+  prop: 'var(--indigo-400)',
   local: '#D4A0FF',
 };
 
@@ -32,12 +33,8 @@ const PILL = {
 function Code({ children, color }: { children: string; color?: string }) {
   return (
     <code
-      className="px-1 py-[1px] rounded text-[10.5px] font-mono inline-block"
-      style={{
-        color: color || 'var(--foreground)',
-        background: 'rgba(255,255,255,0.06)',
-        border: '1px solid rgba(255,255,255,0.05)',
-      }}
+      className="help-popup-code"
+      style={{ color: color || 'var(--grey-100)' }}
     >
       {children}
     </code>
@@ -56,32 +53,23 @@ interface FnCardProps {
 function FnCard({ name, syntax, desc, useCases, color }: FnCardProps) {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div
-      className="rounded-lg mb-2 overflow-hidden transition-all"
-      style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.05)',
-      }}
-    >
+    <div className="help-popup-fn-card">
       <button
-        className="w-full flex items-center gap-2 px-3 py-2 text-left cursor-pointer hover:bg-white/[0.02] transition-colors"
+        className="help-popup-fn-header"
         onClick={() => setExpanded(!expanded)}
       >
         <ChevronRight
           size={12}
-          className="shrink-0 transition-transform"
-          style={{
-            color: 'var(--dim)',
-            transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-          }}
+          className="help-popup-fn-chevron"
+          style={{ transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
         />
         <span
-          className="text-[11px] font-mono shrink-0"
+          className="help-popup-fn-name"
           style={{ color: color || PILL.fn }}
         >
           {name}
         </span>
-        <span className="text-[11px] text-dim truncate">{desc}</span>
+        <span className="help-popup-fn-desc">{desc}</span>
       </button>
 
       <AnimatePresence>
@@ -91,37 +79,24 @@ function FnCard({ name, syntax, desc, useCases, color }: FnCardProps) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="overflow-hidden"
+            className="help-popup-fn-body"
           >
-            <div
-              className="px-3 pb-2.5 pt-0"
-              style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
-            >
+            <div className="help-popup-fn-body-inner">
               {/* Syntax */}
-              <div className="mb-2 mt-2">
-                <div
-                  className="text-[11px] px-2.5 py-1.5 rounded font-mono"
-                  style={{
-                    background: 'rgba(0,0,0,0.3)',
-                    color: '#aaa',
-                    border: '1px solid rgba(255,255,255,0.04)',
-                  }}
-                >
+              <div className="help-popup-fn-syntax">
+                <div className="help-popup-fn-syntax-box">
                   {syntax}
                 </div>
               </div>
 
               {/* Use cases */}
-              <div className="space-y-1.5">
+              <div className="help-popup-fn-usecases">
                 {useCases.map((uc, i) => (
-                  <div key={i} className="flex gap-2 items-start">
-                    <span className="text-[11px] text-ghost shrink-0 mt-[2px] w-[6px]">&bull;</span>
-                    <div className="min-w-0">
-                      <span className="text-[11px] text-faint block">{uc.label}</span>
-                      <code
-                        className="text-[9.5px] font-mono block mt-0.5 break-all"
-                        style={{ color: 'var(--subtle)' }}
-                      >
+                  <div key={i} className="help-popup-fn-usecase">
+                    <span className="help-popup-fn-usecase-bullet">&bull;</span>
+                    <div className="help-popup-fn-usecase-content">
+                      <span className="help-popup-fn-usecase-label">{uc.label}</span>
+                      <code className="help-popup-fn-usecase-code">
                         {uc.code}
                       </code>
                     </div>
@@ -139,10 +114,10 @@ function FnCard({ name, syntax, desc, useCases, color }: FnCardProps) {
 // ── Section header ──────────────────────────────────────────────
 function SectionHeader({ id, title, subtitle }: { id: string; title: string; subtitle?: string }) {
   return (
-    <div id={id} className="mb-3 pt-1 scroll-mt-4">
-      <h3 className="text-[13px] text-foreground mb-0.5">{title}</h3>
-      {subtitle && <p className="text-[11px] text-dim">{subtitle}</p>}
-      <div className="h-px mt-2" style={{ background: 'rgba(255,255,255,0.06)' }} />
+    <div id={id} className="help-popup-section">
+      <h3 className="help-popup-section-title">{title}</h3>
+      {subtitle && <p className="help-popup-section-subtitle">{subtitle}</p>}
+      <div className="help-popup-section-rule" />
     </div>
   );
 }
@@ -197,17 +172,13 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
   }, [onClose]);
 
   return createPortal(
-    <div
-      className="fixed inset-0 flex items-center justify-center"
-      style={{ zIndex: 100000 }}
-    >
+    <div className="help-popup-backdrop">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0"
-        style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+        className="help-popup-overlay"
         onClick={onClose}
       />
 
@@ -217,45 +188,27 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.97, y: 8 }}
         transition={{ duration: 0.2 }}
-        className="relative flex rounded-xl overflow-hidden"
-        style={{
-          width: 'min(820px, 90vw)',
-          height: 'min(620px, 85vh)',
-          background: 'var(--card)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03)',
-        }}
+        className="help-popup-modal"
       >
         {/* ── Left sidebar navigation ── */}
-        <div
-          className="flex flex-col shrink-0 py-3"
-          style={{
-            width: '180px',
-            background: 'rgba(0,0,0,0.2)',
-            borderRight: '1px solid rgba(255,255,255,0.06)',
-          }}
-        >
-          <div className="px-3 pb-2 mb-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[13px] text-foreground">Logic Reference</span>
+        <div className="help-popup-sidebar">
+          <div className="help-popup-sidebar-header">
+            <div className="help-popup-sidebar-title-area">
+              <span className="help-popup-sidebar-title">Logic Reference</span>
             </div>
-            <span className="text-[9.5px] text-ghost block mt-0.5">
+            <span className="help-popup-sidebar-subtitle">
               34 functions + constructs
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-1.5 space-y-0.5">
+          <div className="help-popup-sidebar-nav">
             {SECTIONS.map((s) => {
               const Icon = s.icon;
               const isActive = activeSection === s.id;
               return (
                 <button
                   key={s.id}
-                  className="w-full flex items-center gap-2 px-2.5 py-[6px] rounded-md text-left transition-colors cursor-pointer"
-                  style={{
-                    background: isActive ? 'rgba(255,255,255,0.06)' : 'transparent',
-                    color: isActive ? 'var(--foreground)' : 'var(--dim)',
-                  }}
+                  className={`help-popup-nav-btn ${isActive ? 'help-popup-nav-btn-active' : 'help-popup-nav-btn-inactive'}`}
                   onClick={() => scrollTo(s.id)}
                   onMouseEnter={(e) => {
                     if (!isActive) (e.currentTarget.style.background = 'rgba(255,255,255,0.03)');
@@ -264,70 +217,66 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
                     if (!isActive) (e.currentTarget.style.background = 'transparent');
                   }}
                 >
-                  <Icon size={12} className="shrink-0" />
-                  <span className="text-[10.5px] truncate">{s.label}</span>
+                  <Icon size={12} style={{ flexShrink: 0 }} />
+                  <span className="help-popup-nav-label">{s.label}</span>
                 </button>
               );
             })}
           </div>
 
           {/* Keyboard tip */}
-          <div className="px-3 pt-2 mt-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-            <span className="text-[11px] text-ghost">
-              Press <kbd className="px-1 py-0.5 rounded text-[11px]" style={{ background: 'rgba(255,255,255,0.06)' }}>Esc</kbd> to close
+          <div className="help-popup-sidebar-footer">
+            <span className="help-popup-sidebar-tip">
+              Press <kbd className="help-popup-kbd">Esc</kbd> to close
             </span>
           </div>
         </div>
 
         {/* ── Right content area ── */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="help-popup-content-area">
           {/* Header */}
-          <div
-            className="flex items-center justify-between px-5 py-3 shrink-0"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-          >
+          <div className="help-popup-content-header">
             <div>
-              <h2 className="text-[14px] text-foreground">Advanced Color Logic Guide</h2>
-              <p className="text-[11px] text-ghost mt-0.5">
+              <h2 className="help-popup-content-title">Advanced Color Logic Guide</h2>
+              <p className="help-popup-content-subtitle">
                 Expression system reference for the pull-based channel architecture
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-md transition-colors cursor-pointer hover:bg-white/5"
-              style={{ color: 'var(--dim)' }}
+              className="help-popup-close-btn"
             >
               <X size={14} />
             </button>
           </div>
 
           {/* Scrollable content */}
-          <div ref={contentRef} className="flex-1 overflow-y-auto px-5 py-4">
+          <div ref={contentRef} className="help-popup-scroll">
             {/* ── OVERVIEW ── */}
             <SectionHeader id="help-overview" title="How It Works" subtitle="Per-channel pull-expression system" />
-            <div className="mb-5 space-y-2">
-              <div className="rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <p className="text-[10.5px] text-subtle leading-[1.6]">
+            <div className="help-popup-info-group">
+              <div className="help-popup-info-box">
+                <p className="help-popup-info-text">
                   Each channel (Hue, Saturation, Lightness, Alpha, etc.) gets its own expression column.
-                  Expressions evaluate top-to-bottom. The <strong style={{ color: '#aaa' }}>last row that produces a valid number</strong> becomes the channel's output.
+                  Expressions evaluate top-to-bottom. The <strong style={{ color: 'var(--grey-400)' }}>last row that produces a valid number</strong> becomes the channel's output.
                   Rows that produce booleans are stored as <Code color={PILL.bool}>$variables</Code> for subsequent rows but don't set the channel value.
                 </p>
               </div>
-              <div className="rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <p className="text-[10.5px] text-subtle leading-[1.6]">
-                  <strong style={{ color: '#aaa' }}>References:</strong>{' '}
+              <div className="help-popup-info-box">
+                <p className="help-popup-info-text">
+                  <strong className="help-popup-info-bold">References:</strong>{' '}
                   <Code color={PILL.ref}>@Self.H</Code> reads current node's hue,{' '}
                   <Code color={PILL.ref}>@Parent.L</Code> reads parent's lightness,{' '}
                   <Code color={PILL.ref}>@NodeName.S</Code> reads any node's saturation.
                   <br />
-                  <strong style={{ color: '#aaa' }}>Row variables:</strong>{' '}
+                  <strong className="help-popup-info-bold">Row variables:</strong>{' '}
                   Each row's output is stored as <Code color={PILL.local}>$out_1</Code>, <Code color={PILL.local}>$out_2</Code>, etc.
                   (renameable). Later rows can reference earlier ones.
                 </p>
               </div>
-              <div className="rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <p className="text-[10.5px] text-subtle leading-[1.6]">
-                  <strong style={{ color: '#aaa' }}>Bare node refs:</strong>{' '}
+              <div className="help-popup-info-box">
+                <p className="help-popup-info-text">
+                  <strong className="help-popup-info-bold">Bare node refs:</strong>{' '}
                   <Code color={PILL.ref}>@Self</Code> / <Code color={PILL.ref}>@Parent</Code> (without <Code color={PILL.prop}>.property</Code>) pass the <em>whole node</em> into{' '}
                   <Code color={PILL.fn}>contrast()</Code>, <Code color={PILL.fn}>apca()</Code>, or <Code color={PILL.fn}>deltaE()</Code> which auto-resolve RGB internally.
                 </p>
@@ -336,7 +285,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
 
             {/* ── LOGIC ── */}
             <SectionHeader id="help-logic" title="Logic & Conditions" subtitle="Conditional branching for context-aware tokens" />
-            <div className="mb-5">
+            <div className="help-popup-section-group">
               <FnCard
                 name="if / then / else"
                 syntax="if <condition> then <value> else <fallback>"
@@ -363,7 +312,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
                 name="locked"
                 syntax="locked"
                 desc="Keep the channel's current base value unchanged"
-                color="#FBBF24"
+                color="var(--yellow-400)"
                 useCases={[
                   { label: 'Preserve hue while other channels change', code: 'locked' },
                   { label: 'Conditional lock', code: 'if @Self.S < 5 then locked else @Self.H + 30' },
@@ -373,7 +322,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
 
             {/* ── COMPARISONS ── */}
             <SectionHeader id="help-compare" title="Comparison Operators" subtitle="Evaluate to true/false for use in conditions" />
-            <div className="mb-5 grid grid-cols-2 gap-1.5">
+            <div className="help-popup-section-group help-popup-grid-2">
               {[
                 { op: '>', desc: 'Greater than', ex: '@Parent.L > 50' },
                 { op: '<', desc: 'Less than', ex: '@Self.S < 10' },
@@ -384,21 +333,20 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
               ].map((item) => (
                 <div
                   key={item.op}
-                  className="rounded-md px-2.5 py-2"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
+                  className="help-popup-op-card"
                 >
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="help-popup-op-header">
                     <Code color={PILL.op}>{item.op}</Code>
-                    <span className="text-[11px] text-faint">{item.desc}</span>
+                    <span className="help-popup-op-desc">{item.desc}</span>
                   </div>
-                  <code className="text-[11px] font-mono text-dim block">{item.ex}</code>
+                  <code className="help-popup-op-example">{item.ex}</code>
                 </div>
               ))}
             </div>
 
             {/* ── MATH OPERATORS ── */}
             <SectionHeader id="help-math-ops" title="Math Operators" subtitle="Arithmetic on channel values and numbers" />
-            <div className="mb-5 grid grid-cols-2 gap-1.5">
+            <div className="help-popup-section-group help-popup-grid-2">
               {[
                 { op: '+', desc: 'Add', ex: '@Parent.H + 30', use: 'Offset hue by 30 degrees' },
                 { op: '-', desc: 'Subtract', ex: '@Self.L - 10', use: 'Darken by 10' },
@@ -408,22 +356,21 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
               ].map((item) => (
                 <div
                   key={item.op}
-                  className="rounded-md px-2.5 py-2"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
+                  className="help-popup-op-card"
                 >
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="help-popup-op-header">
                     <Code color={PILL.op}>{item.op}</Code>
-                    <span className="text-[11px] text-faint">{item.desc}</span>
+                    <span className="help-popup-op-desc">{item.desc}</span>
                   </div>
-                  <code className="text-[11px] font-mono text-dim block">{item.ex}</code>
-                  <span className="text-[11px] text-ghost block mt-0.5">{item.use}</span>
+                  <code className="help-popup-op-example">{item.ex}</code>
+                  <span className="help-popup-op-use">{item.use}</span>
                 </div>
               ))}
             </div>
 
             {/* ── TIER 1 MATH ── */}
             <SectionHeader id="help-tier1" title="Core Math Functions" subtitle="12 essential workhorses for color math" />
-            <div className="mb-5">
+            <div className="help-popup-section-group">
               <FnCard
                 name="clamp"
                 syntax="clamp(min, value, max)"
@@ -530,7 +477,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
 
             {/* ── TIER 2 MATH ── */}
             <SectionHeader id="help-tier2" title="Threshold & Stepping" subtitle="4 functions for hard/soft cutoffs and quantization" />
-            <div className="mb-5">
+            <div className="help-popup-section-group">
               <FnCard
                 name="step"
                 syntax="step(edge, x)"
@@ -574,7 +521,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
 
             {/* ── TIER 3 MATH ── */}
             <SectionHeader id="help-tier3" title="Advanced Math" subtitle="10 functions for trig, logarithmic, and niche operations" />
-            <div className="mb-5">
+            <div className="help-popup-section-group">
               <FnCard
                 name="sin / cos"
                 syntax="sin(degrees) | cos(degrees)"
@@ -643,7 +590,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
 
             {/* ── COLOR FUNCTIONS ── */}
             <SectionHeader id="help-color" title="Color Functions" subtitle="8 functions for accessibility, perception, and color science" />
-            <div className="mb-5">
+            <div className="help-popup-section-group">
               <FnCard
                 name="luminance"
                 syntax="luminance(r, g, b)"
@@ -722,7 +669,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
 
             {/* ── POWER COMBOS ── */}
             <SectionHeader id="help-combos" title="Power Combinations" subtitle="Real-world patterns composing multiple functions" />
-            <div className="mb-5 space-y-2">
+            <div className="help-popup-combos">
               {[
                 {
                   title: 'Accessibility-Driven Lightness',
@@ -770,26 +717,15 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
                   code: 'snap(clamp(10, lerp(10, 90, inverseLerp(0, 360, @Self.H)), 90), 10)',
                 },
               ].map((combo, i) => (
-                <div
-                  key={i}
-                  className="rounded-lg px-3 py-2.5"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
-                >
-                  <div className="flex items-start gap-2 mb-1.5">
-                    <Zap size={10} className="shrink-0 mt-[3px]" style={{ color: PILL.fn }} />
+                <div key={i} className="help-popup-combo-card">
+                  <div className="help-popup-combo-header">
+                    <Zap size={10} className="help-popup-combo-icon" style={{ color: PILL.fn }} />
                     <div>
-                      <span className="text-[10.5px] text-[#aaa] block">{combo.title}</span>
-                      <span className="text-[9.5px] text-dim block">{combo.desc}</span>
+                      <span className="help-popup-combo-title">{combo.title}</span>
+                      <span className="help-popup-combo-desc">{combo.desc}</span>
                     </div>
                   </div>
-                  <pre
-                    className="text-[9.5px] font-mono px-2.5 py-1.5 rounded whitespace-pre-wrap break-all"
-                    style={{
-                      background: 'rgba(0,0,0,0.3)',
-                      color: 'var(--subtle)',
-                      border: '1px solid rgba(255,255,255,0.04)',
-                    }}
-                  >
+                  <pre className="help-popup-combo-code">
                     {combo.code}
                   </pre>
                 </div>
@@ -797,7 +733,7 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
             </div>
 
             {/* Bottom spacer */}
-            <div className="h-8" />
+            <div className="help-popup-spacer" />
           </div>
         </div>
       </motion.div>

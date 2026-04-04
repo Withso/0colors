@@ -1,0 +1,136 @@
+/* BuildActionPreview */
+
+/* ─── Pending Actions Card ─── */
+.build-preview-card {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.build-preview-header {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.build-preview-header-text {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.build-preview-list {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.build-preview-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--grey-500);
+}
+
+.build-preview-item-number {
+  color: var(--grey-700);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.build-preview-actions {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── Buttons ─── */
+.build-preview-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+  border: none;
+}
+
+.build-preview-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.build-preview-btn--apply {
+  background-color: rgba(139, 143, 255, 0.2);
+  color: var(--indigo-400);
+}
+
+.build-preview-btn--secondary {
+  background: none;
+  color: var(--grey-600);
+}
+
+.build-preview-btn--secondary:not(:disabled):hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ─── Executed Action Item ─── */
+.build-preview-executed-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11px;
+  padding: 2px 0;
+}
+
+.build-preview-executed-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.build-preview-error-hint {
+  color: var(--grey-700);
+  margin-left: 4px;
+}
+
+/* ─── Executed Actions Summary ─── */
+.build-preview-summary {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.build-preview-summary-header {
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.build-preview-summary-label {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.build-preview-summary-body {
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ─── Build Mode Badge ─── */
+.build-preview-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}

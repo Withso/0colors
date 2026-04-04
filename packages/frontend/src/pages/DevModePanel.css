@@ -1,0 +1,784 @@
+/* DevModePanel — co-located styles */
+
+/* ─── Backdrop ─── */
+.dev-mode-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Panel ─── */
+.dev-mode-panel {
+  width: 580px;
+  max-height: 85vh;
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Header ─── */
+.dev-mode-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 48px;
+  border-bottom: 1px solid var(--grey-900);
+  flex-shrink: 0;
+}
+
+.dev-mode-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dev-mode-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-mode-header-icon {
+  height: 16px;
+  width: 16px;
+  color: var(--grey-700);
+}
+
+.dev-mode-header-title {
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-100);
+}
+
+.dev-mode-header-separator {
+  font-size: 11px;
+  color: var(--grey-800);
+}
+
+.dev-mode-header-project-name {
+  font-size: 11px;
+  color: var(--grey-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.dev-mode-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-mode-last-run {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.dev-mode-last-run-icon--success {
+  height: 12px;
+  width: 12px;
+  color: var(--green-500);
+}
+
+.dev-mode-last-run-icon--error {
+  height: 12px;
+  width: 12px;
+  color: var(--red-500);
+}
+
+.dev-mode-last-run-text {
+  color: var(--grey-600);
+}
+
+.dev-mode-close-btn {
+  height: 28px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--grey-600);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+  background: none;
+  border: none;
+}
+
+.dev-mode-close-btn:hover {
+  background-color: var(--grey-800);
+  color: var(--grey-100);
+}
+
+.dev-mode-close-icon {
+  height: 16px;
+  width: 16px;
+}
+
+/* ─── Tab Switcher ─── */
+.dev-mode-tabs {
+  display: flex;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--grey-900);
+  flex-shrink: 0;
+}
+
+.dev-mode-tab {
+  position: relative;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: var(--font-weight-normal);
+  cursor: pointer;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+}
+
+.dev-mode-tab--active {
+  color: var(--grey-100);
+}
+
+.dev-mode-tab--inactive {
+  color: var(--grey-600);
+}
+
+.dev-mode-tab--inactive:hover {
+  color: var(--grey-500);
+}
+
+.dev-mode-tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--grey-200);
+}
+
+/* ─── Content area ─── */
+.dev-mode-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+/* ─── Sections (output/input tabs) ─── */
+.dev-mode-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dev-mode-section {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--grey-900);
+  background-color: var(--grey-900);
+}
+
+/* ─── Section Header ─── */
+.dev-mode-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.dev-mode-section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-mode-section-header-icon {
+  height: 14px;
+  width: 14px;
+  color: var(--grey-700);
+}
+
+.dev-mode-section-header-title {
+  font-size: 12px;
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dev-mode-section-header-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-800);
+  color: var(--grey-700);
+}
+
+/* ─── Field Row ─── */
+.dev-mode-field {
+  margin-bottom: 12px;
+}
+
+.dev-mode-field:last-child {
+  margin-bottom: 0;
+}
+
+.dev-mode-field-label {
+  display: block;
+  font-size: 11px;
+  color: var(--grey-700);
+  margin-bottom: 6px;
+}
+
+.dev-mode-field-hint {
+  font-size: 11px;
+  color: var(--grey-800);
+  margin-top: 4px;
+}
+
+/* ─── Geist Input ─── */
+.dev-mode-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--grey-100);
+  transition: border-color 0.15s;
+}
+
+.dev-mode-input:focus {
+  outline: none;
+  border-color: var(--grey-700);
+}
+
+.dev-mode-input::placeholder {
+  color: var(--grey-800);
+}
+
+.dev-mode-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dev-mode-input--mono {
+  font-family: var(--font-mono);
+}
+
+/* ─── Geist Select ─── */
+.dev-mode-select-wrapper {
+  position: relative;
+}
+
+.dev-mode-select {
+  width: 100%;
+  height: 32px;
+  padding: 0 32px 0 12px;
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--grey-100);
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.dev-mode-select:focus {
+  outline: none;
+  border-color: var(--grey-700);
+}
+
+.dev-mode-select:disabled {
+  opacity: 0.4;
+}
+
+.dev-mode-select-chevron {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 12px;
+  width: 12px;
+  color: var(--grey-600);
+  pointer-events: none;
+}
+
+/* ─── Geist Toggle ─── */
+.dev-mode-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color 0.15s;
+  border: none;
+}
+
+.dev-mode-toggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dev-mode-toggle--on {
+  background-color: var(--grey-200);
+}
+
+.dev-mode-toggle--off {
+  background-color: var(--grey-700);
+}
+
+.dev-mode-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  transition: transform 0.15s;
+}
+
+.dev-mode-toggle-knob--on {
+  transform: translateX(16px);
+  background-color: var(--grey-900);
+}
+
+.dev-mode-toggle-knob--off {
+  transform: translateX(0);
+  background-color: var(--grey-700);
+}
+
+/* ─── Copy Button ─── */
+.dev-mode-copy-btn {
+  height: 32px;
+  padding: 0 10px;
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  color: var(--grey-700);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.dev-mode-copy-btn:hover {
+  color: var(--grey-100);
+  border-color: var(--grey-700);
+}
+
+.dev-mode-copy-icon {
+  height: 12px;
+  width: 12px;
+}
+
+.dev-mode-copy-icon--success {
+  height: 12px;
+  width: 12px;
+  color: var(--green-500);
+}
+
+.dev-mode-copy-text {
+  font-size: 11px;
+}
+
+/* ─── Grid layouts ─── */
+.dev-mode-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* ─── PAT row ─── */
+.dev-mode-pat-row {
+  display: flex;
+  gap: 8px;
+}
+
+.dev-mode-pat-input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.dev-mode-pat-set-btn {
+  height: 32px;
+  padding: 0 10px;
+  background-color: rgba(43, 189, 104, 0.1);
+  border: 1px solid rgba(43, 189, 104, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  color: var(--green-500);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.dev-mode-pat-set-btn:hover {
+  background-color: rgba(43, 189, 104, 0.2);
+  border-color: rgba(43, 189, 104, 0.4);
+}
+
+.dev-mode-pat-set-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.dev-mode-pat-toggle-btn {
+  height: 32px;
+  padding: 0 8px;
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  color: var(--grey-600);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.dev-mode-pat-toggle-btn:hover {
+  color: var(--grey-100);
+  border-color: var(--grey-700);
+}
+
+.dev-mode-pat-toggle-icon {
+  height: 12px;
+  width: 12px;
+}
+
+.dev-mode-pat-saved {
+  font-size: 11px;
+  color: rgba(43, 189, 104, 0.6);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dev-mode-pat-saved-icon {
+  height: 12px;
+  width: 12px;
+}
+
+/* ─── Recommended note ─── */
+.dev-mode-recommended-note {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-900);
+}
+
+.dev-mode-recommended-note-text {
+  font-size: 11px;
+  color: var(--grey-600);
+  line-height: 1.625;
+}
+
+.dev-mode-recommended-note-label {
+  color: var(--grey-700);
+  font-weight: var(--font-weight-normal);
+}
+
+/* ─── Webhook Secret Row ─── */
+.dev-mode-secret-row {
+  display: flex;
+  gap: 8px;
+}
+
+.dev-mode-secret-input-wrapper {
+  flex: 1;
+}
+
+.dev-mode-secret-toggle-btn {
+  height: 32px;
+  padding: 0 8px;
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  color: var(--grey-600);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.dev-mode-secret-toggle-btn:hover {
+  color: var(--grey-100);
+  border-color: var(--grey-700);
+}
+
+.dev-mode-secret-toggle-icon {
+  height: 12px;
+  width: 12px;
+}
+
+/* ─── Accepted Formats ─── */
+.dev-mode-formats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dev-mode-format-chip {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-normal);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.dev-mode-format-chip--active {
+  background-color: var(--grey-700);
+  color: var(--grey-100);
+  border: 1px solid var(--grey-700);
+}
+
+.dev-mode-format-chip--inactive {
+  background-color: var(--grey-900);
+  color: var(--grey-800);
+  border: 1px solid var(--grey-900);
+}
+
+.dev-mode-format-chip--inactive:hover {
+  color: var(--grey-700);
+  border-color: var(--grey-800);
+}
+
+/* ─── Example cURL ─── */
+.dev-mode-example {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-900);
+}
+
+.dev-mode-example-title {
+  font-size: 11px;
+  color: var(--grey-600);
+  margin-bottom: 8px;
+  font-weight: var(--font-weight-normal);
+}
+
+.dev-mode-example-code {
+  font-size: 11px;
+  color: var(--grey-700);
+  font-family: var(--font-mono);
+  line-height: 1.625;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ─── Per-Node Webhook URLs ─── */
+.dev-mode-per-node-section {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background-color: var(--grey-900);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.dev-mode-per-node-title {
+  font-size: 11px;
+  color: rgba(251, 191, 36, 0.8);
+  margin-bottom: 8px;
+  font-weight: var(--font-weight-normal);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dev-mode-per-node-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dev-mode-per-node-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-mode-per-node-name {
+  font-size: 11px;
+  color: var(--grey-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 80px;
+  max-width: 120px;
+}
+
+.dev-mode-per-node-input-wrapper {
+  flex: 1;
+}
+
+.dev-mode-per-node-input {
+  font-size: 11px !important;
+  height: 24px !important;
+}
+
+.dev-mode-per-node-hint {
+  font-size: 11px;
+  color: var(--grey-800);
+  margin-top: 8px;
+}
+
+/* ─── Schedule Source Buttons ─── */
+.dev-mode-source-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dev-mode-source-btn {
+  flex: 1;
+  height: 32px;
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  font-weight: var(--font-weight-normal);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.dev-mode-source-btn--active {
+  background-color: var(--grey-700);
+  color: var(--grey-100);
+  border: 1px solid var(--grey-700);
+}
+
+.dev-mode-source-btn--inactive {
+  background-color: var(--grey-900);
+  color: var(--grey-600);
+  border: 1px solid var(--grey-900);
+}
+
+.dev-mode-source-btn--inactive:hover {
+  border-color: var(--grey-800);
+}
+
+/* ─── Schedule interval row ─── */
+.dev-mode-interval-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-mode-interval-label {
+  font-size: 11px;
+  color: var(--grey-600);
+}
+
+.dev-mode-interval-input-wrapper {
+  width: 80px;
+}
+
+/* ─── Footer ─── */
+.dev-mode-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 56px;
+  border-top: 1px solid var(--grey-900);
+  flex-shrink: 0;
+  background-color: var(--grey-900);
+}
+
+.dev-mode-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-mode-footer-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--red-500);
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dev-mode-footer-error-icon {
+  height: 12px;
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.dev-mode-footer-error-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dev-mode-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-mode-test-btn {
+  height: 32px;
+  padding: 0 12px;
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  color: var(--grey-500);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.dev-mode-test-btn:hover {
+  color: var(--grey-100);
+  border-color: var(--grey-700);
+}
+
+.dev-mode-test-icon {
+  height: 12px;
+  width: 12px;
+}
+
+.dev-mode-run-btn {
+  height: 32px;
+  padding: 0 16px;
+  background-color: var(--grey-200);
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-900);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.15s;
+  border: none;
+}
+
+.dev-mode-run-btn:hover {
+  background-color: white;
+}
+
+.dev-mode-run-icon {
+  height: 12px;
+  width: 12px;
+}

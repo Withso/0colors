@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Cloud, CloudOff, Check, AlertTriangle, WifiOff, Loader2 } from 'lucide-react';
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import './CloudSyncIndicator.css';
 
 export type CloudSyncStatus = 'local' | 'idle' | 'dirty' | 'syncing' | 'synced' | 'error' | 'offline';
 
@@ -70,19 +71,19 @@ export function CloudSyncIndicator({
       <TooltipPrimitive.Provider delayDuration={300}>
         <TooltipPrimitive.Root>
           <TooltipPrimitive.Trigger asChild>
-            <div className="h-7 w-7 flex items-center justify-center rounded text-ghost">
-              <CloudOff className="h-4 w-4" />
+            <div className="sync-local">
+              <CloudOff size={16} />
             </div>
           </TooltipPrimitive.Trigger>
           <TooltipPrimitive.Portal>
             <TooltipPrimitive.Content
               side="bottom"
               sideOffset={6}
-              className="z-[200] px-3 py-2 rounded-lg text-[12px] tracking-[-0.01em] text-foreground bg-secondary/95 backdrop-blur-md border border-[#ffffff]/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.45)] animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 select-none"
+              className="sync-tooltip-local"
             >
-              <div className="flex flex-col gap-1">
-                <span className="text-subtle">Local project</span>
-                <span className="text-dim text-[11px]">Not synced to cloud</span>
+              <div className="sync-tooltip-local-body">
+                <span className="sync-local-title">Local project</span>
+                <span className="sync-local-subtitle">Not synced to cloud</span>
               </div>
             </TooltipPrimitive.Content>
           </TooltipPrimitive.Portal>
@@ -100,25 +101,25 @@ export function CloudSyncIndicator({
 
     switch (effectiveStatus) {
       case 'syncing':
-        lines.push({ label: 'Status', value: 'Syncing...', color: 'var(--brand)' });
+        lines.push({ label: 'Status', value: 'Syncing...', color: 'var(--indigo-500)' });
         break;
       case 'synced':
-        lines.push({ label: 'Status', value: 'All changes saved', color: 'var(--success)' });
+        lines.push({ label: 'Status', value: 'All changes saved', color: 'var(--green-500)' });
         break;
       case 'error':
-        lines.push({ label: 'Status', value: 'Sync failed', color: 'var(--destructive)' });
+        lines.push({ label: 'Status', value: 'Sync failed', color: 'var(--red-500)' });
         if (lastError) {
-          lines.push({ label: 'Error', value: lastError.length > 50 ? lastError.slice(0, 50) + '...' : lastError, color: 'var(--destructive)' });
+          lines.push({ label: 'Error', value: lastError.length > 50 ? lastError.slice(0, 50) + '...' : lastError, color: 'var(--red-500)' });
         }
         break;
       case 'dirty':
-        lines.push({ label: 'Status', value: `Unsaved changes${dirtyCount > 1 ? ` (${dirtyCount} projects)` : ''}`, color: 'var(--warning)' });
+        lines.push({ label: 'Status', value: `Unsaved changes${dirtyCount > 1 ? ` (${dirtyCount} projects)` : ''}`, color: 'var(--yellow-400)' });
         break;
       case 'offline':
-        lines.push({ label: 'Status', value: 'Offline — will sync when online', color: 'var(--warning)' });
+        lines.push({ label: 'Status', value: 'Offline — will sync when online', color: 'var(--yellow-400)' });
         break;
       default: // idle
-        lines.push({ label: 'Status', value: 'Up to date', color: 'var(--success)' });
+        lines.push({ label: 'Status', value: 'Up to date', color: 'var(--green-500)' });
         break;
     }
 
@@ -139,53 +140,59 @@ export function CloudSyncIndicator({
     switch (effectiveStatus) {
       case 'syncing':
         return (
-          <div className="relative">
-            <Cloud className="h-4 w-4 text-white" />
-            <div className="absolute -bottom-0.5 -right-0.5">
-              <Loader2 className="h-2.5 w-2.5 text-brand animate-spin" />
+          <div className="sync-icon-wrap">
+            <Cloud size={16} style={{ color: 'var(--grey-100)' }} />
+            <div className="sync-icon-badge">
+              <Loader2 size={10} style={{ color: 'var(--indigo-400)', animation: 'spin 1s linear infinite' }} />
             </div>
           </div>
         );
       case 'synced':
         return (
-          <div className="relative">
-            <Cloud className="h-4 w-4 text-white" />
-            <div className="absolute -bottom-0.5 -right-0.5 bg-card rounded-full">
-              <Check className="h-2.5 w-2.5 text-success" />
+          <div className="sync-icon-wrap">
+            <Cloud size={16} style={{ color: 'var(--grey-100)' }} />
+            <div className="sync-icon-badge sync-icon-badge-bg">
+              <Check size={10} style={{ color: 'var(--green-500)' }} />
             </div>
           </div>
         );
       case 'error':
         return (
-          <div className="relative">
-            <Cloud className="h-4 w-4 text-white" />
-            <div className="absolute -bottom-0.5 -right-0.5 bg-card rounded-full">
-              <AlertTriangle className="h-2.5 w-2.5 text-destructive" />
+          <div className="sync-icon-wrap">
+            <Cloud size={16} style={{ color: 'var(--grey-100)' }} />
+            <div className="sync-icon-badge sync-icon-badge-bg">
+              <AlertTriangle size={10} style={{ color: 'var(--red-500)' }} />
             </div>
           </div>
         );
       case 'dirty':
         return (
-          <div className="relative">
-            <Cloud className="h-4 w-4 text-white" />
-            <div className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-warning" />
+          <div className="sync-icon-wrap">
+            <Cloud size={16} style={{ color: 'var(--grey-100)' }} />
+            <div className="sync-icon-badge--top sync-dirty-dot" />
           </div>
         );
       case 'offline':
         return (
-          <div className="relative">
-            <Cloud className="h-4 w-4 text-subtle" />
-            <div className="absolute -bottom-0.5 -right-0.5 bg-card rounded-full">
-              <WifiOff className="h-2.5 w-2.5 text-warning" />
+          <div className="sync-icon-wrap">
+            <Cloud size={16} style={{ color: 'var(--grey-500)' }} />
+            <div className="sync-icon-badge sync-icon-badge-bg">
+              <WifiOff size={10} style={{ color: 'var(--yellow-500)' }} />
             </div>
           </div>
         );
       default: // idle
-        return <Cloud className="h-4 w-4 text-white" />;
+        return <Cloud size={16} style={{ color: 'var(--grey-100)' }} />;
     }
   };
 
   const tooltipLines = getTooltipContent();
+
+  const buttonClasses = [
+    'sync-button',
+    isClickable ? 'sync-button--clickable' : 'sync-button--waiting',
+    effectiveStatus === 'syncing' ? 'sync-button--pulsing' : '',
+  ].filter(Boolean).join(' ');
 
   return (
     <TooltipPrimitive.Provider delayDuration={300}>
@@ -194,9 +201,7 @@ export function CloudSyncIndicator({
           <button
             onClick={handleClick}
             disabled={status === 'syncing'}
-            className={`h-7 w-7 flex items-center justify-center rounded transition-all ${
-              isClickable ? 'hover:bg-[#ffffff]/[0.08] cursor-pointer' : 'cursor-wait'
-            } ${effectiveStatus === 'syncing' ? 'animate-pulse' : ''}`}
+            className={buttonClasses}
             aria-label="Cloud sync status"
           >
             {renderIcon()}
@@ -206,20 +211,20 @@ export function CloudSyncIndicator({
           <TooltipPrimitive.Content
             side="bottom"
             sideOffset={6}
-            className="z-[200] px-3 py-2.5 rounded-lg text-[12px] tracking-[-0.01em] text-foreground bg-secondary/95 backdrop-blur-md border border-[#ffffff]/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.45)] animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 select-none max-w-[220px]"
+            className="sync-tooltip"
           >
-            <div className="flex flex-col gap-1.5">
+            <div className="sync-tooltip-body">
               {tooltipLines.map((line, i) => (
                 line.label ? (
-                  <div key={i} className="flex items-center justify-between gap-3">
-                    <span className="text-faint text-[11px]">{line.label}</span>
-                    <span className="text-[11px] text-right" style={{ color: line.color || 'var(--foreground)' }}>
+                  <div key={i} className="sync-tooltip-row">
+                    <span className="sync-tooltip-label">{line.label}</span>
+                    <span className="sync-tooltip-value" style={{ color: line.color || 'var(--grey-100)' }}>
                       {line.value}
                     </span>
                   </div>
                 ) : (
-                  <div key={i} className="border-t border-hairline pt-1.5 mt-0.5">
-                    <span className="text-[11px]" style={{ color: line.color || 'var(--subtle)' }}>
+                  <div key={i} className="sync-tooltip-divider">
+                    <span className="sync-tooltip-hint" style={{ color: line.color || 'var(--grey-500)' }}>
                       {line.value}
                     </span>
                   </div>

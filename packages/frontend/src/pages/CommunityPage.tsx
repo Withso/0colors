@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { fetchCommunityProjects, type CommunityProjectMeta } from '../utils/community-api';
 import { ImageWithFallback } from '../components/ImageWithFallback';
 import { copyTextToClipboard } from '../utils/clipboard';
+import './CommunityPage.css';
 
 interface CommunityPageProps {
   onBack?: () => void;
@@ -49,20 +50,20 @@ function DescriptionPopup({
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center"
+      className="community-desc-overlay"
       style={{ zIndex: 200000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[500px] rounded-2xl bg-card shadow-2xl p-6"
+        className="community-desc-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-[14px] font-semibold text-foreground mb-3">{title}</h3>
-        <p className="text-[13px] text-muted-foreground leading-relaxed whitespace-pre-wrap">{description}</p>
-        <div className="flex justify-end mt-5">
+        <h3 className="community-desc-title">{title}</h3>
+        <p className="community-desc-body">{description}</p>
+        <div className="community-desc-footer">
           <button
             onClick={onClose}
-            className="h-8 px-4 rounded-lg text-[12px] text-subtle hover:text-white bg-secondary hover:bg-elevated transition-colors cursor-pointer"
+            className="community-desc-close-btn"
           >
             Close
           </button>
@@ -96,36 +97,36 @@ function ProjectCard({
 
   return (
     <>
-      <div className="group rounded-xl bg-card border border-[#141414] hover:border-border transition-all overflow-hidden">
+      <div className="community-card">
         {/* Thumbnail */}
         <div
-          className="relative w-full aspect-[16/9] bg-background cursor-pointer overflow-hidden"
+          className="community-card-thumbnail"
           onClick={onOpen}
         >
           {project.thumbnailUrl ? (
             <ImageWithFallback
               src={project.thumbnailUrl}
               alt={project.title}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              className="community-card-thumbnail-img"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Globe className="h-10 w-10 text-[#222]" />
+            <div className="community-card-thumbnail-empty">
+              <Globe className="community-card-thumbnail-empty-icon" />
             </div>
           )}
           {/* Hover overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-              <ExternalLink className="h-6 w-6 text-white drop-shadow-lg" />
+          <div className="community-card-hover-overlay">
+            <div className="community-card-hover-icon-wrapper">
+              <ExternalLink className="community-card-hover-icon" />
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="px-4 py-3.5">
+        <div className="community-card-content">
           {/* Title */}
           <h3
-            className="text-[14px] font-semibold text-foreground truncate cursor-pointer hover:text-white transition-colors"
+            className="community-card-title"
             onClick={onOpen}
             title={project.title}
           >
@@ -134,14 +135,14 @@ function ProjectCard({
 
           {/* Description */}
           {project.description && (
-            <div className="mt-1.5">
-              <p className="text-[12px] text-faint leading-relaxed line-clamp-2">
+            <div className="community-card-description-wrapper">
+              <p className="community-card-description">
                 {project.description}
               </p>
               {descTruncated && (
                 <button
                   onClick={() => setShowFullDesc(true)}
-                  className="text-[11px] text-dim hover:text-brand transition-colors mt-0.5 cursor-pointer"
+                  className="community-card-read-more"
                 >
                   Read more
                 </button>
@@ -150,36 +151,36 @@ function ProjectCard({
           )}
 
           {/* Author */}
-          <div className="flex items-center gap-1.5 mt-2.5">
-            <div className="w-4 h-4 rounded-full bg-elevated flex items-center justify-center">
-              <Users className="h-2.5 w-2.5 text-faint" />
+          <div className="community-card-author">
+            <div className="community-card-author-avatar">
+              <Users className="community-card-author-avatar-icon" />
             </div>
-            <span className="text-[11px] text-dim truncate">{project.userName}</span>
+            <span className="community-card-author-name">{project.userName}</span>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#141414]">
+          <div className="community-card-actions">
             {project.allowRemix && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onRemix();
                 }}
-                className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-brand/10 border border-brand/20 text-brand text-[11px] font-medium hover:bg-brand/20 transition-colors cursor-pointer"
+                className="community-card-remix-btn"
               >
-                <Shuffle className="h-3 w-3" />
+                <Shuffle className="community-card-remix-icon" />
                 Remix
               </button>
             )}
             <button
               onClick={handleShare}
-              className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-secondary text-subtle text-[11px] hover:text-white hover:border-border transition-colors cursor-pointer"
+              className="community-card-share-btn"
             >
-              <Share2 className="h-3 w-3" />
+              <Share2 className="community-card-share-icon" />
               Share
             </button>
-            <div className="flex-1" />
-            <span className="text-[11px] text-ghost">
+            <div className="community-card-actions-spacer" />
+            <span className="community-card-node-count">
               {project.nodeCount} node{project.nodeCount !== 1 ? 's' : ''}
             </span>
           </div>
@@ -228,31 +229,31 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject, inline = 
 
   /* ---------- Shared grid / loading / empty content ---------- */
   const gridContent = (
-    <div className={inline ? 'px-8 pb-16' : 'max-w-[1100px] mx-auto px-8 pb-16'}>
+    <div className={inline ? 'community-grid-wrapper--inline' : 'community-grid-wrapper'}>
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-6 w-6 text-dim animate-spin" />
+        <div className="community-loading">
+          <Loader2 className="community-loading-icon community-spin" />
         </div>
       ) : filteredProjects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-16 h-16 rounded-2xl bg-card border border-[#141414] flex items-center justify-center mb-4">
-            <Sparkles className="h-7 w-7 text-[#222]" />
+        <div className="community-empty">
+          <div className="community-empty-icon-wrapper">
+            <Sparkles className="community-empty-icon" />
           </div>
-          <h3 className="text-[14px] text-dim font-medium mb-1">
+          <h3 className="community-empty-title">
             {search ? 'No matching projects' : 'No community projects yet'}
           </h3>
-          <p className="text-[12px] text-ghost">
+          <p className="community-empty-subtitle">
             {search ? 'Try a different search term' : 'Be the first to publish a project!'}
           </p>
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between mb-5">
-            <span className="text-[12px] text-ghost">
+          <div className="community-count-row">
+            <span className="community-count-text">
               {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="community-grid">
             {filteredProjects.map((project) => (
               <ProjectCard
                 key={project.projectId}
@@ -270,20 +271,20 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject, inline = 
   /* ---------- Inline mode: compact header, no hero, no full-page wrapper ---------- */
   if (inline) {
     return (
-      <div className="flex-1">
+      <div className="community-inline-wrapper">
         {/* Compact header */}
-        <div className="px-8 pt-6 pb-4">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-[20px] font-semibold text-foreground">Community</h1>
+        <div className="community-inline-header">
+          <div className="community-inline-title-row">
+            <h1 className="community-inline-title">Community</h1>
           </div>
-          <div className="relative max-w-[400px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ghost" />
+          <div className="community-inline-search-wrapper">
+            <Search className="community-inline-search-icon" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search projects..."
-              className="w-full h-10 pl-10 pr-4 rounded-xl bg-card/80 text-[13px] text-foreground placeholder-ghost outline-none focus:border-brand/30 transition-colors"
+              className="community-inline-search-input"
             />
           </div>
         </div>
@@ -296,66 +297,66 @@ export function CommunityPage({ onBack, onOpenProject, onRemixProject, inline = 
 
   /* ---------- Full-page mode (default): unchanged behaviour ---------- */
   return (
-    <div className="h-screen bg-background text-white overflow-auto">
+    <div className="community-page">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden">
+      <div className="community-hero">
         {/* Background gradient */}
         <div
-          className="absolute inset-0"
+          className="community-hero-gradient"
           style={{
             background:
               'linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(59,130,246,0.06) 50%, rgba(168,85,247,0.08) 100%)',
           }}
         />
         <div
-          className="absolute inset-0"
+          className="community-hero-gradient"
           style={{
             background: 'radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.12) 0%, transparent 60%)',
           }}
         />
 
-        <div className="relative max-w-[1100px] mx-auto px-8 pt-8 pb-12">
+        <div className="community-hero-inner">
           {/* Top nav */}
-          <div className="flex items-center justify-between mb-10">
+          <div className="community-top-nav">
             <button
               onClick={onBack}
-              className="flex items-center gap-2 h-9 px-4 rounded-lg text-[13px] text-subtle hover:text-white bg-card/80 hover:border-border backdrop-blur-sm transition-all cursor-pointer"
+              className="community-back-btn"
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
+              <ArrowLeft className="community-back-icon" />
               All Projects
             </button>
-            <div className="flex items-center gap-2">
-              <span className="text-[20px] text-foreground">
-                0<span className="text-faint">colors</span>
+            <div className="community-logo">
+              <span className="community-logo-text">
+                0<span className="community-logo-text-dim">colors</span>
               </span>
             </div>
           </div>
 
           {/* Hero text */}
-          <div className="text-center max-w-[600px] mx-auto">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center">
-                <Globe className="h-5 w-5 text-brand" />
+          <div className="community-hero-text">
+            <div className="community-hero-icon-row">
+              <div className="community-hero-icon-wrapper">
+                <Globe className="community-hero-icon" />
               </div>
             </div>
-            <h1 className="text-[20px] font-bold text-foreground mb-2">
+            <h1 className="community-hero-heading">
               Community
             </h1>
-            <p className="text-[14px] text-faint leading-relaxed">
+            <p className="community-hero-description">
               Explore color systems shared by the community. Find inspiration, remix projects, and build on the work of others.
             </p>
           </div>
 
           {/* Search */}
-          <div className="max-w-[400px] mx-auto mt-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ghost" />
+          <div className="community-search-wrapper">
+            <div className="community-search-inner">
+              <Search className="community-search-icon" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search projects..."
-                className="w-full h-10 pl-10 pr-4 rounded-xl bg-card/80 text-[13px] text-foreground placeholder-ghost outline-none focus:border-brand/30 backdrop-blur-sm transition-colors"
+                className="community-search-input"
               />
             </div>
           </div>

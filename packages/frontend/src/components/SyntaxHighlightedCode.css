@@ -1,0 +1,34 @@
+/* SyntaxHighlightedCode */
+
+.syntax-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.syntax-scroll {
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 22px;
+}
+
+.syntax-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.syntax-gutter {
+  user-select: none;
+  text-align: right;
+  vertical-align: top;
+  flex-shrink: 0;
+  position: sticky;
+  left: 0;
+  transition: color 0.1s;
+}
+
+.syntax-code {
+  vertical-align: top;
+  white-space: pre;
+}

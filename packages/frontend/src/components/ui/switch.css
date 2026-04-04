@@ -1,0 +1,50 @@
+/* switch.css — co-located styles for <Switch /> */
+
+/* ─── Track (Root) ─── */
+[data-slot="switch"] {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  background-color: var(--grey-600);
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease;
+}
+
+[data-slot="switch"][data-state="checked"] {
+  background-color: var(--indigo-500);
+}
+
+[data-slot="switch"]:focus-visible {
+  box-shadow: 0 0 0 2px var(--indigo-500);
+}
+
+[data-slot="switch"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ─── Thumb ─── */
+[data-slot="switch-thumb"] {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background-color: var(--grey-50);
+  pointer-events: none;
+  transition: transform 0.15s ease;
+}
+
+[data-slot="switch-thumb"][data-state="checked"] {
+  transform: translateX(16px);
+}
+
+[data-slot="switch-thumb"][data-state="unchecked"] {
+  transform: translateX(2px);
+}

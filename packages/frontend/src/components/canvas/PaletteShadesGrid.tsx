@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { ScrubberInput } from './ScrubberInput';
 import { Label } from '../ui/label';
 import { Lock, Unlock, Diff, Plus } from 'lucide-react';
+import './PaletteShadesGrid.css';
 
 interface PaletteShadesGridProps {
   paletteNode: ColorNode;
@@ -53,43 +54,43 @@ interface PropertyControlsProps {
 
 function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onToggleLock, hasParent, hideControls }: PropertyControlsProps) {
   return (
-    <div className="flex items-center gap-1 bg-[rgba(229,229,229,0)]">
+    <div className="psg-property-controls">
       {hasParent && !hideControls && (
         <button
           onClick={(e) => {
             e.stopPropagation();
             onToggleLock();
           }}
-          className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
+          className={`psg-control-btn ${
             isLocked
-              ? 'text-brand hover:bg-brand/10'
-              : 'text-muted-foreground hover:text-foreground hover:bg-elevated'
+              ? 'psg-toggle-active'
+              : 'psg-toggle-inactive'
           }`}
           title={isLocked ? 'Locked - will not change with parent' : 'Unlocked - will change with parent'}
         >
-          {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+          {isLocked ? <Lock className="psg-icon-3-5" /> : <Unlock className="psg-icon-3-5" />}
         </button>
       )}
-      <Label className="text-foreground">{property}</Label>
+      <Label className="psg-label-foreground">{property}</Label>
       {hasParent && !hideControls && (
-        <div className="flex items-center gap-0 ml-auto">
+        <div className="psg-controls-right">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onToggleDiff();
             }}
-            className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
+            className={`psg-control-btn ${
               isDiffEnabled
-                ? 'text-brand hover:bg-brand/10'
-                : 'text-muted-foreground hover:text-foreground hover:bg-elevated'
+                ? 'psg-toggle-active'
+                : 'psg-toggle-inactive'
             }`}
             title={isDiffEnabled ? 'Diff enabled - maintains offset from parent' : 'Diff disabled - matches parent exactly'}
           >
-            <span className="relative inline-block">
-              <Diff className="w-3.5 h-3.5" />
+            <span className="psg-diff-wrapper">
+              <Diff className="psg-icon-3-5" />
               {!isDiffEnabled && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <span className="w-full h-[1px] bg-current rotate-[-45deg] rounded-full" />
+                <span className="psg-diff-strikethrough-overlay">
+                  <span className="psg-diff-strikethrough-line" />
                 </span>
               )}
             </span>
@@ -407,7 +408,7 @@ export function PaletteShadesGrid({
   return (
     <div
       ref={gridRef}
-      className="absolute pointer-events-auto"
+      className="psg-outer"
       style={{
         left: paletteNode.position.x + 260 + 60, // Position to the right of palette node + gap
         top: paletteNode.position.y - 16, // Align with palette node vertically
@@ -417,9 +418,9 @@ export function PaletteShadesGrid({
     >
       {/* Grid Container */}
       <div
-        className="relative rounded-lg p-3"
+        className="psg-container"
         style={{
-          backgroundColor: 'var(--card)',
+          backgroundColor: 'var(--grey-800)',
           backdropFilter: 'blur(4px)',
           width: '360px',
           zIndex: 5,
@@ -427,7 +428,7 @@ export function PaletteShadesGrid({
       >
         {/* Connection point indicator (invisible but tracked) */}
         <div
-          className="absolute left-0 top-1/2 w-1 h-1"
+          className="psg-connection-dot"
           data-connection-point="left"
           style={{
             transform: 'translateY(-50%)',
@@ -435,7 +436,7 @@ export function PaletteShadesGrid({
         />
 
         {/* List Layout */}
-        <div className="flex flex-col gap-2">
+        <div className="psg-shade-list">
           {shadeNodes.map((node, index) => {
             // Calculate color for display
             const getShadeColor = () => {
@@ -472,12 +473,12 @@ export function PaletteShadesGrid({
             return (
               <div
                 key={node.id}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all relative"
+                className="psg-shade-row"
                 style={{
                   backgroundColor: shadeColor,
                   borderWidth: '2px',
                   borderStyle: 'solid',
-                  borderColor: isSelected ? 'var(--brand)' : 'transparent',
+                  borderColor: isSelected ? 'var(--indigo-500)' : 'transparent',
                   filter: isSelected ? 'brightness(1.1)' : 'none',
                 }}
                 tabIndex={0}
@@ -502,7 +503,7 @@ export function PaletteShadesGrid({
                 {/* Connection error message */}
                 {connectionError?.nodeId === node.id && (
                   <div
-                    className="absolute -top-10 left-0 flex items-center justify-center shadow-lg text-white text-sm z-50 rounded-lg"
+                    className="psg-connection-error"
                     style={{
                       backgroundColor: shadeColor,
                       width: '336px',
@@ -571,7 +572,7 @@ export function PaletteShadesGrid({
                   return (
                     <>
                       {/* Shade name */}
-                      <span className="text-sm flex-1" style={{ color: textColor }}>{shadeName}</span>
+                      <span className="psg-shade-name" style={{ color: textColor }}>{shadeName}</span>
 
                       {/* Color picker button with popup */}
                       <Popover open={openColorPickerId === node.id} onOpenChange={(open) => {
@@ -585,7 +586,7 @@ export function PaletteShadesGrid({
                         <PopoverTrigger asChild>
                           <button
                             ref={(el) => paletteButtonRefs.current[node.id] = el}
-                            className="p-1 rounded transition-colors flex items-center justify-center flex-shrink-0"
+                            className="psg-color-picker-btn"
                             onClick={(e) => {
                               e.stopPropagation();
                               onSelect(node.id, e);
@@ -605,7 +606,7 @@ export function PaletteShadesGrid({
                           </button>
                         </PopoverTrigger>
                         <PopoverContent 
-                          className="w-[268px] p-4 bg-card border-secondary"
+                          className="psg-popover-content"
                           onClick={(e) => e.stopPropagation()}
                           onMouseDown={(e) => e.stopPropagation()}
                           onOpenAutoFocus={(e) => e.preventDefault()}
@@ -614,12 +615,12 @@ export function PaletteShadesGrid({
                           align="start"
                           sideOffset={5}
                         >
-                          <div className="space-y-3">
+                          <div className="psg-picker-stack-3">
                             {/* HSL Format */}
                             {node.colorSpace === 'hsl' && (
                               <>
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between gap-2">
+                                <div className="psg-picker-stack-2">
+                                  <div className="psg-picker-row">
                                     <PropertyControls
                                       property="Hue"
                                       isDiffEnabled={node.diffHue !== false}
@@ -639,7 +640,7 @@ export function PaletteShadesGrid({
                                       max={360}
                                       onChange={(value) => onUpdateNode(node.id, { hue: value })}
                                       onMouseDown={(e) => e.stopPropagation()}
-                                      className="w-16 h-7 text-sm"
+                                      className="psg-scrubber-input"
                                     />
                                   </div>
                                   <input
@@ -650,7 +651,7 @@ export function PaletteShadesGrid({
                                     onChange={(e) => onUpdateNode(node.id, { hue: Number(e.target.value) })}
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onMouseMove={(e) => e.stopPropagation()}
-                                    className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                                    className="psg-range-input color-slider"
                                     style={{
                                       background: `linear-gradient(to right, 
                                         hsl(0, ${node.saturation}%, ${node.lightness}%), 
@@ -665,8 +666,8 @@ export function PaletteShadesGrid({
                                   />
                                 </div>
 
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between gap-2">
+                                <div className="psg-picker-stack-2">
+                                  <div className="psg-picker-row">
                                     <PropertyControls
                                       property="Saturation"
                                       isDiffEnabled={node.diffSaturation !== false}
@@ -686,7 +687,7 @@ export function PaletteShadesGrid({
                                       max={100}
                                       onChange={(value) => onUpdateNode(node.id, { saturation: value })}
                                       onMouseDown={(e) => e.stopPropagation()}
-                                      className="w-16 h-7 text-sm"
+                                      className="psg-scrubber-input"
                                     />
                                   </div>
                                   <input
@@ -697,7 +698,7 @@ export function PaletteShadesGrid({
                                     onChange={(e) => onUpdateNode(node.id, { saturation: Number(e.target.value) })}
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onMouseMove={(e) => e.stopPropagation()}
-                                    className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                                    className="psg-range-input color-slider"
                                     style={{
                                       background: `linear-gradient(to right, 
                                         hsl(${node.hue}, 0%, ${node.lightness}%), 
@@ -707,8 +708,8 @@ export function PaletteShadesGrid({
                                   />
                                 </div>
 
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between gap-2">
+                                <div className="psg-picker-stack-2">
+                                  <div className="psg-picker-row">
                                     <PropertyControls
                                       property="Lightness"
                                       isDiffEnabled={node.diffLightness !== false}
@@ -728,7 +729,7 @@ export function PaletteShadesGrid({
                                       max={100}
                                       onChange={(value) => onUpdateNode(node.id, { lightness: value })}
                                       onMouseDown={(e) => e.stopPropagation()}
-                                      className="w-16 h-7 text-sm"
+                                      className="psg-scrubber-input"
                                     />
                                   </div>
                                   <input
@@ -739,7 +740,7 @@ export function PaletteShadesGrid({
                                     onChange={(e) => onUpdateNode(node.id, { lightness: Number(e.target.value) })}
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onMouseMove={(e) => e.stopPropagation()}
-                                    className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                                    className="psg-range-input color-slider"
                                     style={{
                                       background: `linear-gradient(to right, 
                                         hsl(${node.hue}, ${node.saturation}%, 0%), 
@@ -750,8 +751,8 @@ export function PaletteShadesGrid({
                                   />
                                 </div>
 
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between gap-2">
+                                <div className="psg-picker-stack-2">
+                                  <div className="psg-picker-row">
                                     <PropertyControls
                                       property="Alpha"
                                       isDiffEnabled={node.diffAlpha !== false}
@@ -771,7 +772,7 @@ export function PaletteShadesGrid({
                                       max={100}
                                       onChange={(value) => onUpdateNode(node.id, { alpha: value })}
                                       onMouseDown={(e) => e.stopPropagation()}
-                                      className="w-16 h-7 text-sm"
+                                      className="psg-scrubber-input"
                                     />
                                   </div>
                                   <input
@@ -782,18 +783,18 @@ export function PaletteShadesGrid({
                                     onChange={(e) => onUpdateNode(node.id, { alpha: Number(e.target.value) })}
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onMouseMove={(e) => e.stopPropagation()}
-                                    className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                                    className="psg-range-input color-slider"
                                     style={{
                                       backgroundImage: `
                                         linear-gradient(to right, 
                                           hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 0), 
                                           hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 1)),
-                                        linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666),
-                                        linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)
+                                        linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)),
+                                        linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))
                                       `,
                                       backgroundSize: '100% 100%, 8px 8px, 8px 8px',
                                       backgroundPosition: '0 0, 0 0, 4px 4px',
-                                      backgroundColor: '#999999',
+                                      backgroundColor: 'var(--grey-400)',
                                       '--slider-thumb-color': `hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, ${(node.alpha ?? 100) / 100})`,
                                     } as React.CSSProperties}
                                   />
@@ -806,7 +807,7 @@ export function PaletteShadesGrid({
 
                       {/* Color format */}
                       <span 
-                        className="text-xs px-2 py-1 rounded"
+                        className="psg-color-format-badge"
                         style={{ 
                           color: secondaryTextColor,
                           backgroundColor: badgeBgColor,
@@ -820,8 +821,8 @@ export function PaletteShadesGrid({
 
                 {/* Add child button - positioned at edge */}
                 <button
-                  className={`absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
-                    wireHoverNodeId === node.id && wireStartButtonType === 'left' ? 'bg-success' : 'bg-border hover:bg-border'
+                  className={`psg-wire-btn ${
+                    wireHoverNodeId === node.id && wireStartButtonType === 'left' ? 'psg-wire-btn--success' : 'psg-wire-btn--default'
                   }`}
                   style={{ zIndex: 10, right: '-14px' }}
                   onMouseDown={(e) => {
@@ -844,7 +845,7 @@ export function PaletteShadesGrid({
                   data-node-id={node.id}
                   data-button-type="right-connect"
                 >
-                  <Plus className={`w-3 h-3 ${wireHoverNodeId === node.id && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
+                  <Plus className={`psg-icon-3 ${wireHoverNodeId === node.id && wireStartButtonType === 'left' ? 'psg-icon-white' : 'psg-icon-foreground'}`} />
                 </button>
               </div>
             );

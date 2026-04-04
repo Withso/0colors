@@ -1,0 +1,128 @@
+/* ============================================
+ * COMMAND.CSS — Co-located styles for Command
+ * Uses [data-slot="command-*"] selectors.
+ * All values from variables.css tokens only.
+ * ============================================ */
+
+/* ─── Container ─── */
+[data-slot="command"] {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-700);
+  border-radius: var(--radius-lg);
+  color: var(--grey-100);
+}
+
+/* ─── Input wrapper ─── */
+[data-slot="command-input-wrapper"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--grey-700);
+}
+
+/* ─── Input ─── */
+[data-slot="command-input"] {
+  display: flex;
+  width: 100%;
+  height: 40px;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  font-size: var(--font-size-sm);
+  color: var(--grey-100);
+}
+
+[data-slot="command-input"]::placeholder {
+  color: var(--grey-500);
+}
+
+[data-slot="command-input"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ─── List ─── */
+[data-slot="command-list"] {
+  max-height: 300px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ─── Empty ─── */
+[data-slot="command-empty"] {
+  padding: 24px 0;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--grey-400);
+}
+
+/* ─── Group ─── */
+[data-slot="command-group"] {
+  overflow: hidden;
+  padding: 4px;
+  color: var(--grey-100);
+}
+
+/* Group heading (cmdk uses [cmdk-group-heading]) */
+[data-slot="command-group"] [cmdk-group-heading] {
+  padding: 4px 10px;
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-500);
+}
+
+/* ─── Separator ─── */
+[data-slot="command-separator"] {
+  height: 1px;
+  margin: 0 -4px;
+  background-color: var(--grey-700);
+}
+
+/* ─── Item ─── */
+[data-slot="command-item"] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  color: var(--grey-300);
+}
+
+[data-slot="command-item"][data-selected="true"],
+[data-slot="command-item"][aria-selected="true"] {
+  background-color: var(--grey-700);
+  color: var(--grey-50);
+}
+
+[data-slot="command-item"][data-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+[data-slot="command-item"] svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Shortcut ─── */
+[data-slot="command-shortcut"] {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.1em;
+  color: var(--grey-500);
+}

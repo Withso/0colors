@@ -1,0 +1,448 @@
+/* MultiPageExport — co-located styles */
+
+/* ─── Root layout ─── */
+.export-root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--grey-900);
+  overflow: hidden;
+}
+
+/* ─── Top Bar ─── */
+.export-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 44px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--grey-900);
+  background-color: var(--grey-900);
+  user-select: none;
+}
+
+.export-top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.export-top-bar-label {
+  font-size: 11px;
+  color: var(--grey-700);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+}
+
+.export-top-bar-divider {
+  width: 1px;
+  height: 14px;
+  background-color: var(--grey-800);
+  flex-shrink: 0;
+}
+
+.export-top-bar-stat {
+  font-size: 11px;
+  color: var(--grey-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.export-top-bar-preview-label {
+  font-size: 11px;
+  color: var(--grey-600);
+  flex-shrink: 0;
+}
+
+.export-figma-preview-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-900);
+  font-size: 11px;
+  color: var(--grey-700);
+  outline: none;
+  cursor: pointer;
+  max-width: 140px;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.export-figma-preview-btn:hover {
+  background-color: var(--grey-800);
+  color: var(--grey-400);
+}
+
+.export-figma-preview-btn-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.export-figma-preview-chevron {
+  height: 10px;
+  width: 10px;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+/* ─── Top Bar Right ─── */
+.export-top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.export-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-800);
+  font-size: 11px;
+  color: var(--grey-500);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+  outline: none;
+}
+
+.export-action-btn:hover {
+  background-color: var(--grey-800);
+  color: var(--grey-100);
+}
+
+.export-action-btn:disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.export-action-icon {
+  height: 12px;
+  width: 12px;
+}
+
+.export-action-icon--success {
+  height: 12px;
+  width: 12px;
+  color: var(--green-500);
+}
+
+.export-action-text--success {
+  color: var(--green-500);
+}
+
+.export-divider-v {
+  width: 1px;
+  height: 16px;
+  background-color: var(--grey-800);
+  margin: 0 2px;
+}
+
+/* ─── Main Layout ─── */
+.export-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ─── Sidebar ─── */
+.export-sidebar {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-right: 1px solid var(--grey-900);
+  background-color: var(--grey-900);
+}
+
+/* ─── Sidebar Section Headers ─── */
+.export-sidebar-section-header {
+  padding: 16px 16px 8px;
+}
+
+.export-sidebar-section-header--themes {
+  padding: 12px 16px 8px;
+}
+
+.export-sidebar-section-header--hex {
+  padding: 12px 16px 8px;
+}
+
+.export-sidebar-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.export-sidebar-section-title {
+  font-size: 11px;
+  color: var(--grey-700);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.export-sidebar-toggle-all-btn {
+  font-size: 11px;
+  color: var(--grey-600);
+  cursor: pointer;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.export-sidebar-toggle-all-btn:hover {
+  color: var(--grey-500);
+}
+
+.export-sidebar-section-count {
+  font-size: 11px;
+  color: var(--grey-800);
+  font-variant-numeric: tabular-nums;
+}
+
+.export-sidebar-hex-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.export-sidebar-hex-icon {
+  height: 12px;
+  width: 12px;
+  color: var(--grey-600);
+}
+
+.export-sidebar-hex-hint {
+  font-size: 11px;
+  color: var(--grey-800);
+}
+
+/* ─── Sidebar List Items ─── */
+.export-sidebar-list {
+  padding: 0 8px 8px;
+}
+
+.export-sidebar-list--themes {
+  padding: 0 8px 16px;
+}
+
+.export-sidebar-list--hex {
+  padding: 0 8px 16px;
+}
+
+.export-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.export-sidebar-item:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.export-sidebar-item-label {
+  font-size: 12px;
+  flex: 1;
+  transition: color 0.15s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.export-sidebar-item-label--selected {
+  color: var(--grey-500);
+}
+
+.export-sidebar-item-label--unselected {
+  color: var(--grey-800);
+}
+
+.export-sidebar-item-badge {
+  font-size: 11px;
+  color: var(--grey-800);
+}
+
+/* ─── Sidebar Divider ─── */
+.export-sidebar-divider {
+  margin: 0 16px;
+  border-top: 1px solid var(--grey-900);
+}
+
+/* ─── Code Panel ─── */
+.export-code-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  background-color: var(--grey-900);
+}
+
+.export-code-display {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* ─── Empty States ─── */
+.export-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.export-empty-inner {
+  text-align: center;
+}
+
+.export-empty-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.export-empty-icon {
+  height: 20px;
+  width: 20px;
+  color: var(--grey-800);
+}
+
+.export-empty-title {
+  color: var(--grey-600);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.export-empty-subtitle {
+  color: var(--grey-800);
+  font-size: 11px;
+}
+
+/* ─── Footer ─── */
+.export-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 30px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.export-footer-left {
+  font-size: 11px;
+  color: var(--grey-800);
+  font-variant-numeric: tabular-nums;
+}
+
+.export-footer-right {
+  font-size: 11px;
+  color: var(--grey-800);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Dropdown styles (shared with CodePreview) ─── */
+.export-format-dropdown-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.export-format-dropdown-item-label--active {
+  color: var(--grey-100);
+}
+
+.export-format-dropdown-item-label--inactive {
+  color: var(--grey-500);
+}
+
+.export-format-dropdown-item-desc {
+  font-size: 11px;
+  color: var(--grey-800);
+}
+
+.export-format-dropdown-check {
+  height: 12px;
+  width: 12px;
+  color: var(--grey-600);
+}
+
+.export-figma-theme-label--active {
+  color: var(--grey-100);
+}
+
+.export-figma-theme-label--inactive {
+  color: var(--grey-500);
+}
+
+/* ─── Dropdown overrides ─── */
+.export-dropdown-content {
+  width: 220px;
+  background-color: var(--grey-800);
+  border-color: var(--grey-800);
+  padding: 4px;
+  box-shadow: var(--shadow-lg);
+}
+
+.export-dropdown-content--narrow {
+  width: 180px;
+  background-color: var(--grey-800);
+  border-color: var(--grey-800);
+  padding: 4px;
+  box-shadow: var(--shadow-lg);
+}
+
+.export-dropdown-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.export-dropdown-menu-item:focus {
+  background-color: var(--grey-900);
+  color: var(--grey-100);
+}
+
+.export-dropdown-theme-item {
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.export-dropdown-theme-item:focus {
+  background-color: var(--grey-900);
+  color: var(--grey-100);
+}
+
+.export-checkbox-wrapper {
+  pointer-events: none;
+}
+
+.export-sidebar-scroll {
+  flex: 1;
+}

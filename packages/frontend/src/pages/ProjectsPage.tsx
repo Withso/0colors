@@ -12,6 +12,7 @@ import {
 } from '../components/ui/alert-dialog';
 import { CommunityPage } from './CommunityPage';
 import { AISettingsContent } from '../components/ai/AISettingsPopup';
+import "./ProjectsPage.css";
 
 interface ColorNode {
   id: string;
@@ -107,13 +108,9 @@ function NavItem({ icon: Icon, label, active, onClick }: {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 h-8 px-3 rounded-md text-[13px] transition-colors cursor-pointer ${
-        active
-          ? 'bg-[#ffffff]/[0.06] text-foreground'
-          : 'text-subtle hover:bg-[#ffffff]/[0.04] hover:text-foreground'
-      }`}
+      className={`projects-nav-item${active ? ' is-active' : ''}`}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="projects-nav-item-icon" />
       {label}
     </button>
   );
@@ -153,55 +150,53 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
   return (
     <div
       ref={innerRef}
-      className={`flex items-center h-10 px-3 hover:bg-[#ffffff]/[0.03] cursor-pointer transition-colors border-b border-[#ffffff]/[0.04] last:border-b-0 ${
-        isHighlighted ? 'bg-[#ffffff]/[0.06]' : ''
-      }`}
+      className={`projects-row${isHighlighted ? ' when-highlighted' : ''}`}
       onClick={onClick}
     >
       {/* Colored dot */}
       <div
-        className="w-2.5 h-2.5 rounded-full mr-3 flex-shrink-0"
+        className="projects-row-dot"
         style={{ background: `hsl(${project.folderColor ?? 200}, 55%, 50%)` }}
       />
       {/* Project name */}
-      <span className="text-[13px] font-medium text-foreground truncate flex-1">
+      <span className="projects-row-name">
         {project.name}
       </span>
       {/* Badges */}
       {isSample && (
-        <span className="text-[11px] text-dim mr-3 flex items-center gap-1">
-          <Eye className="h-3 w-3" />
+        <span className="projects-row-badge-sample">
+          <Eye className="projects-row-badge-sample-icon" />
           Read-only
         </span>
       )}
       {isPublished && (
-        <Globe className="h-3 w-3 text-dim mr-2" />
+        <Globe className="projects-row-published-icon" />
       )}
-      <span className="text-[12px] text-ghost mr-3 tabular-nums">
+      <span className="projects-row-stats">
         {tokenCount > 0 && `${tokenCount} tokens`}
         {tokenCount > 0 && nodeCount > 0 && ' \u00b7 '}
         {nodeCount > 0 && `${nodeCount} nodes`}
       </span>
       {/* Menu */}
       {!isSample && (
-        <div className="relative" ref={menuRef} onClick={e => e.stopPropagation()}>
+        <div className="projects-row-menu-wrapper" ref={menuRef} onClick={e => e.stopPropagation()}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="h-7 w-7 rounded-md flex items-center justify-center text-ghost hover:text-foreground hover:bg-[#ffffff]/[0.06] transition-colors"
+            className="projects-row-menu-trigger"
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreHorizontal className="projects-row-menu-trigger-icon" />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-[160px] rounded-lg bg-card border border-[#ffffff]/[0.06] shadow-lg py-1 z-50">
-              <button className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] text-foreground hover:bg-[#ffffff]/[0.06] transition-colors" onClick={(e) => { onExport(e); setMenuOpen(false); }}>
-                <Download className="h-3.5 w-3.5 text-dim" /> Export
+            <div className="projects-row-menu-dropdown">
+              <button className="projects-row-menu-item" onClick={(e) => { onExport(e); setMenuOpen(false); }}>
+                <Download className="projects-row-menu-item-icon" /> Export
               </button>
-              <button className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] text-foreground hover:bg-[#ffffff]/[0.06] transition-colors" onClick={(e) => { onDuplicate(e); setMenuOpen(false); }}>
-                <Copy className="h-3.5 w-3.5 text-dim" /> Duplicate
+              <button className="projects-row-menu-item" onClick={(e) => { onDuplicate(e); setMenuOpen(false); }}>
+                <Copy className="projects-row-menu-item-icon" /> Duplicate
               </button>
-              <div className="my-1 border-t border-[#ffffff]/[0.04]" />
-              <button className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] text-destructive hover:bg-destructive/10 transition-colors" onClick={(e) => { onDelete(e); setMenuOpen(false); }}>
-                <Trash2 className="h-3.5 w-3.5" /> Delete
+              <div className="projects-row-menu-divider" />
+              <button className="projects-row-menu-item projects-row-menu-item-destructive" onClick={(e) => { onDelete(e); setMenuOpen(false); }}>
+                <Trash2 className="projects-row-menu-item-icon" /> Delete
               </button>
             </div>
           )}
@@ -217,19 +212,19 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
 
 function ProfileSection({ userEmail, isAdmin, isTemplateAdmin }: { userEmail?: string; isAdmin?: boolean; isTemplateAdmin?: boolean }) {
   return (
-    <div className="max-w-[680px] mx-auto px-8 py-8">
-      <h1 className="text-[20px] font-semibold text-foreground mb-6">Profile</h1>
-      <div className="rounded-lg border border-[#ffffff]/[0.06] overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <span className="text-[13px] text-subtle">Email</span>
-          <span className="text-[13px] text-foreground">{userEmail || 'Not signed in'}</span>
+    <div className="projects-profile">
+      <h1 className="projects-section-title">Profile</h1>
+      <div className="projects-profile-card">
+        <div className="projects-profile-row">
+          <span className="projects-profile-label">Email</span>
+          <span className="projects-profile-value">{userEmail || 'Not signed in'}</span>
         </div>
         {isAdmin && (
           <>
-            <div className="border-t border-[#ffffff]/[0.04]" />
-            <div className="flex items-center justify-between px-5 py-3.5">
-              <span className="text-[13px] text-subtle">Role</span>
-              <span className="text-[13px] text-foreground">Admin{isTemplateAdmin ? ' + Template Admin' : ''}</span>
+            <div className="projects-profile-divider" />
+            <div className="projects-profile-row">
+              <span className="projects-profile-label">Role</span>
+              <span className="projects-profile-value">Admin{isTemplateAdmin ? ' + Template Admin' : ''}</span>
             </div>
           </>
         )}
@@ -298,34 +293,34 @@ function ProjectList({
   ) => {
     if (projectList.length === 0 && !showCreate) return null;
     return (
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2 px-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] uppercase tracking-wider text-dim font-medium">{label}</span>
-            <span className="text-[11px] text-ghost">{projectList.length}</span>
+      <div className="projects-section">
+        <div className="projects-section-header">
+          <div className="projects-section-header-left">
+            <span className="projects-section-label">{label}</span>
+            <span className="projects-section-count">{projectList.length}</span>
             {label.toLowerCase().includes('cloud') && cloudSyncStatus === 'syncing' && (
-              <span className="text-[11px] text-brand animate-pulse">Syncing...</span>
+              <span className="projects-section-syncing">Syncing...</span>
             )}
             {label.toLowerCase().includes('cloud') && onForceCloudRefresh && (
               <button
                 onClick={onForceCloudRefresh}
-                className="text-[11px] text-ghost hover:text-brand flex items-center gap-1 transition-colors ml-1"
+                className="projects-section-refresh-btn"
                 title="Force re-download all cloud projects from server"
               >
-                <RefreshCw className="w-3 h-3" />
+                <RefreshCw className="projects-section-refresh-icon" />
               </button>
             )}
           </div>
           {showCreate && (
-            <button onClick={() => onCreateProject(createType)} className="h-7 px-2.5 rounded-md text-[12px] text-dim hover:text-foreground hover:bg-[#ffffff]/[0.04] transition-colors flex items-center gap-1.5">
-              <Plus className="h-3.5 w-3.5" />
+            <button onClick={() => onCreateProject(createType)} className="projects-section-create-btn">
+              <Plus className="projects-section-create-icon" />
               {createLabel}
             </button>
           )}
         </div>
         {projectList.length === 0 ? (
-          <div className="rounded-lg overflow-hidden" style={{ border: '1px dashed rgba(255,255,255,0.06)' }}>
-            <div className="flex items-center justify-center py-8 text-[13px] text-ghost">
+          <div className="projects-section-empty">
+            <div className="projects-section-empty-text">
               No projects yet
             </div>
           </div>
@@ -359,12 +354,12 @@ function ProjectList({
   };
 
   return (
-    <div className="max-w-[800px] mx-auto px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-[20px] font-semibold text-foreground">Projects</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={onImportProject} className="h-8 px-3 rounded-md text-[13px] text-subtle hover:text-foreground hover:bg-[#ffffff]/[0.04] transition-colors flex items-center gap-2">
-            <Upload className="h-3.5 w-3.5" />
+    <div className="projects-list">
+      <div className="projects-list-header">
+        <h1 className="projects-list-title">Projects</h1>
+        <div className="projects-list-actions">
+          <button onClick={onImportProject} className="projects-import-btn">
+            <Upload className="projects-import-btn-icon" />
             Import
           </button>
         </div>
@@ -489,41 +484,40 @@ export function ProjectsPage({
   const canCreateCloudProject = isAuthenticated && (isAdmin || cloudProjects.length < 20);
 
   return (
-    <div className="h-screen flex bg-background">
+    <div className="projects-page">
       {/* Sidebar */}
-      <div className="w-[220px] flex-shrink-0 flex flex-col bg-[#0a0a0a] border-r border-[#ffffff]/[0.06]">
+      <div className="projects-sidebar">
         {/* Logo area */}
-        <div className="px-4 pt-5 pb-4">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-[14px] font-semibold text-foreground">
-              0<span className="text-faint">colors</span>
+        <div className="projects-sidebar-logo">
+          <div className="projects-sidebar-logo-row">
+            <h1 className="projects-sidebar-title">
+              0<span className="projects-sidebar-title-faint">colors</span>
             </h1>
             {isAdmin && (
               <span
-                className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                className="projects-sidebar-admin-badge"
                 style={{
-                  background: 'rgba(168, 130, 255, 0.1)',
-                  color: '#a882ff',
-                  border: '1px solid rgba(168, 130, 255, 0.2)',
-                  letterSpacing: '0.06em',
+                  background: 'color-mix(in srgb, var(--purple-400) 10%, transparent)',
+                  color: 'var(--purple-400)',
+                  border: '1px solid color-mix(in srgb, var(--purple-400) 20%, transparent)',
                 }}
               >
                 Admin
               </span>
             )}
           </div>
-          <p className="text-[11px] text-dim mt-0.5">
+          <p className="projects-sidebar-subtitle">
             {projects.length} projects
-            {userEmail && <span className="text-ghost"> &middot; {userEmail}</span>}
+            {userEmail && <span className="projects-sidebar-subtitle-ghost"> &middot; {userEmail}</span>}
           </p>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-1">
+        <nav className="projects-sidebar-nav">
           <NavItem icon={Folder} label="Projects" active={activeSection === 'projects'} onClick={() => onSectionChange?.('projects')} />
           <NavItem icon={Globe} label="Community" active={activeSection === 'community'} onClick={() => onSectionChange?.('community')} />
 
-          <div className="my-2 mx-2 border-t border-[#ffffff]/[0.04]" />
+          <div className="projects-sidebar-divider" />
 
           {isAuthenticated && (
             <NavItem icon={Sparkles} label="AI Settings" active={activeSection === 'ai-settings'} onClick={() => onSectionChange?.('ai-settings')} />
@@ -534,15 +528,15 @@ export function ProjectsPage({
         </nav>
 
         {/* Bottom */}
-        <div className="px-2 pb-3">
+        <div className="projects-sidebar-bottom">
           {isAuthenticated && onSignOut ? (
-            <button onClick={onSignOut} className="w-full flex items-center gap-2.5 h-8 px-3 rounded-md text-[13px] text-dim hover:text-foreground hover:bg-[#ffffff]/[0.04] transition-colors">
-              <LogOut className="h-4 w-4" />
+            <button onClick={onSignOut} className="projects-sidebar-auth-btn">
+              <LogOut className="projects-sidebar-auth-btn-icon" />
               Sign out
             </button>
           ) : !isAuthenticated && onSignIn ? (
-            <button onClick={onSignIn} className="w-full flex items-center gap-2.5 h-8 px-3 rounded-md text-[13px] text-brand hover:bg-[#ffffff]/[0.04] transition-colors">
-              <LogIn className="h-4 w-4" />
+            <button onClick={onSignIn} className="projects-sidebar-auth-btn projects-sidebar-auth-btn-signin">
+              <LogIn className="projects-sidebar-auth-btn-icon" />
               Sign in
             </button>
           ) : null}
@@ -550,7 +544,7 @@ export function ProjectsPage({
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="projects-main">
         {activeSection === 'projects' && (
           <ProjectList
             projects={projects}
@@ -585,9 +579,9 @@ export function ProjectsPage({
           />
         )}
         {activeSection === 'ai-settings' && (
-          <div className="flex-1 overflow-y-auto">
-            <div className="max-w-[680px] mx-auto px-8 py-8">
-              <h1 className="text-[20px] font-semibold text-foreground mb-6">AI Settings</h1>
+          <div className="projects-ai-settings-wrapper">
+            <div className="projects-ai-settings-inner">
+              <h1 className="projects-section-title">AI Settings</h1>
               <AISettingsContent
                 inline
                 onSettingsSaved={onAISettingsSaved}
@@ -607,21 +601,21 @@ export function ProjectsPage({
 
       {/* Delete dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-card text-white">
+        <AlertDialogContent className="projects-delete-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Project</AlertDialogTitle>
-            <AlertDialogDescription className="text-[#878787]">
+            <AlertDialogDescription className="projects-delete-dialog-description">
               Are you sure you want to delete this project? This action cannot be undone.
               All nodes and tokens in this project will be permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-secondary hover:bg-[#222] text-white">
+            <AlertDialogCancel className="projects-delete-dialog-cancel">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="bg-[#EA0B2D] hover:bg-[#C00924] text-white"
+              className="projects-delete-dialog-confirm"
             >
               Delete
             </AlertDialogAction>

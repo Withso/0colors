@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import './OklchGamutSlider.css';
 
 interface OklchGamutSliderProps {
   type: 'lightness' | 'chroma' | 'hue';
@@ -146,7 +147,7 @@ export function OklchGamutSlider({
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       disabled={disabled}
-      className={`w-full h-2 rounded-lg appearance-none cursor-pointer color-slider ${className}`}
+      className={`gamut-slider-input color-slider ${className}`}
       style={{
         ...gradientStyle,
         '--slider-thumb-color': thumbColor,

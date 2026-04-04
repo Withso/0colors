@@ -1,0 +1,484 @@
+/* ============================================
+ * AUTHPAGE.CSS — Co-located styles for AuthPage
+ * All values from variables.css tokens only.
+ * ============================================ */
+
+/* ─── Overlay ─── */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Card Wrapper (outer positioning) ─── */
+.auth-card-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+/* ─── Glow Ring ─── */
+.auth-glow-ring {
+  position: absolute;
+  inset: -1px;
+  border-radius: 22px;
+  pointer-events: none;
+}
+
+/* ─── Card Body ─── */
+.auth-card {
+  position: relative;
+  border-radius: 21px;
+  overflow: hidden;
+  background: var(--grey-800);
+}
+
+/* ─── Header ─── */
+.auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 4px 24px;
+}
+
+.auth-header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-brand-title {
+  font-size: 20px;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--grey-50);
+  letter-spacing: -0.025em;
+}
+
+.auth-brand-title-dim {
+  color: var(--grey-600);
+}
+
+.auth-brand-subtitle {
+  font-size: 11px;
+  color: var(--grey-700);
+  margin-top: 2px;
+}
+
+/* ─── Close Button ─── */
+.auth-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--grey-600);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.auth-close-btn:hover {
+  color: var(--grey-400);
+  background: var(--grey-800);
+}
+
+.auth-close-btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Confirmation / Status Screens ─── */
+.auth-confirmation {
+  padding: 20px 24px 24px 24px;
+  text-align: center;
+}
+
+.auth-confirmation-icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.auth-confirmation-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-2xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-confirmation-icon-box-success {
+  background: color-mix(in srgb, var(--green-500) 10%, transparent);
+}
+
+.auth-confirmation-icon-box-brand {
+  background: color-mix(in srgb, var(--indigo-500) 10%, transparent);
+}
+
+.auth-confirmation-icon-success {
+  width: 24px;
+  height: 24px;
+  color: var(--green-500);
+}
+
+.auth-confirmation-icon-brand {
+  width: 24px;
+  height: 24px;
+  color: var(--indigo-500);
+}
+
+.auth-confirmation-title {
+  font-size: 14px;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--grey-50);
+  margin-bottom: 6px;
+}
+
+.auth-confirmation-desc {
+  font-size: var(--font-size-xs);
+  color: var(--grey-600);
+  line-height: 1.625;
+  margin-bottom: 20px;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.auth-confirmation-email {
+  color: var(--grey-500);
+}
+
+/* ─── Primary Action Button (confirmation screens) ─── */
+.auth-action-btn {
+  width: 100%;
+  padding: 10px 0;
+  border-radius: var(--radius-xl);
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  background: var(--grey-200);
+  color: var(--grey-900);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.06);
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.auth-action-btn:hover {
+  opacity: 0.9;
+}
+
+/* ─── Error Message ─── */
+.auth-error {
+  padding: 8px 12px;
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-xs);
+  background: color-mix(in srgb, var(--red-500) 8%, transparent);
+  color: var(--red-500);
+}
+
+.auth-error-verify {
+  margin-bottom: 12px;
+}
+
+/* ─── Verify Email Screen ─── */
+.auth-verify {
+  padding: 20px 24px 24px 24px;
+  text-align: center;
+}
+
+.auth-verify-icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.auth-verify-title {
+  font-size: 14px;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--grey-50);
+  margin-bottom: 6px;
+}
+
+.auth-verify-desc {
+  font-size: var(--font-size-xs);
+  color: var(--grey-600);
+  line-height: 1.625;
+  margin-bottom: 20px;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.auth-verify-email-highlight {
+  color: var(--grey-500);
+}
+
+/* ─── Resend Button ─── */
+.auth-resend-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-radius: var(--radius-xl);
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  border: none;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.auth-resend-btn:disabled {
+  cursor: not-allowed;
+}
+
+.auth-resend-btn-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.auth-resend-btn-icon-spin {
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ─── "Already verified? Sign in" Button ─── */
+.auth-verified-signin-btn {
+  width: 100%;
+  padding: 10px 0;
+  border-radius: var(--radius-xl);
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  background: var(--grey-200);
+  color: var(--grey-900);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.auth-verified-signin-btn:hover {
+  opacity: 0.9;
+}
+
+/* ─── Skip / Continue Without Account ─── */
+.auth-skip-wrap {
+  text-align: center;
+  margin-top: 4px;
+}
+
+.auth-skip-btn {
+  font-size: 11px;
+  color: var(--grey-700);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.auth-skip-btn:hover {
+  color: var(--grey-600);
+}
+
+/* ─── Form Container ─── */
+.auth-form-container {
+  padding: 16px 24px 20px 24px;
+}
+
+/* ─── Toggle Tabs (Sign in / Sign up) ─── */
+.auth-tabs {
+  display: flex;
+  border-radius: var(--radius-xl);
+  margin-bottom: 20px;
+  padding: 4px;
+  background: var(--grey-900);
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ─── Forgot Password Sub-Header ─── */
+.auth-forgot-header {
+  margin-bottom: 20px;
+}
+
+.auth-forgot-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.auth-forgot-header-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--indigo-500);
+}
+
+.auth-forgot-header-title {
+  font-size: 14px;
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-50);
+}
+
+.auth-forgot-header-desc {
+  font-size: 11px;
+  color: var(--grey-600);
+  line-height: 1.625;
+}
+
+/* ─── Form ─── */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ─── Input Fields ─── */
+.auth-field {
+  position: relative;
+}
+
+.auth-field-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--grey-700);
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border-radius: var(--radius-xl);
+  font-size: 13px;
+  color: var(--grey-50);
+  background: var(--grey-900);
+  border: none;
+  outline: none;
+  transition: box-shadow 0.15s ease;
+}
+
+.auth-input::placeholder {
+  color: var(--grey-700);
+}
+
+.auth-input:focus {
+  box-shadow: 0 0 0 1px var(--grey-700);
+}
+
+/* ─── Forgot Password Link ─── */
+.auth-forgot-link-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+
+.auth-forgot-link {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--indigo-500) 70%, transparent);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.auth-forgot-link:hover {
+  color: var(--indigo-500);
+}
+
+/* ─── Submit Button ─── */
+.auth-submit-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-radius: var(--radius-xl);
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  border: none;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.auth-submit-btn:disabled {
+  cursor: not-allowed;
+}
+
+.auth-submit-btn-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.auth-submit-btn-spinner {
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+/* ─── Back to Sign In Link ─── */
+.auth-back-link-wrap {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.auth-back-link {
+  font-size: 11px;
+  color: var(--grey-600);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.auth-back-link:hover {
+  color: var(--grey-500);
+}
+
+/* ─── Footer Skip Link ─── */
+.auth-footer {
+  text-align: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--grey-900);
+}
+
+.auth-footer-skip-btn {
+  font-size: 11px;
+  color: var(--grey-700);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.auth-footer-skip-btn:hover {
+  color: var(--grey-600);
+}

@@ -1,0 +1,99 @@
+/* ============================================
+ * DIALOG.CSS — Co-located styles for Dialog
+ * Uses [data-slot="dialog-*"] selectors.
+ * Animations handled by animations.css via data-state.
+ * ============================================ */
+
+/* ─── Overlay ─── */
+[data-slot="dialog-overlay"] {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* ─── Content ─── */
+[data-slot="dialog-content"] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 50;
+  transform: translate(-50%, -50%);
+  display: grid;
+  width: 100%;
+  max-width: 500px;
+  padding: 24px;
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-700);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  animation-duration: 0.2s;
+}
+
+/* ─── Close button (inside content) ─── */
+[data-slot="dialog-close-button"] {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--grey-400);
+  border-radius: var(--radius-sm);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+[data-slot="dialog-close-button"]:hover {
+  opacity: 1;
+  color: var(--grey-50);
+}
+
+[data-slot="dialog-close-button"]:focus-visible {
+  outline: 2px solid var(--indigo-500);
+  outline-offset: 2px;
+}
+
+[data-slot="dialog-close-button"]:disabled {
+  pointer-events: none;
+}
+
+[data-slot="dialog-close-button"] svg {
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* ─── Header ─── */
+[data-slot="dialog-header"] {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ─── Footer ─── */
+[data-slot="dialog-footer"] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+/* ─── Title ─── */
+[data-slot="dialog-title"] {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semi-bold);
+  line-height: 1;
+  color: var(--grey-50);
+}
+
+/* ─── Description ─── */
+[data-slot="dialog-description"] {
+  font-size: var(--font-size-sm);
+  color: var(--grey-400);
+}

@@ -1,0 +1,64 @@
+/* ScrubberInput — drag-to-scrub numeric input */
+
+.scrubber-input {
+  display: flex;
+  height: 36px;
+  width: 100%;
+  min-width: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--grey-800);
+  padding: 4px 12px;
+  font-size: var(--text-sm);
+  color: var(--grey-100);
+  background-color: var(--grey-800);
+  transition: color 150ms, box-shadow 150ms;
+  outline: none;
+
+  /* Hide native number spinners */
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.scrubber-input::-webkit-outer-spin-button,
+.scrubber-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.scrubber-input::file-selector-button {
+  color: var(--grey-100);
+  display: inline-flex;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.scrubber-input::placeholder {
+  color: var(--grey-400);
+}
+
+.scrubber-input::selection {
+  background: var(--grey-100);
+  color: var(--grey-900);
+}
+
+.scrubber-input:focus-visible {
+  border-color: var(--indigo-500);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+}
+
+.scrubber-input:disabled {
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.scrubber-input-scrubbing {
+  cursor: ew-resize;
+}
+
+.scrubber-input-editing {
+  cursor: text;
+}

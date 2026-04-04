@@ -1,0 +1,46 @@
+/* checkbox.css — co-located styles for <Checkbox /> */
+
+/* ─── Box (Root) ─── */
+[data-slot="checkbox"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--grey-700);
+  border-radius: 3px;
+  background-color: transparent;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+[data-slot="checkbox"][data-state="checked"] {
+  background-color: var(--grey-100);
+  border-color: var(--grey-100);
+}
+
+[data-slot="checkbox"]:focus-visible {
+  box-shadow: 0 0 0 2px var(--indigo-500);
+}
+
+[data-slot="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ─── Indicator ─── */
+[data-slot="checkbox-indicator"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--grey-900);
+}
+
+[data-slot="checkbox-indicator"] svg {
+  width: 14px;
+  height: 14px;
+}

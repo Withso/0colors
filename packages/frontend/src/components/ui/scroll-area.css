@@ -1,0 +1,57 @@
+/* ============================================
+ * SCROLL-AREA.CSS — Co-located styles for ScrollArea
+ * Uses [data-slot="scroll-area-*"] selectors.
+ * All values from variables.css tokens only.
+ * ============================================ */
+
+/* ─── Root ─── */
+[data-slot="scroll-area"] {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ─── Viewport ─── */
+[data-slot="scroll-area-viewport"] {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  outline: none;
+}
+
+[data-slot="scroll-area-viewport"]:focus-visible {
+  box-shadow: 0 0 0 3px var(--indigo-400);
+  outline: 1px solid var(--indigo-400);
+}
+
+/* ─── Scrollbar ─── */
+[data-slot="scroll-area-scrollbar"] {
+  display: flex;
+  touch-action: none;
+  padding: 1px;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+[data-slot="scroll-area-scrollbar"][data-orientation="vertical"] {
+  width: 6px;
+  height: 100%;
+  border-left: 1px solid transparent;
+}
+
+[data-slot="scroll-area-scrollbar"][data-orientation="horizontal"] {
+  height: 6px;
+  flex-direction: column;
+  border-top: 1px solid transparent;
+}
+
+/* ─── Thumb ─── */
+[data-slot="scroll-area-thumb"] {
+  position: relative;
+  flex: 1;
+  background-color: var(--grey-700);
+  border-radius: var(--radius-full);
+}
+
+[data-slot="scroll-area-thumb"]:hover {
+  background-color: var(--grey-600);
+}

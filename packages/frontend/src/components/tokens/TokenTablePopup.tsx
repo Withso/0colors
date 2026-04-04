@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { DesignToken, ColorNode, TokenGroup, Page, Theme, NodeAdvancedLogic } from '../../types';
 import { X, ChevronDown, ChevronRight, GripHorizontal, Check, Crown, Undo2, Tag, Link2, EyeOff, ArrowUpDown, ArrowUp, ArrowDown, Zap } from 'lucide-react';
+import './TokenTablePopup.css';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,7 +56,7 @@ function hslToHex(h: number, s: number, l: number, a: number = 100): string {
 }
 
 // Checkerboard for transparent colors
-const checkerboardBg = `linear-gradient(45deg, #222 25%, transparent 25%), linear-gradient(-45deg, #222 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #222 75%), linear-gradient(-45deg, transparent 75%, #222 75%)`;
+const checkerboardBg = `linear-gradient(45deg, var(--grey-800) 25%, transparent 25%), linear-gradient(-45deg, var(--grey-800) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--grey-800) 75%), linear-gradient(-45deg, transparent 75%, var(--grey-800) 75%)`;
 
 // ─── Rich tooltip body for token table cells ───
 interface CellTooltipData {
@@ -99,33 +100,33 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
     const vtShowSpace = data.valueRef?.spaceName && data.valueRef?.spaceValue
       && data.valueRef.spaceValue.toUpperCase() !== data.valueRef.hex?.toUpperCase();
     return (
-      <div className="min-w-[190px] max-w-[300px]">
+      <div className="token-table-tooltip-tn">
         {/* Header: Tag icon + own token name */}
-        <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
-          <Tag className="w-3 h-3 shrink-0 text-dim" />
-          <span className="text-[11px] text-foreground truncate">{data.name}</span>
+        <div className="token-table-tooltip-header">
+          <Tag className="token-table-tooltip-header-icon" />
+          <span className="token-table-tooltip-header-name">{data.name}</span>
         </div>
         {/* CSS variable line */}
-        <div className="h-px bg-hairline mx-2" />
-        <div className="px-3 pt-1.5 pb-1.5">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-[11px] text-faint uppercase tracking-wide shrink-0">VAR</span>
-            <span className="text-[11px] font-mono text-subtle truncate">--{data.name.toLowerCase().replace(/\s+/g, '-')}</span>
+        <div className="token-table-tooltip-divider" />
+        <div className="token-table-tooltip-var-section">
+          <div className="token-table-tooltip-var-row">
+            <span className="token-table-tooltip-var-label">VAR</span>
+            <span className="token-table-tooltip-var-value">--{data.name.toLowerCase().replace(/\s+/g, '-')}</span>
           </div>
         </div>
         {/* Computed expression result — shown when advanced logic is active */}
         {data.computed ? (
           <>
-            <div className="h-px bg-hairline mx-2" />
-            <div className="px-3 pt-2 pb-1.5">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[11px] text-warning/80 uppercase tracking-wide">Computed</span>
+            <div className="token-table-tooltip-divider" />
+            <div className="token-table-tooltip-computed-section">
+              <div className="token-table-tooltip-computed-label-row">
+                <span className="token-table-tooltip-computed-label">Computed</span>
               </div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="w-3 h-3 rounded-[3px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: data.computed.cssColor }} />
-                <span className="text-[11px] font-mono text-muted-foreground truncate">{data.computed.nativeValue}</span>
+              <div className="token-table-tooltip-computed-color-row">
+                <div className="token-table-tooltip-computed-swatch" style={{ backgroundColor: data.computed.cssColor }} />
+                <span className="token-table-tooltip-computed-native">{data.computed.nativeValue}</span>
               </div>
-              <div className="text-[11px] font-mono text-faint truncate" title={data.computed.expressionText}>
+              <div className="token-table-tooltip-computed-expr" title={data.computed.expressionText}>
                 {data.computed.expressionText}
               </div>
             </div>
@@ -134,44 +135,44 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
         {/* Value token reference */}
         {data.valueRef ? (
           <>
-            <div className="h-px bg-hairline mx-2" />
-            <div className="px-3 pt-2 pb-1.5">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[11px] text-dim uppercase tracking-wide">Value</span>
-                <Link2 className="w-2.5 h-2.5 text-dim" />
+            <div className="token-table-tooltip-divider" />
+            <div className="token-table-tooltip-value-section">
+              <div className="token-table-tooltip-value-label-row">
+                <span className="token-table-tooltip-value-label">Value</span>
+                <Link2 className="token-table-tooltip-value-link-icon" />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="token-table-tooltip-value-row">
                 {data.valueRef.isChainRef ? (
-                  <Tag className="w-3 h-3 shrink-0 text-dim" />
+                  <Tag className="token-table-tooltip-value-tag-icon" />
                 ) : data.valueRef.color ? (
-                  <div className="w-3 h-3 rounded-[3px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: data.valueRef.color }} />
+                  <div className="token-table-tooltip-value-swatch" style={{ backgroundColor: data.valueRef.color }} />
                 ) : (
-                  <div className="w-3 h-3 rounded-[3px] shrink-0 border border-border/60 opacity-40" />
+                  <div className="token-table-tooltip-value-swatch-empty" />
                 )}
-                <span className="text-[11px] text-foreground truncate">{data.valueRef.name}</span>
+                <span className="token-table-tooltip-value-name">{data.valueRef.name}</span>
               </div>
             </div>
             {/* Value token's color info */}
             {!!(vtShowSpace || data.valueRef.hex) && (
               <>
-                <div className="h-px bg-hairline mx-2" />
-                <div className="px-3 pt-1.5 pb-2.5 space-y-1">
+                <div className="token-table-tooltip-divider" />
+                <div className="token-table-tooltip-colorinfo-section">
                   {vtShowSpace && (
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-[11px] text-faint uppercase tracking-wide">{data.valueRef.spaceName}</span>
-                      <span className="text-[11px] font-mono text-subtle">{data.valueRef.spaceValue}</span>
+                    <div className="token-table-tooltip-colorinfo-row">
+                      <span className="token-table-tooltip-var-label">{data.valueRef.spaceName}</span>
+                      <span className="token-table-tooltip-var-value">{data.valueRef.spaceValue}</span>
                     </div>
                   )}
                   {data.valueRef.hex && (
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-[11px] text-faint uppercase tracking-wide">HEX</span>
-                      <span className="text-[11px] font-mono text-subtle">{data.valueRef.hex}</span>
+                    <div className="token-table-tooltip-colorinfo-row">
+                      <span className="token-table-tooltip-var-label">HEX</span>
+                      <span className="token-table-tooltip-var-value">{data.valueRef.hex}</span>
                     </div>
                   )}
                   {data.valueRef.alpha !== undefined && data.valueRef.alpha < 100 && (
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-[11px] text-faint uppercase tracking-wide">ALPHA</span>
-                      <span className="text-[11px] font-mono text-subtle">{Math.round(data.valueRef.alpha)}%</span>
+                    <div className="token-table-tooltip-colorinfo-row">
+                      <span className="token-table-tooltip-var-label">ALPHA</span>
+                      <span className="token-table-tooltip-var-value">{Math.round(data.valueRef.alpha)}%</span>
                     </div>
                   )}
                 </div>
@@ -180,9 +181,9 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
           </>
         ) : (
           <>
-            <div className="h-px bg-hairline mx-2" />
-            <div className="px-3 pt-2 pb-2.5">
-              <span className="text-[11px] text-dim italic">No value assigned</span>
+            <div className="token-table-tooltip-divider" />
+            <div className="token-table-tooltip-no-value">
+              <span className="token-table-tooltip-no-value-text">No value assigned</span>
             </div>
           </>
         )}
@@ -196,35 +197,35 @@ function CellTooltipBody({ data }: { data: CellTooltipData }) {
     && data.spaceValue.toUpperCase() !== data.hex?.toUpperCase();
   const hasColorInfo = !!(showSpace || data.hex);
   return (
-    <div className="min-w-[180px] max-w-[280px]">
-      <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
+    <div className="token-table-tooltip-regular">
+      <div className="token-table-tooltip-header">
         {data.color ? (
-          <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: data.color }} />
+          <div className="token-table-tooltip-header-swatch" style={{ backgroundColor: data.color }} />
         ) : (
-          <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-border/60 opacity-40" />
+          <div className="token-table-tooltip-header-swatch-empty" />
         )}
-        <span className="text-[11px] text-foreground truncate">{data.name}</span>
+        <span className="token-table-tooltip-header-name">{data.name}</span>
       </div>
       {hasColorInfo && (
         <>
-          <div className="h-px bg-hairline mx-2" />
-          <div className="px-3 pt-2 pb-2.5 space-y-1">
+          <div className="token-table-tooltip-divider" />
+          <div className="token-table-tooltip-colorinfo-section">
             {showSpace && (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-[11px] text-faint uppercase tracking-wide">{data.spaceName}</span>
-                <span className="text-[11px] font-mono text-subtle">{data.spaceValue}</span>
+              <div className="token-table-tooltip-colorinfo-row">
+                <span className="token-table-tooltip-var-label">{data.spaceName}</span>
+                <span className="token-table-tooltip-var-value">{data.spaceValue}</span>
               </div>
             )}
             {data.hex && (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-[11px] text-faint uppercase tracking-wide">HEX</span>
-                <span className="text-[11px] font-mono text-subtle">{data.hex}</span>
+              <div className="token-table-tooltip-colorinfo-row">
+                <span className="token-table-tooltip-var-label">HEX</span>
+                <span className="token-table-tooltip-var-value">{data.hex}</span>
               </div>
             )}
             {data.alpha !== undefined && data.alpha < 100 && (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-[11px] text-faint uppercase tracking-wide">ALPHA</span>
-                <span className="text-[11px] font-mono text-subtle">{Math.round(data.alpha)}%</span>
+              <div className="token-table-tooltip-colorinfo-row">
+                <span className="token-table-tooltip-var-label">ALPHA</span>
+                <span className="token-table-tooltip-var-value">{Math.round(data.alpha)}%</span>
               </div>
             )}
           </div>
@@ -1070,9 +1071,9 @@ export function TokenTablePopup({
       const state = getTokenModificationState(token, themeId);
       if (state === 'primary') return null;
       if (state === 'inherited') {
-        return <Crown className="h-3 w-3 shrink-0 text-warning fill-warning" />;
+        return <Crown className="token-table-cell-crown token-table-cell-crown-inherited" />;
       }
-      return <Crown className="h-3 w-3 shrink-0 text-brand fill-brand" />;
+      return <Crown className="token-table-cell-crown token-table-cell-crown-modified" />;
     }
     const node = tokenNodeMap.get(`${token.id}-${themeId}`);
     if (!node) return null;
@@ -1081,10 +1082,10 @@ export function TokenTablePopup({
     if (state === 'primary') return null;
     if (state === 'inherited') {
       // Inherited from primary: yellow crown
-      return <Crown className="h-3 w-3 shrink-0 text-warning fill-warning" />;
+      return <Crown className="token-table-cell-crown token-table-cell-crown-inherited" />;
     }
     // Modified: accent crown
-    return <Crown className="h-3 w-3 shrink-0 text-brand fill-brand" />;
+    return <Crown className="token-table-cell-crown token-table-cell-crown-modified" />;
   };
 
   // ───── Cell click → navigate to node ─────
@@ -1243,17 +1244,17 @@ export function TokenTablePopup({
       const ownerNode = tokenNodeOwnerMap.get(token.id);
       if (!ownerNode) {
         return (
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-ghost text-[11px] flex-1">--</span>
+          <div className="token-table-cell-flex">
+            <span className="token-table-cell-placeholder">--</span>
           </div>
         );
       }
       // Check if this token node token is hidden in this theme (owner node hidden)
       if (isTokenHiddenInTheme(token, allNodes, themeId, primaryThemeId)) {
         return (
-          <div className="flex items-center gap-2 min-w-0">
-            <EyeOff className="h-3 w-3 text-ghost shrink-0" />
-            <span className="text-ghost text-[11px]">Hidden</span>
+          <div className="token-table-cell-flex">
+            <EyeOff className="token-table-cell-hidden-icon" />
+            <span className="token-table-cell-hidden-text">Hidden</span>
           </div>
         );
       }
@@ -1261,10 +1262,10 @@ export function TokenTablePopup({
       const tnModState = getTokenModificationState(token, themeId);
       const tnCrown = (() => {
         if (tnModState === 'primary') return null;
-        if (tnModState === 'inherited') return <Crown className="h-3 w-3 shrink-0 text-warning fill-warning" />;
-        return <Crown className="h-3 w-3 shrink-0 text-brand fill-brand" />;
+        if (tnModState === 'inherited') return <Crown className="token-table-cell-crown token-table-cell-crown-inherited" />;
+        return <Crown className="token-table-cell-crown token-table-cell-crown-modified" />;
       })();
-      const tnDimClass = tnModState === 'inherited' ? 'opacity-50 hover:opacity-100 transition-opacity' : '';
+      const tnDimClass = tnModState === 'inherited' ? 'token-table-cell-dimmed' : '';
       // Check for computed result from advanced logic — show computed color when available
       const themeComputedMap = computedTokensByTheme.get(themeId);
       const computedResult = themeComputedMap?.get(token.id);
@@ -1275,12 +1276,12 @@ export function TokenTablePopup({
           const cs = ownerNode.colorSpace || 'hsl';
           const nativeValue = tokenColorToNativeCSS(c, cs);
           return (
-            <div className={`flex items-center gap-[6px] min-w-0 ${tnDimClass}`}>
+            <div className={`token-table-cell-flex-sm ${tnDimClass}`}>
               <div
-                className="w-[11px] h-[11px] rounded-[2px] shrink-0 border border-[#FBBF24]/30"
+                className="token-table-cell-tn-swatch token-table-cell-tn-swatch-computed"
                 style={{ backgroundColor: cssColor }}
               />
-              <span className="text-[11px] text-subtle truncate min-w-0 flex-1" title={computedResult.expressionText}>
+              <span className="token-table-cell-tn-text-subtle" title={computedResult.expressionText}>
                 {nativeValue}
               </span>
               {tnCrown}
@@ -1295,9 +1296,9 @@ export function TokenTablePopup({
             const refColor = getTokenColorCrossPage(refToken, themeId);
             if (isRefOwnedByTokenNode) {
               return (
-                <div className={`flex items-center gap-[6px] min-w-0 ${tnDimClass}`}>
-                  <Tag className="size-[11px] shrink-0 text-warning/60" />
-                  <span className="text-[11px] text-subtle truncate min-w-0 flex-1" title={computedResult.expressionText}>
+                <div className={`token-table-cell-flex-sm ${tnDimClass}`}>
+                  <Tag className="token-table-cell-tn-tag-icon token-table-cell-tn-tag-warning" />
+                  <span className="token-table-cell-tn-text-subtle" title={computedResult.expressionText}>
                     {refToken.name}
                   </span>
                   {tnCrown}
@@ -1306,12 +1307,12 @@ export function TokenTablePopup({
             } else if (refColor.hasValue) {
               const vtHsl = `hsla(${Math.round(refColor.hue)}, ${Math.round(refColor.saturation)}%, ${Math.round(refColor.lightness)}%, ${refColor.alpha / 100})`;
               return (
-                <div className={`flex items-center gap-[6px] min-w-0 ${tnDimClass}`}>
+                <div className={`token-table-cell-flex-sm ${tnDimClass}`}>
                   <div
-                    className="w-[11px] h-[11px] rounded-[2px] shrink-0 border border-[#FBBF24]/30"
+                    className="token-table-cell-tn-swatch token-table-cell-tn-swatch-computed"
                     style={{ backgroundColor: vtHsl }}
                   />
-                  <span className="text-[11px] text-subtle truncate min-w-0 flex-1" title={computedResult.expressionText}>
+                  <span className="token-table-cell-tn-text-subtle" title={computedResult.expressionText}>
                     {refToken.name}
                   </span>
                   {tnCrown}
@@ -1334,8 +1335,8 @@ export function TokenTablePopup({
       })();
       if (!resolvedValueTokenId) {
         return (
-          <div className={`flex items-center gap-2 min-w-0 ${tnDimClass}`}>
-            <span className="text-ghost text-[11px] flex-1">--</span>
+          <div className={`token-table-cell-flex ${tnDimClass}`}>
+            <span className="token-table-cell-placeholder">--</span>
             {tnCrown}
           </div>
         );
@@ -1344,8 +1345,8 @@ export function TokenTablePopup({
       const valueToken = tokens.find(t => t.id === resolvedValueTokenId);
       if (!valueToken) {
         return (
-          <div className={`flex items-center gap-2 min-w-0 ${tnDimClass}`}>
-            <span className="text-ghost text-[11px] flex-1">--</span>
+          <div className={`token-table-cell-flex ${tnDimClass}`}>
+            <span className="token-table-cell-placeholder">--</span>
             {tnCrown}
           </div>
         );
@@ -1355,9 +1356,9 @@ export function TokenTablePopup({
       if (isValueOwnedByTokenNode) {
         // Value is another token node's token → Tag icon + name
         return (
-          <div className={`flex items-center gap-[6px] min-w-0 ${tnDimClass}`}>
-            <Tag className="size-[11px] shrink-0 text-dim" />
-            <span className="text-[11px] text-faint truncate min-w-0 flex-1">{valueToken.name}</span>
+          <div className={`token-table-cell-flex-sm ${tnDimClass}`}>
+            <Tag className="token-table-cell-tn-tag-icon token-table-cell-tn-tag-dim" />
+            <span className="token-table-cell-tn-text-faint">{valueToken.name}</span>
             {tnCrown}
           </div>
         );
@@ -1367,20 +1368,20 @@ export function TokenTablePopup({
       if (vtColor.hasValue) {
         const vtHsl = `hsla(${Math.round(vtColor.hue)}, ${Math.round(vtColor.saturation)}%, ${Math.round(vtColor.lightness)}%, ${vtColor.alpha / 100})`;
         return (
-          <div className={`flex items-center gap-[6px] min-w-0 ${tnDimClass}`}>
+          <div className={`token-table-cell-flex-sm ${tnDimClass}`}>
             <div
-              className="w-[11px] h-[11px] rounded-[2px] shrink-0 border border-[#ffffff]/[0.08]"
+              className="token-table-cell-tn-swatch token-table-cell-tn-swatch-regular"
               style={{ backgroundColor: vtHsl }}
             />
-            <span className="text-[11px] text-faint truncate min-w-0 flex-1">{valueToken.name}</span>
+            <span className="token-table-cell-tn-text-faint">{valueToken.name}</span>
             {tnCrown}
           </div>
         );
       }
       // Value token has no color data
       return (
-        <div className={`flex items-center gap-[6px] min-w-0 ${tnDimClass}`}>
-          <span className="text-[11px] text-faint truncate min-w-0 flex-1">{valueToken.name}</span>
+        <div className={`token-table-cell-flex-sm ${tnDimClass}`}>
+          <span className="token-table-cell-tn-text-faint">{valueToken.name}</span>
           {tnCrown}
         </div>
       );
@@ -1391,9 +1392,9 @@ export function TokenTablePopup({
     // but this specific theme cell shows a hidden indicator because the token/node is hidden here.
     if (isTokenHiddenInTheme(token, allNodes, themeId, primaryThemeId)) {
       return (
-        <div className="flex items-center gap-2 min-w-0">
-          <EyeOff className="h-3 w-3 text-ghost shrink-0" />
-          <span className="text-ghost text-[11px]">Hidden</span>
+        <div className="token-table-cell-flex">
+          <EyeOff className="token-table-cell-hidden-icon" />
+          <span className="token-table-cell-hidden-text">Hidden</span>
         </div>
       );
     }
@@ -1404,22 +1405,22 @@ export function TokenTablePopup({
     // Determine if this cell should be dimmed:
     // Non-primary themes with inherited (unmodified) tokens are dimmed.
     const isDimmed = theme && !theme.isPrimary && getTokenModificationState(token, themeId) === 'inherited';
-    const dimClass = isDimmed ? 'opacity-50 hover:opacity-100 transition-opacity' : '';
+    const dimClass = isDimmed ? 'token-table-cell-dimmed' : '';
 
     // Non-color tokens
     if (token.type && token.type !== 'color') {
       const val = getNonColorValue(token, themeId);
       if (!val) {
         return (
-          <div className={`flex items-center gap-2 min-w-0 ${dimClass}`}>
-            <span className="text-ghost text-[11px] flex-1">--</span>
+          <div className={`token-table-cell-flex ${dimClass}`}>
+            <span className="token-table-cell-placeholder">--</span>
             {crownIcon}
           </div>
         );
       }
       return (
-        <div className={`flex items-center gap-2 min-w-0 ${dimClass}`}>
-          <span className="text-xs text-subtle font-mono flex-1">{val}</span>
+        <div className={`token-table-cell-flex ${dimClass}`}>
+          <span className="token-table-cell-value-text">{val}</span>
           {crownIcon}
         </div>
       );
@@ -1429,8 +1430,8 @@ export function TokenTablePopup({
     const color = getTokenColor(token, themeId);
     if (!color.hasValue) {
       return (
-        <div className={`flex items-center gap-2 min-w-0 ${dimClass}`}>
-          <span className="text-ghost text-[11px] flex-1">--</span>
+        <div className={`token-table-cell-flex ${dimClass}`}>
+          <span className="token-table-cell-placeholder">--</span>
           {crownIcon}
         </div>
       );
@@ -1446,9 +1447,9 @@ export function TokenTablePopup({
       : hslToHex(color.hue, color.saturation, color.lightness, color.alpha).toUpperCase();
 
     return (
-      <div className={`flex items-center gap-2 min-w-0 ${dimClass}`}>
+      <div className={`token-table-cell-flex ${dimClass}`}>
         <div
-          className="w-[14px] h-[14px] rounded-[3px] shrink-0 border border-[#ffffff]/[0.08] overflow-hidden"
+          className="token-table-cell-swatch"
           style={
             isTransparent
               ? {
@@ -1462,12 +1463,12 @@ export function TokenTablePopup({
         >
           {isTransparent && (
             <div
-              className="absolute inset-0 rounded-[3px]"
+              className="token-table-cell-swatch-transparent-overlay"
               style={{ backgroundColor: hsl }}
             />
           )}
         </div>
-        <span className="text-[11px] text-faint truncate min-w-0 flex-1">
+        <span className="token-table-cell-color-text">
           {displayValue}
         </span>
         {crownIcon}
@@ -1684,11 +1685,11 @@ export function TokenTablePopup({
     <tr
       key={token.id}
       data-table-token-id={token.id}
-      className={`group/row border-b border-[#141414] transition-colors duration-300 ${highlightRowTokenId === token.id ? 'ring-1 ring-inset ring-brand/50 bg-brand/[0.08]' : ''}`}
+      className={`token-table-row ${highlightRowTokenId === token.id ? 'token-table-row-highlight' : ''}`}
     >
-      <td className="py-[7px] pr-3 text-[12px] text-foreground whitespace-nowrap hover:bg-card transition-colors" style={{ paddingLeft: isGroupChild ? 36 : 16 }}>
-        <div className="flex items-center gap-1.5 max-w-[220px]">
-          <span className="truncate" title={token.name}>{token.name}</span>
+      <td className="token-table-row-name-td" style={{ paddingLeft: isGroupChild ? 36 : 16 }}>
+        <div className="token-table-row-name-inner">
+          <span className="token-table-row-name-text" title={token.name}>{token.name}</span>
           {/* LOGIC badge — shown when token has active computed logic in any theme */}
           {(() => {
             const isTokenNodeToken = token.groupId ? tokenNodeGroupIds.has(token.groupId) : false;
@@ -1697,7 +1698,7 @@ export function TokenTablePopup({
             for (const [, themeMap] of computedTokensByTheme) {
               if (themeMap.has(token.id)) {
                 return (
-                  <span className="text-[11px] font-mono text-warning/70 px-1 py-px rounded bg-warning/[0.08] shrink-0 uppercase tracking-wider">
+                  <span className="token-table-row-logic-badge">
                     logic
                   </span>
                 );
@@ -1722,10 +1723,10 @@ export function TokenTablePopup({
             key={theme.id}
             role={canNavigate ? 'button' : undefined}
             tabIndex={canNavigate ? 0 : undefined}
-            className={`py-[7px] px-3 border-l border-[#141414] outline-none transition-colors duration-150 ${
+            className={`token-table-row-cell-td ${
               canNavigate
-                ? 'cursor-pointer hover:bg-[#131c22] active:bg-[#1e2b33] focus-visible:ring-1 focus-visible:ring-brand/50 focus-visible:ring-inset'
-                : 'hover:bg-card'
+                ? 'token-table-row-cell-td-navigable'
+                : 'token-table-row-cell-td-static'
             }`}
             style={isFlashing ? { animation: 'cellFlash 600ms ease-out' } : undefined}
             onClick={canNavigate ? () => handleCellClick(token, theme.id) : undefined}
@@ -1741,7 +1742,7 @@ export function TokenTablePopup({
                   <TooltipPrimitive.Content
                     side="bottom"
                     sideOffset={8}
-                    className="z-[200] bg-secondary/95 backdrop-blur-md border border-hairline rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2"
+                    className="token-table-cell-tooltip-content"
                   >
                     <CellTooltipBody data={tooltipData} />
                   </TooltipPrimitive.Content>
@@ -1772,19 +1773,19 @@ export function TokenTablePopup({
       <tbody key={group.id}>
         {/* Group header */}
         <tr
-          className="border-b border-[#141414] cursor-pointer hover:bg-card transition-colors select-none"
+          className="token-table-group-header-row"
           onClick={() => toggleGroup(group.id)}
         >
-          <td colSpan={totalCols} className="py-[7px] px-4">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 flex items-center justify-center shrink-0">
+          <td colSpan={totalCols} className="token-table-group-header-td">
+            <div className="token-table-group-header-inner">
+              <div className="token-table-group-header-chevron-wrap">
                 {isExpanded
-                  ? <ChevronDown className="h-3 w-3 text-ghost" />
-                  : <ChevronRight className="h-3 w-3 text-ghost" />}
+                  ? <ChevronDown className="token-table-group-header-chevron" />
+                  : <ChevronRight className="token-table-group-header-chevron" />}
               </div>
-              {isTokenNodeGrp && <Tag className="size-[11px] text-dim shrink-0" />}
-              <span className="text-[12px] text-subtle truncate" title={displayName}>{displayName}</span>
-              <span className="text-[11px] text-ghost ml-1">{groupTokens.length}</span>
+              {isTokenNodeGrp && <Tag className="token-table-group-header-tag-icon" />}
+              <span className="token-table-group-header-name" title={displayName}>{displayName}</span>
+              <span className="token-table-group-header-count">{groupTokens.length}</span>
             </div>
           </td>
         </tr>
@@ -1803,23 +1804,15 @@ export function TokenTablePopup({
 
   return (
     <>
-      {/* Keyframe for cell flash animation */}
-      <style>{`
-        @keyframes cellFlash {
-          0%   { background-color: rgba(59,130,246,0.25); }
-          100% { background-color: transparent; }
-        }
-      `}</style>
       {/* Panel — fixed positioned, no full-screen overlay so canvas/panels remain fully interactive */}
       <div
         ref={popupRef}
-        className="fixed flex flex-col rounded-xl overflow-hidden transition-[border-color,box-shadow] duration-150 z-[100]"
+        className="token-table-panel"
         style={{
           left: position.x,
           top: position.y,
           width: size.width,
           height: size.height,
-          background: 'var(--background)',
           boxShadow: isActive
             ? '0 24px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06) inset'
             : '0 16px 48px rgba(0,0,0,.4)',
@@ -1837,63 +1830,63 @@ export function TokenTablePopup({
 
         {/* ─── Header ─── */}
         <div
-          className="flex items-center justify-between px-4 h-[42px] shrink-0 select-none"
-          style={{ borderBottom: '1px solid #141414', cursor: isDragging ? 'grabbing' : 'grab' }}
+          className="token-table-header"
+          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
           onMouseDown={handleDragStart}
         >
-          <div className="flex items-center gap-3 min-w-0">
-            <GripHorizontal className="h-3.5 w-3.5 text-elevated shrink-0" />
-            <span className="text-[11px] text-faint uppercase tracking-widest shrink-0">Token Table</span>
+          <div className="token-table-header-left">
+            <GripHorizontal className="token-table-header-grip" />
+            <span className="token-table-header-title">Token Table</span>
 
             {/* Separator */}
-            <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
+            <div className="token-table-header-separator" />
 
             {/* Page switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   data-dropdown
-                  className="flex items-center gap-1.5 h-[26px] px-2.5 rounded-md bg-card border border-[#1f1f1f] hover:border-border text-[11px] text-faint hover:text-foreground transition-colors outline-none cursor-pointer max-w-[180px]"
+                  className="token-table-header-page-btn"
                 >
-                  <span className="truncate" title={selectedPage?.name || 'Page'}>{selectedPage?.name || 'Page'}</span>
-                  <ChevronDown className="h-3 w-3 opacity-40 shrink-0" />
+                  <span className="token-table-header-page-btn-text" title={selectedPage?.name || 'Page'}>{selectedPage?.name || 'Page'}</span>
+                  <ChevronDown className="token-table-header-page-chevron" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="start"
                 sideOffset={4}
-                className="w-48 bg-card border-elevated p-1 shadow-xl z-[120]"
+                className="token-table-header-page-dropdown"
               >
                 {projectPages.map(pg => (
                   <DropdownMenuItem
                     key={pg.id}
                     onClick={() => setSelectedPageId(pg.id)}
-                    className="text-xs flex items-center justify-between"
+                    className="token-table-header-page-item"
                   >
-                    <span className={`truncate ${pg.id === selectedPageId ? 'text-foreground' : 'text-subtle'}`} title={pg.name}>{pg.name}</span>
-                    {pg.id === selectedPageId && <Check className="h-3 w-3 text-dim" />}
+                    <span className={`token-table-header-page-item-name ${pg.id === selectedPageId ? 'token-table-header-page-item-name-active' : 'token-table-header-page-item-name-inactive'}`} title={pg.name}>{pg.name}</span>
+                    {pg.id === selectedPageId && <Check className="token-table-header-page-item-check" />}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
             {/* Separator */}
-            <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
+            <div className="token-table-header-separator" />
 
             {/* View Filter Tabs */}
-            <div className="flex gap-0.5 shrink-0">
+            <div className="token-table-header-tabs">
               <button
                 data-dropdown
                 onClick={() => setTableViewFilter('tokens')}
-                className={`h-[26px] px-2.5 rounded-md text-[11px] transition-colors cursor-pointer ${
+                className={`token-table-header-tab ${
                   tableViewFilter === 'tokens'
-                    ? 'bg-hairline text-foreground'
-                    : 'text-ghost hover:text-faint hover:bg-[#ffffff]/[0.03]'
+                    ? 'token-table-header-tab-active'
+                    : 'token-table-header-tab-inactive'
                 }`}
               >
                 Tokens
                 {(regularGroups.length + ungroupedTokens.length) > 0 && (
-                  <span className={`ml-1.5 text-[11px] ${tableViewFilter === 'tokens' ? 'text-faint' : 'text-ghost'}`}>
+                  <span className={tableViewFilter === 'tokens' ? 'token-table-header-tab-count-active' : 'token-table-header-tab-count-inactive'}>
                     {regularGroups.length + ungroupedTokens.length}
                   </span>
                 )}
@@ -1901,15 +1894,15 @@ export function TokenTablePopup({
               <button
                 data-dropdown
                 onClick={() => setTableViewFilter('palettes')}
-                className={`h-[26px] px-2.5 rounded-md text-[11px] transition-colors cursor-pointer ${
+                className={`token-table-header-tab ${
                   tableViewFilter === 'palettes'
-                    ? 'bg-hairline text-foreground'
-                    : 'text-ghost hover:text-faint hover:bg-[#ffffff]/[0.03]'
+                    ? 'token-table-header-tab-active'
+                    : 'token-table-header-tab-inactive'
                 }`}
               >
                 Color Palettes
                 {paletteEntries.length > 0 && (
-                  <span className={`ml-1.5 text-[11px] ${tableViewFilter === 'palettes' ? 'text-faint' : 'text-ghost'}`}>
+                  <span className={tableViewFilter === 'palettes' ? 'token-table-header-tab-count-active' : 'token-table-header-tab-count-inactive'}>
                     {paletteEntries.length}
                   </span>
                 )}
@@ -1917,27 +1910,27 @@ export function TokenTablePopup({
             </div>
 
             {/* Separator */}
-            <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
+            <div className="token-table-header-separator" />
 
             {/* Show as Hex dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   data-dropdown
-                  className={`flex items-center gap-1.5 h-[26px] px-2.5 rounded-md border text-[11px] transition-colors outline-none cursor-pointer ${
+                  className={`token-table-header-hex-btn ${
                     hexOverrideSpaces.size > 0
-                      ? 'bg-[#1a1a2e] border-border text-foreground'
-                      : 'bg-card border-[#1f1f1f] hover:border-border text-faint hover:text-foreground'
+                      ? 'token-table-header-hex-btn-active'
+                      : 'token-table-header-hex-btn-inactive'
                   }`}
                 >
                   <span>Show as Hex{hexOverrideSpaces.size > 0 ? ` (${hexOverrideSpaces.size})` : ''}</span>
-                  <ChevronDown className="h-3 w-3 opacity-40" />
+                  <ChevronDown className="token-table-header-hex-chevron" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="start"
                 sideOffset={4}
-                className="w-[180px] bg-card border-elevated p-1 shadow-xl z-[120]"
+                className="token-table-header-hex-dropdown"
                 onCloseAutoFocus={(e) => e.preventDefault()}
               >
                 {([
@@ -1950,14 +1943,14 @@ export function TokenTablePopup({
                       e.preventDefault(); // keep dropdown open
                       toggleHexOverride(key);
                     }}
-                    className="flex items-center gap-2.5 text-xs cursor-pointer focus:bg-hairline focus:text-foreground"
+                    className="token-table-header-hex-item"
                   >
-                    <div className="pointer-events-none shrink-0">
+                    <div className="token-table-header-hex-item-checkbox">
                       <Checkbox
                         checked={hexOverrideSpaces.has(key)}
                       />
                     </div>
-                    <span className={hexOverrideSpaces.has(key) ? 'text-foreground' : 'text-subtle'}>
+                    <span className={hexOverrideSpaces.has(key) ? 'token-table-header-hex-item-label-active' : 'token-table-header-hex-item-label-inactive'}>
                       {label}
                     </span>
                   </DropdownMenuItem>
@@ -1966,28 +1959,28 @@ export function TokenTablePopup({
             </DropdownMenu>
 
             {/* Separator */}
-            <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
+            <div className="token-table-header-separator" />
 
             {/* Logic filter */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   data-dropdown
-                  className={`flex items-center gap-1.5 h-[26px] px-2.5 rounded-md border text-[11px] transition-colors outline-none cursor-pointer ${
+                  className={`token-table-header-logic-btn ${
                     logicFilter !== 'all'
-                      ? 'bg-warning/[0.08] border-warning/20 text-warning'
-                      : 'bg-card border-[#1f1f1f] hover:border-border text-faint hover:text-foreground'
+                      ? 'token-table-header-logic-btn-active'
+                      : 'token-table-header-logic-btn-inactive'
                   }`}
                 >
-                  <Zap className="h-3 w-3" />
+                  <Zap className="token-table-header-logic-icon" />
                   <span>{logicFilter === 'all' ? 'Logic' : logicFilter === 'with-logic' ? 'With Logic' : 'No Logic'}</span>
-                  <ChevronDown className="h-3 w-3 opacity-40" />
+                  <ChevronDown className="token-table-header-hex-chevron" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="start"
                 sideOffset={4}
-                className="w-[160px] bg-card border-elevated p-1 shadow-xl z-[120]"
+                className="token-table-header-logic-dropdown"
               >
                 {([
                   { key: 'all' as const, label: 'All tokens' },
@@ -1997,10 +1990,10 @@ export function TokenTablePopup({
                   <DropdownMenuItem
                     key={key}
                     onClick={() => setLogicFilter(key)}
-                    className="flex items-center justify-between text-xs cursor-pointer"
+                    className="token-table-header-logic-item"
                   >
-                    <span className={logicFilter === key ? 'text-foreground' : 'text-subtle'}>{label}</span>
-                    {logicFilter === key && <Check className="h-3 w-3 text-dim" />}
+                    <span className={logicFilter === key ? 'token-table-header-logic-item-active' : 'token-table-header-logic-item-inactive'}>{label}</span>
+                    {logicFilter === key && <Check className="token-table-header-logic-item-check" />}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -2010,45 +2003,44 @@ export function TokenTablePopup({
           <Tip label="Close Token Table" side="bottom">
           <button
             onClick={onClose}
-            className="flex items-center justify-center w-[26px] h-[26px] rounded-md hover:bg-secondary text-ghost hover:text-foreground transition-colors cursor-pointer"
+            className="token-table-header-close-btn"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="token-table-header-close-icon" />
           </button>
           </Tip>
         </div>
 
         {/* ─── Table ─── */}
         <TooltipPrimitive.Provider delayDuration={400}>
-        <div ref={tableScrollRef} className="flex-1 overflow-auto min-h-0">
-          <table className="w-full border-collapse" style={{ minWidth: Math.max(400, 200 + projectThemes.length * 180) }}>
-            <thead className="sticky top-0 z-[5]">
-              <tr style={{ background: 'var(--background)' }}>
+        <div ref={tableScrollRef} className="token-table-body-scroll">
+          <table className="token-table-body-table" style={{ minWidth: Math.max(400, 200 + projectThemes.length * 180) }}>
+            <thead className="token-table-body-thead">
+              <tr className="token-table-body-thead-row">
                 <th
-                  className="text-left py-2 px-4 text-[11px] text-dim uppercase tracking-wider border-b border-[#141414] select-none cursor-pointer hover:text-subtle transition-colors"
-                  style={{ width: 200, minWidth: 140 }}
+                  className="token-table-body-thead-name-th"
                   onClick={() => toggleSort('name')}
                 >
-                  <div className="flex items-center gap-1.5">
+                  <div className="token-table-body-thead-name-inner">
                     <span>Name</span>
                     {sortField === 'name' ? (
                       sortDir === 'asc'
-                        ? <ArrowUp className="h-3 w-3 text-subtle" />
-                        : <ArrowDown className="h-3 w-3 text-subtle" />
+                        ? <ArrowUp className="token-table-body-thead-sort-icon" />
+                        : <ArrowDown className="token-table-body-thead-sort-icon" />
                     ) : (
-                      <ArrowUpDown className="h-3 w-3 text-ghost group-hover:text-dim" />
+                      <ArrowUpDown className="token-table-body-thead-sort-icon-ghost" />
                     )}
                   </div>
                 </th>
                 {projectThemes.map(theme => (
                   <th
                     key={theme.id}
-                    className="text-left py-2 px-3 text-[11px] text-dim uppercase tracking-wider border-b border-[#141414] border-l border-l-[#141414]"
+                    className="token-table-body-thead-theme-th"
                   >
-                    <div className="flex items-center gap-1.5">
+                    <div className="token-table-body-thead-theme-inner">
                       {theme.isPrimary && (
-                        <Crown className="w-3 h-3 text-warning fill-warning shrink-0" />
+                        <Crown className="token-table-body-thead-crown" />
                       )}
-                      <span className="truncate" title={theme.name}>{theme.name}</span>
+                      <span className="token-table-body-thead-theme-name" title={theme.name}>{theme.name}</span>
                     </div>
                   </th>
                 ))}
@@ -2064,18 +2056,18 @@ export function TokenTablePopup({
               return (
                 <tbody>
                   <tr
-                    className="border-b border-[#141414] cursor-pointer hover:bg-card transition-colors select-none"
+                    className="token-table-group-header-row"
                     onClick={() => toggleGroup('__others__')}
                   >
-                    <td colSpan={totalCols} className="py-[7px] px-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                    <td colSpan={totalCols} className="token-table-group-header-td">
+                      <div className="token-table-group-header-inner">
+                        <div className="token-table-group-header-chevron-wrap">
                           {isOthersExpanded
-                            ? <ChevronDown className="h-3 w-3 text-ghost" />
-                            : <ChevronRight className="h-3 w-3 text-ghost" />}
+                            ? <ChevronDown className="token-table-group-header-chevron" />
+                            : <ChevronRight className="token-table-group-header-chevron" />}
                         </div>
-                        <span className="text-[12px] text-subtle">Others</span>
-                        <span className="text-[11px] text-ghost ml-1">{displayUngrouped.length}</span>
+                        <span className="token-table-group-header-name">Others</span>
+                        <span className="token-table-group-header-count">{displayUngrouped.length}</span>
                       </div>
                     </td>
                   </tr>
@@ -2087,8 +2079,8 @@ export function TokenTablePopup({
 
           {/* Empty state */}
           {!hasVisibleTokens && (
-            <div className="flex flex-col items-center justify-center h-40 gap-2">
-              <span className="text-[11px] text-ghost">
+            <div className="token-table-empty">
+              <span className="token-table-empty-text">
                 {logicFilter !== 'all'
                   ? `No tokens ${logicFilter === 'with-logic' ? 'with' : 'without'} logic on this page`
                   : tableViewFilter === 'palettes'
@@ -2098,7 +2090,7 @@ export function TokenTablePopup({
               {logicFilter !== 'all' && (
                 <button
                   onClick={() => setLogicFilter('all')}
-                  className="text-[11px] text-dim hover:text-subtle underline cursor-pointer transition-colors"
+                  className="token-table-empty-clear-btn"
                 >
                   Clear filter
                 </button>
@@ -2109,12 +2101,9 @@ export function TokenTablePopup({
         </TooltipPrimitive.Provider>
 
         {/* ─── Footer ─── */}
-        <div
-          className="flex items-center justify-between px-4 h-[30px] shrink-0 select-none"
-          style={{ borderTop: '1px solid #141414' }}
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-ghost tabular-nums">
+        <div className="token-table-footer">
+          <div className="token-table-footer-left">
+            <span className="token-table-footer-stats">
               {activeTokenIds.size} token{activeTokenIds.size !== 1 ? 's' : ''}
               {' \u00b7 '}
               {allGroups.length + (ungroupedTokens.length > 0 ? 1 : 0)} group{(allGroups.length + (ungroupedTokens.length > 0 ? 1 : 0)) !== 1 ? 's' : ''}
@@ -2123,24 +2112,24 @@ export function TokenTablePopup({
               {tokensWithLogicIds.size > 0 && (
                 <>
                   {' \u00b7 '}
-                  <span className="text-warning/50">{tokensWithLogicIds.size} with logic</span>
+                  <span className="token-table-footer-logic-count">{tokensWithLogicIds.size} with logic</span>
                 </>
               )}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="token-table-footer-right">
             {viewHistory.length > 0 && (
               <Tip label="Back to Previous View" side="top">
               <button
                 onClick={handleGoBack}
-                className="flex items-center gap-1 h-[20px] px-2 rounded bg-secondary border border-line hover:border-brand/40 hover:bg-[#131c22] text-[11px] text-dim hover:text-[#7B8FFF] transition-colors cursor-pointer"
+                className="token-table-footer-back-btn"
               >
-                <Undo2 className="h-2.5 w-2.5" />
+                <Undo2 className="token-table-footer-back-icon" />
                 <span>Back</span>
               </button>
               </Tip>
             )}
-            <span className="text-[11px] text-ghost uppercase tracking-wider">Read-only</span>
+            <span className="token-table-footer-readonly">Read-only</span>
           </div>
         </div>
       </div>

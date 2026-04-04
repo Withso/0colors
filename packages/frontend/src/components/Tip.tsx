@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import './Tip.css';
 
 /**
  * Lightweight tooltip wrapper — Geist dark theme.
@@ -48,20 +49,7 @@ export function Tip({
           <TooltipPrimitive.Content
             side={side}
             sideOffset={sideOffset}
-            className={`
-              z-[200] px-2.5 py-1.5 rounded-lg
-              text-[12px] tracking-[-0.01em]
-              text-foreground bg-secondary/95 backdrop-blur-md
-              border border-[#ffffff]/[0.08]
-              shadow-[0_4px_16px_rgba(0,0,0,0.45)]
-              animate-in fade-in-0 zoom-in-95
-              data-[side=bottom]:slide-in-from-top-1
-              data-[side=top]:slide-in-from-bottom-1
-              data-[side=left]:slide-in-from-right-1
-              data-[side=right]:slide-in-from-left-1
-              select-none whitespace-nowrap
-              ${className}
-            `}
+            className={`tip-content ${className}`}
           >
             {label}
           </TooltipPrimitive.Content>

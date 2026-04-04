@@ -16,6 +16,7 @@ import {
 import { generateThumbnail } from '../utils/thumbnail-generator';
 import type { ProjectSnapshot } from '../utils/supabase/cloud-sync';
 import type { ColorNode } from '../types';
+import './PublishPopup.css';
 
 interface PublishPopupProps {
   projectId: string;
@@ -171,7 +172,7 @@ export function PublishPopup({
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center"
+      className="publish-overlay"
       style={{
         zIndex: 200000,
         background: mounted ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0)',
@@ -181,7 +182,7 @@ export function PublishPopup({
     >
       <div
         ref={cardRef}
-        className="w-full max-w-[480px] rounded-2xl bg-card shadow-2xl"
+        className="publish-card"
         style={{
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.97)',
@@ -189,37 +190,37 @@ export function PublishPopup({
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-brand/10">
-              <Globe className="h-4 w-4 text-brand" />
+        <div className="publish-header">
+          <div className="publish-header-left">
+            <div className="publish-header-icon-wrapper">
+              <Globe className="publish-header-icon" />
             </div>
             <div>
-              <h2 className="text-[14px] font-semibold text-foreground">
+              <h2 className="publish-header-title">
                 {isEditing ? 'Edit Community Listing' : 'Publish to Community'}
               </h2>
-              <p className="text-[11px] text-dim">
+              <p className="publish-header-subtitle">
                 {isEditing ? 'Update your published project' : 'Share your color system with others'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-elevated text-faint hover:text-white transition-colors cursor-pointer"
+            className="publish-close-btn"
           >
-            <X className="h-4 w-4" />
+            <X className="publish-close-icon" />
           </button>
         </div>
 
         {checking ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-5 w-5 text-dim animate-spin" />
+          <div className="publish-loading">
+            <Loader2 className="publish-loading-icon animate-spin" />
           </div>
         ) : (
-          <div className="px-6 pb-6">
+          <div className="publish-body">
             {/* Title */}
-            <div className="mb-4">
-              <label className="block text-[11px] font-medium text-subtle uppercase tracking-wider mb-1.5">
+            <div className="publish-field">
+              <label className="publish-label">
                 Title
               </label>
               <input
@@ -228,13 +229,13 @@ export function PublishPopup({
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={80}
                 placeholder="My Color System"
-                className="w-full h-10 px-3 rounded-lg bg-background border border-elevated text-[13px] text-foreground placeholder-ghost outline-none focus:border-brand/40 transition-colors"
+                className="publish-input"
               />
             </div>
 
             {/* Description */}
-            <div className="mb-4">
-              <label className="block text-[11px] font-medium text-subtle uppercase tracking-wider mb-1.5">
+            <div className="publish-field">
+              <label className="publish-label">
                 Description
               </label>
               <textarea
@@ -243,31 +244,28 @@ export function PublishPopup({
                 maxLength={500}
                 rows={3}
                 placeholder="A brief description of your color system..."
-                className="w-full px-3 py-2.5 rounded-lg bg-background border border-elevated text-[13px] text-foreground placeholder-ghost outline-none focus:border-brand/40 transition-colors resize-none"
+                className="publish-textarea"
               />
-              <div className="text-right mt-1">
-                <span className="text-[11px] text-ghost">{description.length}/500</span>
+              <div className="publish-char-count">
+                <span className="publish-char-count-text">{description.length}/500</span>
               </div>
             </div>
 
             {/* Allow Remix checkbox */}
-            <div className="mb-6">
-              <label className="flex items-start gap-3 cursor-pointer group">
+            <div className="publish-remix-field">
+              <label className="publish-remix-label">
                 <div
-                  className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${allowRemix
-                      ? 'bg-brand border-brand'
-                      : 'bg-transparent border-[#444] group-hover:border-[#666]'
-                    }`}
+                  className={`publish-checkbox ${allowRemix ? 'publish-checkbox--checked' : 'publish-checkbox--unchecked'}`}
                   onClick={() => setAllowRemix(!allowRemix)}
                 >
-                  {allowRemix && <Check className="h-3 w-3 text-white" />}
+                  {allowRemix && <Check className="publish-checkbox-icon" />}
                 </div>
                 <div onClick={() => setAllowRemix(!allowRemix)}>
-                  <div className="flex items-center gap-1.5">
-                    <Shuffle className="h-3.5 w-3.5 text-brand" />
-                    <span className="text-[13px] text-foreground font-medium">Anyone can remix</span>
+                  <div className="publish-remix-info">
+                    <Shuffle className="publish-remix-info-icon" />
+                    <span className="publish-remix-info-text">Anyone can remix</span>
                   </div>
-                  <p className="text-[11px] text-faint mt-0.5">
+                  <p className="publish-remix-description">
                     Others can duplicate this project to their own workspace. If unchecked, the project is view-only.
                   </p>
                 </div>
@@ -275,21 +273,21 @@ export function PublishPopup({
             </div>
 
             {/* Action buttons */}
-            <div className="flex items-center gap-2">
+            <div className="publish-actions">
               {isEditing && (
                 <>
                   {showUnpublishConfirm ? (
-                    <div className="flex items-center gap-2">
+                    <div className="publish-unpublish-confirm-group">
                       <button
                         onClick={handleUnpublish}
                         disabled={loading}
-                        className="h-9 px-4 rounded-lg bg-[#FF4D6A]/10 border border-[#FF4D6A]/20 text-destructive text-[12px] font-medium hover:bg-[#FF4D6A]/20 transition-colors cursor-pointer disabled:opacity-50"
+                        className="publish-unpublish-confirm-btn"
                       >
-                        {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Confirm Unpublish'}
+                        {loading ? <Loader2 className="publish-unpublish-confirm-spinner animate-spin" /> : 'Confirm Unpublish'}
                       </button>
                       <button
                         onClick={() => setShowUnpublishConfirm(false)}
-                        className="h-9 px-3 rounded-lg text-[12px] text-faint hover:text-muted-foreground transition-colors cursor-pointer"
+                        className="publish-unpublish-cancel-btn"
                       >
                         Cancel
                       </button>
@@ -297,32 +295,32 @@ export function PublishPopup({
                   ) : (
                     <button
                       onClick={() => setShowUnpublishConfirm(true)}
-                      className="h-9 px-3 rounded-lg text-destructive/60 hover:text-destructive text-[12px] transition-colors cursor-pointer flex items-center gap-1.5"
+                      className="publish-unpublish-btn"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="publish-unpublish-icon" />
                       Unpublish
                     </button>
                   )}
                 </>
               )}
 
-              <div className="flex-1" />
+              <div className="publish-spacer" />
 
               <button
                 onClick={onClose}
-                className="h-9 px-4 rounded-lg text-[12px] text-subtle hover:text-white transition-colors cursor-pointer"
+                className="publish-cancel-btn"
               >
                 Cancel
               </button>
               <button
                 onClick={handlePublish}
                 disabled={loading || !title.trim()}
-                className="h-9 px-5 rounded-lg bg-brand text-white text-[12px] font-semibold hover:bg-[#3548CC] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="publish-submit-btn"
               >
                 {loading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="publish-submit-icon animate-spin" />
                 ) : (
-                  <Globe className="h-3.5 w-3.5" />
+                  <Globe className="publish-submit-icon" />
                 )}
                 {isEditing ? 'Update' : 'Publish'}
               </button>

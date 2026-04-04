@@ -4,6 +4,7 @@
 
 import { Check, X, Play, AlertCircle } from 'lucide-react';
 import type { ToolCall, ToolResult } from '../../utils/ai-build-tools';
+import './BuildActionPreview.css';
 
 // ── Pending Actions Card (before execution) ────────────────────────
 
@@ -19,53 +20,50 @@ interface PendingActionsProps {
 export function PendingActionsCard({ toolCalls, descriptions, onApply, onSkip, onCancel, disabled }: PendingActionsProps) {
   return (
     <div
-      className="rounded-lg overflow-hidden my-2"
+      className="build-preview-card"
       style={{
         background: 'rgba(139,143,255,0.06)',
         border: '1px solid rgba(139,143,255,0.15)',
       }}
     >
-      <div className="px-3 py-2 flex items-center justify-between"
+      <div className="build-preview-header"
         style={{ borderBottom: '1px solid rgba(139,143,255,0.1)' }}
       >
-        <span className="text-[11px] font-medium" style={{ color: 'var(--ai)' }}>
+        <span className="build-preview-header-text" style={{ color: 'var(--indigo-400)' }}>
           Proposed Actions ({toolCalls.length})
         </span>
       </div>
 
-      <div className="px-3 py-2 space-y-1">
+      <div className="build-preview-list">
         {descriptions.map((desc, i) => (
-          <div key={i} className="flex items-start gap-2 text-[11px] text-subtle">
-            <span className="text-ghost shrink-0 mt-[1px]">{i + 1}.</span>
+          <div key={i} className="build-preview-item">
+            <span className="build-preview-item-number">{i + 1}.</span>
             <span>{desc}</span>
           </div>
         ))}
       </div>
 
-      <div className="px-3 py-2 flex items-center gap-2"
+      <div className="build-preview-actions"
         style={{ borderTop: '1px solid rgba(139,143,255,0.1)' }}
       >
         <button
           onClick={onApply}
           disabled={disabled}
-          className="flex items-center gap-1 h-6 px-2.5 rounded text-[10px] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-default"
-          style={{ background: 'rgba(139,143,255,0.2)', color: 'var(--ai)' }}
+          className="build-preview-btn build-preview-btn--apply"
         >
           <Play size={9} /> Apply All
         </button>
         <button
           onClick={onSkip}
           disabled={disabled}
-          className="flex items-center gap-1 h-6 px-2.5 rounded text-[10px] cursor-pointer transition-colors hover:bg-white/5 disabled:opacity-50 disabled:cursor-default"
-          style={{ color: 'var(--dim)' }}
+          className="build-preview-btn build-preview-btn--secondary"
         >
           Skip
         </button>
         <button
           onClick={onCancel}
           disabled={disabled}
-          className="flex items-center gap-1 h-6 px-2.5 rounded text-[10px] cursor-pointer transition-colors hover:bg-white/5 disabled:opacity-50 disabled:cursor-default"
-          style={{ color: 'var(--dim)' }}
+          className="build-preview-btn build-preview-btn--secondary"
         >
           Cancel
         </button>
@@ -83,16 +81,16 @@ interface ExecutedActionProps {
 
 export function ExecutedActionItem({ description, result }: ExecutedActionProps) {
   return (
-    <div className="flex items-start gap-2 text-[11px] py-0.5">
+    <div className="build-preview-executed-item">
       {result.success ? (
-        <Check size={10} className="shrink-0 mt-[2px]" style={{ color: '#2BBD68' }} />
+        <Check size={10} className="build-preview-executed-icon" style={{ color: 'var(--green-500)' }} />
       ) : (
-        <AlertCircle size={10} className="shrink-0 mt-[2px]" style={{ color: '#FF4D6A' }} />
+        <AlertCircle size={10} className="build-preview-executed-icon" style={{ color: 'var(--red-500)' }} />
       )}
-      <span style={{ color: result.success ? 'var(--subtle)' : '#FF4D6A' }}>
+      <span style={{ color: result.success ? 'var(--grey-500)' : 'var(--red-500)' }}>
         {description}
         {!result.success && result.error && (
-          <span className="text-ghost ml-1">— {result.error}</span>
+          <span className="build-preview-error-hint"> -- {result.error}</span>
         )}
       </span>
     </div>
@@ -113,21 +111,21 @@ export function ExecutedActionsSummary({ actions }: ExecutedActionsSummaryProps)
 
   return (
     <div
-      className="rounded-lg overflow-hidden my-2"
+      className="build-preview-summary"
       style={{
         background: 'rgba(43,189,104,0.04)',
-        border: `1px solid rgba(${failCount > 0 ? '255,77,106' : '43,189,104'},0.12)`,
+        border: `1px solid rgba(${failCount > 0 ? '255,77,106' : '43,189,104'}, 0.12)`,
       }}
     >
-      <div className="px-3 py-1.5 flex items-center gap-2"
+      <div className="build-preview-summary-header"
         style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
       >
-        <span className="text-[10px] font-medium" style={{ color: failCount > 0 ? '#FF4D6A' : '#2BBD68' }}>
+        <span className="build-preview-summary-label" style={{ color: failCount > 0 ? 'var(--red-500)' : 'var(--green-500)' }}>
           {successCount} action{successCount !== 1 ? 's' : ''} applied
           {failCount > 0 && `, ${failCount} failed`}
         </span>
       </div>
-      <div className="px-3 py-1.5 space-y-0.5">
+      <div className="build-preview-summary-body">
         {actions.map((a, i) => (
           <ExecutedActionItem key={i} description={a.description} result={a.result} />
         ))}
@@ -141,7 +139,7 @@ export function ExecutedActionsSummary({ actions }: ExecutedActionsSummaryProps)
 export function BuildModeBadge() {
   return (
     <span
-      className="text-[9px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-medium"
+      className="build-preview-badge"
       style={{ background: 'rgba(255,160,50,0.12)', color: '#FFA032' }}
     >
       Build

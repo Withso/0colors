@@ -3,6 +3,7 @@ import { ColorNode as ColorNodeType, DesignToken, TokenGroup } from '../../types
 import { Zap, ChevronDown, Check, X, RefreshCw, UserX } from 'lucide-react';
 import { getUniqueTokenName } from '../../utils/nameValidation';
 import { MAX_AUTO_ASSIGN_PREFIX } from '../../utils/textLimits';
+import './AutoAssignTokenMenu.css';
 
 // ─── Suffix helpers ────────────────────────────────────────────
 type SuffixPattern = string; // '1-9' | '10-90' | '100-900' | 'a-z' | 'custom-N' where N is the increment
@@ -620,17 +621,17 @@ export function AutoAssignTokenMenu({
       {/* Menu button — always rendered in the label row */}
       <div
         ref={menuRef}
-        className={`shrink-0 relative transition-opacity duration-150 ${
-          isVisible || popupOpen || menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        className={`auto-assign-wrapper ${
+          isVisible || popupOpen || menuOpen ? '' : 'auto-assign-wrapper-hidden'
         }`}
       >
         <button
-          className={`flex items-center justify-center w-6 h-6 rounded transition-colors ${
+          className={`auto-assign-zap-btn ${
             isEnabled
-              ? 'bg-brand/20 text-brand hover:bg-brand/30'
+              ? 'auto-assign-zap-btn-enabled'
               : popupOpen || menuOpen
-              ? 'bg-border text-foreground'
-              : 'text-faint hover:text-subtle hover:bg-elevated'
+              ? 'auto-assign-zap-btn-open'
+              : 'auto-assign-zap-btn-default'
           }`}
           onClick={handleZapClick}
           onMouseDown={(e) => e.stopPropagation()}
@@ -642,20 +643,20 @@ export function AutoAssignTokenMenu({
         {/* Toggle dropdown (only shown when auto-assign is already ENABLED) */}
         {menuOpen && !popupOpen && (
           <div
-            className="absolute left-full top-0 ml-1.5 bg-secondary border border-elevated rounded-lg shadow-xl z-50 py-1 min-w-[200px]"
+            className="auto-assign-dropdown"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-foreground hover:bg-elevated transition-colors"
+              className="auto-assign-dropdown-item auto-assign-dropdown-item-primary"
               onClick={handleToggle}
             >
               <div
-                className={`w-8 h-[18px] rounded-full flex items-center transition-colors duration-200 ${
-                  isEnabled ? 'bg-brand justify-end' : 'bg-ghost justify-start'
+                className={`auto-assign-toggle ${
+                  isEnabled ? 'auto-assign-toggle-on' : 'auto-assign-toggle-off'
                 }`}
               >
-                <div className="w-3.5 h-3.5 rounded-full bg-white mx-[2px] transition-all duration-200" />
+                <div className="auto-assign-toggle-knob" />
               </div>
               <span>Auto-assign tokens</span>
             </button>
@@ -663,27 +664,27 @@ export function AutoAssignTokenMenu({
               <>
                 {/* Re-apply tokens */}
                 <button
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-subtle hover:bg-elevated hover:text-foreground transition-colors"
+                  className="auto-assign-dropdown-item auto-assign-dropdown-item-secondary"
                   onClick={handleReapply}
                 >
-                  <RefreshCw size={12} className="ml-[6px]" />
+                  <RefreshCw size={12} style={{ marginLeft: 6 }} />
                   <span>Re-apply/Refresh</span>
                   {missingTokenCount > 0 && (
-                    <span className="ml-auto bg-brand/20 text-brand text-[11px] px-1.5 py-0.5 rounded-full">
+                    <span className="auto-assign-badge">
                       {missingTokenCount}
                     </span>
                   )}
                 </button>
                 {/* Edit settings */}
                 <button
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-subtle hover:bg-elevated hover:text-foreground transition-colors"
+                  className="auto-assign-dropdown-item auto-assign-dropdown-item-secondary"
                   onClick={() => {
                     onSelectNode();
                     setMenuOpen(false);
                     setPopupOpen(true);
                   }}
                 >
-                  <span className="ml-[22px]">Edit settings...</span>
+                  <span className="auto-assign-dropdown-indent">Edit settings...</span>
                 </button>
               </>
             )}
@@ -694,7 +695,7 @@ export function AutoAssignTokenMenu({
         {popupOpen && (
           <div
             ref={popupRef}
-            className="absolute z-50 bg-secondary border border-elevated rounded-lg shadow-2xl"
+            className="auto-assign-popup"
             style={{
               left: '100%',
               top: 0,
@@ -705,15 +706,15 @@ export function AutoAssignTokenMenu({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-elevated">
-              <div className="flex items-center gap-1.5">
-                <Zap size={12} className="text-brand" />
-                <span className="text-[12px] text-foreground">
+            <div className="auto-assign-popup-header">
+              <div className="auto-assign-popup-header-left">
+                <Zap size={12} style={{ color: 'var(--indigo-500)' }} />
+                <span className="auto-assign-popup-title">
                   {readOnly ? 'Auto-assign settings' : isEnabled ? 'Edit auto-assign' : 'Auto-assign tokens'}
                 </span>
               </div>
               <button
-                className="text-faint hover:text-subtle transition-colors"
+                className="auto-assign-popup-close"
                 onClick={() => {
                   setPopupOpen(false);
                   setMenuOpen(false);
@@ -723,36 +724,36 @@ export function AutoAssignTokenMenu({
               </button>
             </div>
 
-            <div className="p-3 space-y-3">
+            <div className="auto-assign-popup-body">
               {readOnly ? (
                 <>
                   {/* Read-only view of auto-assign settings */}
-                  <div className="space-y-2.5">
-                    <div className="space-y-0.5">
-                      <div className="text-[11px] text-subtle uppercase tracking-wider">Prefix</div>
-                      <div className="text-[13px] text-foreground font-mono bg-card border border-elevated rounded-md px-2.5 py-1.5">
+                  <div className="auto-assign-field" style={{ gap: 10 }}>
+                    <div className="auto-assign-field">
+                      <div className="auto-assign-label">Prefix</div>
+                      <div className="auto-assign-ro-value">
                         {node.autoAssignPrefix || defaultPrefix}
                       </div>
                     </div>
-                    <div className="space-y-0.5">
-                      <div className="text-[11px] text-subtle uppercase tracking-wider">Suffix</div>
-                      <div className="text-[13px] text-foreground bg-card border border-elevated rounded-md px-2.5 py-1.5">
+                    <div className="auto-assign-field">
+                      <div className="auto-assign-label">Suffix</div>
+                      <div className="auto-assign-ro-plain">
                         {isCustomSuffix(node.autoAssignSuffix || '1-9')
                           ? `Custom (+${getCustomIncrement(node.autoAssignSuffix!)})`
                           : node.autoAssignSuffix || '1-9'}
                       </div>
                     </div>
                     {(node.autoAssignSuffix || '1-9') !== 'a-z' && node.autoAssignStartFrom !== undefined && (
-                      <div className="space-y-0.5">
-                        <div className="text-[11px] text-subtle uppercase tracking-wider">Start from</div>
-                        <div className="text-[13px] text-foreground bg-card border border-elevated rounded-md px-2.5 py-1.5">
+                      <div className="auto-assign-field">
+                        <div className="auto-assign-label">Start from</div>
+                        <div className="auto-assign-ro-plain">
                           {node.autoAssignStartFrom}
                         </div>
                       </div>
                     )}
-                    <div className="space-y-0.5">
-                      <div className="text-[11px] text-subtle uppercase tracking-wider">Group</div>
-                      <div className="text-[13px] text-foreground bg-card border border-elevated rounded-md px-2.5 py-1.5 truncate">
+                    <div className="auto-assign-field">
+                      <div className="auto-assign-label">Group</div>
+                      <div className="auto-assign-ro-plain auto-assign-ro-plain-truncate">
                         {node.autoAssignGroupId
                           ? availableGroups.find(g => g.id === node.autoAssignGroupId)?.name || 'Unknown'
                           : 'Ungrouped'}
@@ -761,37 +762,37 @@ export function AutoAssignTokenMenu({
                   </div>
 
                   {/* Preview */}
-                  <div className="bg-card rounded-md px-2.5 py-2 border border-elevated">
-                    <div className="text-[11px] text-faint uppercase tracking-wider mb-1">Preview</div>
-                    <div className="text-[12px] text-[#aaa] font-mono">
+                  <div className="auto-assign-preview">
+                    <div className="auto-assign-preview-label">Preview</div>
+                    <div className="auto-assign-preview-text">
                       {node.autoAssignPrefix || defaultPrefix}-
                       {getAutoAssignSuffixValue(node.autoAssignSuffix || '1-9', 0, node.autoAssignStartFrom)},{' '}
                       {node.autoAssignPrefix || defaultPrefix}-
                       {getAutoAssignSuffixValue(node.autoAssignSuffix || '1-9', 1, node.autoAssignStartFrom)},{' '}
                       {node.autoAssignPrefix || defaultPrefix}-
                       {getAutoAssignSuffixValue(node.autoAssignSuffix || '1-9', 2, node.autoAssignStartFrom)}
-                      <span className="text-dim">...</span>
+                      <span className="auto-assign-preview-ellipsis">...</span>
                     </div>
                   </div>
 
                   {/* Children count */}
-                  <div className="text-[11px] text-faint flex items-center justify-between">
+                  <div className="auto-assign-children-info">
                     <span>{directChildren.filter(c => !c.autoAssignExcluded).length} children assigned</span>
                     {excludedChildren.length > 0 && (
-                      <span className="text-warning/70">{excludedChildren.length} excluded</span>
+                      <span className="auto-assign-children-excluded">{excludedChildren.length} excluded</span>
                     )}
                   </div>
 
                   {/* Read-only notice */}
-                  <div className="text-[11px] text-dim text-center pt-1 border-t border-elevated">
+                  <div className="auto-assign-ro-notice">
                     Read-only preview
                   </div>
                 </>
               ) : (
                 <>
               {/* Prefix */}
-              <div className="space-y-1">
-                <label className="text-[11px] text-subtle uppercase tracking-wider">
+              <div className="auto-assign-field">
+                <label className="auto-assign-label">
                   Prefix
                 </label>
                 <input
@@ -799,35 +800,33 @@ export function AutoAssignTokenMenu({
                   value={prefix}
                   onChange={(e) => setPrefix(e.target.value)}
                   maxLength={MAX_AUTO_ASSIGN_PREFIX}
-                  className="w-full bg-card border border-elevated rounded-md px-2.5 py-1.5 text-[13px] text-foreground outline-none focus:border-brand transition-colors"
+                  className="auto-assign-text-input"
                   placeholder={defaultPrefix}
                 />
               </div>
 
               {/* Suffix */}
-              <div className="space-y-1">
-                <label className="text-[11px] text-subtle uppercase tracking-wider">
+              <div className="auto-assign-field">
+                <label className="auto-assign-label">
                   Suffix
                 </label>
-                <div className="relative">
+                <div style={{ position: 'relative' }}>
                   <button
-                    className="w-full bg-card border border-elevated rounded-md px-2.5 py-1.5 text-[13px] text-foreground flex items-center justify-between hover:border-dim transition-colors"
+                    className="auto-assign-select-btn"
                     onClick={() => {
                       setSuffixDropdownOpen(!suffixDropdownOpen);
                       setGroupDropdownOpen(false);
                     }}
                   >
                     <span>{isCustomSuffix(suffix) ? `Custom (+${getCustomIncrement(suffix)})` : suffix}</span>
-                    <ChevronDown size={12} className="text-faint" />
+                    <ChevronDown size={12} style={{ color: 'var(--grey-600)' }} />
                   </button>
                   {suffixDropdownOpen && (
-                    <div className="absolute left-0 right-0 top-full mt-1 bg-card border border-elevated rounded-md shadow-xl z-50 py-1">
+                    <div className="auto-assign-options">
                       {PRESET_SUFFIXES.map((opt) => (
                         <button
                           key={opt}
-                          className={`w-full text-left px-2.5 py-1.5 text-[13px] hover:bg-elevated transition-colors flex items-center justify-between ${
-                            suffix === opt ? 'text-brand' : 'text-foreground'
-                          }`}
+                          className={`auto-assign-option ${suffix === opt ? 'auto-assign-option-active' : ''}`}
                           onClick={() => {
                             setSuffix(opt);
                             setSuffixDropdownOpen(false);
@@ -838,19 +837,16 @@ export function AutoAssignTokenMenu({
                         </button>
                       ))}
                       {/* Divider */}
-                      <div className="border-t border-elevated my-1" />
+                      <div className="auto-assign-options-divider" />
                       {/* Custom increment option */}
                       <button
-                        className={`w-full text-left px-2.5 py-1.5 text-[13px] hover:bg-elevated transition-colors flex items-center justify-between ${
-                          isCustomSuffix(suffix) ? 'text-brand' : 'text-foreground'
-                        }`}
+                        className={`auto-assign-option ${isCustomSuffix(suffix) ? 'auto-assign-option-active' : ''}`}
                         onClick={() => {
                           const inc = parseInt(customIncrementInput, 10);
                           const safeInc = isNaN(inc) || inc < 1 ? 5 : inc;
                           setSuffix(`custom-${safeInc}`);
                           setCustomIncrementInput(String(safeInc));
                           setSuffixDropdownOpen(false);
-                          // Focus the increment input after selecting custom
                           setTimeout(() => customIncrementRef.current?.focus(), 50);
                         }}
                       >
@@ -863,8 +859,8 @@ export function AutoAssignTokenMenu({
 
                 {/* Custom increment input (shown when custom suffix is active) */}
                 {isCustomSuffix(suffix) && (
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <label className="text-[11px] text-faint shrink-0">Increment by</label>
+                  <div className="auto-assign-increment-row">
+                    <label className="auto-assign-increment-label">Increment by</label>
                     <input
                       ref={customIncrementRef}
                       type="number"
@@ -880,7 +876,6 @@ export function AutoAssignTokenMenu({
                         }
                       }}
                       onBlur={() => {
-                        // Ensure valid value on blur
                         const parsed = parseInt(customIncrementInput, 10);
                         const safeVal = isNaN(parsed) || parsed < 1 ? 1 : parsed;
                         setCustomIncrementInput(String(safeVal));
@@ -891,7 +886,8 @@ export function AutoAssignTokenMenu({
                           (e.target as HTMLInputElement).blur();
                         }
                       }}
-                      className="flex-1 bg-card border border-elevated rounded-md px-2 py-1 text-[13px] text-foreground outline-none focus:border-brand transition-colors text-center w-16"
+                      className="auto-assign-text-input auto-assign-text-input-center"
+                      style={{ flex: 1 }}
                     />
                   </div>
                 )}
@@ -899,8 +895,8 @@ export function AutoAssignTokenMenu({
 
               {/* Start from (only for numeric suffix patterns, not a-z) */}
               {suffix !== 'a-z' && (
-              <div className="space-y-1">
-                <label className="text-[11px] text-subtle uppercase tracking-wider">
+              <div className="auto-assign-field">
+                <label className="auto-assign-label">
                   Start from
                 </label>
                 <input
@@ -917,7 +913,6 @@ export function AutoAssignTokenMenu({
                     }
                   }}
                   onBlur={() => {
-                    // Ensure valid value on blur; empty = use default
                     if (startFromInput.trim() === '') {
                       setStartFrom(undefined);
                       return;
@@ -933,33 +928,29 @@ export function AutoAssignTokenMenu({
                     }
                   }}
                   placeholder={String(getDefaultStartFrom(suffix))}
-                  className="w-full bg-card border border-elevated rounded-md px-2.5 py-1.5 text-[13px] text-foreground outline-none focus:border-brand transition-colors"
+                  className="auto-assign-text-input"
                 />
-                <div className="text-[11px] text-dim">
+                <div className="auto-assign-hint">
                   Leave empty for default ({getDefaultStartFrom(suffix)})
                 </div>
               </div>
               )}
 
               {/* Group */}
-              <div className="space-y-1">
-                <label className="text-[11px] text-subtle uppercase tracking-wider">
+              <div className="auto-assign-field">
+                <label className="auto-assign-label">
                   Group
                 </label>
-                <div className="relative">
+                <div style={{ position: 'relative' }}>
                   <button
-                    className={`w-full bg-card border rounded-md px-2.5 py-1.5 text-[13px] flex items-center justify-between transition-colors ${
-                      createNewGroup
-                        ? 'border-dim text-faint'
-                        : 'border-elevated text-foreground hover:border-dim'
-                    }`}
+                    className={`auto-assign-select-btn ${createNewGroup ? 'auto-assign-text-input-disabled' : ''}`}
                     disabled={createNewGroup}
                     onClick={() => {
                       setGroupDropdownOpen(!groupDropdownOpen);
                       setSuffixDropdownOpen(false);
                     }}
                   >
-                    <span className="truncate" title={
+                    <span className="auto-assign-option-truncate" title={
                       createNewGroup
                         ? 'New group'
                         : groupId
@@ -972,14 +963,12 @@ export function AutoAssignTokenMenu({
                         ? availableGroups.find((g) => g.id === groupId)?.name || 'Unknown'
                         : 'Ungrouped'}
                     </span>
-                    <ChevronDown size={12} className="text-faint shrink-0" />
+                    <ChevronDown size={12} style={{ color: 'var(--grey-600)', flexShrink: 0 }} />
                   </button>
                   {groupDropdownOpen && !createNewGroup && (
-                    <div className="absolute left-0 right-0 top-full mt-1 bg-card border border-elevated rounded-md shadow-xl z-50 py-1 max-h-[140px] overflow-y-auto">
+                    <div className="auto-assign-options auto-assign-options-scroll">
                       <button
-                        className={`w-full text-left px-2.5 py-1 text-[13px] hover:bg-elevated transition-colors flex items-center justify-between ${
-                          !groupId ? 'text-brand' : 'text-foreground'
-                        }`}
+                        className={`auto-assign-option ${!groupId ? 'auto-assign-option-active' : ''}`}
                         onClick={() => {
                           setGroupId(null);
                           setGroupDropdownOpen(false);
@@ -991,16 +980,14 @@ export function AutoAssignTokenMenu({
                       {availableGroups.map((g) => (
                         <button
                           key={g.id}
-                          className={`w-full text-left px-2.5 py-1 text-[13px] hover:bg-elevated transition-colors flex items-center justify-between ${
-                            groupId === g.id ? 'text-brand' : 'text-foreground'
-                          }`}
+                          className={`auto-assign-option ${groupId === g.id ? 'auto-assign-option-active' : ''}`}
                           onClick={() => {
                             setGroupId(g.id);
                             setGroupDropdownOpen(false);
                           }}
                         >
-                          <span className="truncate" title={g.name}>{g.name}</span>
-                          {groupId === g.id && <Check size={12} className="shrink-0" />}
+                          <span className="auto-assign-option-truncate" title={g.name}>{g.name}</span>
+                          {groupId === g.id && <Check size={12} style={{ flexShrink: 0 }} />}
                         </button>
                       ))}
                     </div>
@@ -1008,22 +995,18 @@ export function AutoAssignTokenMenu({
                 </div>
 
                 {/* New group checkbox */}
-                <label className="flex items-center gap-2 mt-1.5 cursor-pointer group">
+                <div className="auto-assign-checkbox-row">
                   <div
-                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                      createNewGroup
-                        ? 'bg-brand border-brand'
-                        : 'border-dim group-hover:border-faint'
-                    }`}
+                    className={`auto-assign-checkbox ${createNewGroup ? 'auto-assign-checkbox-checked' : ''}`}
                     onClick={() => {
                       setCreateNewGroup(!createNewGroup);
                       setGroupDropdownOpen(false);
                     }}
                   >
-                    {createNewGroup && <Check size={10} className="text-white" />}
+                    {createNewGroup && <Check size={10} style={{ color: 'white' }} />}
                   </div>
                   <span
-                    className="text-[12px] text-subtle group-hover:text-foreground transition-colors select-none"
+                    className="auto-assign-checkbox-label"
                     onClick={() => {
                       setCreateNewGroup(!createNewGroup);
                       setGroupDropdownOpen(false);
@@ -1031,43 +1014,43 @@ export function AutoAssignTokenMenu({
                   >
                     Create new group ({prefix || defaultPrefix})
                   </span>
-                </label>
+                </div>
               </div>
 
               {/* Preview */}
-              <div className="bg-card rounded-md px-2.5 py-2 border border-elevated">
-                <div className="text-[11px] text-faint uppercase tracking-wider mb-1">Preview</div>
-                <div className="text-[12px] text-[#aaa] font-mono">
+              <div className="auto-assign-preview">
+                <div className="auto-assign-preview-label">Preview</div>
+                <div className="auto-assign-preview-text">
                   {prefix || defaultPrefix}-
                   {getAutoAssignSuffixValue(suffix, 0, startFrom)},{' '}
                   {prefix || defaultPrefix}-
                   {getAutoAssignSuffixValue(suffix, 1, startFrom)},{' '}
                   {prefix || defaultPrefix}-
                   {getAutoAssignSuffixValue(suffix, 2, startFrom)}
-                  <span className="text-dim">...</span>
+                  <span className="auto-assign-preview-ellipsis">...</span>
                 </div>
               </div>
 
               {/* Excluded children list */}
               {excludedChildren.length > 0 && (
-                <div className="bg-[#1c1510] rounded-md px-2.5 py-2 border border-[#4a3520]">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <UserX size={10} className="text-warning" />
-                    <span className="text-[11px] text-warning/80 uppercase tracking-wider">
+                <div className="auto-assign-excluded-box">
+                  <div className="auto-assign-excluded-header">
+                    <UserX size={10} style={{ color: 'var(--yellow-400)' }} />
+                    <span className="auto-assign-excluded-title">
                       Excluded nodes ({excludedChildren.length})
                     </span>
                   </div>
-                  <div className="space-y-1">
+                  <div className="auto-assign-excluded-list">
                     {excludedChildren.map((child) => (
                       <div
                         key={child.id}
-                        className="flex items-center justify-between gap-2"
+                        className="auto-assign-excluded-row"
                       >
-                        <span className="text-[11px] text-[#b08040] truncate">
+                        <span className="auto-assign-excluded-name">
                           {child.referenceName || child.id.slice(0, 8)}
                         </span>
                         <button
-                          className="text-[11px] text-subtle hover:text-foreground transition-colors shrink-0 px-1.5 py-0.5 rounded hover:bg-elevated"
+                          className="auto-assign-excluded-reinclude"
                           onClick={() => handleReincludeChild(child.id)}
                         >
                           Re-include
@@ -1080,17 +1063,17 @@ export function AutoAssignTokenMenu({
 
               {/* Change summary (shown when editing enabled config or re-enabling with changed settings) */}
               {hasChanges && (
-                <div className="bg-brand/8 rounded-md px-2.5 py-2 border border-brand/20">
-                  <div className="text-[11px] text-brand/70 uppercase tracking-wider mb-1">
+                <div className="auto-assign-changes">
+                  <div className="auto-assign-changes-title">
                     Changes to apply
                   </div>
                   {changeSummary.map((change, idx) => (
-                    <div key={idx} className="text-[11px] text-brand/90 flex items-start gap-1.5">
-                      <span className="mt-[2px] shrink-0">•</span>
+                    <div key={idx} className="auto-assign-change-item">
+                      <span className="auto-assign-change-bullet">•</span>
                       <span>{change}</span>
                     </div>
                   ))}
-                  <div className="text-[11px] text-subtle mt-1">
+                  <div className="auto-assign-changes-note">
                     Existing auto-assigned tokens will be updated in-place.
                   </div>
                 </div>
@@ -1098,7 +1081,7 @@ export function AutoAssignTokenMenu({
 
               {/* Apply button */}
               <button
-                className="w-full bg-brand hover:bg-[#3548CC] text-white text-[13px] rounded-md py-1.5 transition-colors flex items-center justify-center gap-1.5"
+                className="auto-assign-apply-btn"
                 onClick={handleApply}
               >
                 <Zap size={12} />

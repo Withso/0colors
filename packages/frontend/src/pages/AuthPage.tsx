@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Mail, Lock, User, ArrowRight, Loader2, X, KeyRound, CheckCircle2, MailCheck, RefreshCw } from 'lucide-react';
 import { getSupabaseClient } from '../utils/supabase/client';
+import './AuthPage.css';
 
 interface AuthPageProps {
   onAuth: (session: { accessToken: string; userId: string; email: string; name: string }) => void;
@@ -288,19 +289,11 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
     actionLabel: string,
     onAction: () => void,
   ) => (
-    <div className="px-6 pb-6 pt-5 text-center">
-      <div className="flex justify-center mb-4">{icon}</div>
-      <h3 className="text-[14px] font-semibold text-white mb-1.5">{title}</h3>
-      <p className="text-[12px] text-dim leading-relaxed mb-5 max-w-[280px] mx-auto">{description}</p>
-      <button
-        onClick={onAction}
-        className="w-full py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 cursor-pointer"
-        style={{
-          background: '#e5e5e5',
-          color: '#0a0a0a',
-          boxShadow: '0 2px 12px rgba(255,255,255,0.06)',
-        }}
-      >
+    <div className="auth-confirmation">
+      <div className="auth-confirmation-icon-wrap">{icon}</div>
+      <h3 className="auth-confirmation-title">{title}</h3>
+      <p className="auth-confirmation-desc">{description}</p>
+      <button onClick={onAction} className="auth-action-btn">
         {actionLabel}
       </button>
     </div>
@@ -310,7 +303,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[200000] flex items-center justify-center"
+      className="auth-overlay"
       onClick={(e) => { if (e.target === e.currentTarget) onSkip(); }}
       style={{
         background: mounted ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0)',
@@ -322,7 +315,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
       {/* Popup card */}
       <div
         ref={cardRef}
-        className="relative w-full max-w-[380px] mx-4"
+        className="auth-card-wrapper"
         style={{
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0) scale(1)' : 'translateY(12px) scale(0.97)',
@@ -331,42 +324,32 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
       >
         {/* Glow ring */}
         <div
-          className="absolute -inset-px rounded-[22px] pointer-events-none"
+          className="auth-glow-ring"
           style={{
-            background: 'linear-gradient(135deg, rgba(70,91,254,0.15) 0%, rgba(43,189,104,0.08) 50%, rgba(70,91,254,0.05) 100%)',
+            background: 'linear-gradient(135deg, color-mix(in srgb, var(--indigo-500) 15%, transparent) 0%, color-mix(in srgb, var(--green-500) 8%, transparent) 50%, color-mix(in srgb, var(--indigo-500) 5%, transparent) 100%)',
           }}
         />
 
         {/* Card body */}
-        <div
-          className="relative rounded-[21px] overflow-hidden"
-          style={{
-            background: 'var(--card)',
-            boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset',
-          }}
-        >
+        <div className="auth-card" style={{ boxShadow: '0 24px 80px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03) inset' }}>
           {/* Header with close button */}
-          <div className="flex items-center justify-between px-6 pt-5 pb-1">
-            <div>
-              <h2 className="text-[20px] font-semibold text-white tracking-tight">
-                0<span className="text-dim">colors</span>
+          <div className="auth-header">
+            <div className="auth-header-info">
+              <h2 className="auth-brand-title">
+                0<span className="auth-brand-title-dim">colors</span>
               </h2>
-              <p className="text-[11px] text-ghost mt-0.5">Design token color system</p>
+              <p className="auth-brand-subtitle">Design token color system</p>
             </div>
-            <button
-              onClick={onSkip}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-dim hover:text-muted-foreground hover:bg-secondary transition-all cursor-pointer"
-              title="Close (Esc)"
-            >
-              <X className="w-4 h-4" />
+            <button onClick={onSkip} className="auth-close-btn" title="Close (Esc)">
+              <X className="auth-close-btn-icon" />
             </button>
           </div>
 
           {/* ── Reset link sent ── */}
           {mode === 'reset-sent' ? (
             renderConfirmationScreen(
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(43,189,104,0.1)' }}>
-                <CheckCircle2 className="w-6 h-6 text-success" />
+              <div className="auth-confirmation-icon-box auth-confirmation-icon-box-success">
+                <CheckCircle2 className="auth-confirmation-icon-success" />
               </div>,
               'Check your inbox',
               `We sent a password reset link to ${email}. Click the link in the email to set a new password.`,
@@ -376,23 +359,20 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
 
           /* ── Email verification notice ── */
           ) : mode === 'verify-email' ? (
-            <div className="px-6 pb-6 pt-5 text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(70,91,254,0.1)' }}>
-                  <MailCheck className="w-6 h-6 text-brand" />
+            <div className="auth-verify">
+              <div className="auth-verify-icon-wrap">
+                <div className="auth-confirmation-icon-box auth-confirmation-icon-box-brand">
+                  <MailCheck className="auth-confirmation-icon-brand" />
                 </div>
               </div>
-              <h3 className="text-[14px] font-semibold text-white mb-1.5">Verify your email</h3>
-              <p className="text-[12px] text-dim leading-relaxed mb-5 max-w-[280px] mx-auto">
-                We sent a verification link to <span className="text-subtle">{email}</span>. Please check your inbox (and spam folder) and click the link to activate your account.
+              <h3 className="auth-verify-title">Verify your email</h3>
+              <p className="auth-verify-desc">
+                We sent a verification link to <span className="auth-verify-email-highlight">{email}</span>. Please check your inbox (and spam folder) and click the link to activate your account.
               </p>
 
               {/* Error from resend */}
               {error && (
-                <div
-                  className="px-3 py-2 rounded-xl text-[12px] mb-3"
-                  style={{ background: 'rgba(212, 114, 114, 0.08)', color: 'var(--destructive)' }}
-                >
+                <div className="auth-error auth-error-verify">
                   {error}
                 </div>
               )}
@@ -401,29 +381,28 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
               <button
                 onClick={() => { setResendSuccess(false); handleResendVerificationEmail(); }}
                 disabled={resending || resendCooldown > 0}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 mb-3 cursor-pointer"
+                className="auth-resend-btn"
                 style={{
-                  background: resendSuccess ? 'rgba(43,189,104,0.1)' : 'rgba(70,91,254,0.08)',
-                  color: resendSuccess ? 'var(--success)' : (resendCooldown > 0 ? 'var(--dim)' : 'var(--brand)'),
-                  cursor: (resending || resendCooldown > 0) ? 'not-allowed' : 'pointer',
+                  background: resendSuccess ? 'color-mix(in srgb, var(--green-500) 10%, transparent)' : 'color-mix(in srgb, var(--indigo-500) 8%, transparent)',
+                  color: resendSuccess ? 'var(--green-500)' : (resendCooldown > 0 ? 'var(--grey-600)' : 'var(--indigo-500)'),
                   opacity: (resendCooldown > 0 && !resendSuccess) ? 0.6 : 1,
                 }}
               >
                 {resending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="auth-resend-btn-icon-spin" />
                 ) : resendSuccess && resendCooldown > 0 ? (
                   <>
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <CheckCircle2 className="auth-resend-btn-icon" />
                     Sent! Resend available in {resendCooldown}s
                   </>
                 ) : resendCooldown > 0 ? (
                   <>
-                    <RefreshCw className="w-3.5 h-3.5" />
+                    <RefreshCw className="auth-resend-btn-icon" />
                     Resend available in {resendCooldown}s
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="w-3.5 h-3.5" />
+                    <RefreshCw className="auth-resend-btn-icon" />
                     Resend verification email
                   </>
                 )}
@@ -432,22 +411,14 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
               {/* Already verified? Sign in directly */}
               <button
                 onClick={() => { setMode('signin'); setError(''); setResendSuccess(false); setResendCooldown(0); }}
-                className="w-full py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 mb-2 cursor-pointer"
-                style={{
-                  background: '#e5e5e5',
-                  color: '#0a0a0a',
-                  boxShadow: '0 2px 12px rgba(255,255,255,0.06)',
-                }}
+                className="auth-verified-signin-btn"
               >
                 Already verified? Sign in
               </button>
 
               {/* Continue without account */}
-              <div className="text-center mt-1">
-                <button
-                  onClick={onSkip}
-                  className="text-[11px] text-[#3a3a3a] hover:text-[#666] transition-colors cursor-pointer"
-                >
+              <div className="auth-skip-wrap">
+                <button onClick={onSkip} className="auth-skip-btn">
                   Continue without account
                 </button>
               </div>
@@ -455,31 +426,28 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
 
           /* ── Form views (signin / signup / forgot) ── */
           ) : (
-            <div className="px-6 pb-5 pt-4">
+            <div className="auth-form-container">
               {/* Toggle tabs — shown for signin/signup, hidden for forgot */}
               {mode !== 'forgot' ? (
-                <div
-                  className="flex rounded-xl mb-5 p-1"
-                  style={{ background: '#0a0a0a' }}
-                >
+                <div className="auth-tabs">
                   <button
                     onClick={() => { setMode('signin'); setError(''); }}
-                    className="flex-1 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer"
+                    className="auth-tab"
                     style={{
-                      background: mode === 'signin' ? '#1a1a1a' : 'transparent',
-                      color: mode === 'signin' ? '#e5e5e5' : '#505050',
-                      boxShadow: mode === 'signin' ? '0 2px 8px rgba(0,0,0,0.3)' : 'none',
+                      background: mode === 'signin' ? 'var(--grey-800)' : 'transparent',
+                      color: mode === 'signin' ? 'var(--grey-200)' : 'var(--grey-600)',
+                      boxShadow: mode === 'signin' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none',
                     }}
                   >
                     Sign in
                   </button>
                   <button
                     onClick={() => { setMode('signup'); setError(''); }}
-                    className="flex-1 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer"
+                    className="auth-tab"
                     style={{
-                      background: mode === 'signup' ? '#1a1a1a' : 'transparent',
-                      color: mode === 'signup' ? '#e5e5e5' : '#505050',
-                      boxShadow: mode === 'signup' ? '0 2px 8px rgba(0,0,0,0.3)' : 'none',
+                      background: mode === 'signup' ? 'var(--grey-800)' : 'transparent',
+                      color: mode === 'signup' ? 'var(--grey-200)' : 'var(--grey-600)',
+                      boxShadow: mode === 'signup' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none',
                     }}
                   >
                     Sign up
@@ -487,49 +455,41 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 </div>
               ) : (
                 /* Forgot password sub-header */
-                <div className="mb-5">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <KeyRound className="w-4 h-4 text-brand" />
-                    <span className="text-[14px] font-medium text-white">Reset password</span>
+                <div className="auth-forgot-header">
+                  <div className="auth-forgot-header-row">
+                    <KeyRound className="auth-forgot-header-icon" />
+                    <span className="auth-forgot-header-title">Reset password</span>
                   </div>
-                  <p className="text-[11px] text-dim leading-relaxed">
+                  <p className="auth-forgot-header-desc">
                     Enter your email and we'll send you a link to reset your password.
                   </p>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form onSubmit={handleSubmit} className="auth-form">
                 {/* Name — signup only */}
                 {mode === 'signup' && (
-                  <div className="relative">
-                    <User
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
-                      style={{ color: '#3a3a3a' }}
-                    />
+                  <div className="auth-field">
+                    <User className="auth-field-icon" />
                     <input
                       type="text"
                       placeholder="Name (optional)"
                       value={name}
                       onChange={e => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px] text-white placeholder-[#3a3a3a] outline-none focus:ring-1 focus:ring-[#333] transition-all"
-                      style={{ background: '#0d0d0d' }}
+                      className="auth-input"
                     />
                   </div>
                 )}
 
                 {/* Email — always shown */}
-                <div className="relative">
-                  <Mail
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
-                    style={{ color: '#3a3a3a' }}
-                  />
+                <div className="auth-field">
+                  <Mail className="auth-field-icon" />
                   <input
                     type="email"
                     placeholder="Email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px] text-white placeholder-[#3a3a3a] outline-none focus:ring-1 focus:ring-[#333] transition-all"
-                    style={{ background: '#0d0d0d' }}
+                    className="auth-input"
                     required
                     autoComplete="email"
                     autoFocus
@@ -538,18 +498,14 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
 
                 {/* Password — hidden in forgot mode */}
                 {mode !== 'forgot' && (
-                  <div className="relative">
-                    <Lock
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
-                      style={{ color: '#3a3a3a' }}
-                    />
+                  <div className="auth-field">
+                    <Lock className="auth-field-icon" />
                     <input
                       type="password"
                       placeholder="Password"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px] text-white placeholder-[#3a3a3a] outline-none focus:ring-1 focus:ring-[#333] transition-all"
-                      style={{ background: '#0d0d0d' }}
+                      className="auth-input"
                       required
                       minLength={6}
                       autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
@@ -559,11 +515,11 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
 
                 {/* Forgot password link — sign in mode only */}
                 {mode === 'signin' && (
-                  <div className="flex justify-end -mt-1">
+                  <div className="auth-forgot-link-wrap">
                     <button
                       type="button"
                       onClick={() => { setMode('forgot'); setError(''); }}
-                      className="text-[11px] text-brand/70 hover:text-brand transition-colors cursor-pointer"
+                      className="auth-forgot-link"
                     >
                       Forgot password?
                     </button>
@@ -572,10 +528,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
 
                 {/* Error message */}
                 {error && (
-                  <div
-                    className="px-3 py-2 rounded-xl text-[12px]"
-                    style={{ background: 'rgba(212, 114, 114, 0.08)', color: 'var(--destructive)' }}
-                  >
+                  <div className="auth-error">
                     {error}
                   </div>
                 )}
@@ -584,20 +537,20 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200"
+                  className="auth-submit-btn"
                   style={{
-                    background: loading ? '#1a1a1a' : '#e5e5e5',
-                    color: loading ? '#555' : '#0a0a0a',
+                    background: loading ? 'var(--grey-800)' : 'var(--grey-200)',
+                    color: loading ? 'var(--grey-600)' : 'var(--grey-900)',
                     cursor: loading ? 'not-allowed' : 'pointer',
-                    boxShadow: loading ? 'none' : '0 2px 12px rgba(255,255,255,0.06)',
+                    boxShadow: loading ? 'none' : '0 2px 12px rgba(255, 255, 255, 0.06)',
                   }}
                 >
                   {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="auth-submit-btn-spinner" />
                   ) : (
                     <>
                       {mode === 'signup' ? 'Create account' : mode === 'forgot' ? 'Send reset link' : 'Sign in'}
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="auth-submit-btn-icon" />
                     </>
                   )}
                 </button>
@@ -605,11 +558,11 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
 
               {/* Back to sign in — forgot mode only */}
               {mode === 'forgot' && (
-                <div className="text-center mt-3">
+                <div className="auth-back-link-wrap">
                   <button
                     type="button"
                     onClick={() => { setMode('signin'); setError(''); }}
-                    className="text-[11px] text-dim hover:text-subtle transition-colors cursor-pointer"
+                    className="auth-back-link"
                   >
                     Back to sign in
                   </button>
@@ -617,11 +570,8 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
               )}
 
               {/* Skip link */}
-              <div className="text-center mt-4 pt-3 border-t border-[#141414]">
-                <button
-                  onClick={onSkip}
-                  className="text-[11px] text-[#3a3a3a] hover:text-[#666] transition-colors cursor-pointer"
-                >
+              <div className="auth-footer">
+                <button onClick={onSkip} className="auth-footer-skip-btn">
                   Continue without account (local only)
                 </button>
               </div>

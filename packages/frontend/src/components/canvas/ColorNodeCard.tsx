@@ -10,7 +10,7 @@ import { Switch } from '../ui/switch';
 import { ScrubberInput } from './ScrubberInput';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
-import { cn } from '../ui/utils';
+import './ColorNodeCard.css';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
@@ -52,13 +52,13 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
   }
   
   return (
-    <div 
-      className="inline-flex flex-col items-center gap-1 relative w-fit h-fit"
+    <div
+      className="prop-control-wrapper"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <span 
-        className="text-xs font-medium hover:text-white cursor-pointer px-[2px] py-[0px]"
+      <span
+        className="prop-control-label"
         style={{
           color: isSelected
             ? 'white'
@@ -109,25 +109,23 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
         {label}
       </span>
       {isHovered && (
-        <div 
-          className="absolute bottom-full flex gap-0 items-center justify-center bg-elevated rounded-[5px] shadow-lg z-10"
-        >
+        <div className="prop-control-hover-panel">
           <button
             onClick={(e) => {
               e.stopPropagation();
               toggleLock(prop);
             }}
-            className={`w-6 h-6 rounded transition-colors flex items-center justify-center hover:bg-hairline ${
+            className={`prop-control-btn ${
               node[`lock${prop}` as keyof ColorNode] === true
-                ? 'text-brand'
-                : 'text-muted-foreground'
+                ? 'prop-control-btn--brand'
+                : 'prop-control-btn--muted'
             }`}
             title={node[`lock${prop}` as keyof ColorNode] === true ? 'Locked' : 'Unlocked'}
           >
             {node[`lock${prop}` as keyof ColorNode] === true ? (
-              <Lock className="w-3 h-3" />
+              <Lock className="prop-control-icon" />
             ) : (
-              <Unlock className="w-3 h-3" />
+              <Unlock className="prop-control-icon" />
             )}
           </button>
           <button
@@ -135,17 +133,17 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
               e.stopPropagation();
               toggleDiff(prop);
             }}
-            className="w-6 h-6 rounded transition-colors flex items-center justify-center hover:bg-hairline"
+            className="prop-control-btn"
             style={{
-              color: node[`diff${prop}` as keyof ColorNode] === true ? 'var(--brand)' : 'var(--muted-foreground)'
+              color: node[`diff${prop}` as keyof ColorNode] === true ? 'var(--indigo-500)' : 'var(--grey-400)'
             }}
             title={node[`diff${prop}` as keyof ColorNode] === false ? 'Diff disabled - matches parent' : 'Diff enabled - maintains offset'}
           >
-            <span className="relative inline-block text-[12px]">
-              <Diff className="w-3 h-3" />
+            <span className="prop-control-diff-icon-wrapper">
+              <Diff className="prop-control-icon" />
               {node[`diff${prop}` as keyof ColorNode] === false && (
-                <span className="absolute inset-0 flex items-center justify-center text-[12px]">
-                  <span className="w-full h-[1px] bg-muted-foreground rotate-[-45deg] rounded-full" />
+                <span className="prop-control-strikethrough-overlay">
+                  <span className="prop-control-strikethrough-line" />
                 </span>
               )}
             </span>
@@ -216,15 +214,10 @@ function FxButton({ nodeId, channelKey }: { nodeId: string; channelKey: string }
         window.dispatchEvent(new CustomEvent('openAdvancedPopup', { detail: { nodeId, channelKey } }));
       }}
       onMouseDown={(e) => e.stopPropagation()}
-      className="w-7 h-7 rounded-md flex items-center justify-center cursor-pointer transition-colors hover:brightness-110 shrink-0"
-      style={{
-        backgroundColor: 'rgba(43,189,104,0.12)',
-        border: 'none',
-        color: 'var(--success)',
-      }}
+      className="color-card-fx-btn"
       title="Advanced logic active — click to edit"
     >
-      <span className="text-[11px]" style={{ fontStyle: 'italic', fontWeight: 600 }}>fx</span>
+      <span className="color-card-fx-label">fx</span>
     </button>
   );
 }
@@ -267,7 +260,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
   };
 
   return (
-    <div className={`flex items-center gap-1 ${disabled ? 'opacity-50' : ''}`}>
+    <div className={`prop-control-row ${disabled ? 'prop-control-row--disabled' : ''}`}>
       {hasParent && !hideControls && !isAdvancedActive && (
         <button
           onClick={(e) => {
@@ -276,20 +269,20 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
             onToggleLock();
           }}
           disabled={disabled}
-          className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
-            disabled ? 'cursor-not-allowed text-muted-foreground' :
+          className={`prop-control-lock-btn ${
+            disabled ? 'prop-control-lock-btn--disabled' :
             isLocked
-              ? 'text-brand hover:bg-brand/10'
-              : 'text-muted-foreground hover:text-foreground hover:bg-elevated'
+              ? 'prop-control-lock-btn--locked'
+              : 'prop-control-lock-btn--unlocked'
           }`}
           title={disabled ? 'Inherited — unlink to modify' : isLocked ? 'Locked - will not change with parent' : 'Unlocked - will change with parent'}
         >
-          {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+          {isLocked ? <Lock className="prop-control-lock-icon" /> : <Unlock className="prop-control-lock-icon" />}
         </button>
       )}
-      <Label className={disabled ? 'text-foreground/50' : 'text-foreground'}>{property}</Label>
+      <Label className={disabled ? 'prop-control-label-text--disabled' : 'prop-control-label-text--enabled'}>{property}</Label>
       {hasParent && !hideControls && !isAdvancedActive && (
-        <div className="flex items-center gap-0 ml-auto">
+        <div className="prop-control-diff-group">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -297,19 +290,19 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
               onToggleDiff();
             }}
             disabled={disabled}
-            className={`w-6 h-6 rounded transition-colors flex items-center justify-center ${
-              disabled ? 'cursor-not-allowed text-muted-foreground' :
+            className={`prop-control-diff-btn ${
+              disabled ? 'prop-control-diff-btn--disabled' :
               isDiffEnabled
-                ? 'text-brand hover:bg-brand/10'
-                : 'text-muted-foreground hover:text-foreground hover:bg-elevated'
+                ? 'prop-control-diff-btn--enabled'
+                : 'prop-control-diff-btn--muted'
             }`}
             title={disabled ? 'Inherited — unlink to modify' : isDiffEnabled ? 'Diff enabled - maintains offset from parent' : 'Diff disabled - matches parent exactly'}
           >
-            <span className="relative inline-block">
-              <Diff className="w-3.5 h-3.5" />
+            <span className="prop-control-diff-icon-inline">
+              <Diff className="prop-control-lock-icon" />
               {!isDiffEnabled && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <span className="w-full h-[1px] bg-current rotate-[-45deg] rounded-full" />
+                <span className="prop-control-diff-strikethrough">
+                  <span className="prop-control-diff-strikethrough-line" />
                 </span>
               )}
             </span>
@@ -331,11 +324,11 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => e.stopPropagation()}
-                className="w-[38px] h-[20px] text-[11px] text-center rounded border outline-none"
+                className="prop-control-diff-input"
                 style={{
-                  background: 'var(--secondary)',
-                  borderColor: 'var(--brand)',
-                  color: isDiffEnabled ? 'var(--brand)' : 'var(--faint)',
+                  background: 'var(--grey-800)',
+                  borderColor: 'var(--indigo-500)',
+                  color: isDiffEnabled ? 'var(--indigo-500)' : 'var(--grey-600)',
                 }}
               />
             ) : (
@@ -348,9 +341,9 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
                 disabled={disabled}
-                className="h-[20px] min-w-[28px] px-1 text-[11px] rounded transition-colors hover:bg-elevated"
+                className="prop-control-diff-value-btn"
                 style={{
-                  color: isDiffEnabled ? 'var(--brand)' : 'var(--faint)',
+                  color: isDiffEnabled ? 'var(--indigo-500)' : 'var(--grey-600)',
                 }}
                 title={`Offset from parent: ${formattedDiff}. Click to edit.`}
               >
@@ -560,23 +553,23 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
   }, [isDragging]);
   
   return (
-    <div className="px-4 pb-4 space-y-3">
+    <div className="color-card-palette-controls">
       {/* Name */}
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-[#cfcfcf] text-sm">Name</label>
+        <div className="color-card-palette-name-header">
+          <label className="color-card-palette-label">Name</label>
           <Tip label={node.paletteNameLocked ? "Unlock Name" : "Lock Name"} side="top">
           <button
             onClick={() => {
               onUpdateNode(node.id, { paletteNameLocked: !node.paletteNameLocked });
             }}
-            className="w-6 h-6 rounded transition-colors flex items-center justify-center hover:bg-hairline"
+            className="color-card-palette-lock-btn"
             onMouseDown={(e) => e.stopPropagation()}
           >
             {node.paletteNameLocked ? (
-              <Lock className="w-3.5 h-3.5 text-brand" />
+              <Lock className="prop-control-lock-icon" style={{ color: 'var(--indigo-500)' }} />
             ) : (
-              <Unlock className="w-3.5 h-3.5 text-muted-foreground" />
+              <Unlock className="prop-control-lock-icon" style={{ color: 'var(--grey-400)' }} />
             )}
           </button>
           </Tip>
@@ -587,19 +580,19 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
             setIsManuallyEdited(true);
             onUpdateNode(node.id, { paletteName: e.target.value, paletteNameLocked: true });
           }}
-          className="bg-secondary border-0 text-foreground"
+          className="color-card-palette-input"
           placeholder="Palette name"
           onMouseDown={(e) => e.stopPropagation()}
           maxLength={MAX_PALETTE_NAME}
         />
       </div>
-      
+
       {/* Color Section */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <label className="text-[#cfcfcf] text-sm">Color</label>
-          <div 
-            className="w-8 h-8 rounded-lg border border-secondary"
+        <div className="color-card-palette-color-header">
+          <label className="color-card-palette-label">Color</label>
+          <div
+            className="color-card-palette-swatch"
             style={{ 
               backgroundColor: `hsl(${node.hue}, ${node.saturation}%, ${node.lightness}%)`
             }}
@@ -609,7 +602,7 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
         {/* 2D Color Picker */}
         <div
           ref={pickerRef}
-          className="w-full h-32 rounded-lg mb-3 cursor-crosshair relative overflow-hidden"
+          className="color-card-palette-picker"
           style={{
             background: `
               linear-gradient(to top, black, transparent),
@@ -620,7 +613,7 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
         >
           {/* Picker indicator */}
           <div
-            className="absolute w-3 h-3 border-2 border-white rounded-full shadow-lg pointer-events-none"
+            className="color-card-palette-picker-indicator"
             style={{
               left: `calc(${node.saturation}% - 6px)`,
               top: `calc(${100 - node.lightness}% - 6px)`,
@@ -629,8 +622,8 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
         </div>
         
         {/* Hue Slider */}
-        <div className="mb-2 relative">
-          <div className="h-2 rounded-full relative overflow-hidden" style={{
+        <div className="color-card-palette-slider-wrap">
+          <div className="color-card-palette-slider-track" style={{
             background: 'linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)'
           }} />
           <input
@@ -639,29 +632,29 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
             max="360"
             value={node.hue}
             onChange={(e) => onUpdateNode(node.id, { hue: parseInt(e.target.value) })}
-            className="absolute inset-0 w-full h-2 opacity-0 cursor-pointer"
+            className="color-card-palette-slider-input"
             onMouseDown={(e) => e.stopPropagation()}
           />
         </div>
-        
+
         {/* Alpha Slider */}
-        <div className="mb-3 relative">
-          <div 
-            className="h-2 rounded-full relative overflow-hidden" 
+        <div className="color-card-palette-alpha-wrap">
+          <div
+            className="color-card-palette-slider-track" 
             style={{
               backgroundImage: `
                 linear-gradient(to right, 
                   hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 0),
                   hsl(${node.hue}, ${node.saturation}%, ${node.lightness}%)
                 ),
-                linear-gradient(45deg, #ccc 25%, transparent 25%), 
-                linear-gradient(-45deg, #ccc 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #ccc 75%), 
-                linear-gradient(-45deg, transparent 75%, #ccc 75%)
+                linear-gradient(45deg, var(--grey-300) 25%, transparent 25%),
+                linear-gradient(-45deg, var(--grey-300) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, var(--grey-300) 75%),
+                linear-gradient(-45deg, transparent 75%, var(--grey-300) 75%)
               `,
               backgroundSize: '100% 100%, 8px 8px, 8px 8px, 8px 8px, 8px 8px',
               backgroundPosition: '0 0, 0 0, 4px 0, 4px -4px, 0 4px',
-              backgroundColor: '#fff'
+              backgroundColor: 'var(--grey-50)'
             }}
           />
           <input
@@ -670,26 +663,26 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
             max="100"
             value={node.alpha ?? 100}
             onChange={(e) => onUpdateNode(node.id, { alpha: parseInt(e.target.value) })}
-            className="absolute inset-0 w-full h-2 opacity-0 cursor-pointer"
+            className="color-card-palette-slider-input"
             onMouseDown={(e) => e.stopPropagation()}
           />
         </div>
-        
+
         {/* Color Format Selector */}
-        <div className="flex gap-2">
+        <div className="color-card-palette-format-row">
           <Select value={colorFormat} onValueChange={(value) => onUpdateNode(node.id, { paletteColorFormat: value as any })}>
-            <SelectTrigger className="w-24 bg-secondary border-secondary text-foreground h-9">
+            <SelectTrigger className="color-card-select-trigger color-card-select-trigger-w24">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-secondary border-secondary">
-              <SelectItem value="HEX" className="text-foreground">HEX</SelectItem>
-              <SelectItem value="HSLA" className="text-foreground">HSLA</SelectItem>
-              <SelectItem value="OKLCH" className="text-foreground">OKLCH</SelectItem>
-              <SelectItem value="RGBA" className="text-foreground">RGBA</SelectItem>
+            <SelectContent className="color-card-select-content">
+              <SelectItem value="HEX" className="color-card-select-item">HEX</SelectItem>
+              <SelectItem value="HSLA" className="color-card-select-item">HSLA</SelectItem>
+              <SelectItem value="OKLCH" className="color-card-select-item">OKLCH</SelectItem>
+              <SelectItem value="RGBA" className="color-card-select-item">RGBA</SelectItem>
             </SelectContent>
           </Select>
 
-          <div className="flex-1 bg-secondary border border-secondary rounded-lg px-3 py-2 text-foreground text-sm font-mono">
+          <div className="color-card-palette-format-value">
             {colorFormat === 'HEX' && hexColor}
             {colorFormat === 'HSLA' && `hsla(${Math.round(node.hue)}, ${Math.round(node.saturation)}%, ${Math.round(node.lightness)}%, ${node.alpha / 100})`}
             {colorFormat === 'OKLCH' && node.colorSpace === 'oklch' && `oklch(${node.oklchL}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH}deg)`}
@@ -700,35 +693,35 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
       
       {/* Lightness Mode */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Sun className="h-4 w-4 text-[#cfcfcf]" />
-          <label className="text-[#cfcfcf] text-sm">Lightness mode</label>
+        <div className="color-card-palette-lightness-header">
+          <Sun className="color-card-palette-lightness-icon" />
+          <label className="color-card-palette-label">Lightness mode</label>
         </div>
         <Select value={lightnessMode} onValueChange={(value) => onUpdateNode(node.id, { paletteLightnessMode: value as any })}>
-          <SelectTrigger className="bg-secondary border-secondary text-foreground">
+          <SelectTrigger className="color-card-select-trigger">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-secondary border-secondary">
-            <SelectItem value="linear" className="text-foreground">Linear</SelectItem>
-            <SelectItem value="curve" className="text-foreground">Curve</SelectItem>
+          <SelectContent className="color-card-select-content">
+            <SelectItem value="linear" className="color-card-select-item">Linear</SelectItem>
+            <SelectItem value="curve" className="color-card-select-item">Curve</SelectItem>
           </SelectContent>
         </Select>
       </div>
       
       {/* Lightness Scale */}
       <div>
-        <div className="mb-2 text-[#cfcfcf] text-sm">Lightness scale</div>
-        
-        <div className="space-y-2">
-          <div className="relative pt-2 pb-4">
+        <div className="color-card-palette-scale-label">Lightness scale</div>
+
+        <div className="color-card-palette-scale-section">
+          <div className="color-card-palette-range-wrapper">
             {/* Dual Range Slider */}
-            <div className="relative h-6 flex items-center">
+            <div className="color-card-palette-range-track">
               {/* Track background - dark */}
-              <div className="absolute w-full h-3 bg-secondary rounded-full"></div>
-              
+              <div className="color-card-palette-range-bg"></div>
+
               {/* Gradient track showing lightness progression */}
-              <div 
-                className="absolute h-3 rounded-full overflow-hidden"
+              <div
+                className="color-card-palette-range-gradient"
                 style={{
                   left: `${Math.min(lightnessStart, lightnessEnd)}%`,
                   right: `${100 - Math.max(lightnessStart, lightnessEnd)}%`,
@@ -747,10 +740,10 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
                 return (
                   <div
                     key={i}
-                    className="absolute w-1 h-1 rounded-full -translate-x-1/2 z-10"
+                    className="color-card-palette-range-dot"
                     style={{ 
                       left: `${lightnessValue}%`,
-                      backgroundColor: '#C2C2C2',
+                      backgroundColor: 'var(--grey-300)',
                       boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
                     }}
                   ></div>
@@ -764,10 +757,10 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
                 max="100"
                 value={lightnessStart}
                 onChange={(e) => onUpdateNode(node.id, { paletteLightnessStart: parseInt(e.target.value) })}
-                className="absolute w-full appearance-none bg-transparent cursor-pointer pointer-events-none z-20 palette-range-slider [&::-webkit-slider-thumb]:pointer-events-auto [&::-moz-range-thumb]:pointer-events-auto"
+                className="color-card-palette-range-input palette-range-slider"
                 onMouseDown={(e) => e.stopPropagation()}
               />
-              
+
               {/* End knob */}
               <input
                 type="range"
@@ -775,15 +768,15 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
                 max="100"
                 value={lightnessEnd}
                 onChange={(e) => onUpdateNode(node.id, { paletteLightnessEnd: parseInt(e.target.value) })}
-                className="absolute w-full appearance-none bg-transparent cursor-pointer pointer-events-none z-20 palette-range-slider [&::-webkit-slider-thumb]:pointer-events-auto [&::-moz-range-thumb]:pointer-events-auto"
+                className="color-card-palette-range-input palette-range-slider"
                 onMouseDown={(e) => e.stopPropagation()}
               />
             </div>
             
             {/* Labels */}
-            <div className="flex justify-between items-center mt-2">
-              <span className="text-xs text-[#b4b4b4]">Start: {lightnessStart}%</span>
-              <span className="text-xs text-[#b4b4b4]">End: {lightnessEnd}%</span>
+            <div className="color-card-palette-range-labels">
+              <span className="color-card-palette-range-label">Start: {lightnessStart}%</span>
+              <span className="color-card-palette-range-label">End: {lightnessEnd}%</span>
             </div>
           </div>
         </div>
@@ -791,25 +784,25 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
       
       {/* Naming Pattern */}
       <div>
-        <div className="mb-2 text-[#cfcfcf] text-sm">Naming pattern</div>
+        <div className="color-card-palette-scale-label">Naming pattern</div>
         <Select value={namingPattern} onValueChange={(value) => onUpdateNode(node.id, { paletteNamingPattern: value as any })}>
-          <SelectTrigger className="bg-secondary border-secondary text-foreground">
+          <SelectTrigger className="color-card-select-trigger">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-secondary border-secondary">
-            <SelectItem value="1-9" className="text-foreground">1-9</SelectItem>
-            <SelectItem value="10-90" className="text-foreground">10-90</SelectItem>
-            <SelectItem value="100-900" className="text-foreground">100-900</SelectItem>
-            <SelectItem value="a-z" className="text-foreground">a-z</SelectItem>
+          <SelectContent className="color-card-select-content">
+            <SelectItem value="1-9" className="color-card-select-item">1-9</SelectItem>
+            <SelectItem value="10-90" className="color-card-select-item">10-90</SelectItem>
+            <SelectItem value="100-900" className="color-card-select-item">100-900</SelectItem>
+            <SelectItem value="a-z" className="color-card-select-item">a-z</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Shades Count */}
       <div>
-        <div className="flex justify-between items-center mb-1">
-          <label className="text-[#cfcfcf] text-sm">Shades</label>
-          <span className="text-foreground text-sm">{shadeCount}</span>
+        <div className="color-card-palette-shades-header">
+          <label className="color-card-palette-label">Shades</label>
+          <span className="color-card-palette-shades-value">{shadeCount}</span>
         </div>
         <input
           type="range"
@@ -817,12 +810,12 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
           max="20"
           value={shadeCount}
           onChange={(e) => onUpdateNode(node.id, { paletteShadeCount: parseInt(e.target.value) })}
-          className="w-full h-1 bg-elevated rounded-full appearance-none cursor-pointer palette-range-slider"
+          className="color-card-palette-shades-slider palette-range-slider"
           onMouseDown={(e) => e.stopPropagation()}
         />
-        <div className="flex justify-between mt-2">
-          <span className="text-xs text-muted-foreground">2</span>
-          <span className="text-xs text-muted-foreground">20</span>
+        <div className="color-card-palette-shades-range-labels">
+          <span className="color-card-palette-shades-range-label">2</span>
+          <span className="color-card-palette-shades-range-label">20</span>
         </div>
       </div>
     </div>
@@ -2527,12 +2520,12 @@ export function ColorNodeCard({
       : undefined;
     
     return (
-      <div className="relative transition-opacity" style={shadeInheritedOpacity} data-node-card>
+      <div className="color-card-shade-root" style={shadeInheritedOpacity} data-node-card>
         {/* Left connection ellipse (gray) — always interactive for wire connections */}
-        <div className="absolute -left-[5px] top-1/2 -translate-y-1/2 z-20" style={{ pointerEvents: 'auto' }}>
+        <div className="color-card-shade-left-port">
           <div
-            className={`w-[8px] h-[8px] rounded-full ${
-              isDraggingWire && wireStartButtonType === 'right' ? 'bg-success' : 'bg-dim'
+            className={`color-card-shade-left-dot ${
+              isDraggingWire && wireStartButtonType === 'right' ? 'color-card-shade-left-dot--active' : 'color-card-shade-left-dot--inactive'
             }`}
             title="Connected to palette"
             data-node-id={node.id}
@@ -2548,7 +2541,7 @@ export function ColorNodeCard({
 
         {/* Right connection: + button — always interactive for wire connections */}
         {(
-          <div className="absolute -right-[13px] top-1/2 -translate-y-1/2 z-20" style={{ pointerEvents: 'auto' }}>
+          <div className="color-card-shade-right-port">
             <button
               onMouseDown={(e) => {
                 e.stopPropagation();
@@ -2565,29 +2558,29 @@ export function ColorNodeCard({
                 if (isStructurallyLocked) return;
                 onAddChild(node.id);
               }}
-              className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
+              className={`color-card-shade-right-btn ${
                 isStructurallyLocked
-                  ? 'bg-[#222] cursor-not-allowed'
-                  : isWireHovered && wireStartButtonType === 'left' ? 'bg-success' : 'bg-border hover:bg-border'
+                  ? 'color-card-shade-right-btn--locked'
+                  : isWireHovered && wireStartButtonType === 'left' ? 'color-card-shade-right-btn--success' : 'color-card-shade-right-btn--default'
               }`}
               title={isStructurallyLocked ? "Inherited from primary — unlink from primary to modify" : "Add child node or drag to connect"}
               data-node-id={node.id}
               data-button-type="right-connect"
             >
-              <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
+              <Plus className={`color-card-shade-plus-icon ${isStructurallyLocked ? 'color-card-shade-plus-icon--locked' : isWireHovered && wireStartButtonType === 'left' ? 'color-card-shade-plus-icon--success' : 'color-card-shade-plus-icon--default'}`} />
             </button>
           </div>
         )}
 
         {/* Card body */}
         <div
-          className="rounded-[12px] flex items-center justify-between px-3 relative cursor-move select-none"
+          className="color-card-shade-body"
           style={{
             backgroundColor: hslColor,
             border: isSelected
-              ? '2px solid var(--brand)'
+              ? '2px solid var(--indigo-500)'
               : isMultiSelected
-              ? '2px solid #7B8FFF'
+              ? '2px solid var(--indigo-400)'
               : '2px solid transparent',
             width: `${nodeWidth}px`,
             height: '44px',
@@ -2603,7 +2596,7 @@ export function ColorNodeCard({
           }}
         >
           <span
-            className="font-mono text-xs tracking-wide"
+            className="color-card-shade-hex"
             style={{
               color: isLightBackground ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)',
               textShadow: isLightBackground
@@ -2619,7 +2612,7 @@ export function ColorNodeCard({
             if (!shadeToken) return null;
             return (
               <span
-                className="text-xs truncate ml-2"
+                className="color-card-shade-token-name"
                 style={{
                   color: isLightBackground ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)',
                   textShadow: isLightBackground
@@ -2637,12 +2630,11 @@ export function ColorNodeCard({
   }
 
   return (
-    <div className="relative" data-node-card>
+    <div className="color-card-root" data-node-card>
       {/* Left side + button for parent connection — always interactive for wire connections */}
       {!isPaletteShade && (
-        <div 
-          className="absolute -left-3 top-1/2 -translate-y-1/2 z-20"
-          style={{ pointerEvents: 'auto' }}
+        <div
+          className="color-card-left-port"
           onMouseEnter={() => {
             if (isDraggingWire && wireStartButtonType === 'right' && !isLeftConnectionLocked) {
               onWireHoverStart(node.id);
@@ -2689,22 +2681,22 @@ export function ColorNodeCard({
                 onAddParent(node.id);
               }
             }}
-            className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
+            className={`color-card-connect-btn ${
               isLeftConnectionLocked
-                ? 'bg-[#222] cursor-not-allowed'
-                : isWireHovered && wireStartButtonType === 'right' ? 'bg-success' : 'bg-border hover:bg-border'
+                ? 'color-card-connect-btn--locked'
+                : isWireHovered && wireStartButtonType === 'right' ? 'color-card-connect-btn--success' : 'color-card-connect-btn--default'
             }`}
             title={isLeftConnectionLocked ? "Inherited from primary — unlink from primary to modify" : isConnected ? (isMultiSelected ? "Disconnect from parent (Shift+click to unlink all selected)" : "Disconnect from parent") : "Add new parent or drag to connect"}
             data-node-id={node.id}
             data-button-type="left-connect"
           >
-            <Plus className={`w-3 h-3 ${isLeftConnectionLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'right' ? 'text-white' : 'text-foreground'}`} />
+            <Plus className={`color-card-connect-plus ${isLeftConnectionLocked ? 'color-card-connect-plus--locked' : isWireHovered && wireStartButtonType === 'right' ? 'color-card-connect-plus--success' : 'color-card-connect-plus--default'}`} />
           </button>
-          
+
           {/* Parent selection popup */}
           {showParentSelector && !isConnected && availableParents.length > 0 && (
-            <div className="absolute left-8 top-0 bg-white border border-gray-200 rounded-lg shadow-lg p-2 min-w-[120px] z-30">
-              <div className="text-xs mb-1 px-2 py-1">Select parent:</div>
+            <div className="color-card-parent-selector">
+              <div className="color-card-parent-selector-label">Select parent:</div>
               {availableParents.map((parent) => (
                 <button
                   key={parent.id}
@@ -2713,10 +2705,10 @@ export function ColorNodeCard({
                     onLink(node.id, parent.id);
                     setShowParentSelector(false);
                   }}
-                  className="w-full text-left px-2 py-1 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
+                  className="color-card-parent-option"
                 >
                   <div
-                    className="w-4 h-4 rounded border border-gray-300"
+                    className="color-card-parent-swatch"
                     style={{ backgroundColor: `hsl(${parent.hue}, ${parent.saturation}%, ${parent.lightness}%)` }}
                   />
                   {hslToHex(parent.hue, parent.saturation, parent.lightness)}
@@ -2729,11 +2721,9 @@ export function ColorNodeCard({
 
       {/* Palette shade link connection indicator */}
       {isPaletteShade && (
-        <div 
-          className="absolute -left-[5px] top-1/2 -translate-y-1/2 z-20"
-        >
+        <div className="color-card-palette-shade-link">
           <div
-            className="w-[10px] h-[10px] rounded-full bg-brand flex items-center justify-center"
+            className="color-card-palette-shade-dot"
             title="Connected to palette"
             data-node-id={node.id}
             data-button-type="left-connect"
@@ -2744,8 +2734,7 @@ export function ColorNodeCard({
       {/* Right side top + button for adding child — always interactive for wire connections */}
       {(
         <div
-          className="absolute -right-3 top-6 z-20 flex flex-col gap-1"
-          style={{ pointerEvents: 'auto' }}
+          className="color-card-right-port"
           onMouseEnter={() => {
             if (isDraggingWire && wireStartButtonType === 'left' && !isStructurallyLocked) {
               onWireHoverStart(node.id);
@@ -2771,16 +2760,16 @@ export function ColorNodeCard({
                 if (isStructurallyLocked) return;
                 onAddChild(node.id);
               }}
-              className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
+              className={`color-card-connect-btn ${
                 isStructurallyLocked
-                  ? 'bg-[#222] cursor-not-allowed'
-                  : isWireHovered && wireStartButtonType === 'left' ? 'bg-success' : 'bg-border hover:bg-border'
+                  ? 'color-card-connect-btn--locked'
+                  : isWireHovered && wireStartButtonType === 'left' ? 'color-card-connect-btn--success' : 'color-card-connect-btn--default'
               }`}
               title={isStructurallyLocked ? "Inherited from primary — unlink from primary to modify" : "Add child node or drag to connect"}
               data-node-id={node.id}
               data-button-type="right-connect"
             >
-              <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
+              <Plus className={`color-card-connect-plus ${isStructurallyLocked ? 'color-card-connect-plus--locked' : isWireHovered && wireStartButtonType === 'left' ? 'color-card-connect-plus--success' : 'color-card-connect-plus--default'}`} />
             </button>
           )}
 
@@ -2796,16 +2785,17 @@ export function ColorNodeCard({
                 }
               }}
               disabled={(node.paletteShadeCount || 10) >= 20 || isColorInputDisabled}
-              className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
+              className={`color-card-connect-btn ${
                 isColorInputDisabled
-                  ? 'bg-[#222] cursor-not-allowed'
-                  : (node.paletteShadeCount || 10) >= 20 
-                  ? 'bg-dim cursor-not-allowed opacity-50'
-                  : 'bg-border hover:bg-border'
+                  ? 'color-card-connect-btn--locked'
+                  : (node.paletteShadeCount || 10) >= 20
+                  ? 'color-card-connect-btn--locked'
+                  : 'color-card-connect-btn--default'
               }`}
+              style={(node.paletteShadeCount || 10) >= 20 && !isColorInputDisabled ? { opacity: 0.5 } : undefined}
               title={isColorInputDisabled ? "Inherited from primary — unlink to modify" : (node.paletteShadeCount || 10) >= 20 ? "Maximum shades reached (20)" : "Increase shade count"}
             >
-              <Plus className={`w-3 h-3 ${isColorInputDisabled ? 'text-dim' : (node.paletteShadeCount || 10) >= 20 ? 'text-white' : 'text-foreground'}`} />
+              <Plus className={`color-card-connect-plus ${isColorInputDisabled ? 'color-card-connect-plus--locked' : (node.paletteShadeCount || 10) >= 20 ? 'color-card-connect-plus--success' : 'color-card-connect-plus--default'}`} />
             </button>
           )}
         </div>
@@ -2815,9 +2805,7 @@ export function ColorNodeCard({
 
       {/* Connection port indicator on right top */}
       {(
-        <div
-          className="absolute -right-[5px] top-6 z-10 w-[10px] h-[10px] rounded-full bg-brand"
-        />
+        <div className="color-card-right-port-indicator" />
       )}
 
     <Collapsible open={isColorInputDisabled ? false : isExpanded} onOpenChange={(expanded) => {
@@ -2828,43 +2816,42 @@ export function ColorNodeCard({
     {/* Inheritance Toggle Bar for Non-Primary Themes — flow-based bar above the card */}
     {showInheritanceIcon && !isPrimaryTheme && (
       <div
-        className="w-full z-20 flex items-center gap-2 px-2.5 py-1.5 rounded-[20px] transition-opacity duration-200 mb-1"
-        style={{ backgroundColor: '#0E0E0E', ...(barDimOpacity !== undefined ? { opacity: barDimOpacity } : {}) }}
+        className="color-card-inheritance-bar"
+        style={barDimOpacity !== undefined ? { opacity: barDimOpacity } : undefined}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
         onMouseEnter={() => { if (colorNeedsHover) setHoveredSection('color'); }}
         onMouseLeave={() => { if (hoveredSection === 'color') setHoveredSection(null); }}
       >
-          <Crown 
-            className={`h-3 w-3 shrink-0 transition-all ${
-              isLinkedToPrimary() 
-                ? 'text-warning fill-warning'
+          <Crown
+            className={`color-card-inheritance-crown ${
+              isLinkedToPrimary()
+                ? 'color-card-inheritance-crown--linked'
                 : hasColorBeenModified
-                  ? 'text-brand fill-brand'
-                  : 'text-dim fill-none'
+                  ? 'color-card-inheritance-crown--modified'
+                  : 'color-card-inheritance-crown--unlinked'
             }`}
           />
           <Switch
             checked={isLinkedToPrimary()}
             onCheckedChange={() => handleToggleLinkToPrimary()}
-            className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-border dark:data-[state=unchecked]:bg-border h-[16px] w-[30px] shrink-0"
+            className="color-card-inheritance-switch"
           />
-          <span className={`text-[11px] select-none transition-colors ${
-            isLinkedToPrimary() ? 'text-subtle' : hasColorBeenModified ? 'text-subtle' : 'text-faint'
+          <span className={`color-card-inheritance-label ${
+            isLinkedToPrimary() ? 'color-card-inheritance-label--linked' : hasColorBeenModified ? 'color-card-inheritance-label--modified' : 'color-card-inheritance-label--unlinked'
           }`}>
-            {isLinkedToPrimary() 
-              ? 'Node is inherited' 
-              : hasColorBeenModified 
+            {isLinkedToPrimary()
+              ? 'Node is inherited'
+              : hasColorBeenModified
                 ? 'Node is modified'
                 : 'Node is not-inherited'}
           </span>
         </div>
       )}
-    <Card 
-      className="overflow-visible cursor-default relative rounded-[20px]"
-      style={{ 
-        backgroundColor: '#0e0e0e',
-        border: isSelected ? '1px solid var(--brand)' : isMultiSelected ? '1px solid #7B8FFF' : '1px solid transparent',
+    <Card
+      className="color-card-card"
+      style={{
+        border: isSelected ? '1px solid var(--indigo-500)' : isMultiSelected ? '1px solid var(--indigo-400)' : '1px solid transparent',
         width: `${nodeWidth}px`,
         maxWidth: `${nodeWidth}px`,
         minWidth: `${nodeWidth}px`
@@ -2898,7 +2885,7 @@ export function ColorNodeCard({
     >
       {/* Color Preview */}
       <div
-        className={`h-24 flex items-center justify-center relative rounded-tl-[19px] rounded-tr-[19px] ${isColorSectionDimmed ? 'transition-opacity duration-200' : ''} ${isExpanded ? '' : 'mb-3'}`}
+        className={`color-card-preview ${isColorSectionDimmed ? 'color-card-preview--dimmable' : ''} ${isExpanded ? '' : 'color-card-preview--mb'}`}
         style={{ backgroundColor: hslColor, ...(colorDimOpacity !== undefined ? { opacity: colorDimOpacity } : {}) }}
         onMouseEnter={() => { if (colorNeedsHover) setHoveredSection('color'); }}
         onMouseLeave={() => { if (hoveredSection === 'color') setHoveredSection(null); }}
@@ -2906,10 +2893,10 @@ export function ColorNodeCard({
         {/* Webhook Input Badge (Option B) — shown when Dev Mode is active */}
         {showDevMode && !isPaletteShade && (
           <button
-            className={`absolute top-2 right-2 z-10 flex items-center gap-1 h-5 px-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+            className={`color-card-webhook-badge ${
               node.isWebhookInput
-                ? 'bg-warning/90 text-black shadow-md shadow-warning/30'
-                : 'bg-black/30 text-white/60 hover:bg-black/50 hover:text-white/90 backdrop-blur-sm'
+                ? 'color-card-webhook-badge--active'
+                : 'color-card-webhook-badge--inactive'
             }`}
             onClick={(e) => {
               e.stopPropagation();
@@ -2919,7 +2906,7 @@ export function ColorNodeCard({
             onMouseDown={(e) => e.stopPropagation()}
             title={node.isWebhookInput ? 'Webhook input active — click to disable' : 'Mark as webhook input'}
           >
-            <span className="text-[11px]">{node.isWebhookInput ? '\u26A1' : '\u{1F517}'}</span>
+            <span className="color-card-webhook-emoji">{node.isWebhookInput ? '\u26A1' : '\u{1F517}'}</span>
             {node.isWebhookInput && <span>Webhook</span>}
           </button>
         )}
@@ -2927,27 +2914,27 @@ export function ColorNodeCard({
         {/* Drag handle — only for palette shade nodes (regular nodes use name-based drag) */}
         {isPaletteShade && (
           <div
-            className={`cursor-move absolute top-2 -left-[22px] text-muted-foreground hover:text-foreground transition-all ${
-              isHovered ? 'opacity-100' : 'opacity-0'
+            className={`color-card-drag-handle ${
+              isHovered ? 'color-card-drag-handle--visible' : 'color-card-drag-handle--hidden'
             }`}
             onMouseDown={onMouseDown}
             onClick={(e) => e.stopPropagation()}
             data-drag-handle="true"
             title="Drag to move"
           >
-            <GripVertical className="h-5 w-5" />
+            <GripVertical className="color-card-drag-handle-icon" />
           </div>
         )}
 
         {/* Visibility toggle */}
         {!isPaletteShade && onToggleVisibility && (
           <div
-            className={`absolute top-2 -left-[22px] transition-all cursor-pointer ${
+            className={`color-card-visibility-toggle ${
               isNodeHidden
-                ? 'opacity-100 text-brand'
+                ? 'color-card-visibility-toggle--hidden-node'
                 : isHovered
-                  ? 'opacity-100 text-muted-foreground hover:text-foreground'
-                  : 'opacity-0'
+                  ? 'color-card-visibility-toggle--hover'
+                  : 'color-card-visibility-toggle--idle'
             }`}
             onClick={(e) => {
               e.stopPropagation();
@@ -2955,7 +2942,7 @@ export function ColorNodeCard({
             }}
             title={isNodeHidden ? 'Show node' : 'Hide node'}
           >
-            {isNodeHidden ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+            {isNodeHidden ? <EyeOff className="color-card-visibility-icon" /> : <Eye className="color-card-visibility-icon" />}
           </div>
         )}
 
@@ -2976,8 +2963,8 @@ export function ColorNodeCard({
           
           return hasAnyLockOrDiff;
         })() && (
-          <div 
-            className={`inline-flex w-fit h-fit absolute bottom-2 left-[16px] rounded-[8px] m-[0px] px-[4px] py-[2px] items-center justify-center ${isColorInputDisabled ? 'pointer-events-none opacity-40' : ''}`}
+          <div
+            className={`color-card-compact-controls ${isColorInputDisabled ? 'color-card-compact-controls--disabled' : ''}`}
             style={{
               backgroundColor: (() => {
                 // Calculate luminance to determine if node color is light or dark
@@ -3053,7 +3040,7 @@ export function ColorNodeCard({
               })()
             }}
           >
-            <div className="inline-flex gap-0 items-center justify-center h-fit">
+            <div className="color-card-compact-inner">
               {(() => {
                 if (node.colorSpace === 'hsl') {
                   return [
@@ -3110,14 +3097,14 @@ export function ColorNodeCard({
           </div>
         )}
 
-        <div className="absolute bottom-2 right-2 flex items-center gap-1">
+        <div className="color-card-bottom-controls">
           {/* Only show color picker for non-HEX nodes and non-palette-shade nodes */}
           {node.colorSpace !== 'hex' && !isPaletteShade && (
           <Popover open={showColorPicker} onOpenChange={(open) => { if (!isColorInputDisabled) setShowColorPicker(open); }}>
             <PopoverTrigger asChild>
               <button
                 ref={paletteButtonRef}
-                className={`p-1 rounded transition-colors ${isColorInputDisabled ? 'opacity-30 cursor-not-allowed' : isLightBackground ? 'hover:bg-[#0a0a0a]/10' : 'hover:bg-white/20'}`}
+                className={`color-card-picker-btn ${isColorInputDisabled ? 'color-card-picker-btn--disabled' : isLightBackground ? 'color-card-picker-btn--light' : 'color-card-picker-btn--dark'}`}
                 disabled={isColorInputDisabled}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -3129,13 +3116,13 @@ export function ColorNodeCard({
                   setShowColorPicker(!showColorPicker);
                 }}
               >
-                <Palette 
-                  className={`h-5 w-5 ${isLightBackground ? 'text-[#444444]/80' : 'text-white/80'}`}
+                <Palette
+                  className={`color-card-picker-icon ${isLightBackground ? 'color-card-picker-icon--light' : 'color-card-picker-icon--dark'}`}
                 />
               </button>
             </PopoverTrigger>
-            <PopoverContent 
-              className="w-[268px] p-4 bg-secondary border-secondary"
+            <PopoverContent
+              className="color-card-picker-popover"
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
               onOpenAutoFocus={(e) => e.preventDefault()}
@@ -3144,12 +3131,12 @@ export function ColorNodeCard({
               align="start"
               sideOffset={5}
             >
-              <div className="space-y-3">
+              <div className="color-card-picker-channels">
                 {/* HSL Format */}
                 {node.colorSpace === 'hsl' && (
                   <>
-                    {!isChannelHidden('hue') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('hue') && (<div className="color-card-slider-section">
+                      <div className="color-card-slider-header">
                         <PropertyControls
                           property="Hue"
                           isDiffEnabled={node.diffHue !== false}
@@ -3161,7 +3148,7 @@ export function ColorNodeCard({
                           isAdvancedActive={isChannelAdvanced('hue')}
                           {...dp.hue}
                         />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-slider-input-group">
                           {isChannelAdvanced('hue') && (
                             <FxButton nodeId={node.id} channelKey="hue" />
                           )}
@@ -3172,7 +3159,7 @@ export function ColorNodeCard({
                             max={getSliderRange('hue', 0, 360).max}
                             onChange={handleHueChange}
                             onMouseDown={(e) => e.stopPropagation()}
-                            className="w-16 h-7 text-sm"
+                            className="color-card-scrubber-input"
                             disabled={isColorInputDisabled || isChannelAdvanced('hue')}
                           />
                         </div>
@@ -3186,7 +3173,7 @@ export function ColorNodeCard({
                         onMouseDown={(e) => e.stopPropagation()}
                         onMouseMove={(e) => e.stopPropagation()}
                         disabled={isColorInputDisabled || isChannelAdvanced('hue')}
-                        className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                        className="color-card-range-slider color-slider"
                         style={{
                           background: `linear-gradient(to right, 
                             hsl(0, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%), 
@@ -3202,8 +3189,8 @@ export function ColorNodeCard({
                       />
                     </div>)}
 
-                    {!isChannelHidden('saturation') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('saturation') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls
                           property="Saturation"
                           isDiffEnabled={node.diffSaturation !== false}
@@ -3215,7 +3202,7 @@ export function ColorNodeCard({
                           isAdvancedActive={isChannelAdvanced('saturation')}
                           {...dp.saturation}
                         />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('saturation') && (
                             <FxButton nodeId={node.id} channelKey="saturation" />
                           )}
@@ -3226,7 +3213,7 @@ export function ColorNodeCard({
                             max={getSliderRange('saturation', 0, 100).max}
                             onChange={handleSaturationChange}
                             onMouseDown={(e) => e.stopPropagation()}
-                            className="w-16 h-7 text-sm"
+                            className="color-card-scrubber-input"
                             disabled={isColorInputDisabled || isChannelAdvanced('saturation')}
                           />
                         </div>
@@ -3240,7 +3227,7 @@ export function ColorNodeCard({
                         onMouseDown={(e) => e.stopPropagation()}
                         onMouseMove={(e) => e.stopPropagation()}
                         disabled={isColorInputDisabled || isChannelAdvanced('saturation')}
-                        className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                        className="color-card-range-slider color-slider"
                         style={{
                           background: `linear-gradient(to right, 
                             hsl(${effectiveColors.hue}, 0%, ${effectiveColors.lightness}%), 
@@ -3251,8 +3238,8 @@ export function ColorNodeCard({
                       />
                     </div>)}
 
-                    {!isChannelHidden('lightness') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('lightness') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls
                           property="Lightness"
                           isDiffEnabled={node.diffLightness !== false}
@@ -3264,7 +3251,7 @@ export function ColorNodeCard({
                           isAdvancedActive={isChannelAdvanced('lightness')}
                           {...dp.lightness}
                         />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('lightness') && (
                             <FxButton nodeId={node.id} channelKey="lightness" />
                           )}
@@ -3275,7 +3262,7 @@ export function ColorNodeCard({
                             max={getSliderRange('lightness', 0, 100).max}
                             onChange={handleLightnessChange}
                             onMouseDown={(e) => e.stopPropagation()}
-                            className="w-16 h-7 text-sm"
+                            className="color-card-scrubber-input"
                             disabled={isColorInputDisabled || isChannelAdvanced('lightness')}
                           />
                         </div>
@@ -3289,7 +3276,7 @@ export function ColorNodeCard({
                         onMouseDown={(e) => e.stopPropagation()}
                         onMouseMove={(e) => e.stopPropagation()}
                         disabled={isColorInputDisabled || isChannelAdvanced('lightness')}
-                        className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                        className="color-card-range-slider color-slider"
                         style={{
                           background: `linear-gradient(to right, 
                             hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, 0%), 
@@ -3301,8 +3288,8 @@ export function ColorNodeCard({
                       />
                     </div>)}
 
-                    {!isChannelHidden('alpha') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('alpha') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls
                           property="Alpha"
                           isDiffEnabled={node.diffAlpha !== false}
@@ -3314,7 +3301,7 @@ export function ColorNodeCard({
                           isAdvancedActive={isChannelAdvanced('alpha')}
                           {...dp.alpha}
                         />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('alpha') && (
                             <FxButton nodeId={node.id} channelKey="alpha" />
                           )}
@@ -3325,7 +3312,7 @@ export function ColorNodeCard({
                             max={getSliderRange('alpha', 0, 100).max}
                             onChange={handleAlphaChange}
                             onMouseDown={(e) => e.stopPropagation()}
-                            className="w-16 h-7 text-sm"
+                            className="color-card-scrubber-input"
                             disabled={isColorInputDisabled || isChannelAdvanced('alpha')}
                           />
                         </div>
@@ -3339,18 +3326,18 @@ export function ColorNodeCard({
                         onChange={(e) => handleAlphaChange(Number(e.target.value))}
                         onMouseDown={(e) => e.stopPropagation()}
                         onMouseMove={(e) => e.stopPropagation()}
-                        className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                        className="color-card-range-slider color-slider"
                         style={{
                           backgroundImage: `
                             linear-gradient(to right, 
                               hsla(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%, 0), 
                               hsla(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%, 1)),
-                            linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666),
-                            linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)
+                            linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)),
+                            linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))
                           `,
                           backgroundSize: '100% 100%, 8px 8px, 8px 8px',
                           backgroundPosition: '0 0, 0 0, 4px 4px',
-                          backgroundColor: '#999999',
+                          backgroundColor: 'var(--grey-400)',
                           '--slider-thumb-color': `hsla(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%, ${(effectiveColors.alpha ?? 100) / 100})`,
                           opacity: isChannelAdvanced('alpha') ? 0.3 : 1,
                         } as React.CSSProperties}
@@ -3362,48 +3349,48 @@ export function ColorNodeCard({
                 {/* RGB Format */}
                 {node.colorSpace === 'rgb' && (
                   <>
-                    {!isChannelHidden('red') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('red') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Red" isDiffEnabled={node.diffRed !== false} isLocked={node.lockRed === true} onToggleDiff={() => toggleDiff('Red')} onToggleLock={() => toggleLock('Red')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('red')} {...dp.red} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('red') && (<FxButton nodeId={node.id} channelKey="red" />)}
-                          <ScrubberInput ref={redInputRef} value={effectiveColors.red || 0} min={getSliderRange('red', 0, 255).min} max={getSliderRange('red', 0, 255).max} onChange={handleRedChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('red')} />
+                          <ScrubberInput ref={redInputRef} value={effectiveColors.red || 0} min={getSliderRange('red', 0, 255).min} max={getSliderRange('red', 0, 255).max} onChange={handleRedChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('red')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('red', 0, 255).min} max={getSliderRange('red', 0, 255).max} value={effectiveColors.red || 0} onChange={(e) => handleRedChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('red')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: `linear-gradient(to right, rgb(0, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0}), rgb(255, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0}))`, '--slider-thumb-color': `rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0})`, opacity: isChannelAdvanced('red') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('red', 0, 255).min} max={getSliderRange('red', 0, 255).max} value={effectiveColors.red || 0} onChange={(e) => handleRedChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('red')} className="color-card-range-slider color-slider" style={{ background: `linear-gradient(to right, rgb(0, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0}), rgb(255, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0}))`, '--slider-thumb-color': `rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0})`, opacity: isChannelAdvanced('red') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
 
-                    {!isChannelHidden('green') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('green') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Green" isDiffEnabled={node.diffGreen !== false} isLocked={node.lockGreen === true} onToggleDiff={() => toggleDiff('Green')} onToggleLock={() => toggleLock('Green')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('green')} {...dp.green} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('green') && (<FxButton nodeId={node.id} channelKey="green" />)}
-                          <ScrubberInput ref={greenInputRef} value={effectiveColors.green || 0} min={getSliderRange('green', 0, 255).min} max={getSliderRange('green', 0, 255).max} onChange={handleGreenChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('green')} />
+                          <ScrubberInput ref={greenInputRef} value={effectiveColors.green || 0} min={getSliderRange('green', 0, 255).min} max={getSliderRange('green', 0, 255).max} onChange={handleGreenChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('green')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('green', 0, 255).min} max={getSliderRange('green', 0, 255).max} value={effectiveColors.green || 0} onChange={(e) => handleGreenChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('green')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: `linear-gradient(to right, rgb(${effectiveColors.red || 0}, 0, ${effectiveColors.blue || 0}), rgb(${effectiveColors.red || 0}, 255, ${effectiveColors.blue || 0}))`, '--slider-thumb-color': `rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0})`, opacity: isChannelAdvanced('green') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('green', 0, 255).min} max={getSliderRange('green', 0, 255).max} value={effectiveColors.green || 0} onChange={(e) => handleGreenChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('green')} className="color-card-range-slider color-slider" style={{ background: `linear-gradient(to right, rgb(${effectiveColors.red || 0}, 0, ${effectiveColors.blue || 0}), rgb(${effectiveColors.red || 0}, 255, ${effectiveColors.blue || 0}))`, '--slider-thumb-color': `rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0})`, opacity: isChannelAdvanced('green') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
 
-                    {!isChannelHidden('blue') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('blue') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Blue" isDiffEnabled={node.diffBlue !== false} isLocked={node.lockBlue === true} onToggleDiff={() => toggleDiff('Blue')} onToggleLock={() => toggleLock('Blue')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('blue')} {...dp.blue} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('blue') && (<FxButton nodeId={node.id} channelKey="blue" />)}
-                          <ScrubberInput ref={blueInputRef} value={effectiveColors.blue || 0} min={getSliderRange('blue', 0, 255).min} max={getSliderRange('blue', 0, 255).max} onChange={handleBlueChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('blue')} />
+                          <ScrubberInput ref={blueInputRef} value={effectiveColors.blue || 0} min={getSliderRange('blue', 0, 255).min} max={getSliderRange('blue', 0, 255).max} onChange={handleBlueChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('blue')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('blue', 0, 255).min} max={getSliderRange('blue', 0, 255).max} value={effectiveColors.blue || 0} onChange={(e) => handleBlueChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('blue')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: `linear-gradient(to right, rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, 0), rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, 255))`, '--slider-thumb-color': `rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0})`, opacity: isChannelAdvanced('blue') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('blue', 0, 255).min} max={getSliderRange('blue', 0, 255).max} value={effectiveColors.blue || 0} onChange={(e) => handleBlueChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('blue')} className="color-card-range-slider color-slider" style={{ background: `linear-gradient(to right, rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, 0), rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, 255))`, '--slider-thumb-color': `rgb(${effectiveColors.red || 0}, ${effectiveColors.green || 0}, ${effectiveColors.blue || 0})`, opacity: isChannelAdvanced('blue') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
 
-                    {!isChannelHidden('alpha') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('alpha') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Alpha" isDiffEnabled={node.diffAlpha !== false} isLocked={node.lockAlpha === true} onToggleDiff={() => toggleDiff('Alpha')} onToggleLock={() => toggleLock('Alpha')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('alpha')} {...dp.alpha} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('alpha') && (<FxButton nodeId={node.id} channelKey="alpha" />)}
-                          <ScrubberInput ref={alphaInputRef} value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('alpha')} />
+                          <ScrubberInput ref={alphaInputRef} value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ backgroundImage: `linear-gradient(to right, rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 0), rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 1)), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: '#999999', '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 0), rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
                   </>
                 )}
@@ -3438,12 +3425,12 @@ export function ColorNodeCard({
                   
                   return (
                   <>
-                    {!isChannelHidden('oklchL') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('oklchL') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Light" isDiffEnabled={node.diffOklchL !== false} isLocked={node.lockOklchL === true} onToggleDiff={() => toggleDiff('OklchL')} onToggleLock={() => toggleLock('OklchL')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('oklchL')} {...dp.oklchL} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('oklchL') && (<FxButton nodeId={node.id} channelKey="oklchL" />)}
-                          <ScrubberInput ref={lightnessInputRef} value={effectiveColors.oklchL || 0} min={getSliderRange('oklchL', 0, 100).min} max={getSliderRange('oklchL', 0, 100).max} onChange={handleOklchLChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('oklchL')} />
+                          <ScrubberInput ref={lightnessInputRef} value={effectiveColors.oklchL || 0} min={getSliderRange('oklchL', 0, 100).min} max={getSliderRange('oklchL', 0, 100).max} onChange={handleOklchLChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('oklchL')} />
                         </div>
                       </div>
                       <div style={{ opacity: isChannelAdvanced('oklchL') ? 0.3 : 1, pointerEvents: isChannelAdvanced('oklchL') ? 'none' : undefined }}>
@@ -3451,15 +3438,15 @@ export function ColorNodeCard({
                       </div>
                     </div>)}
 
-                    {!isChannelHidden('oklchC') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1">
+                    {!isChannelHidden('oklchC') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
+                        <div className="color-card-channel-input-group">
                           <PropertyControls property="Chroma" isDiffEnabled={node.diffOklchC !== false} isLocked={node.lockOklchC === true} onToggleDiff={() => toggleDiff('OklchC')} onToggleLock={() => toggleLock('OklchC')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('oklchC')} {...dp.oklchC} />
-                          <span className="text-[11px] text-subtle" title="Actual range: 0-0.4">(0-{((effectiveColors.oklchC || 0) / 100 * 0.4).toFixed(2)})</span>
+                          <span className="color-card-range-hint-11 color-card-range-hint" title="Actual range: 0-0.4">(0-{((effectiveColors.oklchC || 0) / 100 * 0.4).toFixed(2)})</span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('oklchC') && (<FxButton nodeId={node.id} channelKey="oklchC" />)}
-                          <ScrubberInput ref={chromaInputRef} value={effectiveColors.oklchC || 0} min={getSliderRange('oklchC', 0, 100).min} max={getSliderRange('oklchC', 0, 100).max} onChange={handleOklchCChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('oklchC')} />
+                          <ScrubberInput ref={chromaInputRef} value={effectiveColors.oklchC || 0} min={getSliderRange('oklchC', 0, 100).min} max={getSliderRange('oklchC', 0, 100).max} onChange={handleOklchCChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('oklchC')} />
                         </div>
                       </div>
                       <div style={{ opacity: isChannelAdvanced('oklchC') ? 0.3 : 1, pointerEvents: isChannelAdvanced('oklchC') ? 'none' : undefined }}>
@@ -3467,12 +3454,12 @@ export function ColorNodeCard({
                       </div>
                     </div>)}
 
-                    {!isChannelHidden('oklchH') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('oklchH') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Hue" isDiffEnabled={node.diffOklchH !== false} isLocked={node.lockOklchH === true} onToggleDiff={() => toggleDiff('OklchH')} onToggleLock={() => toggleLock('OklchH')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('oklchH')} {...dp.oklchH} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('oklchH') && (<FxButton nodeId={node.id} channelKey="oklchH" />)}
-                          <ScrubberInput ref={hueInputRef} value={effectiveColors.oklchH || 0} min={getSliderRange('oklchH', 0, 360).min} max={getSliderRange('oklchH', 0, 360).max} onChange={handleOklchHChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('oklchH')} />
+                          <ScrubberInput ref={hueInputRef} value={effectiveColors.oklchH || 0} min={getSliderRange('oklchH', 0, 360).min} max={getSliderRange('oklchH', 0, 360).max} onChange={handleOklchHChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('oklchH')} />
                         </div>
                       </div>
                       <div style={{ opacity: isChannelAdvanced('oklchH') ? 0.3 : 1, pointerEvents: isChannelAdvanced('oklchH') ? 'none' : undefined }}>
@@ -3480,15 +3467,15 @@ export function ColorNodeCard({
                       </div>
                     </div>)}
 
-                    {!isChannelHidden('alpha') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('alpha') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Alpha" isDiffEnabled={node.diffAlpha !== false} isLocked={node.lockAlpha === true} onToggleDiff={() => toggleDiff('Alpha')} onToggleLock={() => toggleLock('Alpha')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('alpha')} {...dp.alpha} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('alpha') && (<FxButton nodeId={node.id} channelKey="alpha" />)}
-                          <ScrubberInput ref={alphaInputRef} value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('alpha')} />
+                          <ScrubberInput ref={alphaInputRef} value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ backgroundImage: `linear-gradient(to right, oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / 0), oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / 1)), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: '#999999', '--slider-thumb-color': `oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / 0), oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `oklch(${node.oklchL || 0}% ${(node.oklchC || 0) / 100 * 0.4} ${node.oklchH || 0}deg / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
                   </>
                   );
@@ -3501,48 +3488,48 @@ export function ColorNodeCard({
                   
                   return (
                   <>
-                    {!isChannelHidden('hctH') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('hctH') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Hue" isDiffEnabled={node.diffHctH !== false} isLocked={node.lockHctH === true} onToggleDiff={() => toggleDiff('HctH')} onToggleLock={() => toggleLock('HctH')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('hctH')} {...dp.hctH} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('hctH') && (<FxButton nodeId={node.id} channelKey="hctH" />)}
-                          <ScrubberInput ref={hctHueInputRef} value={Math.round(effectiveColors.hctH || 0)} min={getSliderRange('hctH', 0, 360).min} max={getSliderRange('hctH', 0, 360).max} onChange={handleHctHChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('hctH')} />
+                          <ScrubberInput ref={hctHueInputRef} value={Math.round(effectiveColors.hctH || 0)} min={getSliderRange('hctH', 0, 360).min} max={getSliderRange('hctH', 0, 360).max} onChange={handleHctHChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('hctH')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('hctH', 0, 360).min} max={getSliderRange('hctH', 0, 360).max} value={effectiveColors.hctH || 0} onChange={(e) => handleHctHChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('hctH')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: generateHctHueGradient(effectiveColors.hctC || 0, effectiveColors.hctT || 0), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctH') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('hctH', 0, 360).min} max={getSliderRange('hctH', 0, 360).max} value={effectiveColors.hctH || 0} onChange={(e) => handleHctHChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('hctH')} className="color-card-range-slider color-slider" style={{ background: generateHctHueGradient(effectiveColors.hctC || 0, effectiveColors.hctT || 0), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctH') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
 
-                    {!isChannelHidden('hctC') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('hctC') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Chroma" isDiffEnabled={node.diffHctC !== false} isLocked={node.lockHctC === true} onToggleDiff={() => toggleDiff('HctC')} onToggleLock={() => toggleLock('HctC')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('hctC')} {...dp.hctC} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('hctC') && (<FxButton nodeId={node.id} channelKey="hctC" />)}
-                          <ScrubberInput ref={hctChromaInputRef} value={Math.round(clampedChroma)} min={getSliderRange('hctC', 0, Math.round(hctMaxChroma)).min} max={Math.min(getSliderRange('hctC', 0, 120).max, Math.round(hctMaxChroma))} onChange={handleHctCChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('hctC')} />
+                          <ScrubberInput ref={hctChromaInputRef} value={Math.round(clampedChroma)} min={getSliderRange('hctC', 0, Math.round(hctMaxChroma)).min} max={Math.min(getSliderRange('hctC', 0, 120).max, Math.round(hctMaxChroma))} onChange={handleHctCChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('hctC')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('hctC', 0, 120).min} max={Math.min(getSliderRange('hctC', 0, 120).max, hctMaxChroma)} step="0.1" value={clampedChroma} onChange={(e) => handleHctCChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('hctC')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: generateHctChromaGradient(effectiveColors.hctH || 0, effectiveColors.hctT || 0, hctMaxChroma), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, clampedChroma, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctC') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('hctC', 0, 120).min} max={Math.min(getSliderRange('hctC', 0, 120).max, hctMaxChroma)} step="0.1" value={clampedChroma} onChange={(e) => handleHctCChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('hctC')} className="color-card-range-slider color-slider" style={{ background: generateHctChromaGradient(effectiveColors.hctH || 0, effectiveColors.hctT || 0, hctMaxChroma), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, clampedChroma, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctC') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
 
-                    {!isChannelHidden('hctT') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('hctT') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Tone" isDiffEnabled={node.diffHctT !== false} isLocked={node.lockHctT === true} onToggleDiff={() => toggleDiff('HctT')} onToggleLock={() => toggleLock('HctT')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('hctT')} {...dp.hctT} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('hctT') && (<FxButton nodeId={node.id} channelKey="hctT" />)}
-                          <ScrubberInput ref={hctToneInputRef} value={Math.round(effectiveColors.hctT || 0)} min={getSliderRange('hctT', 0, 100).min} max={getSliderRange('hctT', 0, 100).max} onChange={handleHctTChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('hctT')} />
+                          <ScrubberInput ref={hctToneInputRef} value={Math.round(effectiveColors.hctT || 0)} min={getSliderRange('hctT', 0, 100).min} max={getSliderRange('hctT', 0, 100).max} onChange={handleHctTChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('hctT')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('hctT', 0, 100).min} max={getSliderRange('hctT', 0, 100).max} step="0.1" value={effectiveColors.hctT || 0} onChange={(e) => handleHctTChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('hctT')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: generateHctToneGradient(effectiveColors.hctH || 0, effectiveColors.hctC || 0), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctT') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('hctT', 0, 100).min} max={getSliderRange('hctT', 0, 100).max} step="0.1" value={effectiveColors.hctT || 0} onChange={(e) => handleHctTChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('hctT')} className="color-card-range-slider color-slider" style={{ background: generateHctToneGradient(effectiveColors.hctH || 0, effectiveColors.hctC || 0), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctT') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
 
-                    {!isChannelHidden('alpha') && (<div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
+                    {!isChannelHidden('alpha') && (<div className="color-card-channel-group">
+                      <div className="color-card-channel-header">
                         <PropertyControls property="Alpha" isDiffEnabled={node.diffAlpha !== false} isLocked={node.lockAlpha === true} onToggleDiff={() => toggleDiff('Alpha')} onToggleLock={() => toggleLock('Alpha')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('alpha')} {...dp.alpha} />
-                        <div className="flex items-center gap-1">
+                        <div className="color-card-channel-input-group">
                           {isChannelAdvanced('alpha') && (<FxButton nodeId={node.id} channelKey="alpha" />)}
-                          <ScrubberInput ref={alphaInputRef} value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isColorInputDisabled || isChannelAdvanced('alpha')} />
+                          <ScrubberInput ref={alphaInputRef} value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isColorInputDisabled || isChannelAdvanced('alpha')} />
                         </div>
                       </div>
-                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('alpha')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ backgroundImage: (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `linear-gradient(to right, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0), rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)`; })(), backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: '#999999', '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(node.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                      <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isColorInputDisabled || isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `linear-gradient(to right, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0), rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`; })(), backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(node.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
                     </div>)}
                   </>
                   );
@@ -3556,7 +3543,7 @@ export function ColorNodeCard({
             <CollapsibleTrigger asChild>
               <Tip label={isExpanded ? 'Collapse Controls' : 'Expand Controls'} side="top" enabled={!isColorInputDisabled}>
               <button
-                className={`p-1 rounded transition-colors ${isColorInputDisabled ? 'opacity-30 cursor-not-allowed' : isLightBackground ? 'hover:bg-[#0a0a0a]/10' : 'hover:bg-white/20'}`}
+                className={`color-card-chevron-btn ${isColorInputDisabled ? 'color-card-chevron-btn--disabled' : isLightBackground ? 'color-card-chevron-btn--light' : 'color-card-chevron-btn--dark'}`}
                 disabled={isColorInputDisabled}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -3565,18 +3552,18 @@ export function ColorNodeCard({
                   setIsExpanded(!isExpanded);
                 }}
               >
-                <ChevronDown 
-                  className={`h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''} ${isLightBackground ? 'text-[#444444]/80' : 'text-white/80'}`}
+                <ChevronDown
+                  className={`color-card-chevron-icon ${isExpanded ? 'color-card-chevron-icon--expanded' : ''} ${isLightBackground ? 'color-card-chevron-icon--light' : 'color-card-chevron-icon--dark'}`}
                 />
               </button>
               </Tip>
             </CollapsibleTrigger>
           )}
         </div>
-        <div className="flex flex-col items-center">
+        <div className="color-card-preview-col">
           {isOklchOutOfGamut && (
             <span
-              className="text-[11px] tracking-wider uppercase drop-shadow-md leading-none"
+              className="color-card-srgb-fallback"
               style={{
                 color: isLightBackground ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
               }}
@@ -3584,18 +3571,18 @@ export function ColorNodeCard({
               sRGB fallback
             </span>
           )}
-          <div className="relative flex items-center gap-1">
+          <div className="color-card-hex-area">
             {/* Copy hex button — absolutely positioned left of hex, visible on hover */}
             <Tip label="Copy Hex" side="left" enabled={isHovered && !copiedHex}>
             <button
-              className={`absolute right-full mr-1 p-1 rounded transition-all ${isLightBackground ? 'hover:bg-[#0a0a0a]/10' : 'hover:bg-white/20'} ${isHovered || copiedHex ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              className={`color-card-copy-btn ${isLightBackground ? 'color-card-copy-btn--light' : 'color-card-copy-btn--dark'} ${isHovered || copiedHex ? 'color-card-copy-btn--visible' : 'color-card-copy-btn--hidden'}`}
               onClick={(e) => { e.stopPropagation(); handleCopyHex(); }}
               onMouseDown={(e) => e.stopPropagation()}
             >
               {copiedHex ? (
-                <Check className={`w-4 h-4 ${isLightBackground ? 'text-[#444444]/80' : 'text-white/80'}`} />
+                <Check className={`color-card-copy-icon ${isLightBackground ? 'color-card-copy-icon--light' : 'color-card-copy-icon--dark'}`} />
               ) : (
-                <Copy className={`w-4 h-4 ${isLightBackground ? 'text-[#444444]/60' : 'text-white/60'}`} />
+                <Copy className={`color-card-copy-icon ${isLightBackground ? 'color-card-copy-icon--light-dim' : 'color-card-copy-icon--dark-dim'}`} />
               )}
             </button>
             </Tip>
@@ -3624,24 +3611,24 @@ export function ColorNodeCard({
                 disabled={isColorInputDisabled}
                 className={
                   isColorInputDisabled
-                    ? `p-1 rounded transition-colors opacity-30 cursor-not-allowed ${
-                        isLightBackground ? 'text-[#444444]' : 'text-white'
+                    ? `color-card-hex-lock-btn color-card-hex-lock-btn--disabled ${
+                        isLightBackground ? 'color-card-hex-lock-btn--light' : 'color-card-hex-lock-btn--dark'
                       }`
                     : node.colorSpace === 'hex'
-                    ? `p-1 rounded transition-colors ${
+                    ? `color-card-hex-lock-btn ${
                         isLightBackground
-                          ? 'text-[#444444] hover:bg-[#0a0a0a]/10'
-                          : 'text-white hover:bg-white/10'
+                          ? 'color-card-hex-lock-btn--light'
+                          : 'color-card-hex-lock-btn--dark'
                       }`
-                    : `p-1 rounded transition-colors ${
+                    : `color-card-hex-lock-btn ${
                         node.hexLocked
-                          ? 'text-brand hover:bg-brand/10'
-                          : 'text-muted-foreground hover:text-subtle hover:bg-secondary'
+                          ? 'color-card-hex-lock-active'
+                          : 'color-card-hex-lock-inactive'
                       }`
                 }
                 title={isColorInputDisabled ? 'Inherited from primary — unlink to modify' : node.hexLocked ? 'Locked - can edit manually' : 'Unlocked - inherits from parent'}
               >
-                {node.hexLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                {node.hexLocked ? <Lock className="color-card-hex-lock-size" /> : <Unlock className="color-card-hex-lock-size" />}
               </button>
             )}
             <Input
@@ -3656,7 +3643,7 @@ export function ColorNodeCard({
               disabled={isColorInputDisabled}
               placeholder={node.colorSpace === 'oklch' ? 'oklch(0.7 0.1 58)' : '#000000'}
               size={(isEditingHex ? hexInputValue : displayColorValue).length || 7}
-              className={`font-mono bg-transparent border-none text-center w-auto h-auto px-0 py-1 drop-shadow-md focus-visible:ring-0 focus-visible:border-none ${isLightBackground ? 'text-black/80 focus-visible:bg-[#0a0a0a]/10' : 'text-white focus-visible:bg-white/10'}`}
+              className={`color-card-hex-input ${isLightBackground ? 'color-card-hex-input--light' : 'color-card-hex-input--dark'}`}
             />
           </div>
         </div>
@@ -3665,7 +3652,7 @@ export function ColorNodeCard({
       {/* Palette-specific Controls */}
       {node.isPalette && (
         <div
-          className={`${isColorSectionDimmed ? 'transition-opacity duration-200' : ''}`}
+          className={isColorSectionDimmed ? 'color-card-palette-dim' : ''}
           style={{
             ...(colorDimOpacity !== undefined ? { opacity: colorDimOpacity } : {}),
             ...(isColorInputDisabled ? { pointerEvents: 'none' as const } : {}),
@@ -3683,13 +3670,13 @@ export function ColorNodeCard({
       {/* Controls */}
       {!node.isPalette && (
       <div 
-        className={`px-4 space-y-3 py-[12px] pt-[0px] pr-[16px] pb-[12px] pl-[16px] mt-[-20px] mr-[0px] mb-[0px] ml-[0px]`}
+        className="color-card-controls-wrap"
         onMouseEnter={() => { if (colorNeedsHover) setHoveredSection('color'); }}
         onMouseLeave={() => { if (hoveredSection === 'color') setHoveredSection(null); }}
       >
         <CollapsibleContent>
         <div 
-          className={`space-y-3 ${isColorSectionDimmed ? 'transition-opacity duration-200' : ''}`}
+          className={`color-card-controls-inner ${isColorSectionDimmed ? 'color-card-controls-inner--dimmable' : ''}`}
           style={{
             ...(colorDimOpacity !== undefined ? { opacity: colorDimOpacity } : {}),
             ...(isColorInputDisabled ? { pointerEvents: 'none' as const } : {}),
@@ -3697,10 +3684,10 @@ export function ColorNodeCard({
         >
         {/* Color Space Label */}
         {node.colorSpace !== 'hex' && (
-          <div className="pt-2">
-            <div 
-              className="px-3 py-1 rounded-full text-xs inline-block" 
-              style={{ backgroundColor: 'var(--secondary)', color: 'var(--foreground)' }}
+          <div className="color-card-cs-label-wrap">
+            <div
+              className="color-card-cs-label"
+              style={{ backgroundColor: 'var(--grey-800)', color: 'var(--grey-100)' }}
             >
               {node.colorSpace === 'hsl' ? 'HSL' : node.colorSpace === 'rgb' ? 'RGB' : node.colorSpace === 'oklch' ? 'OKLCH' : node.colorSpace === 'hct' ? 'HCT' : 'HEX'}
             </div>
@@ -3710,8 +3697,8 @@ export function ColorNodeCard({
         {/* HSL Format */}
         {node.colorSpace === 'hsl' && (
           <>
-            {!isChannelHidden('hue') && (<div className="space-y-2 mt-[0px] mr-[0px] mb-[10px] ml-[0px]">
-              <div className="flex items-center justify-between gap-[0.125rem]">
+            {!isChannelHidden('hue') && (<div className="color-card-channel-group color-card-channel-first">
+              <div className="color-card-channel-header-sm">
                 <PropertyControls
                   property="Hue"
                   isDiffEnabled={node.diffHue !== false}
@@ -3723,7 +3710,7 @@ export function ColorNodeCard({
                   isAdvancedActive={isChannelAdvanced('hue')}
                   {...dp.hue}
                 />
-                <div className="flex items-center gap-1">
+                <div className="color-card-channel-input-group">
                   {isChannelAdvanced('hue') && (
                     <FxButton nodeId={node.id} channelKey="hue" />
                   )}
@@ -3733,7 +3720,7 @@ export function ColorNodeCard({
                     max={getSliderRange('hue', 0, 360).max}
                     onChange={handleHueChange}
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="w-16 h-7 text-sm"
+                    className="color-card-scrubber-input"
                     disabled={isChannelAdvanced('hue')}
                   />
                 </div>
@@ -3747,7 +3734,7 @@ export function ColorNodeCard({
                 onMouseDown={(e) => e.stopPropagation()}
                 onMouseMove={(e) => e.stopPropagation()}
                 disabled={isChannelAdvanced('hue')}
-                className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider"
+                className="color-card-range-slider color-slider"
                 style={{
                   background: `linear-gradient(to right, 
                     hsl(0, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%), 
@@ -3763,19 +3750,19 @@ export function ColorNodeCard({
               />
             </div>)}
 
-            {!isChannelHidden('saturation') && (<div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
+            {!isChannelHidden('saturation') && (<div className="color-card-channel-group">
+              <div className="color-card-channel-header">
                 <PropertyControls property="Saturation" isDiffEnabled={node.diffSaturation !== false} isLocked={node.lockSaturation === true} onToggleDiff={() => toggleDiff('Saturation')} onToggleLock={() => toggleLock('Saturation')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('saturation')} {...dp.saturation} />
-                <div className="flex items-center gap-1">
+                <div className="color-card-channel-input-group">
                   {isChannelAdvanced('saturation') && (<FxButton nodeId={node.id} channelKey="saturation" />)}
-                  <ScrubberInput value={effectiveColors.saturation} min={getSliderRange('saturation', 0, 100).min} max={getSliderRange('saturation', 0, 100).max} onChange={handleSaturationChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('saturation')} />
+                  <ScrubberInput value={effectiveColors.saturation} min={getSliderRange('saturation', 0, 100).min} max={getSliderRange('saturation', 0, 100).max} onChange={handleSaturationChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('saturation')} />
                 </div>
               </div>
-              <input type="range" min={getSliderRange('saturation', 0, 100).min} max={getSliderRange('saturation', 0, 100).max} value={effectiveColors.saturation} onChange={(e) => handleSaturationChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('saturation')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: `linear-gradient(to right, hsl(${effectiveColors.hue}, 0%, ${effectiveColors.lightness}%), hsl(${effectiveColors.hue}, 100%, ${effectiveColors.lightness}%))`, '--slider-thumb-color': `hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%)`, opacity: isChannelAdvanced('saturation') ? 0.3 : 1 } as React.CSSProperties} />
+              <input type="range" min={getSliderRange('saturation', 0, 100).min} max={getSliderRange('saturation', 0, 100).max} value={effectiveColors.saturation} onChange={(e) => handleSaturationChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('saturation')} className="color-card-range-slider color-slider" style={{ background: `linear-gradient(to right, hsl(${effectiveColors.hue}, 0%, ${effectiveColors.lightness}%), hsl(${effectiveColors.hue}, 100%, ${effectiveColors.lightness}%))`, '--slider-thumb-color': `hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%)`, opacity: isChannelAdvanced('saturation') ? 0.3 : 1 } as React.CSSProperties} />
             </div>)}
 
-            {!isChannelHidden('lightness') && (<div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
+            {!isChannelHidden('lightness') && (<div className="color-card-channel-group">
+              <div className="color-card-channel-header">
                 <PropertyControls
                   property="Lightness"
                   isDiffEnabled={node.diffLightness !== false}
@@ -3787,7 +3774,7 @@ export function ColorNodeCard({
                   isAdvancedActive={isChannelAdvanced('lightness')}
                   {...dp.lightness}
                 />
-                <div className="flex items-center gap-1">
+                <div className="color-card-channel-input-group">
                   {isChannelAdvanced('lightness') && (
                     <FxButton nodeId={node.id} channelKey="lightness" />
                   )}
@@ -3797,23 +3784,23 @@ export function ColorNodeCard({
                     max={100}
                     onChange={handleLightnessChange}
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="w-16 h-7 text-sm"
+                    className="color-card-scrubber-input"
                     disabled={isChannelAdvanced('lightness')}
                   />
                 </div>
               </div>
-              <input type="range" min={getSliderRange('lightness', 0, 100).min} max={getSliderRange('lightness', 0, 100).max} value={effectiveColors.lightness} onChange={(e) => handleLightnessChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('lightness')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: `linear-gradient(to right, hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, 0%), hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, 50%), hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, 100%))`, '--slider-thumb-color': `hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%)`, opacity: isChannelAdvanced('lightness') ? 0.3 : 1 } as React.CSSProperties} />
+              <input type="range" min={getSliderRange('lightness', 0, 100).min} max={getSliderRange('lightness', 0, 100).max} value={effectiveColors.lightness} onChange={(e) => handleLightnessChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('lightness')} className="color-card-range-slider color-slider" style={{ background: `linear-gradient(to right, hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, 0%), hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, 50%), hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, 100%))`, '--slider-thumb-color': `hsl(${effectiveColors.hue}, ${effectiveColors.saturation}%, ${effectiveColors.lightness}%)`, opacity: isChannelAdvanced('lightness') ? 0.3 : 1 } as React.CSSProperties} />
             </div>)}
 
-            {!isChannelHidden('alpha') && (<div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
+            {!isChannelHidden('alpha') && (<div className="color-card-channel-group">
+              <div className="color-card-channel-header">
                 <PropertyControls property="Alpha" isDiffEnabled={node.diffAlpha !== false} isLocked={node.lockAlpha === true} onToggleDiff={() => toggleDiff('Alpha')} onToggleLock={() => toggleLock('Alpha')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('alpha')} {...dp.alpha} />
-                <div className="flex items-center gap-1">
+                <div className="color-card-channel-input-group">
                   {isChannelAdvanced('alpha') && (<FxButton nodeId={node.id} channelKey="alpha" />)}
-                  <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('alpha')} />
+                  <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                 </div>
               </div>
-              <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ backgroundImage: `linear-gradient(to right, hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 0), hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 1)), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: '#999999', '--slider-thumb-color': `hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+              <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 0), hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `hsla(${node.hue}, ${node.saturation}%, ${node.lightness}%, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
             </div>)}
           </>
         )}
@@ -3826,45 +3813,45 @@ export function ColorNodeCard({
 
           return (
             <>
-              {!isChannelHidden('red') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('red') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Red" isDiffEnabled={node.diffRed !== false} isLocked={node.lockRed === true} onToggleDiff={() => toggleDiff('Red')} onToggleLock={() => toggleLock('Red')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('red')} {...dp.red} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('red') && (<FxButton nodeId={node.id} channelKey="red" />)}
-                    <ScrubberInput value={node.red || 0} min={getSliderRange('red', 0, 255).min} max={getSliderRange('red', 0, 255).max} onChange={(value) => handleRgbChange('red', value)} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('red')} />
+                    <ScrubberInput value={node.red || 0} min={getSliderRange('red', 0, 255).min} max={getSliderRange('red', 0, 255).max} onChange={(value) => handleRgbChange('red', value)} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('red')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('red', 0, 255).min} max={getSliderRange('red', 0, 255).max} value={node.red || 0} onChange={(e) => handleRgbChange('red', Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('red')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: `linear-gradient(to right, rgb(0, ${node.green || 0}, ${node.blue || 0}), rgb(255, ${node.green || 0}, ${node.blue || 0}))`, '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('red') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('red', 0, 255).min} max={getSliderRange('red', 0, 255).max} value={node.red || 0} onChange={(e) => handleRgbChange('red', Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('red')} className="color-card-range-slider color-slider" style={{ background: `linear-gradient(to right, rgb(0, ${node.green || 0}, ${node.blue || 0}), rgb(255, ${node.green || 0}, ${node.blue || 0}))`, '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('red') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
-              {!isChannelHidden('green') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('green') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Green" isDiffEnabled={node.diffGreen !== false} isLocked={node.lockGreen === true} onToggleDiff={() => toggleDiff('Green')} onToggleLock={() => toggleLock('Green')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('green')} {...dp.green} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('green') && (<FxButton nodeId={node.id} channelKey="green" />)}
-                    <ScrubberInput value={node.green || 0} min={getSliderRange('green', 0, 255).min} max={getSliderRange('green', 0, 255).max} onChange={(value) => handleRgbChange('green', value)} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('green')} />
+                    <ScrubberInput value={node.green || 0} min={getSliderRange('green', 0, 255).min} max={getSliderRange('green', 0, 255).max} onChange={(value) => handleRgbChange('green', value)} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('green')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('green', 0, 255).min} max={getSliderRange('green', 0, 255).max} value={node.green || 0} onChange={(e) => handleRgbChange('green', Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('green')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: `linear-gradient(to right, rgb(${node.red || 0}, 0, ${node.blue || 0}), rgb(${node.red || 0}, 255, ${node.blue || 0}))`, '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('green') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('green', 0, 255).min} max={getSliderRange('green', 0, 255).max} value={node.green || 0} onChange={(e) => handleRgbChange('green', Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('green')} className="color-card-range-slider color-slider" style={{ background: `linear-gradient(to right, rgb(${node.red || 0}, 0, ${node.blue || 0}), rgb(${node.red || 0}, 255, ${node.blue || 0}))`, '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('green') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
-              {!isChannelHidden('blue') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('blue') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Blue" isDiffEnabled={node.diffBlue !== false} isLocked={node.lockBlue === true} onToggleDiff={() => toggleDiff('Blue')} onToggleLock={() => toggleLock('Blue')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('blue')} {...dp.blue} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('blue') && (<FxButton nodeId={node.id} channelKey="blue" />)}
-                    <ScrubberInput value={node.blue || 0} min={getSliderRange('blue', 0, 255).min} max={getSliderRange('blue', 0, 255).max} onChange={(value) => handleRgbChange('blue', value)} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('blue')} />
+                    <ScrubberInput value={node.blue || 0} min={getSliderRange('blue', 0, 255).min} max={getSliderRange('blue', 0, 255).max} onChange={(value) => handleRgbChange('blue', value)} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('blue')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('blue', 0, 255).min} max={getSliderRange('blue', 0, 255).max} value={node.blue || 0} onChange={(e) => handleRgbChange('blue', Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('blue')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: `linear-gradient(to right, rgb(${node.red || 0}, ${node.green || 0}, 0), rgb(${node.red || 0}, ${node.green || 0}, 255))`, '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('blue') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('blue', 0, 255).min} max={getSliderRange('blue', 0, 255).max} value={node.blue || 0} onChange={(e) => handleRgbChange('blue', Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('blue')} className="color-card-range-slider color-slider" style={{ background: `linear-gradient(to right, rgb(${node.red || 0}, ${node.green || 0}, 0), rgb(${node.red || 0}, ${node.green || 0}, 255))`, '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('blue') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
-              {!isChannelHidden('alpha') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('alpha') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Alpha" isDiffEnabled={node.diffAlpha !== false} isLocked={node.lockAlpha === true} onToggleDiff={() => toggleDiff('Alpha')} onToggleLock={() => toggleLock('Alpha')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('alpha')} {...dp.alpha} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('alpha') && (<FxButton nodeId={node.id} channelKey="alpha" />)}
-                    <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('alpha')} />
+                    <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ backgroundImage: `linear-gradient(to right, rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 0), rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 1)), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: '#999999', '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 0), rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `rgba(${node.red || 0}, ${node.green || 0}, ${node.blue || 0}, ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
             </>
           );
@@ -3874,8 +3861,8 @@ export function ColorNodeCard({
         {node.colorSpace === 'oklch' && (() => {
           return (
             <>
-              {!isChannelHidden('oklchL') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('oklchL') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls
                     property="Light"
                     isDiffEnabled={node.diffOklchL !== false}
@@ -3887,7 +3874,7 @@ export function ColorNodeCard({
                     isAdvancedActive={isChannelAdvanced('oklchL')}
                     {...dp.oklchL}
                   />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('oklchL') && (
                       <FxButton nodeId={node.id} channelKey="oklchL" />
                     )}
@@ -3897,7 +3884,7 @@ export function ColorNodeCard({
                       max={getSliderRange('oklchL', 0, 100).max}
                       onChange={handleOklchLChange}
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="w-16 h-7 text-sm"
+                      className="color-card-scrubber-input"
                       disabled={isChannelAdvanced('oklchL')}
                     />
                   </div>
@@ -3916,15 +3903,15 @@ export function ColorNodeCard({
                   />
                 </div>
               </div>)}
-              {!isChannelHidden('oklchC') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1">
+              {!isChannelHidden('oklchC') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
+                  <div className="color-card-channel-input-group">
                     <PropertyControls property="Chroma" isDiffEnabled={node.diffOklchC !== false} isLocked={node.lockOklchC === true} onToggleDiff={() => toggleDiff('OklchC')} onToggleLock={() => toggleLock('OklchC')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('oklchC')} {...dp.oklchC} />
-                    <span className="text-[11px] text-subtle" title="Actual range: 0-0.4">(0-{((effectiveColors.oklchC || 0) / 100 * 0.4).toFixed(2)})</span>
+                    <span className="color-card-range-hint-11 color-card-range-hint" title="Actual range: 0-0.4">(0-{((effectiveColors.oklchC || 0) / 100 * 0.4).toFixed(2)})</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('oklchC') && (<FxButton nodeId={node.id} channelKey="oklchC" />)}
-                    <ScrubberInput value={Math.round(effectiveColors.oklchC || 0)} min={getSliderRange('oklchC', 0, 100).min} max={getSliderRange('oklchC', 0, 100).max} onChange={handleOklchCChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('oklchC')} />
+                    <ScrubberInput value={Math.round(effectiveColors.oklchC || 0)} min={getSliderRange('oklchC', 0, 100).min} max={getSliderRange('oklchC', 0, 100).max} onChange={handleOklchCChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('oklchC')} />
                   </div>
                 </div>
                 <div style={{ opacity: isChannelAdvanced('oklchC') ? 0.3 : 1, pointerEvents: isChannelAdvanced('oklchC') ? 'none' : undefined }}>
@@ -3941,27 +3928,27 @@ export function ColorNodeCard({
                   />
                 </div>
               </div>)}
-              {!isChannelHidden('oklchH') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('oklchH') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Hue" isDiffEnabled={node.diffOklchH !== false} isLocked={node.lockOklchH === true} onToggleDiff={() => toggleDiff('OklchH')} onToggleLock={() => toggleLock('OklchH')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('oklchH')} {...dp.oklchH} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('oklchH') && (<FxButton nodeId={node.id} channelKey="oklchH" />)}
-                    <ScrubberInput value={Math.round(effectiveColors.oklchH || 0)} min={getSliderRange('oklchH', 0, 360).min} max={getSliderRange('oklchH', 0, 360).max} onChange={handleOklchHChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('oklchH')} />
+                    <ScrubberInput value={Math.round(effectiveColors.oklchH || 0)} min={getSliderRange('oklchH', 0, 360).min} max={getSliderRange('oklchH', 0, 360).max} onChange={handleOklchHChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('oklchH')} />
                   </div>
                 </div>
                 <div style={{ opacity: isChannelAdvanced('oklchH') ? 0.3 : 1, pointerEvents: isChannelAdvanced('oklchH') ? 'none' : undefined }}>
                   <OklchGamutSlider type="hue" value={effectiveColors.oklchH || 0} lightness={effectiveColors.oklchL || 0} chroma={effectiveColors.oklchC || 0} hue={effectiveColors.oklchH || 0} onChange={handleOklchHChange} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('oklchH')} />
                 </div>
               </div>)}
-              {!isChannelHidden('alpha') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('alpha') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Alpha" isDiffEnabled={node.diffAlpha !== false} isLocked={node.lockAlpha === true} onToggleDiff={() => toggleDiff('Alpha')} onToggleLock={() => toggleLock('Alpha')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('alpha')} {...dp.alpha} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('alpha') && (<FxButton nodeId={node.id} channelKey="alpha" />)}
-                    <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('alpha')} />
+                    <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ backgroundImage: `linear-gradient(to right, oklch(${effectiveColors.oklchL || 0}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / 0), oklch(${effectiveColors.oklchL || 0}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / 1)), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: '#999999', '--slider-thumb-color': `oklch(${(effectiveColors.oklchL || 0)}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, oklch(${effectiveColors.oklchL || 0}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / 0), oklch(${effectiveColors.oklchL || 0}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `oklch(${(effectiveColors.oklchL || 0)}% ${(effectiveColors.oklchC || 0) / 100 * 0.4} ${effectiveColors.oklchH || 0}deg / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
             </>
           );
@@ -3974,45 +3961,45 @@ export function ColorNodeCard({
 
           return (
             <>
-              {!isChannelHidden('hctH') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('hctH') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Hue" isDiffEnabled={node.diffHctH !== false} isLocked={node.lockHctH === true} onToggleDiff={() => toggleDiff('HctH')} onToggleLock={() => toggleLock('HctH')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('hctH')} {...dp.hctH} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('hctH') && (<FxButton nodeId={node.id} channelKey="hctH" />)}
-                    <ScrubberInput ref={hctHueInputRef} value={Math.round(effectiveColors.hctH || 0)} min={getSliderRange('hctH', 0, 360).min} max={getSliderRange('hctH', 0, 360).max} onChange={handleHctHChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('hctH')} />
+                    <ScrubberInput ref={hctHueInputRef} value={Math.round(effectiveColors.hctH || 0)} min={getSliderRange('hctH', 0, 360).min} max={getSliderRange('hctH', 0, 360).max} onChange={handleHctHChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('hctH')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('hctH', 0, 360).min} max={getSliderRange('hctH', 0, 360).max} value={effectiveColors.hctH || 0} onChange={(e) => handleHctHChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('hctH')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: generateHctHueGradient(effectiveColors.hctC || 0, effectiveColors.hctT || 0), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctH') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('hctH', 0, 360).min} max={getSliderRange('hctH', 0, 360).max} value={effectiveColors.hctH || 0} onChange={(e) => handleHctHChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('hctH')} className="color-card-range-slider color-slider" style={{ background: generateHctHueGradient(effectiveColors.hctC || 0, effectiveColors.hctT || 0), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctH') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
-              {!isChannelHidden('hctC') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('hctC') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Chroma" isDiffEnabled={node.diffHctC !== false} isLocked={node.lockHctC === true} onToggleDiff={() => toggleDiff('HctC')} onToggleLock={() => toggleLock('HctC')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('hctC')} {...dp.hctC} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('hctC') && (<FxButton nodeId={node.id} channelKey="hctC" />)}
-                    <ScrubberInput ref={hctChromaInputRef} value={Math.round(clampedChroma)} min={getSliderRange('hctC', 0, Math.round(hctMaxChroma)).min} max={Math.min(getSliderRange('hctC', 0, 120).max, Math.round(hctMaxChroma))} onChange={handleHctCChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('hctC')} />
+                    <ScrubberInput ref={hctChromaInputRef} value={Math.round(clampedChroma)} min={getSliderRange('hctC', 0, Math.round(hctMaxChroma)).min} max={Math.min(getSliderRange('hctC', 0, 120).max, Math.round(hctMaxChroma))} onChange={handleHctCChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('hctC')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('hctC', 0, 120).min} max={Math.min(getSliderRange('hctC', 0, 120).max, hctMaxChroma)} step="0.1" value={clampedChroma} onChange={(e) => handleHctCChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('hctC')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: generateHctChromaGradient(effectiveColors.hctH || 0, effectiveColors.hctT || 0, hctMaxChroma), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, clampedChroma, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctC') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('hctC', 0, 120).min} max={Math.min(getSliderRange('hctC', 0, 120).max, hctMaxChroma)} step="0.1" value={clampedChroma} onChange={(e) => handleHctCChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('hctC')} className="color-card-range-slider color-slider" style={{ background: generateHctChromaGradient(effectiveColors.hctH || 0, effectiveColors.hctT || 0, hctMaxChroma), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, clampedChroma, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctC') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
-              {!isChannelHidden('hctT') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('hctT') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Tone" isDiffEnabled={node.diffHctT !== false} isLocked={node.lockHctT === true} onToggleDiff={() => toggleDiff('HctT')} onToggleLock={() => toggleLock('HctT')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('hctT')} {...dp.hctT} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('hctT') && (<FxButton nodeId={node.id} channelKey="hctT" />)}
-                    <ScrubberInput ref={hctToneInputRef} value={Math.round(effectiveColors.hctT || 0)} min={getSliderRange('hctT', 0, 100).min} max={getSliderRange('hctT', 0, 100).max} onChange={handleHctTChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('hctT')} />
+                    <ScrubberInput ref={hctToneInputRef} value={Math.round(effectiveColors.hctT || 0)} min={getSliderRange('hctT', 0, 100).min} max={getSliderRange('hctT', 0, 100).max} onChange={handleHctTChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('hctT')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('hctT', 0, 100).min} max={getSliderRange('hctT', 0, 100).max} step="0.1" value={effectiveColors.hctT || 0} onChange={(e) => handleHctTChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('hctT')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ background: generateHctToneGradient(effectiveColors.hctH || 0, effectiveColors.hctC || 0), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctT') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('hctT', 0, 100).min} max={getSliderRange('hctT', 0, 100).max} step="0.1" value={effectiveColors.hctT || 0} onChange={(e) => handleHctTChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('hctT')} className="color-card-range-slider color-slider" style={{ background: generateHctToneGradient(effectiveColors.hctH || 0, effectiveColors.hctC || 0), '--slider-thumb-color': (() => { const rgb = hctToRgb(effectiveColors.hctH || 0, effectiveColors.hctC || 0, effectiveColors.hctT || 0); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${(effectiveColors.alpha ?? 100) / 100})`; })(), opacity: isChannelAdvanced('hctT') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
-              {!isChannelHidden('alpha') && (<div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              {!isChannelHidden('alpha') && (<div className="color-card-channel-group">
+                <div className="color-card-channel-header">
                   <PropertyControls property="Alpha" isDiffEnabled={node.diffAlpha !== false} isLocked={node.lockAlpha === true} onToggleDiff={() => toggleDiff('Alpha')} onToggleLock={() => toggleLock('Alpha')} hasParent={node.parentId !== null} hideControls={hasDifferentColorSpaceParent} isAdvancedActive={isChannelAdvanced('alpha')} {...dp.alpha} />
-                  <div className="flex items-center gap-1">
+                  <div className="color-card-channel-input-group">
                     {isChannelAdvanced('alpha') && (<FxButton nodeId={node.id} channelKey="alpha" />)}
-                    <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="w-16 h-7 text-sm" disabled={isChannelAdvanced('alpha')} />
+                    <ScrubberInput value={node.alpha ?? 100} min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} onChange={handleAlphaChange} onMouseDown={(e) => e.stopPropagation()} className="color-card-scrubber-input" disabled={isChannelAdvanced('alpha')} />
                   </div>
                 </div>
-                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="w-full h-2 rounded-lg appearance-none cursor-pointer color-slider" style={{ backgroundImage: `linear-gradient(to right, hsl(${node.hctH || 0}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / 0), hsl(${node.hctH || 0}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / 1)), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666), linear-gradient(45deg, #666666 25%, transparent 25%, transparent 75%, #666666 75%, #666666)`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: '#999999', '--slider-thumb-color': `hsl(${(node.hctH || 0)}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
+                <input type="range" min={getSliderRange('alpha', 0, 100).min} max={getSliderRange('alpha', 0, 100).max} value={node.alpha ?? 100} onChange={(e) => handleAlphaChange(Number(e.target.value))} onMouseDown={(e) => e.stopPropagation()} onMouseMove={(e) => e.stopPropagation()} disabled={isChannelAdvanced('alpha')} className="color-card-range-slider color-slider" style={{ backgroundImage: `linear-gradient(to right, hsl(${node.hctH || 0}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / 0), hsl(${node.hctH || 0}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / 1)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600)), linear-gradient(45deg, var(--grey-600) 25%, transparent 25%, transparent 75%, var(--grey-600) 75%, var(--grey-600))`, backgroundSize: '100% 100%, 8px 8px, 8px 8px', backgroundPosition: '0 0, 0 0, 4px 4px', backgroundColor: 'var(--grey-400)', '--slider-thumb-color': `hsl(${(node.hctH || 0)}, ${(node.hctC || 0)}%, ${(node.hctT || 0)}% / ${(node.alpha ?? 100) / 100})`, opacity: isChannelAdvanced('alpha') ? 0.3 : 1 } as React.CSSProperties} />
               </div>)}
             </>
           );
@@ -4026,7 +4013,7 @@ export function ColorNodeCard({
         {/* Also hidden when Node View config hides token section AND no tokens are assigned */}
         {!isPaletteShade && !(isChannelHidden('_tokenSection') && getNodeTokenIds(node).length === 0) && (
         <div 
-          className={`p-[0px] space-y-2 relative ${isTokenSectionDimmed ? 'transition-opacity duration-200' : ''}`}
+          className={`color-card-token-section ${isTokenSectionDimmed ? 'color-card-token-section--dimmable' : ''}`}
           style={tokenDimOpacity !== undefined ? { opacity: tokenDimOpacity } : undefined}
           onMouseEnter={() => { if (tokenNeedsHover) setHoveredSection('token'); }}
           onMouseLeave={() => { if (hoveredSection === 'token') setHoveredSection(null); }}
@@ -4036,15 +4023,15 @@ export function ColorNodeCard({
           {/* Unchecked = modified, toggling ON reverts to primary's assignments & values */}
           {!isPrimaryTheme && (
             <div
-              className="flex items-center gap-1.5 pb-1.5 pt-0.5 pl-[0px] pr-[11px] pt-[1px] pb-[3px]"
+              className="color-card-token-inherit-row"
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
             >
               {/* Crown icon — golden filled when inherited, blue outline when modified */}
               <Crown
-                className={`h-3 w-3 shrink-0 transition-all ${
+                className={`color-card-token-inherit-crown ${
                   hasAnyTokenChanges
-                    ? 'text-brand fill-brand'
+                    ? 'color-card-crown-brand'
                     : 'text-warning fill-warning'
                 }`}
               />
@@ -4057,9 +4044,9 @@ export function ColorNodeCard({
                   }
                 }}
                 disabled={!hasAnyTokenChanges}
-                className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-border dark:data-[state=unchecked]:bg-border h-[16px] w-[30px] shrink-0 disabled:opacity-100 disabled:cursor-default"
+                className="color-card-token-inherit-switch"
               />
-              <span className={`text-[11px] select-none transition-colors ${hasAnyTokenChanges ? 'text-subtle' : 'text-faint'}`}>
+              <span className={`color-card-token-status ${hasAnyTokenChanges ? 'color-card-token-status-subtle' : 'color-card-token-status-faint'}`}>
                 {hasAnyTokenChanges ? 'Tokens modified' : 'Tokens inherited'}
               </span>
             </div>
@@ -4084,12 +4071,12 @@ export function ColorNodeCard({
             const isAutoAssigned = isPrimaryTheme && parentAutoAssignActive && node.autoAssignedTokenId === assignedTokenId;
             
             return (
-              <div key={assignedTokenId} className="flex items-center gap-2">
-                <div className="flex-1 flex items-center gap-2 h-8 px-3 rounded-[8px] bg-secondary text-foreground min-w-0">
-                  <Tag className="w-3 h-3 text-muted-foreground shrink-0" />
-                  <span className="truncate text-xs min-w-0">{assignedToken.name}</span>
+              <div key={assignedTokenId} className="color-card-token-assign-outer">
+                <div className="color-card-token-assign-inner color-card-token-assign-row">
+                  <Tag className="color-card-token-assign-tag-icon color-card-token-assign-tag" />
+                  <span className="color-card-token-assign-name">{assignedToken.name}</span>
                   {isAutoAssigned && (
-                    <Zap className="w-3 h-3 text-brand shrink-0 fill-current ml-auto" />
+                    <Zap className="color-card-token-assign-zap-icon color-card-token-assign-zap" />
                   )}
                 </div>
                 {!readOnly && (
@@ -4100,10 +4087,10 @@ export function ColorNodeCard({
                     onSelect();
                     handleTokenRemoveClick(assignedTokenId);
                   }}
-                  className="p-1 hover:bg-hairline rounded transition-colors shrink-0"
+                  className="color-card-token-remove-outer color-card-token-remove-btn"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <Trash2 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                  <Trash2 className="color-card-token-remove-icon-inner color-card-token-remove-icon" />
                 </button>
                 </Tip>
                 )}
@@ -4114,38 +4101,38 @@ export function ColorNodeCard({
           
           {/* Add new token button — hidden in readOnly mode */}
           {!readOnly && (
-          <div className="flex items-center gap-2">
+          <div className="color-card-combo-outer">
             <Popover open={tokenComboOpenIndex === -1} onOpenChange={(open) => setTokenComboOpenIndex(open ? -1 : null)}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={tokenComboOpenIndex === -1}
-                  className="flex-1 h-8 justify-between text-xs overflow-hidden bg-secondary border-secondary text-foreground hover:bg-line hover:text-foreground"
+                  className="color-card-combo-btn color-card-combo-trigger"
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={() => onSelect()}
                 >
-                  <span className="text-subtle">Select token...</span>
-                  <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+                  <span className="color-card-combo-placeholder">Select token...</span>
+                  <ChevronsUpDown className="color-card-combo-chevron" />
                 </Button>
               </PopoverTrigger>
-                <PopoverContent 
-                  className="w-[240px] p-0 bg-secondary border-secondary"
+                <PopoverContent
+                  className="color-card-combo-popover-wrap color-card-combo-popover"
                   side="bottom"
                   align="start"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
                   {/* ── Informational page scope bar ── */}
                   {pages.length > 0 && (
-                    <div className="px-1.5 pt-1.5">
-                      <div className="flex items-center rounded-lg bg-[#0e0e0e] p-[3px]">
-                        <span className="shrink-0 px-2 py-[3px] rounded-md text-[11px] bg-elevated text-foreground shadow-sm">
+                    <div className="color-card-combo-scope-outer">
+                      <div className="color-card-combo-scope-inner">
+                        <span className="color-card-combo-scope-label color-card-combo-scope-badge">
                           This page
                         </span>
                       </div>
                     </div>
                   )}
-                  <Command className="bg-secondary" filter={(value, search, keywords) => {
+                  <Command className="color-card-combo-command" filter={(value, search, keywords) => {
                     if (!search.trim()) return 1;
                     const searchable = [value, ...(keywords || [])].join(' ').toLowerCase();
                     const words = search.toLowerCase().trim().split(/\s+/);
@@ -4153,10 +4140,10 @@ export function ColorNodeCard({
                   }} loop={false}>
                     <CommandInput
                       placeholder="Search tokens..."
-                      className="h-9 text-xs bg-[#0e0e0e] pl-[10px] mx-1.5 mt-1 mb-1 rounded-md text-foreground placeholder:text-dim focus-visible:outline-none focus-visible:ring-0"
+                      className="color-card-combo-search-input color-card-combo-search"
                     />
-                    <CommandList className="pb-[5px] max-h-[280px]" onScroll={() => { if (reassignHoverTimeoutRef.current) clearTimeout(reassignHoverTimeoutRef.current); if (reassignPopover) setReassignPopover(null); }}>
-                      <CommandEmpty className="py-6 text-xs text-center text-subtle">
+                    <CommandList className="color-card-combo-list" onScroll={() => { if (reassignHoverTimeoutRef.current) clearTimeout(reassignHoverTimeoutRef.current); if (reassignPopover) setReassignPopover(null); }}>
+                      <CommandEmpty className="color-card-combo-empty-msg color-card-combo-empty">
                         {tokens.length === 0 ? (
                           <>
                             No tokens available.<br />
@@ -4191,10 +4178,10 @@ export function ColorNodeCard({
                           <CommandGroup 
                             key={group.id} 
                             heading={group.name}
-                            className="[&_[cmdk-group-heading]]:!hidden p-0"
+                            className="color-card-combo-group-hidden"
                           >
-                            <div className="flex items-center text-xs text-subtle font-semibold sticky top-0 z-10 bg-secondary pl-[10px] pr-2 py-1.5">
-                              <span className="inline-flex items-center gap-[5px] bg-white/[0.035] rounded-[5px] px-[6px] py-[1px]">
+                            <div className="color-card-combo-group-header color-card-combo-group-heading">
+                              <span className="color-card-combo-group-badge">
                                 {group.name}
                               </span>
                             </div>
@@ -4222,7 +4209,7 @@ export function ColorNodeCard({
                               return (
                                 <div
                                   key={token.id}
-                                  className="relative"
+                                  className="color-card-token-item-wrap"
                                   onMouseEnter={() => {
                                     if (isAlreadyAssigned && assignedNode && !isCurrentlyAssigned) {
                                       if (reassignHoverTimeoutRef.current) clearTimeout(reassignHoverTimeoutRef.current);
@@ -4250,37 +4237,22 @@ export function ColorNodeCard({
                                         setTokenComboOpenIndex(null);
                                       }
                                     }}
-                                    className={cn(
-                                      "text-xs mx-1 group",
-                                      "data-[selected=true]:bg-transparent hover:!bg-transparent"
-                                    )}
+                                    className="color-card-token-item"
                                   >
-                                      <div className={cn(
-                                        "flex items-center gap-2 flex-1 min-w-0 px-2 rounded-md py-[5px] transition-all duration-150",
-                                        isCurrentlyAssigned
-                                          ? "bg-hairline ring-1 ring-hairline"
-                                          : isAlreadyAssigned && !isCurrentlyAssigned
-                                            ? cn(
-                                                "ring-1",
-                                                isReassignPopoverOpen
-                                                  ? "bg-brand/[0.22] ring-brand/35"
-                                                  : "bg-brand/[0.12] ring-brand/20 hover:bg-brand/[0.20] hover:ring-brand/30"
-                                              )
-                                            : "hover:bg-[#ffffff]/[0.05]"
-                                      )}>
+                                      <div className={`color-card-token-row ${isCurrentlyAssigned ? 'is-current' : isAlreadyAssigned && !isCurrentlyAssigned ? `is-assigned ${isReassignPopoverOpen ? 'is-reassign-open' : ''}` : 'is-default'}`}>
                                         <div
-                                          className={cn("w-3.5 h-3.5 rounded-[3px] shrink-0", (!isAssignedToAnyNode || _isEmpty1) && "border border-dashed border-elevated/40 opacity-40")}
+                                          className={`color-card-token-swatch ${(!isAssignedToAnyNode || _isEmpty1) ? 'is-empty' : ''}`}
                                           style={{ backgroundColor: (isAssignedToAnyNode && !_isEmpty1) ? hslValue : 'transparent' }}
                                         />
-                                        <div className="flex flex-col min-w-0 flex-1">
-                                          <span className={cn("truncate transition-colors", isCurrentlyAssigned ? "text-foreground" : isAlreadyAssigned ? "text-foreground" : "text-foreground group-hover:text-foreground")}>{token.name}</span>
+                                        <div className="color-card-token-info">
+                                          <span className="color-card-token-name">{token.name}</span>
                                         </div>
                                         {isCurrentlyAssigned && !isAlreadyAssigned && (
-                                          <Check className="h-3.5 w-3.5 shrink-0 text-foreground" />
+                                          <Check className="color-card-token-check" />
                                         )}
                                         {/* Spacer for the absolutely-positioned navigate button */}
                                         {isAlreadyAssigned && assignedNode && (
-                                          <div className="w-5 shrink-0" />
+                                          <div className="color-card-token-spacer" />
                                         )}
                                       </div>
                                     </CommandItem>
@@ -4298,9 +4270,9 @@ export function ColorNodeCard({
                                           onNavigateToNode(assignedNode.id);
                                         }}
                                         onPointerDown={(e) => e.stopPropagation()}
-                                        className="absolute right-[14px] top-1/2 -translate-y-1/2 z-10 p-0.5 hover:bg-[#ffffff]/[0.1] rounded transition-colors cursor-pointer"
+                                        className="color-card-token-nav-btn"
                                       >
-                                        <Target className="h-3.5 w-3.5 text-brand" />
+                                        <Target className="color-card-token-nav-icon" />
                                       </button>
                                     </Tip>
                                   )}
@@ -4312,11 +4284,10 @@ export function ColorNodeCard({
                                       }
                                     }}>
                                       <PopoverTrigger asChild>
-                                        <div className="absolute inset-0 pointer-events-none" />
+                                        <div className="color-card-popover-trigger-inset" />
                                       </PopoverTrigger>
                                       <PopoverContent 
-                                        className="w-72 border-elevated p-0 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
-                                        style={{ backgroundColor: 'var(--secondary)' }}
+                                        className="color-card-reassign-popover"
                                         side="right" 
                                         align="start"
                                         sideOffset={8}
@@ -4330,25 +4301,25 @@ export function ColorNodeCard({
                                         onOpenAutoFocus={(e) => e.preventDefault()}
                                         onCloseAutoFocus={(e) => e.preventDefault()}
                                       >
-                                        <div className="p-1.5">
+                                        <div className="color-card-reassign-actions">
                                           <button
                                             onClick={() => {
                                               onAssignToken(node.id, token.id, true);
                                               setTokenComboOpenIndex(null);
                                               setReassignPopover(null);
                                             }}
-                                            className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-foreground hover:bg-hairline rounded-md transition-colors cursor-pointer"
+                                            className="color-card-reassign-btn"
                                           >
-                                            <Link2 className="h-4 w-4 text-brand shrink-0" />
+                                            <Link2 className="color-card-reassign-btn-icon" />
                                             <span>Reassign to this node</span>
                                           </button>
                                         </div>
-                                        <div className="px-4 pb-3 pt-1 text-xs">
-                                          <p className="text-faint mb-2 leading-relaxed">
+                                        <div className="color-card-reassign-info">
+                                          <p>
                                             This variable is already assigned to another node. Reassigning it will remove it from that node.
                                           </p>
-                                          <p className="text-faint">
-                                            Previous node: <span className="font-mono text-[#FFB800]">{hslToHex(assignedNode.hue, assignedNode.saturation, assignedNode.lightness)}</span>
+                                          <p>
+                                            Previous node: <span className="color-card-reassign-prev-hex">{hslToHex(assignedNode.hue, assignedNode.saturation, assignedNode.lightness)}</span>
                                           </p>
                                         </div>
                                       </PopoverContent>
@@ -4377,10 +4348,10 @@ export function ColorNodeCard({
                         return (
                           <CommandGroup 
                             heading="Others"
-                            className="[&_[cmdk-group-heading]]:!hidden p-0"
+                            className="color-card-combo-group-hidden"
                           >
-                            <div className="flex items-center text-xs text-subtle font-semibold sticky top-0 z-10 bg-secondary pl-[10px] pr-2 py-1.5">
-                              <span className="inline-flex items-center gap-[5px] bg-white/[0.035] rounded-[5px] px-[6px] py-[1px]">
+                            <div className="color-card-combo-group-header color-card-combo-group-heading">
+                              <span className="color-card-combo-group-badge">
                                 Others
                               </span>
                             </div>
@@ -4407,7 +4378,7 @@ export function ColorNodeCard({
                               return (
                                 <div
                                   key={token.id}
-                                  className="relative"
+                                  className="color-card-token-item-wrap"
                                   onMouseEnter={() => {
                                     if (isAlreadyAssigned && assignedNode && !isCurrentlyAssigned) {
                                       if (reassignHoverTimeoutRef.current) clearTimeout(reassignHoverTimeoutRef.current);
@@ -4435,37 +4406,22 @@ export function ColorNodeCard({
                                         setTokenComboOpenIndex(null);
                                       }
                                     }}
-                                    className={cn(
-                                      "text-xs mx-1 group",
-                                      "data-[selected=true]:bg-transparent hover:!bg-transparent"
-                                    )}
+                                    className="color-card-token-item"
                                   >
-                                      <div className={cn(
-                                        "flex items-center gap-2 flex-1 min-w-0 px-2 rounded-md py-[5px] transition-all duration-150",
-                                        isCurrentlyAssigned
-                                          ? "bg-hairline ring-1 ring-hairline"
-                                          : isAlreadyAssigned && !isCurrentlyAssigned
-                                            ? cn(
-                                                "ring-1",
-                                                isReassignPopoverOpen
-                                                  ? "bg-brand/[0.22] ring-brand/35"
-                                                  : "bg-brand/[0.12] ring-brand/20 hover:bg-brand/[0.20] hover:ring-brand/30"
-                                              )
-                                            : "hover:bg-[#ffffff]/[0.05]"
-                                      )}>
+                                      <div className={`color-card-token-row ${isCurrentlyAssigned ? 'is-current' : isAlreadyAssigned && !isCurrentlyAssigned ? `is-assigned ${isReassignPopoverOpen ? 'is-reassign-open' : ''}` : 'is-default'}`}>
                                         <div
-                                          className={cn("w-3.5 h-3.5 rounded-[3px] shrink-0", (!isAssignedToAnyNode || _isEmpty2) && "border border-dashed border-elevated/40 opacity-40")}
+                                          className={`color-card-token-swatch ${(!isAssignedToAnyNode || _isEmpty2) ? 'is-empty' : ''}`}
                                           style={{ backgroundColor: (isAssignedToAnyNode && !_isEmpty2) ? hslValue : 'transparent' }}
                                         />
-                                        <div className="flex flex-col min-w-0 flex-1">
-                                          <span className={cn("truncate transition-colors", isCurrentlyAssigned ? "text-foreground" : isAlreadyAssigned ? "text-foreground" : "text-foreground group-hover:text-foreground")}>{token.name}</span>
+                                        <div className="color-card-token-info">
+                                          <span className="color-card-token-name">{token.name}</span>
                                         </div>
                                         {isCurrentlyAssigned && !isAlreadyAssigned && (
-                                          <Check className="h-3.5 w-3.5 shrink-0 text-foreground" />
+                                          <Check className="color-card-token-check" />
                                         )}
                                         {/* Spacer for the absolutely-positioned navigate button */}
                                         {isAlreadyAssigned && assignedNode && (
-                                          <div className="w-5 shrink-0" />
+                                          <div className="color-card-token-spacer" />
                                         )}
                                       </div>
                                     </CommandItem>
@@ -4483,9 +4439,9 @@ export function ColorNodeCard({
                                           onNavigateToNode(assignedNode.id);
                                         }}
                                         onPointerDown={(e) => e.stopPropagation()}
-                                        className="absolute right-[14px] top-1/2 -translate-y-1/2 z-10 p-0.5 hover:bg-[#ffffff]/[0.1] rounded transition-colors cursor-pointer"
+                                        className="color-card-token-nav-btn"
                                       >
-                                        <Target className="h-3.5 w-3.5 text-brand" />
+                                        <Target className="color-card-token-nav-icon" />
                                       </button>
                                     </Tip>
                                   )}
@@ -4497,11 +4453,10 @@ export function ColorNodeCard({
                                       }
                                     }}>
                                       <PopoverTrigger asChild>
-                                        <div className="absolute inset-0 pointer-events-none" />
+                                        <div className="color-card-popover-trigger-inset" />
                                       </PopoverTrigger>
                                       <PopoverContent 
-                                        className="w-72 border-elevated p-0 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
-                                        style={{ backgroundColor: 'var(--secondary)' }}
+                                        className="color-card-reassign-popover"
                                         side="right" 
                                         align="start"
                                         sideOffset={8}
@@ -4515,25 +4470,25 @@ export function ColorNodeCard({
                                         onOpenAutoFocus={(e) => e.preventDefault()}
                                         onCloseAutoFocus={(e) => e.preventDefault()}
                                       >
-                                        <div className="p-1.5">
+                                        <div className="color-card-reassign-actions">
                                           <button
                                             onClick={() => {
                                               onAssignToken(node.id, token.id, true);
                                               setTokenComboOpenIndex(null);
                                               setReassignPopover(null);
                                             }}
-                                            className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-foreground hover:bg-hairline rounded-md transition-colors cursor-pointer"
+                                            className="color-card-reassign-btn"
                                           >
-                                            <Link2 className="h-4 w-4 text-brand shrink-0" />
+                                            <Link2 className="color-card-reassign-btn-icon" />
                                             <span>Reassign to this node</span>
                                           </button>
                                         </div>
-                                        <div className="px-4 pb-3 pt-1 text-xs">
-                                          <p className="text-faint mb-2 leading-relaxed">
+                                        <div className="color-card-reassign-info">
+                                          <p>
                                             This variable is already assigned to another node. Reassigning it will remove it from that node.
                                           </p>
-                                          <p className="text-faint">
-                                            Previous node: <span className="font-mono text-[#FFB800]">{hslToHex(assignedNode.hue, assignedNode.saturation, assignedNode.lightness)}</span>
+                                          <p>
+                                            Previous node: <span className="color-card-reassign-prev-hex">{hslToHex(assignedNode.hue, assignedNode.saturation, assignedNode.lightness)}</span>
                                           </p>
                                         </div>
                                       </PopoverContent>
@@ -4558,15 +4513,15 @@ export function ColorNodeCard({
 
       {/* Resize Handle */}
       <div
-        className="absolute -bottom-px -right-px w-4 h-4 cursor-nwse-resize group z-10 bg-[rgba(91,91,91,0)]"
+        className="color-card-resize-handle"
         onMouseDown={handleResizeMouseDown}
         title="Resize node"
       >
-        <svg 
-          className="absolute top-1/2 left-1/2 -translate-x-[calc(50%+1px)] -translate-y-[calc(50%+1px)] w-3 h-3 transition-colors" 
+        <svg
+          className="color-card-resize-svg" 
           viewBox="0 0 12 12" 
           fill="none"
-          style={{ color: 'var(--secondary)' }}
+          style={{ color: 'var(--grey-800)' }}
         >
           <path d="M10 2L2 10M10 6L6 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
@@ -4577,19 +4532,19 @@ export function ColorNodeCard({
     {/* Advanced Island — shown when selected OR when any channel has active logic */}
     {(isSelected || activeAdvancedChannels.length > 0) && !isPaletteShade && (isPrimaryTheme || !isColorInherited) && (
       <div
-        className="flex items-center justify-between px-4 py-[8px] rounded-[16px] mt-[2px]"
+        className="color-card-advanced-island"
         style={{
-          backgroundColor: '#0E0E0E',
+          backgroundColor: 'var(--grey-900)',
           border: 'none',
           width: `${nodeWidth}px`,
         }}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-[14px] text-dim select-none">Advanced</span>
+        <div className="color-card-advanced-left">
+          <span className="color-card-advanced-title color-card-advanced-label">Advanced</span>
           {activeAdvancedChannels.length > 0 && (
-            <div className="flex items-center gap-[3px]">
+            <div className="color-card-advanced-channels">
               {activeAdvancedChannels.map(chKey => {
                 const label = ({
                   hue: 'H', saturation: 'S', lightness: 'L', alpha: 'A',
@@ -4600,9 +4555,9 @@ export function ColorNodeCard({
                 return (
                   <span
                     key={chKey}
-                    className="text-[11px] font-mono w-[16px] h-[16px] flex items-center justify-center rounded select-none"
+                    className="color-card-advanced-channel-badge"
                     style={{
-                      color: 'var(--success)',
+                      color: 'var(--green-500)',
                       backgroundColor: 'rgba(43,189,104,0.12)',
                       border: 'none',
                     }}
@@ -4615,7 +4570,7 @@ export function ColorNodeCard({
           )}
         </div>
         <button
-          className="text-dim hover:text-subtle cursor-pointer transition-colors p-0.5 rounded hover:bg-white/[0.04]"
+          className="color-card-advanced-btn color-card-advanced-open-btn"
           onClick={(e) => {
             e.stopPropagation();
             window.dispatchEvent(new CustomEvent('openAdvancedPopup', { detail: { nodeId: node.id } }));
@@ -4631,29 +4586,29 @@ export function ColorNodeCard({
       open={autoAssignDeleteDialog.open}
       onOpenChange={(open) => setAutoAssignDeleteDialog(prev => ({ ...prev, open }))}
     >
-      <AlertDialogContent className="bg-card border-line max-w-[400px]">
+      <AlertDialogContent className="color-card-dialog-content color-card-dialog-max-w">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-foreground flex items-center gap-2">
-            <Zap size={14} className="text-brand" />
+          <AlertDialogTitle className="color-card-dialog-title color-card-dialog-title-row">
+            <Zap size={14} className="color-card-dialog-zap-icon" />
             Delete auto-assigned token?
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <div className="text-muted-foreground space-y-3">
+            <div className="color-card-dialog-desc color-card-dialog-body">
               <div>
-                The token <span className="text-foreground font-mono text-[12px] bg-secondary px-1.5 py-0.5 rounded">
+                The token <span className="color-card-dialog-highlight-mono">
                   {autoAssignDeleteDialog.tokenName}
                 </span> will be permanently deleted from the token panel.
               </div>
-              <div className="text-[12px] text-subtle">
-                This token was auto-assigned to node <span className="text-foreground">{node.referenceName || node.id.slice(0, 8)}</span>.
+              <div className="color-card-dialog-text-12 color-card-dialog-subtle">
+                This token was auto-assigned to node <span className="color-card-dialog-highlight">{node.referenceName || node.id.slice(0, 8)}</span>.
                 It may be recreated if the parent node&apos;s auto-assign is re-applied.
               </div>
-              <label className="flex items-start gap-2.5 cursor-pointer group bg-secondary rounded-lg px-3 py-2.5 border border-secondary hover:bg-secondary transition-colors">
+              <label className="color-card-dialog-checkbox-outer color-card-dialog-checkbox-label">
                 <div
-                  className={`w-4 h-4 mt-[1px] rounded border flex items-center justify-center transition-colors shrink-0 ${
+                  className={`color-card-dialog-checkbox-box ${
                     autoAssignDeleteDialog.excludeFromAutoAssign
-                      ? 'bg-warning border-warning'
-                      : 'border-dim group-hover:border-faint'
+                      ? 'color-card-dialog-checkbox-box--checked'
+                      : 'color-card-dialog-checkbox-box--unchecked'
                   }`}
                   onClick={(e) => {
                     e.preventDefault();
@@ -4676,10 +4631,10 @@ export function ColorNodeCard({
                     }));
                   }}
                 >
-                  <div className="text-[12px] text-foreground select-none">
+                  <div className="color-card-dialog-text-12 color-card-dialog-highlight color-card-dialog-select-none">
                     Don&apos;t auto-assign token for this node
                   </div>
-                  <div className="text-[11px] text-faint select-none mt-0.5">
+                  <div className="color-card-dialog-text-11 color-card-dialog-faint color-card-dialog-select-none color-card-dialog-mt-half">
                     Future re-apply or updates will skip this node
                   </div>
                 </div>
@@ -4688,12 +4643,12 @@ export function ColorNodeCard({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="bg-secondary border-secondary text-foreground hover:bg-line">
+          <AlertDialogCancel className="color-card-dialog-cancel">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={confirmAutoAssignTokenDelete}
-            className="bg-[#EA0B2D] text-white hover:bg-[#C00924]"
+            className="color-card-dialog-delete-btn"
           >
             Delete Token
           </AlertDialogAction>

@@ -1,0 +1,367 @@
+/* PublishPopup — co-located styles */
+
+/* ─── Overlay ─── */
+.publish-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Card ─── */
+.publish-card {
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--radius-2xl);
+  background-color: var(--grey-800);
+  box-shadow: var(--shadow-2xl);
+}
+
+/* ─── Header ─── */
+.publish-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 12px;
+}
+
+.publish-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.publish-header-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-lg);
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.publish-header-icon {
+  height: 16px;
+  width: 16px;
+  color: var(--indigo-500);
+}
+
+.publish-header-title {
+  font-size: 14px;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--grey-100);
+}
+
+.publish-header-subtitle {
+  font-size: 11px;
+  color: var(--grey-600);
+}
+
+.publish-close-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--grey-700);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+  background: none;
+  border: none;
+}
+
+.publish-close-btn:hover {
+  background-color: var(--grey-700);
+  color: white;
+}
+
+.publish-close-icon {
+  height: 16px;
+  width: 16px;
+}
+
+/* ─── Loading state ─── */
+.publish-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+}
+
+.publish-loading-icon {
+  height: 20px;
+  width: 20px;
+  color: var(--grey-600);
+}
+
+/* ─── Form body ─── */
+.publish-body {
+  padding: 0 24px 24px;
+}
+
+/* ─── Field group ─── */
+.publish-field {
+  margin-bottom: 16px;
+}
+
+.publish-label {
+  display: block;
+  font-size: 11px;
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.publish-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-lg);
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-700);
+  font-size: 13px;
+  color: var(--grey-100);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.publish-input::placeholder {
+  color: var(--grey-800);
+}
+
+.publish-input:focus {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.publish-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-700);
+  font-size: 13px;
+  color: var(--grey-100);
+  outline: none;
+  resize: none;
+  transition: border-color 0.15s;
+}
+
+.publish-textarea::placeholder {
+  color: var(--grey-800);
+}
+
+.publish-textarea:focus {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.publish-char-count {
+  text-align: right;
+  margin-top: 4px;
+}
+
+.publish-char-count-text {
+  font-size: 11px;
+  color: var(--grey-800);
+}
+
+/* ─── Remix checkbox ─── */
+.publish-remix-field {
+  margin-bottom: 24px;
+}
+
+.publish-remix-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.publish-checkbox {
+  margin-top: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-md);
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.publish-checkbox--checked {
+  background-color: var(--indigo-500);
+  border-color: var(--indigo-500);
+}
+
+.publish-checkbox--unchecked {
+  background-color: transparent;
+  border-color: var(--grey-600);
+}
+
+.publish-checkbox--unchecked:hover {
+  border-color: var(--grey-600);
+}
+
+.publish-checkbox-icon {
+  height: 12px;
+  width: 12px;
+  color: white;
+}
+
+.publish-remix-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.publish-remix-info-icon {
+  height: 14px;
+  width: 14px;
+  color: var(--indigo-500);
+}
+
+.publish-remix-info-text {
+  font-size: 13px;
+  color: var(--grey-100);
+  font-weight: var(--font-weight-normal);
+}
+
+.publish-remix-description {
+  font-size: 11px;
+  color: var(--grey-700);
+  margin-top: 2px;
+}
+
+/* ─── Action buttons ─── */
+.publish-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.publish-unpublish-confirm-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.publish-unpublish-confirm-btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--radius-lg);
+  background-color: rgba(255, 77, 106, 0.1);
+  border: 1px solid rgba(255, 77, 106, 0.2);
+  color: var(--red-500);
+  font-size: 12px;
+  font-weight: var(--font-weight-normal);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.publish-unpublish-confirm-btn:hover {
+  background-color: rgba(255, 77, 106, 0.2);
+}
+
+.publish-unpublish-confirm-btn:disabled {
+  opacity: 0.5;
+}
+
+.publish-unpublish-confirm-spinner {
+  height: 14px;
+  width: 14px;
+}
+
+.publish-unpublish-cancel-btn {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  color: var(--grey-700);
+  cursor: pointer;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+}
+
+.publish-unpublish-cancel-btn:hover {
+  color: var(--grey-400);
+}
+
+.publish-unpublish-btn {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-lg);
+  color: rgba(239, 68, 68, 0.6);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+}
+
+.publish-unpublish-btn:hover {
+  color: var(--red-500);
+}
+
+.publish-unpublish-icon {
+  height: 12px;
+  width: 12px;
+}
+
+.publish-spacer {
+  flex: 1;
+}
+
+.publish-cancel-btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  color: var(--grey-500);
+  cursor: pointer;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+}
+
+.publish-cancel-btn:hover {
+  color: white;
+}
+
+.publish-submit-btn {
+  height: 36px;
+  padding: 0 20px;
+  border-radius: var(--radius-lg);
+  background-color: var(--indigo-500);
+  color: white;
+  font-size: 12px;
+  font-weight: var(--font-weight-semi-bold);
+  cursor: pointer;
+  transition: background-color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+}
+
+.publish-submit-btn:hover {
+  background-color: var(--indigo-500);
+}
+
+.publish-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.publish-submit-icon {
+  height: 14px;
+  width: 14px;
+}

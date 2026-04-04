@@ -1,0 +1,555 @@
+/* AutoAssignTokenMenu — auto-assign token configuration */
+
+/* ── Zap button wrapper ── */
+.auto-assign-wrapper {
+  flex-shrink: 0;
+  position: relative;
+  transition: opacity 150ms;
+}
+
+.auto-assign-wrapper-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.auto-assign-zap-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  transition: background-color 150ms, color 150ms;
+  border: none;
+  cursor: pointer;
+}
+
+.auto-assign-zap-btn-enabled {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--indigo-500);
+}
+
+.auto-assign-zap-btn-enabled:hover {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.auto-assign-zap-btn-open {
+  background: var(--grey-700);
+  color: var(--grey-100);
+}
+
+.auto-assign-zap-btn-default {
+  background: transparent;
+  color: var(--grey-600);
+}
+
+.auto-assign-zap-btn-default:hover {
+  color: var(--grey-500);
+  background: var(--grey-800);
+}
+
+/* ── Toggle dropdown ── */
+.auto-assign-dropdown {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  margin-left: 6px;
+  background: var(--grey-800);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  z-index: 50;
+  padding: 4px 0;
+  min-width: 200px;
+}
+
+.auto-assign-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  transition: background-color 150ms;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.auto-assign-dropdown-item-primary {
+  color: var(--grey-100);
+}
+
+.auto-assign-dropdown-item-primary:hover {
+  background: var(--grey-800);
+}
+
+.auto-assign-dropdown-item-secondary {
+  color: var(--grey-500);
+}
+
+.auto-assign-dropdown-item-secondary:hover {
+  background: var(--grey-800);
+  color: var(--grey-100);
+}
+
+/* ── Toggle switch ── */
+.auto-assign-toggle {
+  width: 32px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  transition: background-color 200ms;
+}
+
+.auto-assign-toggle-on {
+  background: var(--indigo-500);
+  justify-content: flex-end;
+}
+
+.auto-assign-toggle-off {
+  background: var(--grey-700);
+  justify-content: flex-start;
+}
+
+.auto-assign-toggle-knob {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: white;
+  margin: 0 2px;
+  transition: all 200ms;
+}
+
+/* ── Re-apply badge ── */
+.auto-assign-badge {
+  margin-left: auto;
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--indigo-500);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+}
+
+.auto-assign-dropdown-indent {
+  margin-left: 22px;
+}
+
+/* ── Popup ── */
+.auto-assign-popup {
+  position: absolute;
+  z-index: 50;
+  background: var(--grey-800);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2xl);
+}
+
+.auto-assign-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--grey-800);
+}
+
+.auto-assign-popup-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.auto-assign-popup-title {
+  font-size: 12px;
+  color: var(--grey-100);
+}
+
+.auto-assign-popup-close {
+  color: var(--grey-600);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 150ms;
+}
+
+.auto-assign-popup-close:hover {
+  color: var(--grey-500);
+}
+
+.auto-assign-popup-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Form fields ── */
+.auto-assign-label {
+  font-size: 11px;
+  color: var(--grey-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.auto-assign-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auto-assign-text-input {
+  width: 100%;
+  background: var(--grey-800);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--grey-100);
+  outline: none;
+  transition: border-color 150ms;
+}
+
+.auto-assign-text-input:focus {
+  border-color: var(--indigo-500);
+}
+
+.auto-assign-text-input::placeholder {
+  color: var(--grey-600);
+}
+
+.auto-assign-text-input-center {
+  text-align: center;
+  width: 64px;
+}
+
+.auto-assign-text-input-disabled {
+  border-color: var(--grey-600);
+  color: var(--grey-600);
+}
+
+/* ── Dropdown select button ── */
+.auto-assign-select-btn {
+  width: 100%;
+  background: var(--grey-800);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--grey-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 150ms;
+  cursor: pointer;
+}
+
+.auto-assign-select-btn:hover {
+  border-color: var(--grey-600);
+}
+
+/* ── Dropdown options ── */
+.auto-assign-options {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: var(--grey-800);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  z-index: 50;
+  padding: 4px 0;
+}
+
+.auto-assign-options-scroll {
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.auto-assign-option {
+  width: 100%;
+  text-align: left;
+  padding: 4px 10px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 150ms;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--grey-100);
+}
+
+.auto-assign-option:hover {
+  background: var(--grey-800);
+}
+
+.auto-assign-option-active {
+  color: var(--indigo-500);
+}
+
+.auto-assign-option-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Divider in suffix dropdown ── */
+.auto-assign-options-divider {
+  border-top: 1px solid var(--grey-800);
+  margin: 4px 0;
+}
+
+/* ── Custom increment row ── */
+.auto-assign-increment-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.auto-assign-increment-label {
+  font-size: 11px;
+  color: var(--grey-600);
+  flex-shrink: 0;
+}
+
+/* ── Start from hint ── */
+.auto-assign-hint {
+  font-size: 11px;
+  color: var(--grey-600);
+}
+
+/* ── New group checkbox ── */
+.auto-assign-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.auto-assign-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--grey-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 150ms, border-color 150ms;
+  cursor: pointer;
+}
+
+.auto-assign-checkbox:hover {
+  border-color: var(--grey-600);
+}
+
+.auto-assign-checkbox-checked {
+  background: var(--indigo-500);
+  border-color: var(--indigo-500);
+}
+
+.auto-assign-checkbox-label {
+  font-size: 12px;
+  color: var(--grey-500);
+  user-select: none;
+  transition: color 150ms;
+}
+
+.auto-assign-checkbox-row:hover .auto-assign-checkbox-label {
+  color: var(--grey-100);
+}
+
+/* ── Preview box ── */
+.auto-assign-preview {
+  background: var(--grey-800);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  border: 1px solid var(--grey-800);
+}
+
+.auto-assign-preview-label {
+  font-size: 11px;
+  color: var(--grey-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.auto-assign-preview-text {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--grey-400);
+}
+
+.auto-assign-preview-ellipsis {
+  color: var(--grey-600);
+}
+
+/* ── Read-only display ── */
+.auto-assign-ro-value {
+  font-size: 13px;
+  color: var(--grey-100);
+  font-family: var(--font-mono);
+  background: var(--grey-800);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+}
+
+.auto-assign-ro-plain {
+  font-size: 13px;
+  color: var(--grey-100);
+  background: var(--grey-800);
+  border: 1px solid var(--grey-800);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+}
+
+.auto-assign-ro-plain-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Children info ── */
+.auto-assign-children-info {
+  font-size: 11px;
+  color: var(--grey-600);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auto-assign-children-excluded {
+  color: rgba(251, 191, 36, 0.7);
+}
+
+.auto-assign-ro-notice {
+  font-size: 11px;
+  color: var(--grey-600);
+  text-align: center;
+  padding-top: 4px;
+  border-top: 1px solid var(--grey-800);
+}
+
+/* ── Excluded nodes box ── */
+.auto-assign-excluded-box {
+  background: rgba(28, 21, 16, 1);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  border: 1px solid rgba(74, 53, 32, 1);
+}
+
+.auto-assign-excluded-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.auto-assign-excluded-title {
+  font-size: 11px;
+  color: rgba(251, 191, 36, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.auto-assign-excluded-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auto-assign-excluded-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.auto-assign-excluded-name {
+  font-size: 11px;
+  color: rgba(176, 128, 64, 1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auto-assign-excluded-reinclude {
+  font-size: 11px;
+  color: var(--grey-500);
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 150ms, background-color 150ms;
+}
+
+.auto-assign-excluded-reinclude:hover {
+  color: var(--grey-100);
+  background: var(--grey-800);
+}
+
+/* ── Change summary ── */
+.auto-assign-changes {
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.auto-assign-changes-title {
+  font-size: 11px;
+  color: rgba(99, 102, 241, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.auto-assign-change-item {
+  font-size: 11px;
+  color: rgba(99, 102, 241, 0.9);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.auto-assign-change-bullet {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.auto-assign-changes-note {
+  font-size: 11px;
+  color: var(--grey-500);
+  margin-top: 4px;
+}
+
+/* ── Apply button ── */
+.auto-assign-apply-btn {
+  width: 100%;
+  background: var(--indigo-500);
+  color: white;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+  padding: 6px 0;
+  transition: background-color 150ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.auto-assign-apply-btn:hover {
+  background: var(--indigo-500);
+}

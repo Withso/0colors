@@ -1,0 +1,155 @@
+/* CloudSyncIndicator */
+
+/* ─── Icon button ─── */
+.sync-button {
+  height: 28px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s, opacity 0.15s;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.sync-button--clickable {
+  cursor: pointer;
+}
+
+.sync-button--clickable:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sync-button--waiting {
+  cursor: wait;
+}
+
+.sync-button--pulsing {
+  animation: sync-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes sync-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ─── Local-only icon wrapper ─── */
+.sync-local {
+  height: 28px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--grey-600);
+}
+
+/* ─── Icon composition (overlaid badge) ─── */
+.sync-icon-wrap {
+  position: relative;
+}
+
+.sync-icon-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+}
+
+.sync-icon-badge--top {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+}
+
+.sync-icon-badge-bg {
+  background-color: var(--grey-800);
+  border-radius: var(--radius-full);
+}
+
+.sync-dirty-dot {
+  height: 8px;
+  width: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--yellow-500);
+}
+
+/* ─── Tooltip ─── */
+.sync-tooltip {
+  z-index: 200;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  color: var(--grey-100);
+  background-color: rgba(38, 38, 38, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  user-select: none;
+  max-width: 220px;
+}
+
+.sync-tooltip-local {
+  z-index: 200;
+  padding: 8px 12px;
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  color: var(--grey-100);
+  background-color: rgba(38, 38, 38, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  user-select: none;
+}
+
+/* ─── Tooltip inner layout ─── */
+.sync-tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sync-tooltip-local-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sync-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sync-tooltip-label {
+  color: var(--grey-600);
+  font-size: 11px;
+}
+
+.sync-tooltip-value {
+  font-size: 11px;
+  text-align: right;
+}
+
+.sync-tooltip-divider {
+  border-top: 1px solid var(--grey-800);
+  padding-top: 6px;
+  margin-top: 2px;
+}
+
+.sync-tooltip-hint {
+  font-size: 11px;
+}
+
+.sync-local-title {
+  color: var(--grey-500);
+}
+
+.sync-local-subtitle {
+  color: var(--grey-600);
+  font-size: 11px;
+}

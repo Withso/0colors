@@ -1,0 +1,411 @@
+/* ============================================
+ * SpacingNodeCard — Co-located CSS
+ * Uses ONLY var(--*) tokens from variables.css
+ * ============================================ */
+
+/* ═══════════════════════════════════════════
+   Root card wrapper
+   ═══════════════════════════════════════════ */
+
+.spacing-card-root {
+  position: relative;
+  border-radius: 19px;
+  transition: all 0.15s ease;
+  border: 1px solid var(--grey-800);
+}
+
+.spacing-card-root--selected {
+  border-color: var(--indigo-500);
+}
+
+/* ═══════════════════════════════════════════
+   Connection buttons (left / right)
+   ═══════════════════════════════════════════ */
+
+.spacing-card-connect-btn {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background-color: var(--grey-600);
+  border: 2px solid var(--grey-800);
+  transition: background-color 0.15s, border-color 0.15s;
+  z-index: 10;
+}
+
+.spacing-card-connect-btn:hover {
+  background-color: var(--indigo-500);
+  border-color: var(--indigo-400);
+}
+
+.spacing-card-connect-btn--left {
+  left: 0;
+  transform: translate(-50%, -50%);
+}
+
+.spacing-card-connect-btn--right {
+  right: 0;
+  transform: translate(50%, -50%);
+}
+
+/* ═══════════════════════════════════════════
+   Inner card body
+   ═══════════════════════════════════════════ */
+
+.spacing-card-body {
+  background-color: var(--grey-800);
+  border-radius: 19px;
+}
+
+/* ═══════════════════════════════════════════
+   Top section (header + value input)
+   ═══════════════════════════════════════════ */
+
+.spacing-card-top {
+  padding: 16px;
+  background-color: var(--grey-800);
+  border-top-left-radius: 19px;
+  border-top-right-radius: 19px;
+  position: relative;
+}
+
+/* ─── Drag handle ─── */
+
+.spacing-card-drag-handle {
+  cursor: move;
+  position: absolute;
+  top: 8px;
+  left: -22px;
+  color: var(--grey-400);
+  transition: all 0.15s ease;
+}
+
+.spacing-card-drag-handle:hover {
+  color: var(--grey-100);
+}
+
+.spacing-card-drag-handle--visible {
+  opacity: 1;
+}
+
+.spacing-card-drag-handle--hidden {
+  opacity: 0;
+}
+
+.spacing-card-drag-handle-icon {
+  height: 20px;
+  width: 20px;
+}
+
+/* ─── Header row (icon + name input) ─── */
+
+.spacing-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.spacing-card-ruler-icon {
+  height: 16px;
+  width: 16px;
+  color: var(--indigo-400);
+}
+
+.spacing-card-name-input {
+  flex: 1;
+  height: 28px;
+  background-color: var(--grey-700);
+  border-color: transparent;
+  color: var(--grey-100);
+  font-size: var(--text-sm);
+}
+
+/* ─── Value row (number + unit select) ─── */
+
+.spacing-card-value-row {
+  display: flex;
+  gap: 8px;
+}
+
+.spacing-card-value-input {
+  flex: 1;
+  height: 28px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  background-color: var(--grey-700);
+  border-color: transparent;
+  color: var(--grey-100);
+}
+
+.spacing-card-unit-trigger {
+  width: 80px;
+  height: 28px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  background-color: var(--grey-700);
+  border-color: transparent;
+  color: var(--grey-100);
+}
+
+.spacing-card-unit-content {
+  background-color: var(--grey-700);
+  border-color: var(--grey-700);
+}
+
+.spacing-card-unit-item {
+  color: var(--grey-100);
+}
+
+/* ═══════════════════════════════════════════
+   Bottom section (token assignment)
+   ═══════════════════════════════════════════ */
+
+.spacing-card-bottom {
+  padding: 16px;
+  border-top: 1px solid var(--grey-700);
+}
+
+/* ─── Assigned tokens list ─── */
+
+.spacing-card-tokens-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.spacing-card-token-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  background-color: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+
+.spacing-card-token-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--grey-100);
+  background-color: var(--grey-700);
+  padding: 4px 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spacing-card-token-remove-btn {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.spacing-card-token-remove-btn:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.spacing-card-token-remove-icon {
+  height: 16px;
+  width: 16px;
+  color: var(--grey-400);
+}
+
+/* ─── Token selector row ─── */
+
+.spacing-card-selector-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spacing-card-combo-btn {
+  flex: 1;
+  height: 32px;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  overflow: hidden;
+  background-color: var(--grey-700);
+  color: var(--grey-100);
+}
+
+.spacing-card-combo-btn:hover {
+  background-color: var(--grey-600);
+  color: var(--grey-100);
+}
+
+.spacing-card-combo-placeholder {
+  color: var(--grey-500);
+}
+
+.spacing-card-combo-chevron {
+  height: 16px;
+  width: 16px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* ─── Popover / Command dropdown ─── */
+
+.spacing-card-popover {
+  width: 240px;
+  padding: 0;
+  background-color: var(--grey-700);
+  border-color: var(--grey-700);
+}
+
+.spacing-card-command {
+  background-color: var(--grey-700);
+}
+
+.spacing-card-command-input {
+  height: 36px;
+  font-size: var(--text-xs);
+  background-color: var(--grey-700);
+  padding-left: 10px;
+  margin: 4px;
+  color: var(--grey-100);
+}
+
+.spacing-card-command-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.spacing-card-command-input:hover {
+  background-color: var(--grey-700);
+}
+
+.spacing-card-command-list {
+  padding-bottom: 5px;
+  max-height: 280px;
+}
+
+.spacing-card-command-empty {
+  padding-top: 24px;
+  padding-bottom: 24px;
+  font-size: var(--text-xs);
+  text-align: center;
+  color: var(--grey-500);
+}
+
+.spacing-card-command-group {
+  padding: 0;
+}
+
+.spacing-card-command-group [cmdk-group-heading] {
+  color: var(--grey-300);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding-left: 12px;
+  padding-right: 8px;
+}
+
+/* ─── Command items ─── */
+
+.spacing-card-command-item {
+  font-size: var(--text-xs);
+  margin-left: 4px;
+  margin-right: 4px;
+  position: relative;
+}
+
+.spacing-card-command-item[data-selected="true"] {
+  background-color: transparent;
+}
+
+.spacing-card-command-item:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.spacing-card-item-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.spacing-card-item-inner--assigned {
+  background-color: rgba(250, 250, 250, 0.08);
+}
+
+.spacing-card-item-inner--other {
+  background-color: var(--indigo-500);
+}
+
+.spacing-card-item-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background-color: var(--indigo-400);
+  flex-shrink: 0;
+}
+
+.spacing-card-item-text-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.spacing-card-item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--grey-100);
+  transition: color 0.15s;
+}
+
+.spacing-card-command-item:hover .spacing-card-item-label {
+  color: white;
+}
+
+.spacing-card-item-label--assigned {
+  color: white;
+  font-weight: 500;
+}
+
+.spacing-card-item-target-icon {
+  height: 16px;
+  width: 16px;
+  color: var(--indigo-400);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════
+   Resize handle
+   ═══════════════════════════════════════════ */
+
+.spacing-card-resize-handle {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  z-index: 10;
+  background-color: rgba(91, 91, 91, 0);
+}
+
+.spacing-card-resize-svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(calc(-50% - 1px), calc(-50% - 1px));
+  width: 12px;
+  height: 12px;
+  transition: color 0.15s;
+}

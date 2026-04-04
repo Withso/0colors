@@ -1,3 +1,4 @@
+import './AISettingsPopup.css';
 import { motion } from 'motion/react';
 import { X, Eye, EyeOff, Check, Info, ChevronDown, BookOpen, Settings, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
@@ -35,9 +36,9 @@ interface AISettingsPopupProps {
 }
 
 const TIER_COLORS: Record<ContextTier, string> = {
-  small: '#FF4D6A',
+  small: 'var(--red-500)',
   medium: '#8B8FFF',
-  large: '#2BBD68',
+  large: 'var(--green-500)',
 };
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -58,13 +59,13 @@ function ToggleSwitch({ enabled, onChange, label }: { enabled: boolean; onChange
   return (
     <button
       onClick={() => onChange(!enabled)}
-      className="flex items-center gap-1.5 cursor-pointer group"
+      className="ai-settings-toggle-btn"
       title={label}
     >
       {enabled ? (
-        <ToggleRight size={18} className="text-success group-hover:text-[#5CD88E]" />
+        <ToggleRight size={18} className="ai-settings-toggle-icon-on" />
       ) : (
-        <ToggleLeft size={18} className="text-ghost group-hover:text-dim" />
+        <ToggleLeft size={18} className="ai-settings-toggle-icon-off" />
       )}
     </button>
   );
@@ -97,32 +98,26 @@ function ServiceSection({
 
   return (
     <div
-      className="transition-all"
+      className="ai-settings-service"
       style={{
         background: isActiveService ? 'rgba(139,143,255,0.04)' : 'transparent',
         borderBottom: '1px solid rgba(255,255,255,0.04)',
       }}
     >
       {/* Header */}
-      <div className="px-3.5 py-2.5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] font-medium" style={{ color: hasKey ? 'var(--foreground)' : 'var(--subtle)' }}>
+      <div className="ai-settings-service-header">
+        <div className="ai-settings-service-header-left">
+          <span className="ai-settings-service-label" style={{ color: hasKey ? 'var(--grey-100)' : 'var(--grey-500)' }}>
             {definition.label}
           </span>
           {hasKey && (
-            <span
-              className="text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1"
-              style={{ background: 'rgba(43,189,104,0.08)', color: '#2BBD68' }}
-            >
-              <span className="w-1 h-1 rounded-full inline-block" style={{ background: '#2BBD68' }} />
+            <span className="ai-settings-service-badge">
+              <span className="ai-settings-service-badge-dot" />
               Active
             </span>
           )}
           {definition.hasFreeTier && (
-            <span
-              className="text-[10px] px-1.5 py-0.5 rounded-full"
-              style={{ background: 'rgba(43,189,104,0.08)', color: '#2BBD68' }}
-            >
+            <span className="ai-settings-service-free-tier">
               Free tier
             </span>
           )}
@@ -130,45 +125,36 @@ function ServiceSection({
         {hasKey && !isActiveService && (
           <button
             onClick={() => onSetActive(currentModel)}
-            className="text-[10px] px-2 py-0.5 rounded cursor-pointer transition-colors hover:bg-white/5"
-            style={{ color: 'var(--dim)' }}
+            className="ai-settings-service-set-active"
           >
             Set as active
           </button>
         )}
       </div>
 
-      <div className="px-3.5 pb-3 space-y-2.5">
-        <p className="text-[11px] text-ghost leading-relaxed">{definition.description}</p>
+      <div className="ai-settings-service-body">
+        <p className="ai-settings-service-description">{definition.description}</p>
 
         {/* API Key */}
         <div>
-          <label className="text-[10px] text-dim uppercase tracking-wider block mb-1">API Key</label>
-          <div className="flex gap-1.5">
-            <div className="flex-1 relative">
+          <label className="ai-settings-key-label">API Key</label>
+          <div className="ai-settings-key-row">
+            <div className="ai-settings-key-input-wrap">
               {showKey ? (
                 <input
                   type="text"
                   value={config?.apiKey || ''}
                   onChange={e => onUpdateConfig({ apiKey: e.target.value })}
                   placeholder={definition.keyHint}
-                  className="w-full h-7 px-2.5 rounded-md text-[11px] text-foreground placeholder:text-[#444] outline-none"
+                  className="ai-settings-key-input"
                   autoComplete="off"
                   data-lpignore="true"
                   data-1p-ignore
-                  style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                  }}
                 />
               ) : (
                 <div
-                  className="w-full h-7 px-2.5 rounded-md text-[11px] flex items-center cursor-text"
-                  style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    color: hasKey ? 'var(--dim)' : '#444',
-                  }}
+                  className="ai-settings-key-mask"
+                  style={{ color: hasKey ? 'var(--grey-600)' : 'var(--grey-600)' }}
                   onClick={onToggleShowKey}
                 >
                   {hasKey ? maskKey(config!.apiKey) : definition.keyHint}
@@ -177,22 +163,21 @@ function ServiceSection({
             </div>
             <button
               onClick={onToggleShowKey}
-              className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-white/5 cursor-pointer transition-colors"
-              style={{ color: '#555' }}
+              className="ai-settings-key-toggle"
             >
               {showKey ? <EyeOff size={11} /> : <Eye size={11} />}
             </button>
           </div>
           {definition.keyUrl && (
             <a href={definition.keyUrl} target="_blank" rel="noopener noreferrer"
-              className="text-[10px] text-dim hover:text-subtle mt-1 inline-block transition-colors"
+              className="ai-settings-key-url"
             >
               Get your API key &rarr;
             </a>
           )}
           {definition.freeNote && hasKey && (
-            <p className="text-[10px] text-[#2BBD68]/60 mt-1 flex items-start gap-1">
-              <Info size={8} className="shrink-0 mt-[2px]" />
+            <p className="ai-settings-key-free-note">
+              <Info size={8} className="ai-settings-key-free-note-icon" />
               {definition.freeNote}
             </p>
           )}
@@ -201,8 +186,8 @@ function ServiceSection({
         {/* Model selector — only show when key is set */}
         {hasKey && (
           <div>
-            <label className="text-[10px] text-dim uppercase tracking-wider block mb-1">Model</label>
-            <div className="relative">
+            <label className="ai-settings-model-label">Model</label>
+            <div className="ai-settings-model-select-wrap">
               <select
                 value={isKnownModel ? currentModel : '__custom__'}
                 onChange={e => {
@@ -211,8 +196,7 @@ function ServiceSection({
                   onUpdateConfig({ model: newModel });
                   if (isActiveService) onSetActive(newModel);
                 }}
-                className="w-full h-7 px-2 pr-7 rounded-md text-[11px] text-foreground outline-none cursor-pointer appearance-none"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                className="ai-settings-model-select"
               >
                 {definition.models.map(m => (
                   <option key={m.id} value={m.id}>{m.label}</option>
@@ -224,7 +208,7 @@ function ServiceSection({
                   <option value="__custom__">Custom model...</option>
                 )}
               </select>
-              <ChevronDown size={9} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-dim" />
+              <ChevronDown size={9} className="ai-settings-model-chevron" />
             </div>
 
             {definition.supportsCustomModel && (
@@ -239,8 +223,7 @@ function ServiceSection({
                   }
                 }}
                 placeholder="Or paste any model ID..."
-                className="w-full h-6 px-2.5 mt-1.5 rounded-md text-[11px] text-muted-foreground placeholder:text-[#444] outline-none"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                className="ai-settings-model-custom-input"
               />
             )}
           </div>
@@ -353,28 +336,28 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
   };
 
   return (
-    <div className={`flex flex-col ${inline ? '' : 'h-full'}`}>
+    <div className={`ai-settings-content ${inline ? '' : 'ai-settings-content--modal'}`}>
       {/* ── Header ── */}
-      <div className="shrink-0" style={inline ? { borderBottom: '1px solid rgba(255,255,255,0.04)' } : { borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className={`ai-settings-header ${inline ? 'ai-settings-header--inline' : 'ai-settings-header--modal'}`}>
         {!inline && (
-          <div className="flex items-center justify-between px-5 py-3">
+          <div className="ai-settings-header-top">
             <div>
-              <h2 className="text-[14px] text-foreground font-medium">AI Settings</h2>
-              <p className="text-[11px] text-ghost mt-0.5">Bring your own API key — stored locally, never sent to our servers</p>
+              <h2 className="ai-settings-header-title">AI Settings</h2>
+              <p className="ai-settings-header-subtitle">Bring your own API key — stored locally, never sent to our servers</p>
             </div>
             {onClose && (
-              <button onClick={onClose} className="p-1.5 rounded-md hover:bg-white/5 cursor-pointer" style={{ color: 'var(--dim)' }}>
+              <button onClick={onClose} className="ai-settings-close-btn">
                 <X size={14} />
               </button>
             )}
           </div>
         )}
         {inline && (
-          <p className="text-[11px] text-ghost mb-3">Bring your own API key — stored locally, never sent to our servers</p>
+          <p className="ai-settings-header-subtitle--inline">Bring your own API key — stored locally, never sent to our servers</p>
         )}
 
         {/* ── Tab Bar ── */}
-        <div className={`flex ${inline ? '' : 'px-5'} gap-0`}>
+        <div className={`ai-settings-tab-bar ${inline ? '' : 'ai-settings-tab-bar--modal'}`}>
           {([
             { id: 'provider' as SettingsTab, label: 'Provider', icon: Settings },
             { id: 'context' as SettingsTab, label: 'Context Tier', icon: BookOpen },
@@ -385,16 +368,15 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-1.5 px-3.5 py-2 text-[11px] transition-all cursor-pointer relative"
-                style={{ color: isActive ? 'var(--foreground)' : 'var(--dim)' }}
+                className="ai-settings-tab"
+                style={{ color: isActive ? 'var(--grey-100)' : 'var(--grey-600)' }}
               >
                 <Icon size={12} />
                 {tab.label}
                 {isActive && (
                   <motion.div
                     layoutId={inline ? 'settings-tab-indicator-inline' : 'settings-tab-indicator'}
-                    className="absolute bottom-0 left-1 right-1 h-[2px] rounded-full"
-                    style={{ background: 'var(--ai)' }}
+                    className="ai-settings-tab-indicator"
                     transition={{ duration: 0.2 }}
                   />
                 )}
@@ -405,7 +387,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
       </div>
 
       {/* ── Content ── */}
-      <div ref={contentRef} className={`flex-1 min-h-0 overflow-y-auto ${inline ? 'py-2' : 'px-0 py-2'}`}>
+      <div ref={contentRef} className={`ai-settings-body ${inline ? 'ai-settings-body--inline' : ''}`}>
 
         {activeTab === 'provider' ? (
             /* ═══════════════════════════════════════════════════════════
@@ -433,7 +415,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
             /* ═══════════════════════════════════════════════════════════
                CONTEXT TIER TAB
                ═══════════════════════════════════════════════════════════ */
-            <div className={`${inline ? '' : 'px-5'} space-y-4`}>
+            <div className={`ai-settings-context-tab ${inline ? '' : 'ai-settings-context-tab--modal'}`}>
               {/* Active Model Context Info */}
               {(() => {
                 const configuredModels = getConfiguredModelsWithContext(settings);
@@ -441,18 +423,18 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                 const activeDef = SERVICE_MAP[settings.activeModel.serviceId];
                 const activeModelLabel = activeDef?.models.find(m => m.id === settings.activeModel.modelId)?.label || settings.activeModel.modelId;
                 return configuredModels.length > 0 ? (
-                  <div className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div className="px-3.5 py-2.5">
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="text-[10px] text-dim uppercase tracking-wider">Active Model</label>
+                  <div className="ai-settings-active-model-card">
+                    <div className="ai-settings-active-model-inner">
+                      <div className="ai-settings-active-model-header">
+                        <label className="ai-settings-active-model-label">Active Model</label>
                         {activeCtx && (
-                          <span className="text-[11px] font-mono tabular-nums" style={{ color: 'var(--ai)' }}>
+                          <span className="ai-settings-active-model-context">
                             {formatTokens(activeCtx)} context
                           </span>
                         )}
                       </div>
                       {configuredModels.length > 1 ? (
-                        <div className="relative">
+                        <div className="ai-settings-active-model-select-wrap">
                           <select
                             value={`${settings.activeModel.serviceId}:${settings.activeModel.modelId}`}
                             onChange={e => {
@@ -460,8 +442,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                               const mid = rest.join(':');
                               setSettings(prev => ({ ...prev, activeModel: { serviceId: sid as ServiceId, modelId: mid } }));
                             }}
-                            className="w-full h-7 px-2 pr-7 rounded-md text-[11px] text-foreground outline-none cursor-pointer appearance-none"
-                            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                            className="ai-settings-active-model-select"
                           >
                             {configuredModels.map(m => (
                               <option key={`${m.serviceId}:${m.modelId}`} value={`${m.serviceId}:${m.modelId}`}>
@@ -469,32 +450,32 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                               </option>
                             ))}
                           </select>
-                          <ChevronDown size={9} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-dim" />
+                          <ChevronDown size={9} className="ai-settings-active-model-chevron" />
                         </div>
                       ) : (
-                        <div className="text-[11px] text-foreground">
+                        <div className="ai-settings-active-model-name">
                           {activeDef?.label}: {activeModelLabel}
                         </div>
                       )}
                       {activeCtx && (
-                        <div className="mt-2">
-                          <div className="flex items-center justify-between text-[10px] text-ghost mb-1">
+                        <div className="ai-settings-context-usage">
+                          <div className="ai-settings-context-usage-header">
                             <span>Context usage</span>
-                            <span className="font-mono tabular-nums">
+                            <span className="ai-settings-mono">
                               {formatTokens(tokenBreakdown.totalWithResponse)} / {formatTokens(activeCtx)}
                             </span>
                           </div>
-                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                          <div className="ai-settings-context-usage-bar">
                             <div
-                              className="h-full rounded-full transition-all"
+                              className="ai-settings-context-usage-fill"
                               style={{
                                 width: `${Math.min((tokenBreakdown.totalWithResponse / activeCtx) * 100, 100)}%`,
-                                background: tokenBreakdown.totalWithResponse > activeCtx ? '#FF4D6A' : 'var(--ai)',
+                                background: tokenBreakdown.totalWithResponse > activeCtx ? 'var(--red-500)' : 'var(--indigo-400)',
                               }}
                             />
                           </div>
                           {tokenBreakdown.totalWithResponse > activeCtx && (
-                            <p className="text-[10px] mt-1" style={{ color: '#FF4D6A' }}>
+                            <p className="ai-settings-context-usage-warning">
                               Exceeds model context — reduce tier or disable sources
                             </p>
                           )}
@@ -507,8 +488,8 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
 
               {/* Tier Selector */}
               <div>
-                <label className="text-[11px] text-dim uppercase tracking-wider block mb-2">Context Tier</label>
-                <div className="grid grid-cols-3 gap-2">
+                <label className="ai-settings-tier-label">Context Tier</label>
+                <div className="ai-settings-tier-grid">
                   {(['small', 'medium', 'large'] as ContextTier[]).map(tier => {
                     const isSelected = contextTier === tier;
                     const color = TIER_COLORS[tier];
@@ -517,53 +498,51 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                       <button
                         key={tier}
                         onClick={() => setContextTier(tier)}
-                        className="relative flex flex-col items-start p-3 rounded-lg text-left transition-all cursor-pointer"
+                        className="ai-settings-tier-btn"
                         style={{
                           background: isSelected ? `${color}10` : 'rgba(255,255,255,0.02)',
                           border: `1px solid ${isSelected ? `${color}40` : 'rgba(255,255,255,0.05)'}`,
                         }}
                       >
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <div className="w-2 h-2 rounded-full" style={{ background: isSelected ? color : '#333' }} />
-                          <span className="text-[12px] font-medium" style={{ color: isSelected ? color : 'var(--subtle)' }}>
+                        <div className="ai-settings-tier-btn-header">
+                          <div className="ai-settings-tier-dot" style={{ background: isSelected ? color : 'var(--grey-700)' }} />
+                          <span className="ai-settings-tier-name" style={{ color: isSelected ? color : 'var(--grey-500)' }}>
                             {info.label}
                           </span>
                         </div>
-                        <p className="text-[11px] leading-relaxed" style={{ color: isSelected ? 'var(--subtle)' : 'var(--dim)' }}>
+                        <p className="ai-settings-tier-desc" style={{ color: isSelected ? 'var(--grey-500)' : 'var(--grey-600)' }}>
                           {info.description}
                         </p>
                       </button>
                     );
                   })}
                 </div>
-                <p className="text-[11px] text-ghost mt-2 leading-relaxed px-0.5">
+                <p className="ai-settings-tier-detail">
                   {TIER_INFO[contextTier].detail}
                 </p>
               </div>
 
               {/* ── Context Sources Breakdown ── */}
               <div>
-                <label className="text-[11px] text-dim uppercase tracking-wider block mb-2">Context Sources</label>
-                <div className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <label className="ai-settings-sources-label">Context Sources</label>
+                <div className="ai-settings-sources-card">
 
                   {/* Knowledge Base */}
-                  <div className="px-3.5 py-2.5 flex items-center justify-between"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px]" style={{ color: contextToggles.knowledgeBase ? 'var(--foreground)' : 'var(--dim)' }}>
+                  <div className="ai-settings-source-row">
+                    <div className="ai-settings-source-info">
+                      <div className="ai-settings-source-name-row">
+                        <span className="ai-settings-source-name" style={{ color: contextToggles.knowledgeBase ? 'var(--grey-100)' : 'var(--grey-600)' }}>
                           Knowledge Base
                         </span>
-                        <span className="text-[11px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.04)', color: '#666' }}>
+                        <span className="ai-settings-source-kb-badge">
                           {tokenBreakdown.kbLabel}
                         </span>
                       </div>
-                      <p className="text-[11px] text-ghost mt-0.5">0colors features, concepts, and usage guide</p>
+                      <p className="ai-settings-source-desc">0colors features, concepts, and usage guide</p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] font-mono tabular-nums" style={{
-                        color: contextToggles.knowledgeBase ? TIER_COLORS[contextTier] : 'var(--ghost)',
+                    <div className="ai-settings-source-right">
+                      <span className="ai-settings-source-token-count" style={{
+                        color: contextToggles.knowledgeBase ? TIER_COLORS[contextTier] : 'var(--grey-700)',
                       }}>
                         {contextToggles.knowledgeBase ? formatTokens(tokenBreakdown.kbTokens) : '0'}
                       </span>
@@ -572,30 +551,28 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                   </div>
 
                   {/* Project Context */}
-                  <div className="px-3.5 py-2.5 flex items-center justify-between"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px]" style={{ color: contextToggles.projectContext ? 'var(--foreground)' : 'var(--dim)' }}>
+                  <div className="ai-settings-source-row">
+                    <div className="ai-settings-source-info">
+                      <div className="ai-settings-source-name-row">
+                        <span className="ai-settings-source-name" style={{ color: contextToggles.projectContext ? 'var(--grey-100)' : 'var(--grey-600)' }}>
                           Project Data
                         </span>
                         {tokenBreakdown.projectRawTokens > tokenBreakdown.projectBudget && contextToggles.projectContext && (
-                          <span className="text-[11px] px-1 py-[1px] rounded" style={{ background: 'rgba(139,143,255,0.15)', color: 'var(--ai)' }}>
+                          <span className="ai-settings-source-truncated">
                             truncated
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-ghost mt-0.5">
+                      <p className="ai-settings-source-desc">
                         {projectContext
                           ? `Current project: nodes, tokens, themes, logic (${formatTokens(tokenBreakdown.projectRawTokens)} raw)`
                           : 'No project context available'
                         }
                       </p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] font-mono tabular-nums" style={{
-                        color: contextToggles.projectContext ? TIER_COLORS[contextTier] : 'var(--ghost)',
+                    <div className="ai-settings-source-right">
+                      <span className="ai-settings-source-token-count" style={{
+                        color: contextToggles.projectContext ? TIER_COLORS[contextTier] : 'var(--grey-700)',
                       }}>
                         {contextToggles.projectContext ? formatTokens(tokenBreakdown.projectEffective) : '0'}
                       </span>
@@ -604,30 +581,28 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                   </div>
 
                   {/* Conversation History */}
-                  <div className="px-3.5 py-2.5 flex items-center justify-between"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px]" style={{ color: contextToggles.conversationHistory ? 'var(--foreground)' : 'var(--dim)' }}>
+                  <div className="ai-settings-source-row">
+                    <div className="ai-settings-source-info">
+                      <div className="ai-settings-source-name-row">
+                        <span className="ai-settings-source-name" style={{ color: contextToggles.conversationHistory ? 'var(--grey-100)' : 'var(--grey-600)' }}>
                           Conversation History
                         </span>
                         {tokenBreakdown.convTokens > tokenBreakdown.convBudget && contextToggles.conversationHistory && (
-                          <span className="text-[11px] px-1 py-[1px] rounded" style={{ background: 'rgba(139,143,255,0.15)', color: 'var(--ai)' }}>
+                          <span className="ai-settings-source-truncated">
                             truncated
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-ghost mt-0.5">
+                      <p className="ai-settings-source-desc">
                         {tokenBreakdown.convMessageCount > 0
                           ? `${tokenBreakdown.convMessageCount} messages in current chat (${formatTokens(tokenBreakdown.convTokens)} raw)`
                           : 'No active conversation'
                         }
                       </p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] font-mono tabular-nums" style={{
-                        color: contextToggles.conversationHistory ? TIER_COLORS[contextTier] : 'var(--ghost)',
+                    <div className="ai-settings-source-right">
+                      <span className="ai-settings-source-token-count" style={{
+                        color: contextToggles.conversationHistory ? TIER_COLORS[contextTier] : 'var(--grey-700)',
                       }}>
                         {contextToggles.conversationHistory ? formatTokens(tokenBreakdown.convEffective) : '0'}
                       </span>
@@ -636,101 +611,95 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                   </div>
 
                   {/* System Instruction */}
-                  <div className="px-3.5 py-2.5 flex items-center justify-between"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[11px] text-faint">System Instruction</span>
-                      <p className="text-[11px] text-ghost mt-0.5">Always included — guides AI behavior</p>
+                  <div className="ai-settings-source-row">
+                    <div className="ai-settings-source-info">
+                      <span className="ai-settings-source-name ai-settings-text-faint">System Instruction</span>
+                      <p className="ai-settings-source-desc">Always included — guides AI behavior</p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] font-mono tabular-nums text-dim">{formatTokens(tokenBreakdown.tailTokens)}</span>
-                      <div className="w-[18px]" />
+                    <div className="ai-settings-source-right">
+                      <span className="ai-settings-source-token-count ai-settings-text-dim">{formatTokens(tokenBreakdown.tailTokens)}</span>
+                      <div className="ai-settings-source-spacer" />
                     </div>
                   </div>
 
                   {/* Max Response */}
-                  <div className="px-3.5 py-2.5 flex items-center justify-between"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[11px] text-faint">Max Response</span>
-                      <p className="text-[11px] text-ghost mt-0.5">Reserved for AI output generation</p>
+                  <div className="ai-settings-source-row">
+                    <div className="ai-settings-source-info">
+                      <span className="ai-settings-source-name ai-settings-text-faint">Max Response</span>
+                      <p className="ai-settings-source-desc">Reserved for AI output generation</p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] font-mono tabular-nums text-dim">{formatTokens(tokenBreakdown.maxResponse)}</span>
-                      <div className="w-[18px]" />
+                    <div className="ai-settings-source-right">
+                      <span className="ai-settings-source-token-count ai-settings-text-dim">{formatTokens(tokenBreakdown.maxResponse)}</span>
+                      <div className="ai-settings-source-spacer" />
                     </div>
                   </div>
 
                   {/* Total */}
-                  <div className="px-3.5 py-2.5 flex items-center justify-between"
-                    style={{ background: 'rgba(255,255,255,0.02)' }}
-                  >
-                    <div className="flex-1">
-                      <span className="text-[11px] text-subtle font-medium">Total Estimated</span>
-                      <p className="text-[11px] text-ghost mt-0.5">
+                  <div className="ai-settings-source-row--total">
+                    <div className="ai-settings-source-info">
+                      <span className="ai-settings-total-label">Total Estimated</span>
+                      <p className="ai-settings-total-detail">
                         Input: {formatTokens(tokenBreakdown.totalInput)} + Response: {formatTokens(tokenBreakdown.maxResponse)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[12px] font-mono tabular-nums font-medium" style={{ color: TIER_COLORS[contextTier] }}>
+                    <div className="ai-settings-source-right">
+                      <span className="ai-settings-total-value" style={{ color: TIER_COLORS[contextTier] }}>
                         {formatTokens(tokenBreakdown.totalWithResponse)}
                       </span>
-                      <div className="w-[18px]" />
+                      <div className="ai-settings-source-spacer" />
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* ── Budget bar visualization ── */}
-              <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] text-dim">Token budget usage</span>
-                  <span className="text-[11px] font-mono tabular-nums" style={{ color: TIER_COLORS[contextTier] }}>
+              <div className="ai-settings-budget-card">
+                <div className="ai-settings-budget-header">
+                  <span className="ai-settings-budget-label">Token budget usage</span>
+                  <span className="ai-settings-budget-value" style={{ color: TIER_COLORS[contextTier] }}>
                     {formatTokens(tokenBreakdown.totalWithResponse)} / {formatTokens(tokenBreakdown.totalBudget)}
                   </span>
                 </div>
-                <div className="h-2 rounded-full overflow-hidden flex" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <div className="ai-settings-budget-bar">
                   {tokenBreakdown.activeKB > 0 && (
-                    <div className="h-full" style={{ width: `${(tokenBreakdown.activeKB / tokenBreakdown.totalBudget) * 100}%`, background: '#7C66DC' }}
+                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeKB / tokenBreakdown.totalBudget) * 100}%`, background: '#7C66DC' }}
                       title={`Knowledge Base: ${formatTokens(tokenBreakdown.activeKB)}`} />
                   )}
                   {tokenBreakdown.activeProject > 0 && (
-                    <div className="h-full" style={{ width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--ai)' }}
+                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--indigo-400)' }}
                       title={`Project: ${formatTokens(tokenBreakdown.activeProject)}`} />
                   )}
                   {tokenBreakdown.activeConv > 0 && (
-                    <div className="h-full" style={{ width: `${(tokenBreakdown.activeConv / tokenBreakdown.totalBudget) * 100}%`, background: '#2BBD68' }}
+                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeConv / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--green-500)' }}
                       title={`Conversation: ${formatTokens(tokenBreakdown.activeConv)}`} />
                   )}
-                  <div className="h-full"
+                  <div className="ai-settings-budget-segment"
                     style={{ width: `${((tokenBreakdown.tailTokens + tokenBreakdown.maxResponse) / tokenBreakdown.totalBudget) * 100}%`, background: 'rgba(255,255,255,0.08)' }}
                     title={`System + Response: ${formatTokens(tokenBreakdown.tailTokens + tokenBreakdown.maxResponse)}`} />
                 </div>
-                <div className="flex flex-wrap gap-3 mt-2">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: '#7C66DC' }} />
-                    <span className="text-[11px] text-dim">KB</span>
+                <div className="ai-settings-budget-legend">
+                  <div className="ai-settings-budget-legend-item">
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: '#7C66DC' }} />
+                    <span className="ai-settings-budget-legend-text">KB</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: 'var(--ai)' }} />
-                    <span className="text-[11px] text-dim">Project</span>
+                  <div className="ai-settings-budget-legend-item">
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--indigo-400)' }} />
+                    <span className="ai-settings-budget-legend-text">Project</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: '#2BBD68' }} />
-                    <span className="text-[11px] text-dim">Conversation</span>
+                  <div className="ai-settings-budget-legend-item">
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--green-500)' }} />
+                    <span className="ai-settings-budget-legend-text">Conversation</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: 'rgba(255,255,255,0.15)' }} />
-                    <span className="text-[11px] text-dim">System + Response</span>
+                  <div className="ai-settings-budget-legend-item">
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'rgba(255,255,255,0.15)' }} />
+                    <span className="ai-settings-budget-legend-text">System + Response</span>
                   </div>
                 </div>
               </div>
 
               {/* ── How It Works ── */}
-              <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(139,143,255,0.04)', border: '1px solid rgba(139,143,255,0.08)' }}>
-                <p className="text-[11px] text-ai/70 leading-relaxed">
+              <div className="ai-settings-how-it-works">
+                <p className="ai-settings-how-it-works-text">
                   <strong>How it works:</strong> The Context Tier sets a total token budget. Each source (KB, project, conversation)
                   gets a share of that budget. Toggle sources off to reduce token usage or free up budget for other sources.
                   If the total exceeds what your model can handle, you'll see an error in chat — just switch to a smaller tier or
@@ -742,13 +711,13 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
         </div>
 
       {/* ── Footer ── */}
-      <div className={`shrink-0 ${inline ? '' : 'px-5'} py-3 flex items-center justify-between`}
+      <div className={`ai-settings-footer ${inline ? '' : 'ai-settings-footer--modal'}`}
         style={{ borderTop: `1px solid rgba(255,255,255,${inline ? '0.04' : '0.06'})` }}
       >
-        <p className="text-[11px] text-ghost">
+        <p className="ai-settings-footer-text">
           Keys encrypted locally before cloud sync
         </p>
-        <div className="flex items-center gap-1.5 text-[11px]" style={{ color: saveState === 'saved' ? '#2BBD68' : 'var(--ghost)' }}>
+        <div className="ai-settings-footer-status" style={{ color: saveState === 'saved' ? 'var(--green-500)' : 'var(--grey-700)' }}>
           {saveState === 'saved' && <><Check size={10} /> Saved</>}
           {saveState === 'saving' && 'Saving...'}
         </div>
@@ -769,14 +738,13 @@ export function AISettingsPopup({ onClose, ...contentProps }: AISettingsPopupPro
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 100000 }}>
+    <div className="ai-settings-popup-overlay">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0"
-        style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+        className="ai-settings-popup-backdrop"
         onClick={onClose}
       />
       {/* Card */}
@@ -785,13 +753,7 @@ export function AISettingsPopup({ onClose, ...contentProps }: AISettingsPopupPro
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.97, y: 8 }}
         transition={{ duration: 0.2 }}
-        className="relative rounded-xl overflow-hidden flex flex-col"
-        style={{
-          width: 'min(580px, 92vw)',
-          height: 'min(740px, 90vh)',
-          background: 'var(--card)',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-        }}
+        className="ai-settings-popup-card"
       >
         <AISettingsContent {...contentProps} onClose={onClose} />
       </motion.div>

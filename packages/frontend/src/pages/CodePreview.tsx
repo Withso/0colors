@@ -18,6 +18,7 @@ import { SyntaxHighlightedCode } from '../components/SyntaxHighlightedCode';
 import { Checkbox } from '../components/ui/checkbox';
 import { getVisibleTokens } from '../utils/visibility';
 import type { ProjectComputedTokens } from '../utils/computed-tokens';
+import './CodePreview.css';
 
 type CodeFormat = 'css' | 'dtcg' | 'tailwind' | 'figma';
 
@@ -95,7 +96,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
     } else {
       visibleTokens = getVisibleTokens(tokens, nodes, activeThemeId, primaryThemeId);
     }
-    
+
     switch (selectedFormat) {
       case 'css':
         return generateCSSVariables(visibleTokens, tokenGroups, nodes, activeThemeId, activeHexOverride, primaryThemeId, allProjectTokens, allProjectNodes, advancedLogic);
@@ -111,7 +112,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
   };
 
   const codeContent = getCodeContent();
-  
+
   const lineCount = useMemo(() => codeContent.split('\n').length, [codeContent]);
 
   const copyToClipboard = async () => {
@@ -131,7 +132,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
       tailwind: 'js',
       figma: 'json',
     };
-    
+
     const fileName = `tokens-${activePage?.name.toLowerCase().replace(/\s+/g, '-') || 'export'}.${extensions[selectedFormat]}`;
     const blob = new Blob([codeContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -143,47 +144,47 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0c0c0c] overflow-hidden">
+    <div className="code-preview-root">
       {/* ─── Top Bar ─── */}
-      <div className="flex items-center justify-between px-5 h-[44px] shrink-0 border-b border-[#141414] bg-[#0c0c0c]">
-        <div className="flex items-center gap-3 min-w-0">
-          <FileCode2 className="h-3.5 w-3.5 text-ghost shrink-0" />
-          <span className="text-[11px] text-faint uppercase tracking-widest shrink-0">
+      <div className="code-preview-top-bar">
+        <div className="code-preview-top-bar-left">
+          <FileCode2 className="code-preview-file-icon" />
+          <span className="code-preview-label">
             Code Export
           </span>
           {activePage && (
             <>
-              <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
-              <span className="text-[11px] text-dim">{activePage.name}</span>
+              <div className="code-preview-divider" />
+              <span className="code-preview-meta-text">{activePage.name}</span>
             </>
           )}
           {activeTheme && (
             <>
-              <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
-              <span className="text-[11px] text-dim">{activeTheme.name}</span>
+              <div className="code-preview-divider" />
+              <span className="code-preview-meta-text">{activeTheme.name}</span>
             </>
           )}
 
           {/* Show as Hex — multi-select dropdown (hidden for Figma Variables which are always hex) */}
           {selectedFormat !== 'figma' && (
             <>
-              <div className="w-px h-3.5 bg-[#1f1f1f] shrink-0" />
+              <div className="code-preview-divider" />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`flex items-center gap-1.5 h-[28px] px-2.5 rounded-md border text-[11px] transition-colors outline-none cursor-pointer ${
+                    className={`code-preview-hex-btn ${
                       hexOverrideSpaces.size > 0
-                        ? 'bg-[#1a1a2e] border-[#252525] text-foreground'
-                        : 'bg-[#141414] border-secondary hover:bg-secondary text-subtle hover:text-foreground'
+                        ? 'code-preview-hex-btn--active'
+                        : 'code-preview-hex-btn--inactive'
                     }`}
                   >
                     <span>Show as Hex{hexOverrideSpaces.size > 0 ? ` (${hexOverrideSpaces.size})` : ''}</span>
-                    <ChevronDown className="h-3 w-3 opacity-40" />
+                    <ChevronDown className="code-preview-hex-chevron" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="start"
-                  className="w-[180px] bg-card border-secondary p-1 shadow-lg"
+                  className="code-preview-dropdown-content--narrow"
                   onCloseAutoFocus={(e) => e.preventDefault()}
                 >
                   {([
@@ -196,14 +197,14 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
                         e.preventDefault(); // keep dropdown open
                         toggleHexOverride(key);
                       }}
-                      className="flex items-center gap-2.5 text-xs cursor-pointer focus:bg-hairline focus:text-foreground"
+                      className="code-preview-hex-menu-item"
                     >
-                      <div className="pointer-events-none shrink-0">
+                      <div className="code-preview-checkbox-wrapper">
                         <Checkbox
                           checked={hexOverrideSpaces.has(key)}
                         />
                       </div>
-                      <span className={hexOverrideSpaces.has(key) ? 'text-foreground' : 'text-subtle'}>
+                      <span className={hexOverrideSpaces.has(key) ? 'code-preview-hex-dropdown-label--active' : 'code-preview-hex-dropdown-label--inactive'}>
                         {label}
                       </span>
                     </DropdownMenuItem>
@@ -214,52 +215,50 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
           )}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="code-preview-top-bar-right">
           {/* Format selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
-                className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-secondary hover:bg-secondary text-[11px] text-subtle hover:text-foreground transition-colors outline-none cursor-pointer"
-              >
+              <button className="code-preview-action-btn">
                 <span>{formatLabels[selectedFormat]}</span>
-                <ChevronDown className="h-3 w-3 opacity-40" />
+                <ChevronDown className="code-preview-action-icon" style={{ opacity: 0.4 }} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[220px] bg-card border-secondary p-1 shadow-lg">
+            <DropdownMenuContent align="end" className="code-preview-dropdown-content">
               {(Object.keys(formatLabels) as CodeFormat[]).map(fmt => (
                 <DropdownMenuItem
                   key={fmt}
                   onClick={() => setSelectedFormat(fmt)}
-                  className="flex items-center justify-between text-xs cursor-pointer focus:bg-hairline focus:text-foreground"
+                  className="code-preview-dropdown-menu-item"
                 >
-                  <div className="flex flex-col">
-                    <span className={fmt === selectedFormat ? 'text-foreground' : 'text-subtle'}>
+                  <div className="code-preview-dropdown-item">
+                    <span className={fmt === selectedFormat ? 'code-preview-dropdown-item-label--active' : 'code-preview-dropdown-item-label--inactive'}>
                       {formatLabels[fmt]}
                     </span>
-                    <span className="text-[11px] text-ghost">{formatDescriptions[fmt]}</span>
+                    <span className="code-preview-dropdown-item-desc">{formatDescriptions[fmt]}</span>
                   </div>
-                  {fmt === selectedFormat && <Check className="h-3 w-3 text-dim" />}
+                  {fmt === selectedFormat && <Check className="code-preview-dropdown-check" />}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
           {/* Divider */}
-          <div className="w-px h-4 bg-[#1f1f1f] mx-0.5" />
+          <div className="code-preview-divider-v" />
 
           {/* Copy */}
           <button
             onClick={copyToClipboard}
-            className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-secondary hover:bg-secondary text-[11px] text-subtle hover:text-foreground transition-colors cursor-pointer"
+            className="code-preview-action-btn"
           >
             {copied ? (
               <>
-                <Check className="h-3 w-3 text-success" />
-                <span className="text-success">Copied</span>
+                <Check className="code-preview-action-icon--success" />
+                <span className="code-preview-action-text--success">Copied</span>
               </>
             ) : (
               <>
-                <Copy className="h-3 w-3" />
+                <Copy className="code-preview-action-icon" />
                 <span>Copy</span>
               </>
             )}
@@ -268,24 +267,24 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
           {/* Download */}
           <button
             onClick={downloadFile}
-            className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md bg-[#141414] border border-secondary hover:bg-secondary text-[11px] text-subtle hover:text-foreground transition-colors cursor-pointer"
+            className="code-preview-action-btn"
           >
-            <Download className="h-3 w-3" />
+            <Download className="code-preview-action-icon" />
             <span>Download</span>
           </button>
         </div>
       </div>
 
       {/* ─── Code Display ─── */}
-      <div className="flex-1 overflow-auto min-h-0">
+      <div className="code-preview-code-area">
         {tokens.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="w-10 h-10 rounded-lg bg-[#141414] border border-[#181818] flex items-center justify-center mx-auto mb-3">
-                <FileCode2 className="h-5 w-5 text-ghost" />
+          <div className="code-preview-empty">
+            <div className="code-preview-empty-inner">
+              <div className="code-preview-empty-icon-wrapper">
+                <FileCode2 className="code-preview-empty-icon" />
               </div>
-              <p className="text-dim text-[13px] mb-1">No tokens to export</p>
-              <p className="text-ghost text-[11px]">
+              <p className="code-preview-empty-title">No tokens to export</p>
+              <p className="code-preview-empty-subtitle">
                 Create and assign tokens to nodes to see code output
               </p>
             </div>
@@ -300,15 +299,15 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
 
       {/* ─── Footer ─── */}
       <div
-        className="flex items-center justify-between px-5 h-[30px] shrink-0 select-none"
-        style={{ borderTop: '1px solid #141414' }}
+        className="code-preview-footer"
+        style={{ borderTop: '1px solid var(--grey-900)' }}
       >
-        <span className="text-[11px] text-ghost tabular-nums">
+        <span className="code-preview-footer-left">
           {lineCount} line{lineCount !== 1 ? 's' : ''}
           {' \u00b7 '}
           {formatLabels[selectedFormat]}
         </span>
-        <span className="text-[11px] text-ghost uppercase tracking-wider">
+        <span className="code-preview-footer-right">
           Read-only
         </span>
       </div>

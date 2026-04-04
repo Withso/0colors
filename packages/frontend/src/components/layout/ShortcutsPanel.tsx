@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { X, GripHorizontal, Keyboard, Lightbulb, MousePointerClick } from 'lucide-react';
 import { Tip } from '../Tip';
+import './ShortcutsPanel.css';
 
 interface ShortcutsPanelProps {
   onClose: () => void;
@@ -158,13 +159,10 @@ const tipCategories: TipCategory[] = [
 
 function KeyBadge({ k }: { k: string }) {
   if (k === '/' || k === '–') {
-    return <span className="text-[11px] text-ghost mx-0.5">{k}</span>;
+    return <span className="shortcuts-key-separator">{k}</span>;
   }
   return (
-    <kbd
-      className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-[5px] rounded-[4px] text-[11px] text-subtle bg-secondary border border-[#262626]"
-      style={{ fontFamily: 'inherit' }}
-    >
+    <kbd className="shortcuts-key">
       {k}
     </kbd>
   );
@@ -172,7 +170,7 @@ function KeyBadge({ k }: { k: string }) {
 
 function ActionBadge({ text }: { text: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[11px] text-faint bg-[#141414] border border-[#1e1e1e] rounded-[4px] px-1.5 py-[1px] whitespace-nowrap">
+    <span className="shortcuts-action-badge">
       {text}
     </span>
   );
@@ -384,13 +382,13 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
   return (
     <div
       ref={popupRef}
-      className="fixed flex flex-col rounded-xl overflow-hidden transition-[border-color,box-shadow] duration-150 z-[100]"
+      className="shortcuts-panel"
       style={{
         left: position.x,
         top: position.y,
         width: size.width,
         height: size.height,
-        background: 'var(--background)',
+        background: 'var(--grey-900)',
         boxShadow: isActive
           ? '0 24px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06) inset'
           : '0 16px 48px rgba(0,0,0,.4)',
@@ -408,75 +406,71 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
 
       {/* ─── Header ─── */}
       <div
-        className="flex items-center justify-between px-4 h-[42px] shrink-0 select-none"
-        style={{ borderBottom: '1px solid #141414', cursor: isDragging ? 'grabbing' : 'grab' }}
+        className="shortcuts-header"
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         onMouseDown={handleDragStart}
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <GripHorizontal className="h-3.5 w-3.5 text-elevated shrink-0" />
-          <span className="text-[11px] text-faint uppercase tracking-widest shrink-0">Shortcuts & Tips</span>
+        <div className="shortcuts-header-left">
+          <GripHorizontal size={14} className="shortcuts-header-icon" />
+          <span className="shortcuts-header-title">Shortcuts & Tips</span>
         </div>
         <Tip label="Close Panel" side="bottom">
         <button
           onClick={onClose}
-          className="flex items-center justify-center h-6 w-6 rounded-md hover:bg-secondary text-dim hover:text-subtle transition-colors"
+          className="shortcuts-close-btn"
         >
-          <X className="h-3.5 w-3.5" />
+          <X size={14} />
         </button>
         </Tip>
       </div>
 
       {/* ─── Tab Bar ─── */}
-      <div className="flex items-center gap-0.5 px-3 pt-2.5 pb-1 shrink-0">
+      <div className="shortcuts-tabs">
         <button
           onClick={() => setActiveTab('shortcuts')}
-          className={`flex items-center gap-1.5 h-[28px] px-3 rounded-lg text-[11px] transition-colors ${
-            activeTab === 'shortcuts'
-              ? 'bg-secondary text-foreground border border-elevated'
-              : 'text-faint hover:text-subtle hover:bg-card border border-transparent'
+          className={`shortcuts-tab ${
+            activeTab === 'shortcuts' ? 'shortcuts-tab--active' : 'shortcuts-tab--inactive'
           }`}
         >
-          <Keyboard className="h-3 w-3" />
+          <Keyboard size={12} />
           Shortcuts
         </button>
         <button
           onClick={() => setActiveTab('tips')}
-          className={`flex items-center gap-1.5 h-[28px] px-3 rounded-lg text-[11px] transition-colors ${
-            activeTab === 'tips'
-              ? 'bg-secondary text-foreground border border-elevated'
-              : 'text-faint hover:text-subtle hover:bg-card border border-transparent'
+          className={`shortcuts-tab ${
+            activeTab === 'tips' ? 'shortcuts-tab--active' : 'shortcuts-tab--inactive'
           }`}
         >
-          <Lightbulb className="h-3 w-3" />
+          <Lightbulb size={12} />
           Tips
         </button>
       </div>
 
       {/* ─── Body ─── */}
-      <div className="flex-1 overflow-y-auto min-h-0 px-1">
+      <div className="shortcuts-body">
         {activeTab === 'shortcuts' && (
           <>
             {shortcutCategories.map((cat, ci) => (
               <div key={cat.title}>
                 {/* Category header */}
-                <div className="sticky top-0 z-[2] bg-background">
-                  <div className="flex items-center gap-2 px-3 pt-3.5 pb-1.5">
-                    <span className="text-[11px] text-dim uppercase tracking-widest">{cat.title}</span>
-                    <div className="flex-1 h-px bg-[#141414]" />
+                <div className="shortcuts-category-header">
+                  <div className="shortcuts-category-inner">
+                    <span className="shortcuts-category-title">{cat.title}</span>
+                    <div className="shortcuts-category-line" />
                   </div>
                 </div>
 
                 {/* Shortcut rows */}
-                <div className="flex flex-col">
+                <div>
                   {cat.shortcuts.map((sc, si) => (
                     <div
                       key={si}
-                      className="flex items-center justify-between gap-4 px-3 py-[7px] mx-1 rounded-lg hover:bg-card transition-colors group"
+                      className="shortcuts-row"
                     >
-                      <span className="text-[11px] text-subtle group-hover:text-[#bbb] transition-colors">
+                      <span className="shortcuts-row-desc">
                         {sc.description}
                       </span>
-                      <div className="flex items-center gap-[3px] shrink-0">
+                      <div className="shortcuts-row-keys">
                         {sc.keys.map((k, ki) => (
                           <KeyBadge key={ki} k={k} />
                         ))}
@@ -486,10 +480,10 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
                 </div>
 
                 {/* Divider */}
-                {ci < shortcutCategories.length - 1 && <div className="mx-3 h-px bg-[#141414] my-1" />}
+                {ci < shortcutCategories.length - 1 && <div className="shortcuts-divider" />}
               </div>
             ))}
-            <div className="h-4" />
+            <div className="shortcuts-spacer" />
           </>
         )}
 
@@ -498,25 +492,25 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
             {tipCategories.map((cat, ci) => (
               <div key={cat.title}>
                 {/* Category header */}
-                <div className="sticky top-0 z-[2] bg-background">
-                  <div className="flex items-center gap-2 px-3 pt-3.5 pb-1.5">
-                    <span className="text-[11px] text-dim uppercase tracking-widest">{cat.title}</span>
-                    <div className="flex-1 h-px bg-[#141414]" />
+                <div className="shortcuts-category-header">
+                  <div className="shortcuts-category-inner">
+                    <span className="shortcuts-category-title">{cat.title}</span>
+                    <div className="shortcuts-category-line" />
                   </div>
                 </div>
 
                 {/* Tip rows */}
-                <div className="flex flex-col">
+                <div>
                   {cat.tips.map((tip, ti) => (
                     <div
                       key={ti}
-                      className="flex flex-col gap-1 px-3 py-[8px] mx-1 rounded-lg hover:bg-card transition-colors group"
+                      className="shortcuts-tip-row"
                     >
-                      <div className="flex items-center gap-2">
-                        <MousePointerClick className="h-3 w-3 text-ghost shrink-0 group-hover:text-dim transition-colors" />
+                      <div className="shortcuts-tip-action-wrap">
+                        <MousePointerClick size={12} className="shortcuts-tip-icon" />
                         <ActionBadge text={tip.action} />
                       </div>
-                      <span className="text-[11px] text-faint group-hover:text-muted-foreground transition-colors pl-5">
+                      <span className="shortcuts-tip-desc">
                         {tip.description}
                       </span>
                     </div>
@@ -524,10 +518,10 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
                 </div>
 
                 {/* Divider */}
-                {ci < tipCategories.length - 1 && <div className="mx-3 h-px bg-[#141414] my-1" />}
+                {ci < tipCategories.length - 1 && <div className="shortcuts-divider" />}
               </div>
             ))}
-            <div className="h-4" />
+            <div className="shortcuts-spacer" />
           </>
         )}
       </div>

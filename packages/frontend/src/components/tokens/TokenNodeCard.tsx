@@ -5,11 +5,11 @@ import { Plus, Trash2, Tag, ChevronsUpDown, Check, Crown, Unlink, Link2, Copy, E
 import { Switch } from '../ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
-import { cn } from '../ui/utils';
 import { Tip } from '../Tip';
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { hslToRgb, rgbToHex, hslToOklch } from '../../utils/color-conversions';
 import { rgbToHct } from '../../utils/hct-utils';
+import "./TokenNodeCard.css";
 
 interface TokenNodeCardProps {
   node: ColorNode;
@@ -142,22 +142,22 @@ function TokenColorTooltipBody({ name, color, colorSpace, spaceValue, hex }: {
 }) {
   const showSpaceRow = colorSpace !== 'HEX' && spaceValue.toUpperCase() !== hex.toUpperCase();
   return (
-    <div className="min-w-[190px] max-w-[300px]">
-      <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
-        <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 ring-1 ring-white/10" style={{ backgroundColor: color }} />
-        <span className="text-[11px] text-foreground truncate">{name}</span>
+    <div className="token-card-tooltip-body">
+      <div className="token-card-tooltip-header">
+        <div className="token-card-tooltip-swatch" style={{ backgroundColor: color }} />
+        <span className="token-card-tooltip-name">{name}</span>
       </div>
-      <div className="h-px bg-hairline mx-2" />
-      <div className="px-3 pt-1.5 pb-2.5 space-y-1">
+      <div className="token-card-tooltip-divider" />
+      <div className="token-card-tooltip-values">
         {showSpaceRow && (
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-[11px] text-faint uppercase tracking-wide shrink-0">{colorSpace}</span>
-            <span className="text-[11px] font-mono text-subtle">{spaceValue}</span>
+          <div className="token-card-tooltip-row">
+            <span className="token-card-tooltip-label">{colorSpace}</span>
+            <span className="token-card-tooltip-value">{spaceValue}</span>
           </div>
         )}
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-[11px] text-faint uppercase tracking-wide shrink-0">HEX</span>
-          <span className="text-[11px] font-mono text-subtle">{hex}</span>
+        <div className="token-card-tooltip-row">
+          <span className="token-card-tooltip-label">HEX</span>
+          <span className="token-card-tooltip-value">{hex}</span>
         </div>
       </div>
     </div>
@@ -316,7 +316,7 @@ export function TokenNodeCard({
   })();
   // Determine if text over the value token color should be light or dark
   const valueTokenTextColor = (() => {
-    if (!valueToken) return '#999';
+    if (!valueToken) return 'var(--grey-400)';
     const tv = activeThemeId && valueToken.themeValues?.[activeThemeId];
     const l = (tv && tv.lightness !== undefined) ? tv.lightness : (valueToken.lightness ?? 0);
     return l > 55 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)';
@@ -670,13 +670,13 @@ export function TokenNodeCard({
   })();
 
   return (
-    <div className="relative" data-node-card
+    <div className="token-card-root" data-node-card
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Left side + button for parent connection */}
       <div
-        className="absolute -left-3 top-6 z-20"
+        className="token-card-left-connect-area"
         style={{ pointerEvents: 'auto' }}
         onMouseEnter={() => {
           if (isDraggingWire && wireStartButtonType === 'right' && !isLeftConnectionLocked) {
@@ -721,22 +721,22 @@ export function TokenNodeCard({
               onAddParent(node.id);
             }
           }}
-          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
+          className={`token-card-connect-btn ${
             isLeftConnectionLocked
-              ? 'bg-[#222] cursor-not-allowed'
-              : isWireHovered && wireStartButtonType === 'right' ? 'bg-success' : 'bg-[#333] hover:bg-[#333]'
+              ? 'token-card-connect-btn-locked'
+              : isWireHovered && wireStartButtonType === 'right' ? 'token-card-connect-btn-success' : 'token-card-connect-btn-default'
           }`}
           title={isLeftConnectionLocked ? "Inherited from primary" : isConnected ? (isMultiSelected ? "Disconnect from parent (Shift+click to unlink all selected)" : "Disconnect from parent") : "Add new parent or drag to connect"}
           data-node-id={node.id}
           data-button-type="left-connect"
         >
-          <Plus className={`w-3 h-3 ${isLeftConnectionLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'right' ? 'text-white' : 'text-foreground'}`} />
+          <Plus className={`token-card-connect-icon ${isLeftConnectionLocked ? 'token-card-connect-icon-dim' : isWireHovered && wireStartButtonType === 'right' ? 'token-card-connect-icon-white' : 'token-card-connect-icon-default'}`} />
         </button>
 
         {/* Parent selection popup */}
         {showParentSelector && !isConnected && availableParents.length > 0 && (
-          <div className="absolute left-8 top-0 bg-secondary border border-elevated rounded-lg shadow-lg p-2 min-w-[120px] z-30">
-            <div className="text-xs mb-1 px-2 py-1 text-subtle">Select parent:</div>
+          <div className="token-card-parent-popup">
+            <div className="token-card-parent-popup-label">Select parent:</div>
             {availableParents.map((parent) => (
               <button
                 key={parent.id}
@@ -745,9 +745,9 @@ export function TokenNodeCard({
                   onLinkNode(node.id, parent.id);
                   setShowParentSelector(false);
                 }}
-                className="w-full text-left px-2 py-1 text-sm hover:bg-elevated rounded flex items-center gap-2 text-foreground"
+                className="token-card-parent-popup-item"
               >
-                <Tag className="w-3 h-3 text-brand" />
+                <Tag className="token-card-parent-popup-item-icon" />
                 {parent.referenceName || 'Token'}
               </button>
             ))}
@@ -757,7 +757,7 @@ export function TokenNodeCard({
 
       {/* Right side + button for adding child */}
       <div
-        className="absolute -right-3 top-6 z-20 flex flex-col gap-1"
+        className="token-card-right-connect-area"
         style={{ pointerEvents: 'auto' }}
         onMouseEnter={() => {
           if (isDraggingWire && wireStartButtonType === 'left' && !isStructurallyLocked) {
@@ -781,29 +781,27 @@ export function TokenNodeCard({
             if (isStructurallyLocked) return;
             onAddChild(node.id);
           }}
-          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md ${
+          className={`token-card-connect-btn ${
             isStructurallyLocked
-              ? 'bg-[#222] cursor-not-allowed'
-              : isWireHovered && wireStartButtonType === 'left' ? 'bg-success' : 'bg-[#333] hover:bg-[#333]'
+              ? 'token-card-connect-btn-locked'
+              : isWireHovered && wireStartButtonType === 'left' ? 'token-card-connect-btn-success' : 'token-card-connect-btn-default'
           }`}
           title={isStructurallyLocked ? "Inherited from primary" : "Add child node or drag to connect"}
           data-node-id={node.id}
           data-button-type="right-connect"
         >
-          <Plus className={`w-3 h-3 ${isStructurallyLocked ? 'text-dim' : isWireHovered && wireStartButtonType === 'left' ? 'text-white' : 'text-foreground'}`} />
+          <Plus className={`token-card-connect-icon ${isStructurallyLocked ? 'token-card-connect-icon-dim' : isWireHovered && wireStartButtonType === 'left' ? 'token-card-connect-icon-white' : 'token-card-connect-icon-default'}`} />
         </button>
       </div>
 
       {/* Connection port indicator on right top */}
-      <div
-        className="absolute -right-[5px] top-6 z-10 w-[10px] h-[10px] rounded-full bg-brand"
-      />
+      <div className="token-card-right-port" />
 
       <Card
-        className="overflow-visible cursor-default relative rounded-[20px] gap-0"
+        className="token-card-body"
         style={{
-          backgroundColor: '#0e0e0e',
-          border: isSelected ? '1px solid var(--brand)' : isMultiSelected ? '1px solid #7B8FFF' : '1px solid transparent',
+          backgroundColor: 'var(--grey-900)',
+          border: isSelected ? '1px solid var(--indigo-500)' : isMultiSelected ? '1px solid var(--indigo-400)' : '1px solid transparent',
           width: `${nodeWidth}px`,
           maxWidth: `${nodeWidth}px`,
           minWidth: `${nodeWidth}px`,
@@ -836,10 +834,10 @@ export function TokenNodeCard({
 
         {/* Token Name Area — replaces color swatch */}
         <div
-          className={`h-14 flex items-center justify-center relative ${isPrefix ? 'rounded-[19px]' : 'rounded-tl-[19px] rounded-tr-[19px] mb-3'} ${isNodeInherited && !showAllVisible ? 'transition-opacity duration-200' : ''}`}
+          className={`token-card-name-area ${isPrefix ? 'token-card-name-area-prefix' : 'token-card-name-area-child'} ${isNodeInherited && !showAllVisible ? 'token-card-name-area-inherited' : ''}`}
           style={{
-            backgroundColor: '#0e0e0e',
-            border: '1px solid var(--secondary)',
+            backgroundColor: 'var(--grey-900)',
+            border: '1px solid var(--grey-800)',
             ...(nameDimOpacity !== undefined ? { opacity: nameDimOpacity } : {}),
           }}
           onMouseEnter={() => { if (!isPrimaryTheme) setHoveredSection('name'); }}
@@ -848,12 +846,12 @@ export function TokenNodeCard({
           {/* Visibility toggle — outside the card to the left, matching ColorNodeCard */}
           {onToggleVisibility && (
             <div
-              className={`absolute top-2 -left-[22px] transition-all cursor-pointer ${
+              className={`token-card-visibility-toggle ${
                 isNodeHidden
-                  ? 'opacity-100 text-brand'
+                  ? 'token-card-visibility-hidden'
                   : isHovered
-                    ? 'opacity-100 text-muted-foreground hover:text-foreground'
-                    : 'opacity-0'
+                    ? 'token-card-visibility-hover'
+                    : 'token-card-visibility-idle'
               }`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -861,15 +859,15 @@ export function TokenNodeCard({
               }}
               title={isNodeHidden ? 'Show node' : 'Hide node'}
             >
-              {isNodeHidden ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+              {isNodeHidden ? <EyeOff className="token-card-visibility-icon" /> : <Eye className="token-card-visibility-icon" />}
             </div>
           )}
 
           {/* Editable token name */}
-          <div className="flex flex-col items-center justify-center px-6 w-full gap-0.5">
+          <div className="token-card-name-content">
             {/* Prefix badge for prefix nodes */}
             {isPrefix && (
-              <span className="text-[11px] tracking-widest uppercase text-dim">Prefix</span>
+              <span className="token-card-prefix-badge">Prefix</span>
             )}
             {/* Full path label removed for child nodes — shown in floating label instead */}
             {isEditingName ? (
@@ -889,13 +887,13 @@ export function TokenNodeCard({
                   }
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="bg-transparent text-center text-foreground text-sm rounded-lg px-3 py-1.5 outline-none w-full max-w-[180px] border-none focus:bg-secondary transition-colors selection:bg-brand/30"
+                className="token-card-name-input"
                 maxLength={50}
               />
             ) : (
               <button
-                className="text-sm hover:text-foreground transition-colors truncate max-w-[180px] cursor-text"
-                style={{ color: 'var(--subtle)' }}
+                className="token-card-name-button"
+                style={{ color: 'var(--grey-500)' }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelect();
@@ -912,7 +910,7 @@ export function TokenNodeCard({
         {/* Design Token Assignment Section — hidden for prefix nodes */}
         {!isPrefix && (
         <div
-          className={`relative ${isTokenSectionDimmed ? 'transition-opacity duration-200' : ''} px-[16px] pt-[0px] pb-[12px] mx-[0px] mt-[4px] mb-[0px]`}
+          className={`token-card-token-section ${isTokenSectionDimmed ? 'token-card-token-section-dimmed' : ''}`}
           style={tokenDimOpacity !== undefined ? { opacity: tokenDimOpacity } : undefined}
           onMouseEnter={() => { if (tokenNeedsHover) setHoveredSection('token'); }}
           onMouseLeave={() => { if (hoveredSection === 'token') setHoveredSection(null); }}
@@ -920,15 +918,15 @@ export function TokenNodeCard({
           {/* Token inheritance toggle for non-primary themes */}
           {!isPrimaryTheme && (
             <div
-              className="flex items-center gap-1.5 pb-1.5 pt-0.5"
+              className="token-card-theme-toggle"
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Crown
-                className={`h-3 w-3 shrink-0 transition-all ${
+                className={`token-card-crown-icon ${
                   hasAnyTokenChanges
-                    ? 'text-brand fill-brand'
-                    : 'text-warning fill-warning'
+                    ? 'token-card-crown-modified'
+                    : 'token-card-crown-inherited'
                 }`}
               />
               <Switch
@@ -939,9 +937,12 @@ export function TokenNodeCard({
                   }
                 }}
                 disabled={!hasAnyTokenChanges}
-                className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-[#333] dark:data-[state=unchecked]:bg-[#333] h-[16px] w-[30px] shrink-0 disabled:opacity-100 disabled:cursor-default"
+                className="token-card-switch"
+                style={{
+                  backgroundColor: !hasAnyTokenChanges ? 'var(--yellow-500)' : 'var(--grey-700)',
+                }}
               />
-              <span className={`text-[11px] select-none transition-colors ${hasAnyTokenChanges ? 'text-subtle' : 'text-faint'}`}>
+              <span className={`token-card-theme-label ${hasAnyTokenChanges ? 'token-card-theme-label-modified' : 'token-card-theme-label-inherited'}`}>
                 {hasAnyTokenChanges ? 'Tokens modified' : 'Tokens inherited'}
               </span>
             </div>
@@ -969,44 +970,42 @@ export function TokenNodeCard({
             const isDropdownOpen = tokenComboOpenIndex === -1;
 
             return (
-              <div className="relative group/tokenfield">
+              <div className="token-card-token-field">
                 {hasAdvancedTokenAssignment && (
-                  <div className="absolute inset-0 z-10 flex items-center rounded-[10px] pointer-events-none px-2.5"
-                    style={{ background: 'rgba(10,10,10,0.7)', border: 'none' }}>
+                  <div className="token-card-advanced-overlay"
+                    style={{ background: 'rgba(10,10,10,0.7)' }}>
                     {advancedTokenOutput ? (
                       advancedTokenOutput.type === 'error' ? (
-                        <span className="text-[11px] tracking-wide text-destructive/90 select-none px-1.5 py-0.5 rounded truncate w-full"
-                          style={{ background: 'rgba(255,77,106,0.08)', border: 'none' }}
+                        <span className="token-card-advanced-error"
                           title={advancedTokenOutput.label}>
                           {advancedTokenOutput.label}
                         </span>
                       ) : (
-                        <div className="flex items-center gap-1.5 min-w-0 w-full">
+                        <div className="token-card-advanced-output">
                           {advancedTokenOutput.type === 'color' && advancedTokenOutput.cssColor && (
                             <span
-                              className="w-[14px] h-[14px] rounded-[4px] shrink-0 ring-1 ring-white/10"
+                              className="token-card-advanced-swatch"
                               style={{ backgroundColor: advancedTokenOutput.cssColor }}
                             />
                           )}
                           {advancedTokenOutput.type === 'tokenRef' && (
                             advancedTokenOutput.cssColor ? (
                               <span
-                                className="w-[14px] h-[14px] rounded-[4px] shrink-0 ring-1 ring-[#FBBF24]/30"
+                                className="token-card-advanced-swatch token-card-advanced-swatch-token-ref"
                                 style={{ backgroundColor: advancedTokenOutput.cssColor }}
                               />
                             ) : (
-                              <Tag className="w-3.5 h-3.5 shrink-0 text-warning/60" />
+                              <Tag className="token-card-advanced-tag-icon" />
                             )
                           )}
-                          <span className="text-[11px] text-[#b0b0b0] select-none truncate min-w-0 flex-1 font-mono"
+                          <span className="token-card-advanced-output-label"
                             title={advancedTokenOutput.label}>
                             {advancedTokenOutput.label}
                           </span>
                         </div>
                       )
                     ) : (
-                      <span className="text-[11px] tracking-wide uppercase text-brand/50 select-none px-1.5 py-0.5 rounded mx-auto"
-                        style={{ background: 'rgba(70,91,254,0.05)', border: 'none' }}>
+                      <span className="token-card-advanced-no-output">
                         No output
                       </span>
                     )}
@@ -1023,51 +1022,49 @@ export function TokenNodeCard({
                 }}>
                   <PopoverTrigger asChild>
                     <button
-                      className={cn(
-                        "w-full flex items-center gap-2.5 h-9 px-3 rounded-[10px] transition-all text-xs outline-none",
-                        hasAdvancedTokenAssignment ? "cursor-default opacity-50" : "cursor-pointer",
-                        assignedToken
-                          ? "bg-secondary hover:bg-[#1c1c1c] border border-secondary hover:bg-secondary"
-                          : "bg-transparent border border-dashed border-elevated hover:border-border hover:bg-[#ffffff]/[0.02]"
-                      )}
+                      className={`token-card-trigger-btn ${
+                        hasAdvancedTokenAssignment ? 'token-card-trigger-btn-advanced' : 'token-card-trigger-btn-pointer'
+                      } ${
+                        assignedToken ? 'token-card-trigger-assigned' : 'token-card-trigger-empty'
+                      }`}
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={() => { if (!hasAdvancedTokenAssignment) onSelect(); }}
                     >
                       {assignedToken ? (
                         <>
                           {isAssignedOwnedByTokenNode ? (
-                            <Tag className="size-3.5 shrink-0 text-faint" />
+                            <Tag className="token-card-tag-icon-sm" />
                           ) : _isEmpty0 ? (
-                            <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-dashed border-elevated opacity-40" />
+                            <div className="token-card-swatch-sm token-card-swatch-dashed" />
                           ) : (
                             <div
-                              className="w-3.5 h-3.5 rounded-[4px] shrink-0 ring-1 ring-inset ring-white/[0.08]"
+                              className="token-card-swatch-sm token-card-swatch-ring"
                               style={{ backgroundColor: assignedHsl }}
                             />
                           )}
-                          <span className="truncate flex-1 text-left text-foreground min-w-0">{assignedToken.name}</span>
-                          <ChevronsUpDown className="h-3 w-3 shrink-0 text-ghost opacity-0 group-hover/tokenfield:opacity-100 transition-opacity" />
+                          <span className="token-card-trigger-label">{assignedToken.name}</span>
+                          <ChevronsUpDown className="token-card-trigger-chevron" />
                         </>
                       ) : (
                         <>
-                          <div className="w-3.5 h-3.5 rounded-[4px] shrink-0 border border-dashed border-elevated flex items-center justify-center">
-                            <Plus className="h-2 w-2 text-ghost" />
+                          <div className="token-card-empty-swatch">
+                            <Plus className="token-card-empty-swatch-icon" />
                           </div>
-                          <span className="text-dim flex-1 text-left">Assign token...</span>
+                          <span className="token-card-trigger-placeholder">Assign token...</span>
                         </>
                       )}
                     </button>
                   </PopoverTrigger>
               <PopoverContent
-                className="w-[260px] p-0 bg-secondary border-secondary"
+                className="token-card-dropdown"
                 side="bottom"
                 align="start"
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {/* ── Page switcher ── */}
                 {pages.length > 1 && (
-                  <div className="px-1.5 pt-1.5">
-                    <div className="flex gap-0.5 overflow-x-auto rounded-lg bg-[#0e0e0e] p-[3px]" style={{ scrollbarWidth: 'none' }}>
+                  <div className="token-card-page-switcher">
+                    <div className="token-card-page-tabs">
                       {[
                         { id: '__current__' as string, name: 'This page' },
                         ...pages.filter(p => p.id !== node.pageId).sort((a, b) => a.createdAt - b.createdAt)
@@ -1076,12 +1073,7 @@ export function TokenNodeCard({
                         return (
                           <button
                             key={pg.id}
-                            className={cn(
-                              "shrink-0 px-2 py-[3px] rounded-md text-[11px] transition-all cursor-pointer whitespace-nowrap",
-                              isActive
-                                ? "bg-elevated text-foreground shadow-sm"
-                                : "text-faint hover:text-subtle"
-                            )}
+                            className={`token-card-page-tab ${isActive ? 'token-card-page-tab-active' : 'token-card-page-tab-inactive'}`}
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={(e) => { e.stopPropagation(); setDropdownPageId(pg.id); }}
                           >
@@ -1094,22 +1086,17 @@ export function TokenNodeCard({
                 )}
 
                 {/* ── Mode tabs: Tokens / Color Palettes ── */}
-                <div className="px-1.5 pt-1">
-                  <div className="flex gap-0.5 rounded-lg bg-[#0e0e0e] p-[3px]">
+                <div className="token-card-mode-tabs-wrapper">
+                  <div className="token-card-mode-tabs">
                     {([
-                      { key: 'tokens' as const, label: 'Tokens', icon: <Tag className="size-[10px]" /> },
-                      { key: 'palettes' as const, label: 'Palettes', icon: <Palette className="size-[10px]" /> },
+                      { key: 'tokens' as const, label: 'Tokens', icon: <Tag className="token-card-mode-icon" /> },
+                      { key: 'palettes' as const, label: 'Palettes', icon: <Palette className="token-card-mode-icon" /> },
                     ]).map(({ key, label, icon }) => {
                       const isActive = dropdownMode === key;
                       return (
                         <button
                           key={key}
-                          className={cn(
-                            "flex-1 flex items-center justify-center gap-[5px] py-[3px] rounded-md text-[11px] transition-all cursor-pointer",
-                            isActive
-                              ? "bg-elevated text-foreground shadow-sm"
-                              : "text-faint hover:text-subtle"
-                          )}
+                          className={`token-card-mode-tab ${isActive ? 'token-card-mode-tab-active' : 'token-card-mode-tab-inactive'}`}
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={(e) => { e.stopPropagation(); setDropdownMode(key); }}
                         >
@@ -1122,7 +1109,7 @@ export function TokenNodeCard({
                 </div>
 
                 <TooltipPrimitive.Provider delayDuration={350}>
-                <Command key={`${dropdownMode}-${dropdownPageId}`} className="bg-secondary" filter={(value, search, keywords) => {
+                <Command key={`${dropdownMode}-${dropdownPageId}`} className="token-card-command-bg" filter={(value, search, keywords) => {
                   if (!search.trim()) return 1;
                   const searchable = [value, ...(keywords || [])].join(' ').toLowerCase();
                   const words = search.toLowerCase().trim().split(/\s+/);
@@ -1130,10 +1117,10 @@ export function TokenNodeCard({
                 }} loop={false}>
                   <CommandInput
                     placeholder={dropdownMode === 'tokens' ? 'Search tokens...' : 'Search palette colors...'}
-                    className="h-9 text-xs bg-[#0e0e0e] pl-[10px] mx-1.5 mt-1 mb-1 rounded-md text-foreground placeholder:text-dim focus-visible:outline-none focus-visible:ring-0"
+                    className="token-card-search-input"
                   />
-                  <CommandList className="pb-[5px] max-h-[260px]">
-                    <CommandEmpty className="py-6 text-xs text-center text-subtle">
+                  <CommandList className="token-card-command-list">
+                    <CommandEmpty className="token-card-command-empty">
                       {dropdownMode === 'tokens' ? 'No tokens found.' : 'No palette colors found.'}
                     </CommandEmpty>
 
@@ -1225,7 +1212,7 @@ export function TokenNodeCard({
                         const searchKeywords1 = [groupName, token.name, hexVal, ...(numbers1 || [])];
 
                         return (
-                          <div key={token.id} className="relative">
+                          <div key={token.id} className="token-card-item-wrapper">
                             <TooltipPrimitive.Root>
                             <TooltipPrimitive.Trigger asChild>
                             <div>
@@ -1290,24 +1277,24 @@ export function TokenNodeCard({
                                 }
                                 setTokenComboOpenIndex(null);
                               }}
-                              className="text-xs text-foreground cursor-pointer flex items-center gap-2 px-3 py-[7px] aria-selected:bg-[#1e1e1e]"
+                              className="token-card-item"
                             >
                               {isOwnedByTokenNode ? (
-                                <Tag className="size-2.5 shrink-0 text-dim" />
+                                <Tag className="token-card-item-tag" />
                               ) : hasColor ? (
                                 <div
-                                  className="w-3 h-3 rounded-sm shrink-0 ring-1 ring-inset ring-white/[0.06]"
+                                  className="token-card-item-swatch"
                                   style={{ backgroundColor: hslVal }}
                                 />
                               ) : (
-                                <Tag className="size-2.5 shrink-0 text-dim" />
+                                <Tag className="token-card-item-tag" />
                               )}
-                              <span className="truncate flex-1">{token.name}</span>
+                              <span className="token-card-item-label">{token.name}</span>
                               {isCurrentValue && (
-                                <Check className="h-3 w-3 text-brand shrink-0" />
+                                <Check className="token-card-item-check" />
                               )}
                               {isUsedElsewhere && (
-                                <div className="w-5 shrink-0" />
+                                <div className="token-card-item-usage-spacer" />
                               )}
                             </CommandItem>
                             </div>
@@ -1317,7 +1304,7 @@ export function TokenNodeCard({
                                 <TooltipPrimitive.Content
                                   side="right"
                                   sideOffset={12}
-                                  className="z-[300] bg-secondary/95 backdrop-blur-md border border-hairline rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-in fade-in-0 zoom-in-95 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2"
+                                  className="token-card-color-tooltip"
                                 >
                                   <TokenColorTooltipBody
                                     name={token.name}
@@ -1336,14 +1323,7 @@ export function TokenNodeCard({
                               }}>
                                 <PopoverTrigger asChild>
                                   <button
-                                    className={cn(
-                                      "absolute right-3 top-1/2 -translate-y-1/2 z-10",
-                                      "min-w-[20px] h-[20px] rounded-full flex items-center justify-center",
-                                      "text-[11px] tabular-nums transition-colors cursor-pointer",
-                                      isUsagePopoverOpen
-                                        ? "bg-brand/25 text-[#7B8FFF]"
-                                        : "bg-hairline text-faint hover:bg-[#ffffff]/[0.12] hover:text-muted-foreground"
-                                    )}
+                                    className={`token-card-usage-badge ${isUsagePopoverOpen ? 'token-card-usage-badge-open' : 'token-card-usage-badge-closed'}`}
                                     onPointerDown={(e) => e.stopPropagation()}
                                     onClick={(e) => e.stopPropagation()}
                                   >
@@ -1354,16 +1334,16 @@ export function TokenNodeCard({
                                   side="right"
                                   align="start"
                                   sideOffset={12}
-                                  className="w-[200px] p-0 bg-secondary border-elevated shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+                                  className="token-card-usage-popover"
                                   onOpenAutoFocus={(e) => e.preventDefault()}
                                   onCloseAutoFocus={(e) => e.preventDefault()}
                                   onPointerDown={(e) => e.stopPropagation()}
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  <div className="px-3 pt-2.5 pb-1.5 text-[11px] tracking-wide uppercase text-faint">
+                                  <div className="token-card-usage-heading">
                                     Referenced by
                                   </div>
-                                  <div className="px-1.5 pb-1.5 flex flex-col">
+                                  <div className="token-card-usage-list">
                                     {usedByNodeIds!.map((refNodeId) => {
                                       const refNode = scopeNodes.find(n => n.id === refNodeId);
                                       if (!refNode) return null;
@@ -1380,7 +1360,7 @@ export function TokenNodeCard({
                                       return (
                                         <button
                                           key={refNodeId}
-                                          className="flex items-center gap-2 px-2 py-[6px] rounded-md text-xs text-foreground hover:bg-hairline hover:text-foreground transition-colors w-full text-left cursor-pointer"
+                                          className="token-card-usage-item"
                                           onClick={() => {
                                             setUsagePopoverTokenId(null);
                                             setTokenComboOpenIndex(null);
@@ -1392,14 +1372,14 @@ export function TokenNodeCard({
                                         >
                                           {refHasColor ? (
                                             <div
-                                              className="w-3 h-3 rounded-sm shrink-0"
+                                              className="token-card-usage-item-swatch"
                                               style={{ backgroundColor: refHsl }}
                                             />
                                           ) : (
-                                            <Tag className="w-3 h-3 shrink-0 text-dim" />
+                                            <Tag className="token-card-usage-item-tag" />
                                           )}
-                                          <span className="truncate flex-1 min-w-0">{refPath}</span>
-                                          <Locate className="w-3 h-3 shrink-0 text-dim" />
+                                          <span className="token-card-usage-item-label">{refPath}</span>
+                                          <Locate className="token-card-usage-item-locate" />
                                         </button>
                                       );
                                     })}
@@ -1437,10 +1417,10 @@ export function TokenNodeCard({
                             <CommandGroup
                               key={group.id}
                               heading={group.name}
-                              className="[&_[cmdk-group-heading]]:!hidden p-0"
+                              className="token-card-group"
                             >
-                              <div className="flex items-center text-xs text-subtle font-semibold sticky top-0 z-10 bg-secondary pl-[10px] pr-2 py-1.5">
-                                <span className="inline-flex items-center gap-[5px] bg-white/[0.035] rounded-[5px] px-[6px] py-[1px]">
+                              <div className="token-card-group-header">
+                                <span className="token-card-group-name">
                                   {isTokenNodeGrp && (
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -1452,7 +1432,7 @@ export function TokenNodeCard({
                                       strokeWidth="2"
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
-                                      style={{ flexShrink: 0 }}
+                                      className="token-card-group-tag-icon"
                                     >
                                       <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/>
                                       <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>
@@ -1474,10 +1454,10 @@ export function TokenNodeCard({
                           <CommandGroup
                             key="__others__"
                             heading="Others"
-                            className="[&_[cmdk-group-heading]]:!hidden p-0"
+                            className="token-card-group"
                           >
-                            <div className="flex items-center text-xs text-subtle font-semibold sticky top-0 z-10 bg-secondary pl-[10px] pr-2 py-1.5">
-                              <span className="inline-flex items-center gap-[5px] bg-white/[0.035] rounded-[5px] px-[6px] py-[1px]">
+                            <div className="token-card-group-header">
+                              <span className="token-card-group-name">
                                 Others
                               </span>
                             </div>
@@ -1510,11 +1490,11 @@ export function TokenNodeCard({
                           <CommandGroup
                             key={group.id}
                             heading={group.name}
-                            className="[&_[cmdk-group-heading]]:!hidden p-0"
+                            className="token-card-group"
                           >
-                            <div className="flex items-center text-xs text-subtle font-semibold sticky top-0 z-10 bg-secondary pl-[10px] pr-2 py-1.5">
-                              <span className="inline-flex items-center gap-[5px] bg-white/[0.035] rounded-[5px] px-[6px] py-[1px]">
-                                <Palette className="size-[10px] shrink-0" />
+                            <div className="token-card-group-header">
+                              <span className="token-card-group-name">
+                                <Palette className="token-card-mode-icon" style={{ flexShrink: 0 }} />
                                 {group.name}
                               </span>
                             </div>
@@ -1535,7 +1515,7 @@ export function TokenNodeCard({
                 <TooltipPrimitive.Content
                   side="bottom"
                   sideOffset={8}
-                  className="z-[200] bg-secondary/95 backdrop-blur-md border border-hairline rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2"
+                  className="token-card-color-tooltip token-card-color-tooltip-bottom"
                 >
                   <TokenColorTooltipBody
                     name={assignedToken!.name}
@@ -1554,7 +1534,7 @@ export function TokenNodeCard({
             {assignedToken && (
               <Tip label="Unassign" side="top">
                 <button
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-md opacity-0 group-hover/tokenfield:opacity-100 transition-all hover:bg-[#FF4D6A]/10 z-10"
+                  className="token-card-unassign-btn"
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -1587,7 +1567,7 @@ export function TokenNodeCard({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <X className="h-3 w-3 text-dim hover:text-destructive transition-colors" />
+                  <X className="token-card-unassign-icon" />
                 </button>
               </Tip>
             )}
@@ -1606,10 +1586,9 @@ export function TokenNodeCard({
         const isVisible = showAdvancedIsland;
         return (
           <div
-            className="flex items-center justify-between px-4 py-[8px] rounded-[16px] mt-[2px] transition-opacity"
+            className="token-card-advanced-island"
             style={{
-              backgroundColor: '#0E0E0E',
-              border: 'none',
+              backgroundColor: 'var(--grey-900)',
               width: `${nodeWidth}px`,
               opacity: isVisible ? (isDormant ? 0.5 : 1) : 0,
               pointerEvents: isVisible ? undefined : 'none',
@@ -1618,22 +1597,15 @@ export function TokenNodeCard({
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-2">
-              <span className={`text-[14px] select-none ${isDormant ? 'text-ghost' : 'text-dim'}`}>Advanced</span>
+            <div className="token-card-advanced-left">
+              <span className={`token-card-advanced-label ${isDormant ? 'token-card-advanced-label-dormant' : 'token-card-advanced-label-active'}`}>Advanced</span>
               {hasAdvancedTokenAssignment && (
-                <span
-                  className="text-[11px] tracking-wide uppercase px-1.5 h-[16px] flex items-center justify-center rounded select-none"
-                  style={{
-                    color: 'var(--ai)',
-                    backgroundColor: 'rgba(139,143,255,0.12)',
-                    border: 'none',
-                  }}
-                >
+                <span className="token-card-advanced-pill">
                   TOKEN
                 </span>
               )}
               {activeAdvancedChannels.length > 0 && (
-                <div className="flex items-center gap-[3px]">
+                <div className="token-card-advanced-channels">
                   {activeAdvancedChannels.map(chKey => {
                     const label = ({
                       hue: 'H', saturation: 'S', lightness: 'L', alpha: 'A',
@@ -1644,12 +1616,7 @@ export function TokenNodeCard({
                     return (
                       <span
                         key={chKey}
-                        className="text-[11px] font-mono w-[16px] h-[16px] flex items-center justify-center rounded select-none"
-                        style={{
-                          color: 'var(--success)',
-                          backgroundColor: 'rgba(43,189,104,0.12)',
-                          border: 'none',
-                        }}
+                        className="token-card-advanced-channel"
                       >
                         {label}
                       </span>
@@ -1659,7 +1626,7 @@ export function TokenNodeCard({
               )}
             </div>
             <button
-              className={`cursor-pointer transition-colors p-0.5 rounded hover:bg-white/[0.04] ${isDormant ? 'text-ghost hover:text-faint' : 'text-dim hover:text-subtle'}`}
+              className={`token-card-advanced-btn ${isDormant ? 'token-card-advanced-btn-dormant' : 'token-card-advanced-btn-active'}`}
               onClick={(e) => {
                 e.stopPropagation();
                 window.dispatchEvent(new CustomEvent('openAdvancedPopup', { detail: { nodeId: node.id } }));

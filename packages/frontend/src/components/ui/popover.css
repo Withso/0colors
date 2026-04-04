@@ -1,0 +1,18 @@
+/* ============================================
+ * POPOVER.CSS — Co-located styles for Popover
+ * Uses [data-slot="popover-*"] selectors.
+ * Animations handled by animations.css via data-state.
+ * ============================================ */
+
+/* ─── Content ─── */
+[data-slot="popover-content"] {
+  z-index: 50;
+  width: 288px;
+  padding: 16px;
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-700);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+  transform-origin: var(--radix-popover-content-transform-origin);
+}

@@ -21,6 +21,7 @@ import { describeToolCall, type ToolCall, type ToolResult } from '../../utils/ai
 import type { BuildMessage } from '../../utils/ai-build-stream';
 import type { MutationContext } from '../../utils/ai-build-executor';
 import { toast } from 'sonner';
+import './AskAIChat.css';
 
 // ── Constants ───────────────────────────────────────────────────
 const CHAT_WIDTH = 380;
@@ -115,17 +116,15 @@ function renderContent(text: string): JSX.Element {
           const nlIndex = inner.indexOf('\n');
           const code = nlIndex >= 0 ? inner.slice(nlIndex + 1) : inner;
           return (
-            <pre key={i} className="my-2 rounded-md text-[11px] leading-[1.5] overflow-x-auto whitespace-pre-wrap break-all"
-              style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.05)', padding: '8px 10px' }}
-            >
-              <code className="text-foreground">{code}</code>
+            <pre key={i} className="ai-chat-code-block">
+              <code>{code}</code>
             </pre>
           );
         }
         // Bold
-        const bolded = part.replace(/\*\*(.*?)\*\*/g, '<b class="text-foreground font-medium">$1</b>');
+        const bolded = part.replace(/\*\*(.*?)\*\*/g, '<b class="ai-chat-inline-bold">$1</b>');
         // Inline code
-        const coded = bolded.replace(/`([^`]+)`/g, '<code class="px-1 py-[1px] rounded text-[10.5px] text-foreground" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.05)">$1</code>');
+        const coded = bolded.replace(/`([^`]+)`/g, '<code class="ai-chat-inline-code">$1</code>');
         return <span key={i} dangerouslySetInnerHTML={{ __html: coded }} />;
       })}
     </>
@@ -176,27 +175,27 @@ function ErrorBubble({ error }: { error: StructuredError }) {
   const color = getErrorColor(error);
   return (
     <div
-      className="rounded-xl overflow-hidden"
+      className="ai-chat-error-bubble"
       style={{
         background: `${color}08`,
         border: `1px solid ${color}20`,
       }}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2"
+      <div className="ai-chat-error-header"
         style={{ borderBottom: `1px solid ${color}15` }}
       >
-        <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
+        <div className="ai-chat-error-icon"
           style={{ background: `${color}15` }}
         >
           <X size={10} style={{ color }} />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-medium" style={{ color }}>
+        <div className="ai-chat-error-header-inner">
+          <div className="ai-chat-error-header-row">
+            <span className="ai-chat-error-title" style={{ color }}>
               {error.title}
             </span>
-            <span className="text-[11px] px-1.5 py-[1px] rounded font-mono"
+            <span className="ai-chat-error-code"
               style={{ background: `${color}12`, color: `${color}` }}
             >
               {error.code || error.errorCode}
@@ -205,12 +204,12 @@ function ErrorBubble({ error }: { error: StructuredError }) {
         </div>
       </div>
       {/* Body */}
-      <div className="px-3 py-2 space-y-1.5">
-        <p className="text-[11px] leading-relaxed text-subtle">
+      <div className="ai-chat-error-body">
+        <p className="ai-chat-error-message">
           {error.message}
         </p>
         {error.suggestion && (
-          <p className="text-[11px] leading-relaxed" style={{ color: `${color}90` }}>
+          <p className="ai-chat-error-suggestion" style={{ color: `${color}90` }}>
             {error.suggestion}
           </p>
         )}
@@ -224,8 +223,8 @@ function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
-      className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-white/5 transition-all cursor-pointer"
-      style={{ color: copied ? 'var(--success)' : 'var(--ghost)' }}
+      className="ai-chat-copy-btn"
+      style={{ color: copied ? 'var(--green-500)' : 'var(--grey-700)' }}
       onClick={() => {
         copyTextToClipboard(text);
         setCopied(true);
@@ -870,57 +869,57 @@ export function AskAIChat({
 
   // ── Shared header buttons ─────────────────────────────────────
   const headerLeft = (
-    <div className="flex items-center gap-2">
+    <div className="ai-chat-header-left">
       {!isDocked && (
-        <div className="text-ghost mr-0.5">
+        <div className="ai-chat-drag-icon">
           <Move size={11} />
         </div>
       )}
       <button
         onClick={(e) => { e.stopPropagation(); setShowSidebar(prev => !prev); }}
-        className="p-1.5 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
-        style={{ color: showSidebar ? 'var(--foreground)' : 'var(--dim)' }}
+        className="ai-chat-header-btn"
+        style={{ color: showSidebar ? 'var(--grey-100)' : 'var(--grey-600)' }}
       >
         <Menu size={14} />
       </button>
-      <div className="flex items-center gap-1.5">
-        <Sparkles size={13} className="text-ai" />
-        <span className="text-[13px] text-foreground">{aiMode === 'build' ? 'Build AI' : 'Ask AI'}</span>
+      <div className="ai-chat-title-group">
+        <Sparkles size={13} className="ai-chat-title-icon" />
+        <span className="ai-chat-title-text">{aiMode === 'build' ? 'Build AI' : 'Ask AI'}</span>
         {aiMode === 'build' && <BuildModeBadge />}
       </div>
     </div>
   );
 
   const headerRight = (
-    <div className="flex items-center gap-1">
+    <div className="ai-chat-header-right">
       <button
         onClick={(e) => { e.stopPropagation(); startNewConversation(); }}
-        className="p-1.5 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
-        style={{ color: 'var(--dim)' }}
+        className="ai-chat-header-btn"
+        style={{ color: 'var(--grey-600)' }}
         title="New Chat"
       >
         <Plus size={14} />
       </button>
       <button
         onClick={(e) => { e.stopPropagation(); toggleDock(); }}
-        className="p-1.5 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
-        style={{ color: isDocked ? 'var(--ai)' : '#555' }}
+        className="ai-chat-header-btn"
+        style={{ color: isDocked ? 'var(--indigo-400)' : 'var(--grey-600)' }}
         title={isDocked ? 'Undock (floating popup)' : 'Dock to right panel'}
       >
         {isDocked ? <Maximize2 size={14} /> : <PanelRight size={14} />}
       </button>
       <button
         onClick={(e) => { e.stopPropagation(); setShowSettings(true); }}
-        className="p-1.5 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
-        style={{ color: 'var(--dim)' }}
+        className="ai-chat-header-btn"
+        style={{ color: 'var(--grey-600)' }}
         title="AI Settings"
       >
         <Settings size={14} />
       </button>
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="p-1.5 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
-        style={{ color: 'var(--dim)' }}
+        className="ai-chat-header-btn"
+        style={{ color: 'var(--grey-600)' }}
       >
         <X size={14} />
       </button>
@@ -931,7 +930,7 @@ export function AskAIChat({
   const chatBody = (
     <>
       {/* ── Body — full-page toggle between Conversations List and Chat View ── */}
-      <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden">
+      <div className="ai-chat-body-wrapper">
         <AnimatePresence mode="wait" initial={false}>
           {showSidebar ? (
             /* ═══════════════════════════════════════════════════════════
@@ -943,18 +942,16 @@ export function AskAIChat({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -12 }}
               transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="absolute inset-0 flex flex-col"
+              className="ai-chat-page-slide"
             >
               {/* Conversations header bar */}
-              <div className="shrink-0 flex items-center justify-between px-3.5 py-2.5"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                <div className="flex items-center gap-2">
-                  <MessageSquare size={13} style={{ color: 'var(--faint)' }} />
-                  <span className="text-[12px] text-subtle">Conversations</span>
+              <div className="ai-chat-convos-header">
+                <div className="ai-chat-convos-header-left">
+                  <MessageSquare size={13} style={{ color: 'var(--grey-600)' }} />
+                  <span className="ai-chat-convos-title">Conversations</span>
                   {conversations.length > 0 && (
-                    <span className="text-[11px] bg-white/[0.04] px-1.5 py-0.5 rounded-full"
-                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? 'var(--ai)' : '#444' }}
+                    <span className="ai-chat-convos-count"
+                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? 'var(--indigo-400)' : 'var(--grey-600)' }}
                       title={`${conversations.length} of ${MAX_CONVERSATIONS} max conversations`}
                     >
                       {conversations.length}/{MAX_CONVERSATIONS}
@@ -963,12 +960,7 @@ export function AskAIChat({
                 </div>
                 <button
                   onClick={startNewConversation}
-                  className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[11px] cursor-pointer transition-colors"
-                  style={{
-                    background: 'rgba(139,143,255,0.1)',
-                    color: 'var(--ai)',
-                    border: '1px solid rgba(139,143,255,0.15)',
-                  }}
+                  className="ai-chat-convos-new-btn"
                 >
                   <Plus size={12} />
                   New Chat
@@ -976,17 +968,17 @@ export function AskAIChat({
               </div>
 
               {/* Conversation items */}
-              <div className="flex-1 overflow-y-auto">
+              <div className="ai-chat-convos-list">
                 {conversations.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                    <MessageSquare size={24} className="text-[#222] mb-3" />
-                    <p className="text-[12px] text-dim mb-1">No conversations yet</p>
-                    <p className="text-[11px] text-ghost">
+                  <div className="ai-chat-convos-empty">
+                    <MessageSquare size={24} className="ai-chat-convos-empty-icon" />
+                    <p className="ai-chat-convos-empty-title">No conversations yet</p>
+                    <p className="ai-chat-convos-empty-desc">
                       Start a new chat to begin exploring with AI.
                     </p>
                   </div>
                 ) : (
-                  <div className="py-1.5 px-1.5 space-y-0.5">
+                  <div className="ai-chat-convos-items">
                     {conversations.map(conv => {
                       const isActive = conv.id === activeConvId;
                       const msgCount = conv.messages.length;
@@ -998,35 +990,29 @@ export function AskAIChat({
                       return (
                         <div
                           key={conv.id}
-                          className="group flex items-start gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-all"
-                          style={{
-                            background: isActive ? 'rgba(139,143,255,0.08)' : 'transparent',
-                            border: `1px solid ${isActive ? 'rgba(139,143,255,0.12)' : 'transparent'}`,
-                          }}
+                          className={`ai-chat-convo-item${isActive ? ' is-active' : ''}`}
                           onClick={() => { setActiveConvId(conv.id); setShowSidebar(false); }}
                           onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-                          onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; } }}
+                          onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = ''; } }}
                         >
-                          <div className="shrink-0 mt-0.5">
-                            <MessageSquare size={12} style={{ color: isActive ? 'var(--ai)' : 'var(--ghost)' }} />
+                          <div className="ai-chat-convo-item-icon">
+                            <MessageSquare size={12} style={{ color: isActive ? 'var(--indigo-400)' : 'var(--grey-700)' }} />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-[12px] truncate" style={{ color: isActive ? 'var(--foreground)' : 'var(--subtle)' }}>
+                          <div className="ai-chat-convo-item-body">
+                            <div className="ai-chat-convo-item-top">
+                              <span className="ai-chat-convo-item-title" style={{ color: isActive ? 'var(--grey-100)' : 'var(--grey-500)' }}>
                                 {conv.title}
                               </span>
-                              <div className="flex items-center shrink-0">
+                              <div className="ai-chat-convo-item-actions">
                                 <button
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-white/10 transition-all cursor-pointer"
-                                  style={{ color: 'var(--dim)' }}
+                                  className="ai-chat-convo-action-btn"
                                   onClick={e => { e.stopPropagation(); exportConversation(conv); }}
                                   title="Export as Markdown"
                                 >
                                   <Download size={11} />
                                 </button>
                                 <button
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-white/10 transition-all cursor-pointer"
-                                  style={{ color: 'var(--dim)' }}
+                                  className="ai-chat-convo-action-btn"
                                   onClick={e => { e.stopPropagation(); deleteConversation(conv.id); }}
                                   title="Delete conversation"
                                 >
@@ -1034,18 +1020,18 @@ export function AskAIChat({
                                 </button>
                               </div>
                             </div>
-                            <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--dim)' }}>
+                            <p className="ai-chat-convo-item-preview">
                               {preview}
                             </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[11px]" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? 'var(--ai)' : '#333' }}
+                            <div className="ai-chat-convo-item-meta">
+                              <span className="ai-chat-convo-item-count" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? 'var(--indigo-400)' : 'var(--grey-700)' }}
                                 title={msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5 ? `${msgCount}/${MAX_MESSAGES_PER_CONVERSATION} max messages` : undefined}
                               >
                                 {msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5
                                   ? `${msgCount}/${MAX_MESSAGES_PER_CONVERSATION} msgs`
                                   : `${msgCount} message${msgCount !== 1 ? 's' : ''}`}
                               </span>
-                              <span className="text-[11px]" style={{ color: 'var(--ghost)' }}>
+                              <span className="ai-chat-convo-item-time">
                                 {timeAgo(conv.updatedAt)}
                               </span>
                             </div>
@@ -1067,33 +1053,33 @@ export function AskAIChat({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 12 }}
               transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="absolute inset-0 flex flex-col"
+              className="ai-chat-page-slide"
             >
               {/* Messages */}
-              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-3 relative">
+              <div ref={messagesContainerRef} className="ai-chat-messages">
                 {!hasAccess ? (
                   /* ── No access message ── */
-                  <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                    <Sparkles size={28} className="text-ghost mb-3" />
-                    <p className="text-[13px] text-faint mb-1">Ask AI is available for Cloud and Template projects</p>
-                    <p className="text-[11px] text-ghost">Switch to a Cloud project or open a Template to use Ask AI.</p>
+                  <div className="ai-chat-no-access">
+                    <Sparkles size={28} className="ai-chat-no-access-icon" />
+                    <p className="ai-chat-no-access-title">Ask AI is available for Cloud and Template projects</p>
+                    <p className="ai-chat-no-access-desc">Switch to a Cloud project or open a Template to use Ask AI.</p>
                   </div>
                 ) : !activeConversation || activeConversation.messages.length === 0 ? (
                   /* ── Empty state ── */
-                  <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                    <Sparkles size={28} className="text-ai/30 mb-3" />
-                    <p className="text-[13px] text-faint mb-1">Ask anything about 0colors</p>
-                    <p className="text-[11px] text-ghost leading-relaxed">
+                  <div className="ai-chat-empty-state">
+                    <Sparkles size={28} className="ai-chat-empty-icon" />
+                    <p className="ai-chat-empty-title">Ask anything about 0colors</p>
+                    <p className="ai-chat-empty-desc">
                       How to create palettes, use advanced logic,<br />
                       set up themes, build token systems, and more.
                     </p>
-                    <p className="text-[11px] text-ghost mt-3 leading-relaxed max-w-[260px]">
+                    <p className="ai-chat-empty-context">
                       The AI has full context of your current project — nodes, tokens, themes, logic, and more.
                     </p>
                     {!getActiveServiceConfig(aiSettings) && (
                       <button
                         onClick={() => setShowSettings(true)}
-                        className="mt-3 text-[11px] text-ai hover:underline cursor-pointer"
+                        className="ai-chat-empty-configure"
                       >
                         Configure your AI provider first
                       </button>
@@ -1105,29 +1091,19 @@ export function AskAIChat({
                     {activeConversation.messages.map(msg => {
                       const structuredErr = msg.role === 'assistant' ? parseStructuredError(msg.content) : null;
                       return (
-                        <div key={msg.id} className={`group/msg flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div key={msg.id} className={`group/msg ai-chat-msg-row ${msg.role === 'user' ? 'is-user' : 'is-assistant'}`}>
                           {structuredErr ? (
                             /* ── Structured error bubble ── */
-                            <div className="max-w-[92%]">
+                            <div className="ai-chat-msg-error-wrap">
                               <ErrorBubble error={structuredErr} />
                             </div>
                           ) : (
-                            <div
-                              className="max-w-[92%] relative"
-                              style={{
-                                background: msg.role === 'user' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)',
-                                border: `1px solid ${msg.role === 'user' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'}`,
-                                borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
-                                padding: '8px 12px',
-                              }}
-                            >
-                              <div className="text-[12px] leading-[1.6] text-[#bbb] whitespace-pre-wrap break-words"
-                                style={{ color: msg.role === 'user' ? 'var(--foreground)' : 'var(--muted-foreground)' }}
-                              >
+                            <div className={`ai-chat-msg-bubble ${msg.role === 'user' ? 'is-user' : 'is-assistant'}`}>
+                              <div className={`ai-chat-msg-text ${msg.role === 'user' ? 'is-user' : 'is-assistant'}`}>
                                 {msg.role === 'assistant' ? renderContent(msg.content) : msg.content}
                               </div>
                               {/* Copy button */}
-                              <div className="absolute -top-2 right-1">
+                              <div className="ai-chat-msg-copy-pos">
                                 <CopyButton text={msg.content} />
                               </div>
                             </div>
@@ -1137,32 +1113,23 @@ export function AskAIChat({
                     })}
                     {/* Streaming message */}
                     {isStreaming && streamingText && (
-                      <div className="flex justify-start">
-                        <div className="max-w-[92%]"
-                          style={{
-                            background: 'rgba(255,255,255,0.02)',
-                            border: '1px solid rgba(255,255,255,0.04)',
-                            borderRadius: '12px 12px 12px 4px',
-                            padding: '8px 12px',
-                          }}
-                        >
-                          <div className="text-[12px] leading-[1.6] text-muted-foreground whitespace-pre-wrap break-words">
+                      <div className="ai-chat-streaming-row">
+                        <div className="ai-chat-streaming-bubble">
+                          <div className="ai-chat-streaming-text">
                             {renderContent(streamingText)}
-                            <span className="inline-block w-1.5 h-3.5 bg-ai ml-0.5 animate-pulse rounded-sm" />
+                            <span className="ai-chat-streaming-cursor" />
                           </div>
                         </div>
                       </div>
                     )}
                     {/* Streaming indicator (no text yet) */}
                     {isStreaming && !streamingText && (
-                      <div className="flex justify-start">
-                        <div className="px-3 py-2 rounded-xl"
-                          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
-                        >
-                          <div className="flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-ai animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-ai animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-ai animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <div className="ai-chat-streaming-dots">
+                        <div className="ai-chat-streaming-dots-inner">
+                          <div className="ai-chat-streaming-dots-row">
+                            <div className="ai-chat-dot" style={{ animationDelay: '0ms' }} />
+                            <div className="ai-chat-dot" style={{ animationDelay: '150ms' }} />
+                            <div className="ai-chat-dot" style={{ animationDelay: '300ms' }} />
                           </div>
                         </div>
                       </div>
@@ -1189,8 +1156,7 @@ export function AskAIChat({
                 {/* Scroll-to-bottom button */}
                 {showScrollDown && (
                   <button
-                    className="sticky bottom-2 left-1/2 -translate-x-1/2 p-1.5 rounded-full shadow-lg cursor-pointer z-10"
-                    style={{ background: '#222', border: '1px solid rgba(255,255,255,0.1)', color: '#888' }}
+                    className="ai-chat-scroll-btn"
                     onClick={() => scrollToBottom()}
                   >
                     <ArrowDown size={14} />
@@ -1200,23 +1166,17 @@ export function AskAIChat({
 
               {/* ── Conversation full banner ── */}
               {hasAccess && activeConversation && activeConversation.messages.length >= MAX_MESSAGES_PER_CONVERSATION && !isStreaming && (
-                <div className="shrink-0 mx-3 mb-1 rounded-lg px-3 py-2 flex items-center gap-2.5"
-                  style={{
-                    background: 'rgba(139,143,255,0.06)',
-                    border: '1px solid rgba(139,143,255,0.12)',
-                  }}
-                >
-                  <MessageSquare size={13} style={{ color: 'var(--ai)', flexShrink: 0 }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] text-ai leading-tight">
+                <div className="ai-chat-conv-full-banner">
+                  <MessageSquare size={13} className="ai-chat-conv-full-icon" />
+                  <div className="ai-chat-conv-full-body">
+                    <p className="ai-chat-conv-full-text">
                       Conversation full ({activeConversation.messages.length}/{MAX_MESSAGES_PER_CONVERSATION}). Older messages will be trimmed.
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="ai-chat-conv-full-actions">
                     <button
                       onClick={() => exportConversation(activeConversation)}
-                      className="flex items-center gap-1 h-6 px-2 rounded-md text-[11px] cursor-pointer transition-colors"
-                      style={{ background: 'rgba(139,143,255,0.1)', color: 'var(--ai)', border: '1px solid rgba(139,143,255,0.15)' }}
+                      className="ai-chat-conv-full-export-btn"
                       title="Export this conversation before starting a new one"
                     >
                       <Download size={9} />
@@ -1224,8 +1184,7 @@ export function AskAIChat({
                     </button>
                     <button
                       onClick={startNewConversation}
-                      className="flex items-center gap-1 h-6 px-2 rounded-md text-[11px] cursor-pointer transition-colors"
-                      style={{ background: 'rgba(139,143,255,0.15)', color: 'var(--ai)', border: '1px solid rgba(139,143,255,0.2)' }}
+                      className="ai-chat-conv-full-new-btn"
                     >
                       <Plus size={9} />
                       New Chat
@@ -1236,13 +1195,8 @@ export function AskAIChat({
 
               {/* ── Input area ── */}
               {hasAccess && (
-                <div className="shrink-0 px-3 pb-3 pt-1">
-                  <div className="rounded-xl"
-                    style={{
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                    }}
-                  >
+                <div className="ai-chat-input-wrap">
+                  <div className="ai-chat-input-box">
                     <textarea
                       ref={textareaRef}
                       value={input}
@@ -1254,34 +1208,24 @@ export function AskAIChat({
                       onKeyDown={handleKeyDown}
                       placeholder={isStreaming ? 'AI is responding...' : (aiMode === 'build' ? 'Describe what to build...' : 'Ask about 0colors...')}
                       disabled={isStreaming}
-                      className="w-full px-3 pt-2.5 pb-1 text-[12px] text-foreground placeholder:text-ghost bg-transparent outline-none resize-none"
+                      className="ai-chat-textarea"
                       style={{ minHeight: TEXTAREA_MIN_H, maxHeight: TEXTAREA_MAX_H }}
                     />
-                    <div className="flex items-center justify-between px-2.5 pb-2">
-                      <div className="flex items-center gap-2">
+                    <div className="ai-chat-input-footer">
+                      <div className="ai-chat-input-left">
                         {/* Mode toggle */}
                         {buildModeAvailable && (
                           <>
                             <button
                               onClick={() => setAIMode('ask')}
-                              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium cursor-pointer transition-all"
-                              style={{
-                                background: aiMode === 'ask' ? 'rgba(139,143,255,0.15)' : 'transparent',
-                                color: aiMode === 'ask' ? '#8B8FFF' : 'var(--ghost)',
-                                border: aiMode === 'ask' ? '1px solid rgba(139,143,255,0.25)' : '1px solid transparent',
-                              }}
+                              className={`ai-chat-mode-btn ${aiMode === 'ask' ? 'is-active-ask' : 'is-inactive'}`}
                             >
                               <Sparkles size={10} />
                               Ask
                             </button>
                             <button
                               onClick={() => setAIMode('build')}
-                              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium cursor-pointer transition-all"
-                              style={{
-                                background: aiMode === 'build' ? 'rgba(255,160,50,0.15)' : 'transparent',
-                                color: aiMode === 'build' ? '#FFA032' : 'var(--ghost)',
-                                border: aiMode === 'build' ? '1px solid rgba(255,160,50,0.25)' : '1px solid transparent',
-                              }}
+                              className={`ai-chat-mode-btn ${aiMode === 'build' ? 'is-active-build' : 'is-inactive'}`}
                             >
                               <Hammer size={10} />
                               Build
@@ -1292,13 +1236,9 @@ export function AskAIChat({
                         <div ref={modelPickerRef}>
                           <button
                             onClick={() => setShowModelPicker(prev => !prev)}
-                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium cursor-pointer transition-all hover:bg-white/5"
-                            style={{
-                              color: 'var(--subtle)',
-                              border: '1px solid rgba(255,255,255,0.1)',
-                            }}
+                            className="ai-chat-model-picker-btn"
                           >
-                            <Diamond size={9} style={{ fill: 'currentColor' }} />
+                            <Diamond size={9} className="ai-chat-model-picker-diamond" />
                             {(() => {
                               const active = getActiveServiceConfig(aiSettings);
                               if (!active) return 'No model';
@@ -1309,15 +1249,8 @@ export function AskAIChat({
                           </button>
                           {showModelPicker && createPortal(
                             <div
-                              className="rounded-lg overflow-y-auto"
+                              className="ai-chat-model-dropdown"
                               style={{
-                                position: 'fixed',
-                                width: '220px',
-                                maxHeight: '280px',
-                                background: 'var(--card)',
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                                zIndex: 999999,
                                 ...((() => {
                                   const rect = modelPickerRef.current?.getBoundingClientRect();
                                   if (!rect) return {};
@@ -1327,12 +1260,10 @@ export function AskAIChat({
                             >
                               {getConfiguredServices(aiSettings).map(({ definition: def, config: cfg }) => (
                                 <div key={def.id}>
-                                  <div className="px-2.5 pt-2 pb-1 text-[9px] uppercase tracking-wider flex items-center gap-1.5"
-                                    style={{ color: 'var(--ghost)' }}
-                                  >
+                                  <div className="ai-chat-model-group-label">
                                     {def.label}
                                     {def.hasFreeTier && (
-                                      <span className="text-[8px] px-1 rounded" style={{ background: 'rgba(43,189,104,0.1)', color: '#2BBD68' }}>free</span>
+                                      <span className="ai-chat-model-free-tag">free</span>
                                     )}
                                   </div>
                                   {def.models.map(model => {
@@ -1349,12 +1280,10 @@ export function AskAIChat({
                                           saveAISettings(newSettings);
                                           setShowModelPicker(false);
                                         }}
-                                        className="w-full px-2.5 py-1.5 text-left text-[11px] flex items-center gap-2 cursor-pointer transition-colors hover:bg-white/5"
-                                        style={{ color: isActive ? 'var(--foreground)' : 'var(--subtle)' }}
+                                        className="ai-chat-model-option"
+                                        style={{ color: isActive ? 'var(--grey-100)' : 'var(--grey-500)' }}
                                       >
-                                        <span className="w-1.5 h-1.5 rounded-full shrink-0"
-                                          style={{ background: isActive ? '#8B8FFF' : 'rgba(255,255,255,0.1)' }}
-                                        />
+                                        <span className={`ai-chat-model-dot ${isActive ? 'is-active' : 'is-inactive'}`} />
                                         {model.label}
                                       </button>
                                     );
@@ -1362,7 +1291,7 @@ export function AskAIChat({
                                 </div>
                               ))}
                               {getConfiguredServices(aiSettings).length === 0 && (
-                                <div className="px-3 py-3 text-[11px] text-ghost text-center">
+                                <div className="ai-chat-model-empty">
                                   No providers configured
                                 </div>
                               )}
@@ -1371,17 +1300,16 @@ export function AskAIChat({
                           )}
                         </div>
                         {charCount > 500 && (
-                          <span className={`text-[11px] ${isOverLimit ? 'text-destructive' : 'text-ghost'}`}>
+                          <span className={`ai-chat-char-count ${isOverLimit ? 'is-over' : 'is-normal'}`}>
                             {charCount.toLocaleString()} / {MAX_INPUT_CHARS.toLocaleString()}
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="ai-chat-input-right">
                         {isStreaming ? (
                           <button
                             onClick={stopStreaming}
-                            className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] cursor-pointer transition-colors"
-                            style={{ background: 'rgba(255,77,106,0.15)', color: '#FF4D6A', border: '1px solid rgba(255,77,106,0.2)' }}
+                            className="ai-chat-stop-btn"
                           >
                             <StopCircle size={12} />
                             Stop
@@ -1390,12 +1318,12 @@ export function AskAIChat({
                           <button
                             onClick={aiMode === 'build' ? sendBuildMessage : sendMessage}
                             disabled={!input.trim() || isOverLimit}
-                            className="flex items-center justify-center h-7 w-7 rounded-lg cursor-pointer transition-colors disabled:cursor-default"
+                            className="ai-chat-send-btn"
                             style={{
                               background: input.trim() && !isOverLimit
-                                ? (aiMode === 'build' ? '#FFA032' : '#8B8FFF')
+                                ? (aiMode === 'build' ? 'var(--orange-400)' : 'var(--indigo-400)')
                                 : 'rgba(255,255,255,0.04)',
-                              color: input.trim() && !isOverLimit ? '#000' : '#333',
+                              color: input.trim() && !isOverLimit ? 'var(--grey-900)' : 'var(--grey-700)',
                             }}
                           >
                             {aiMode === 'build' ? <Hammer size={13} /> : <Send size={13} />}
@@ -1442,24 +1370,18 @@ export function AskAIChat({
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 20 }}
         transition={{ duration: 0.2 }}
-        className="shrink-0 flex flex-col h-full gap-2 relative"
+        className="ai-chat-docked"
         style={{ width: DOCKED_WIDTH, zIndex: 50 }}
         onWheel={e => e.stopPropagation()}
       >
         {/* ── Header Island ── */}
-        <div
-          className="shrink-0 rounded-2xl h-12 px-3 flex items-center justify-between select-none border border-secondary"
-          style={{ backgroundColor: 'var(--card)' }}
-        >
+        <div className="ai-chat-docked-header">
           {headerLeft}
           {headerRight}
         </div>
 
         {/* ── Chat Body Island ── */}
-        <div
-          className="flex-1 rounded-2xl flex flex-col overflow-hidden min-h-0 border border-secondary"
-          style={{ backgroundColor: 'var(--card)' }}
-        >
+        <div className="ai-chat-docked-body">
           {chatBody}
         </div>
       </motion.div>
@@ -1475,34 +1397,27 @@ export function AskAIChat({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.97 }}
       transition={{ duration: 0.2 }}
-      className="flex flex-col"
+      className="ai-chat-floating"
       style={{
-        position: 'fixed',
         width: CHAT_WIDTH,
         height,
         left: position.x,
         top: position.y,
         zIndex: 99999,
-        backgroundColor: 'var(--card)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 16,
-        boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03)',
-        overflow: 'hidden',
       }}
       onClick={e => e.stopPropagation()}
     >
       {/* ── Resize handle (top edge) ── */}
       <div
-        className="absolute top-0 left-4 right-4 h-1.5 cursor-ns-resize z-10 group"
+        className="ai-chat-resize-handle"
         onMouseDown={handleResizeStart}
       >
-        <div className="w-8 h-1 mx-auto mt-1 rounded-full bg-border group-hover:bg-[#555] transition-colors" />
+        <div className="ai-chat-resize-bar" />
       </div>
 
       {/* ── Header (inside the single container) ── */}
       <div
-        className="flex items-center justify-between px-3 py-2.5 shrink-0 cursor-grab active:cursor-grabbing"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        className="ai-chat-floating-header"
         onMouseDown={handleDragStart}
       >
         {headerLeft}

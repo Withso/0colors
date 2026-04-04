@@ -1,4 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
+import './DualRangeSlider.css';
 
 interface DualRangeSliderProps {
   min: number;
@@ -110,7 +111,7 @@ export function DualRangeSlider({
   return (
     <div
       ref={trackRef}
-      className="relative h-5 flex items-center select-none touch-none"
+      className="dual-slider-track"
       style={{ cursor: dragging ? 'grabbing' : 'default' }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -118,12 +119,12 @@ export function DualRangeSlider({
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Track background */}
-      <div className="absolute w-full h-2 bg-card rounded-full" />
+      <div className="dual-slider-rail" />
 
       {/* Colored fill between thumbs */}
       {fillStyle && (
         <div
-          className="absolute h-2 rounded-full pointer-events-none"
+          className="dual-slider-fill"
           style={{
             left: `${leftPct}%`,
             right: `${100 - rightPct}%`,
@@ -136,29 +137,27 @@ export function DualRangeSlider({
       {markers?.map((m, i) => (
         <div
           key={i}
-          className="absolute w-1 h-1 rounded-full -translate-x-1/2"
+          className="dual-slider-marker"
           style={{
             left: `${m.position}%`,
             backgroundColor: m.color,
             zIndex: 5,
-            pointerEvents: 'none',
           }}
         />
       ))}
 
       {/* Start thumb */}
       <div
-        className="absolute -translate-x-1/2"
+        className="dual-slider-thumb-wrapper"
         style={{
           left: `${startPct}%`,
           zIndex: dragging === 'start' ? 30 : 20,
-          pointerEvents: 'none',
         }}
       >
         <div
-          className="w-3.5 h-3.5 rounded-sm border-2 border-white shadow-lg"
+          className="dual-slider-thumb"
           style={{
-            background: '#1a237e',
+            background: 'var(--indigo-900)',
             transform: 'rotate(45deg)',
             cursor: dragging === 'start' ? 'grabbing' : 'grab',
             boxShadow: dragging === 'start'
@@ -170,17 +169,16 @@ export function DualRangeSlider({
 
       {/* End thumb */}
       <div
-        className="absolute -translate-x-1/2"
+        className="dual-slider-thumb-wrapper"
         style={{
           left: `${endPct}%`,
           zIndex: dragging === 'end' ? 30 : 20,
-          pointerEvents: 'none',
         }}
       >
         <div
-          className="w-3.5 h-3.5 rounded-sm border-2 border-white shadow-lg"
+          className="dual-slider-thumb"
           style={{
-            background: '#1a237e',
+            background: 'var(--indigo-900)',
             transform: 'rotate(45deg)',
             cursor: dragging === 'end' ? 'grabbing' : 'grab',
             boxShadow: dragging === 'end'

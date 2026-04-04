@@ -1,0 +1,163 @@
+/* ============================================
+ * ANIMATIONS.CSS — Radix UI transition animations
+ * Extracted from Tailwind's compiled output.
+ * These drive open/close animations for dialogs,
+ * dropdowns, popovers, selects, tooltips, etc.
+ * ============================================ */
+
+/* ═══════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════ */
+
+@keyframes enter {
+  from {
+    opacity: var(--enter-opacity, 1);
+    transform:
+      translate3d(var(--enter-translate-x, 0), var(--enter-translate-y, 0), 0)
+      scale3d(var(--enter-scale, 1), var(--enter-scale, 1), var(--enter-scale, 1));
+  }
+}
+
+@keyframes exit {
+  to {
+    opacity: var(--exit-opacity, 1);
+    transform:
+      translate3d(var(--exit-translate-x, 0), var(--exit-translate-y, 0), 0)
+      scale3d(var(--exit-scale, 1), var(--exit-scale, 1), var(--exit-scale, 1));
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  50% { opacity: 0.5; }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes goBackFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(6px); }
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════
+   RADIX OPEN/CLOSE ANIMATIONS
+   Data-attribute driven — no Tailwind classes needed.
+   Components that use these: dialog, alert-dialog,
+   dropdown-menu, popover, select, context-menu, tooltip
+   ═══════════════════════════════════════════ */
+
+/* Open state — enter animation */
+[data-state="open"][data-slot="dialog-overlay"],
+[data-state="open"][data-slot="dialog-content"],
+[data-state="open"][data-slot="alert-dialog-overlay"],
+[data-state="open"][data-slot="alert-dialog-content"],
+[data-state="open"][data-slot="dropdown-menu-content"],
+[data-state="open"][data-slot="popover-content"],
+[data-state="open"][data-slot="select-content"],
+[data-state="open"][data-slot="context-menu-content"],
+[data-state="open"][data-slot="tooltip-content"] {
+  animation: enter 0.15s ease;
+}
+
+/* Close state — exit animation */
+[data-state="closed"][data-slot="dialog-overlay"],
+[data-state="closed"][data-slot="dialog-content"],
+[data-state="closed"][data-slot="alert-dialog-overlay"],
+[data-state="closed"][data-slot="alert-dialog-content"],
+[data-state="closed"][data-slot="dropdown-menu-content"],
+[data-state="closed"][data-slot="select-content"] {
+  animation: exit 0.15s ease;
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATION PRESETS — Fade
+   ═══════════════════════════════════════════ */
+
+/* Overlays fade in/out */
+[data-state="open"][data-slot="dialog-overlay"],
+[data-state="open"][data-slot="alert-dialog-overlay"] {
+  --enter-opacity: 0;
+}
+
+[data-state="closed"][data-slot="dialog-overlay"],
+[data-state="closed"][data-slot="alert-dialog-overlay"] {
+  --exit-opacity: 0;
+}
+
+/* Content fades + zooms */
+[data-state="open"][data-slot="dialog-content"],
+[data-state="open"][data-slot="alert-dialog-content"] {
+  --enter-opacity: 0;
+  --enter-scale: 0.95;
+}
+
+[data-state="closed"][data-slot="dialog-content"],
+[data-state="closed"][data-slot="alert-dialog-content"] {
+  --exit-opacity: 0;
+  --exit-scale: 0.95;
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATION PRESETS — Dropdown/Popover/Select slide
+   ═══════════════════════════════════════════ */
+
+/* Fade in for all popover-like content */
+[data-state="open"][data-slot="dropdown-menu-content"],
+[data-state="open"][data-slot="popover-content"],
+[data-state="open"][data-slot="select-content"],
+[data-state="open"][data-slot="context-menu-content"],
+[data-state="open"][data-slot="tooltip-content"] {
+  --enter-opacity: 0;
+  --enter-scale: 0.95;
+}
+
+[data-state="closed"][data-slot="dropdown-menu-content"],
+[data-state="closed"][data-slot="select-content"] {
+  --exit-opacity: 0;
+  --exit-scale: 0.95;
+}
+
+/* Slide direction based on Radix data-side attribute */
+[data-side="bottom"] {
+  --enter-translate-y: -4px;
+}
+
+[data-side="top"] {
+  --enter-translate-y: 4px;
+}
+
+[data-side="left"] {
+  --enter-translate-x: 4px;
+}
+
+[data-side="right"] {
+  --enter-translate-x: -4px;
+}
+
+/* ═══════════════════════════════════════════
+   UTILITY ANIMATION CLASSES
+   For components that use explicit class-based animations
+   ═══════════════════════════════════════════ */
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.25s ease-out;
+}

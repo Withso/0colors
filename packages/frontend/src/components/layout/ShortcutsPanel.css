@@ -1,0 +1,261 @@
+/* ShortcutsPanel */
+
+/* ─── Panel container ─── */
+.shortcuts-panel {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  z-index: 100;
+}
+
+/* ─── Header ─── */
+.shortcuts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 42px;
+  flex-shrink: 0;
+  user-select: none;
+  border-bottom: 1px solid var(--grey-900);
+}
+
+.shortcuts-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.shortcuts-header-icon {
+  color: var(--grey-400);
+  flex-shrink: 0;
+}
+
+.shortcuts-header-title {
+  font-size: 11px;
+  color: var(--grey-600);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+}
+
+.shortcuts-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  width: 24px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: none;
+  color: var(--grey-600);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+  padding: 0;
+}
+
+.shortcuts-close-btn:hover {
+  background-color: var(--grey-800);
+  color: var(--grey-500);
+}
+
+/* ─── Tab bar ─── */
+.shortcuts-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 12px 4px 12px;
+  flex-shrink: 0;
+}
+
+.shortcuts-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radius-lg);
+  font-size: 11px;
+  transition: color 0.15s, background-color 0.15s;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: none;
+}
+
+.shortcuts-tab--active {
+  background-color: var(--grey-800);
+  color: var(--grey-100);
+  border-color: var(--grey-400);
+}
+
+.shortcuts-tab--inactive {
+  color: var(--grey-600);
+}
+
+.shortcuts-tab--inactive:hover {
+  color: var(--grey-500);
+  background-color: var(--grey-800);
+}
+
+/* ─── Body ─── */
+.shortcuts-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 0 4px;
+}
+
+/* ─── Category header ─── */
+.shortcuts-category-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--grey-900);
+}
+
+.shortcuts-category-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 12px 6px 12px;
+}
+
+.shortcuts-category-title {
+  font-size: 11px;
+  color: var(--grey-600);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.shortcuts-category-line {
+  flex: 1;
+  height: 1px;
+  background-color: var(--grey-900);
+}
+
+/* ─── Shortcut row ─── */
+.shortcuts-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 12px;
+  margin: 0 4px;
+  border-radius: var(--radius-lg);
+  transition: background-color 0.15s;
+}
+
+.shortcuts-row:hover {
+  background-color: var(--grey-800);
+}
+
+.shortcuts-row-desc {
+  font-size: 11px;
+  color: var(--grey-500);
+  transition: color 0.15s;
+}
+
+.shortcuts-row:hover .shortcuts-row-desc {
+  color: var(--grey-400);
+}
+
+.shortcuts-row-keys {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+/* ─── Tip row ─── */
+.shortcuts-tip-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  margin: 0 4px;
+  border-radius: var(--radius-lg);
+  transition: background-color 0.15s;
+}
+
+.shortcuts-tip-row:hover {
+  background-color: var(--grey-800);
+}
+
+.shortcuts-tip-action-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shortcuts-tip-icon {
+  color: var(--grey-700);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.shortcuts-tip-row:hover .shortcuts-tip-icon {
+  color: var(--grey-600);
+}
+
+.shortcuts-tip-desc {
+  font-size: 11px;
+  color: var(--grey-600);
+  transition: color 0.15s;
+  padding-left: 20px;
+}
+
+.shortcuts-tip-row:hover .shortcuts-tip-desc {
+  color: var(--grey-400);
+}
+
+/* ─── Divider ─── */
+.shortcuts-divider {
+  margin: 4px 12px;
+  height: 1px;
+  background-color: var(--grey-900);
+}
+
+/* ─── Spacer ─── */
+.shortcuts-spacer {
+  height: 16px;
+}
+
+/* ─── KeyBadge ─── */
+.shortcuts-key-separator {
+  font-size: 11px;
+  color: var(--grey-700);
+  margin: 0 2px;
+}
+
+.shortcuts-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--grey-500);
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-800);
+}
+
+/* ─── ActionBadge ─── */
+.shortcuts-action-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--grey-600);
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-800);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}

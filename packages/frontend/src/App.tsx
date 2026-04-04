@@ -1,3 +1,4 @@
+import './App.css';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { ColorCanvas } from './components/canvas/ColorCanvas';
 import { TokensPanel } from './components/tokens/TokensPanel';
@@ -11104,8 +11105,8 @@ export function AppShell() {
   // Auth gate — show auth page if still checking or not authenticated and user hasn't skipped
   if (authChecking) {
     return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-dim text-[13px]">Loading…</div>
+      <div className="app-shell-loading">
+        <div className="app-shell-loading-text">Loading…</div>
       </div>
     );
   }
@@ -11124,10 +11125,10 @@ export function AppShell() {
 
     if (isSampleProjectPath || (isHomePath && hasNoLocalProjects)) {
       return (
-        <div className="h-screen bg-background flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="text-[20px] font-semibold text-white tracking-tight">0<span className="text-dim">colors</span></div>
-            <div className="text-dim text-[13px]">Loading templates…</div>
+        <div className="app-shell-loading">
+          <div className="app-shell-loading-col">
+            <div className="app-shell-loading-brand">0<span className="app-shell-loading-brand-dim">colors</span></div>
+            <div className="app-shell-loading-text">Loading templates…</div>
           </div>
         </div>
       );
@@ -11200,16 +11201,16 @@ export function AppShell() {
   }
 
   return (
-    <div className="h-screen flex bg-background p-1.5 gap-1.5 overflow-hidden">
+    <div className="app-shell">
       <Toaster
         position="bottom-right"
         theme="dark"
         toastOptions={{
           style: {
-            background: 'rgba(26, 26, 26, 0.95)',
+            background: 'color-mix(in srgb, var(--grey-800) 95%, transparent)',
             backdropFilter: 'blur(12px)',
             border: 'none',
-            color: 'var(--foreground)',
+            color: 'var(--grey-100)',
             boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
             borderRadius: '8px',
             fontSize: '13px',
@@ -11259,44 +11260,44 @@ export function AppShell() {
       />
 
       {/* Right Column - Header + Canvas as separate islands */}
-      <div className="flex-1 flex flex-col gap-2 min-h-0">
+      <div className="app-main">
         {/* Top Bar - Floating Island */}
-        <div className="shrink-0 relative bg-background rounded-xl px-3 h-12 flex items-center justify-between select-none">
+        <div className="app-toolbar">
           <>
             {/* Left: View Mode Switcher + Search */}
-            <div className="flex items-center gap-3">
+            <div className="app-toolbar-left">
               {viewMode === 'export' ? (
                 <button
                   onClick={() => setViewMode('canvas')}
-                  className="flex items-center gap-1.5 h-[28px] px-2.5 rounded-md text-[11px] text-dim hover:text-muted-foreground transition-colors cursor-pointer"
+                  className="app-toolbar-back-btn"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <ArrowLeft className="app-icon-3-5" />
                   <span>Back</span>
                 </button>
               ) : (
                 <>
                   {/* View Switcher */}
-                  <div className="flex p-1 bg-card rounded-lg">
+                  <div className="app-toolbar-view-switcher">
                     <Tip label="Canvas View" side="bottom">
                       <button
                         onClick={() => setViewMode('canvas')}
-                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'canvas'
-                            ? 'bg-border text-foreground shadow-sm'
-                            : 'text-faint hover:text-muted-foreground'
+                        className={`app-toolbar-view-btn ${viewMode === 'canvas'
+                            ? 'app-toolbar-view-btn-active'
+                            : 'app-toolbar-view-btn-inactive'
                           }`}
                       >
-                        <Workflow className="h-4 w-4" />
+                        <Workflow className="app-icon-4" />
                       </button>
                     </Tip>
                     <Tip label="Code Preview" side="bottom">
                       <button
                         onClick={() => setViewMode('code')}
-                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${viewMode === 'code'
-                            ? 'bg-border text-foreground shadow-sm'
-                            : 'text-faint hover:text-muted-foreground'
+                        className={`app-toolbar-view-btn ${viewMode === 'code'
+                            ? 'app-toolbar-view-btn-active'
+                            : 'app-toolbar-view-btn-inactive'
                           }`}
                       >
-                        <Code className="h-4 w-4" />
+                        <Code className="app-icon-4" />
                       </button>
                     </Tip>
                   </div>
@@ -11305,9 +11306,9 @@ export function AppShell() {
                   <Tip label="Export Tokens" side="bottom">
                     <button
                       onClick={() => setViewMode('export')}
-                      className="w-8 h-8 rounded-md flex items-center justify-center text-faint hover:text-muted-foreground transition-all"
+                      className="app-toolbar-export-btn"
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="app-icon-4" />
                     </button>
                   </Tip>
 
@@ -11320,12 +11321,12 @@ export function AppShell() {
                       <Tip label={isPublished ? 'Edit Community Listing' : 'Publish to Community'} side="bottom">
                         <button
                           onClick={() => setShowPublishPopup(activeProjectId)}
-                          className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${isPublished
-                              ? 'text-brand hover:text-[#7B8FFF]'
-                              : 'text-faint hover:text-brand'
+                          className={`app-toolbar-publish-btn ${isPublished
+                              ? 'app-toolbar-publish-btn-active'
+                              : 'app-toolbar-publish-btn-inactive'
                             }`}
                         >
-                          <Globe className="h-4 w-4" />
+                          <Globe className="app-icon-4" />
                         </button>
                       </Tip>
                     );
@@ -11336,11 +11337,11 @@ export function AppShell() {
 
             {/* Center: Page Selector */}
             {viewMode !== 'export' && (
-              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg border border-transparent transition-all">
+              <div className="app-toolbar-center">
+                <div className="app-toolbar-selector">
                   {/* Text Area - Handles Double Click for Rename */}
                   <div
-                    className="px-2 h-full flex items-center cursor-default select-none max-w-[200px]"
+                    className="app-toolbar-selector-text"
                     onDoubleClick={(e) => {
                       if (isSampleMode) return;
                       e.stopPropagation();
@@ -11375,12 +11376,12 @@ export function AppShell() {
                             setEditingPageName('');
                           }
                         }}
-                        className="bg-transparent border-none outline-none text-white w-24 p-0 h-auto font-medium text-center"
+                        className="app-toolbar-rename-input"
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
-                      <span className="truncate">
+                      <span className="app-toolbar-truncate">
                         {pages.find(p => p.id === activePageId)?.name || 'Page'}
                       </span>
                     )}
@@ -11389,12 +11390,12 @@ export function AppShell() {
                   {/* Dropdown Trigger - Only Icon */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-elevated text-faint hover:text-foreground transition-colors outline-none cursor-pointer">
-                        <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+                      <button className="app-toolbar-dropdown-trigger">
+                        <ChevronDown className="app-icon-3-5 app-icon-opacity-50" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" sideOffset={8} className="w-64 bg-card p-1 shadow-lg z-[60] ml-[-60px]">
-                      <div className="px-2 py-1.5 text-xs font-medium text-faint uppercase tracking-wider">
+                    <DropdownMenuContent align="start" sideOffset={8} className="app-toolbar-dropdown-content app-toolbar-dropdown-content-page">
+                      <div className="app-toolbar-dropdown-header">
                         Pages
                       </div>
                       {pages
@@ -11408,12 +11409,12 @@ export function AppShell() {
                                 handleSwitchPage(page.id);
                               }
                             }}
-                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-secondary focus:text-foreground ${activePageId === page.id
-                                ? 'bg-[#141820] text-foreground'
-                                : 'text-subtle'
-                              } group mb-0.5`}
+                            className={`app-toolbar-dropdown-item ${activePageId === page.id
+                                ? 'app-toolbar-dropdown-item-active'
+                                : 'app-toolbar-dropdown-item-inactive'
+                              } group`}
                           >
-                            <div className="flex items-center gap-2 overflow-hidden flex-1">
+                            <div className="app-toolbar-dropdown-item-row">
                               {editingPageId === page.id ? (
                                 <input
                                   value={editingPageName}
@@ -11438,13 +11439,13 @@ export function AppShell() {
                                       setEditingPageName('');
                                     }
                                   }}
-                                  className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
+                                  className="app-toolbar-rename-input-full"
                                   autoFocus
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               ) : (
                                 <span
-                                  className="truncate flex-1"
+                                  className="app-toolbar-truncate-flex"
                                   onDoubleClick={(e) => {
                                     if (isSampleMode) return;
                                     e.stopPropagation();
@@ -11458,8 +11459,8 @@ export function AppShell() {
                             </div>
 
                             {editingPageId !== page.id && (
-                              <div className="flex items-center gap-1">
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="app-toolbar-dropdown-item-actions">
+                                <div className="app-toolbar-dropdown-item-actions-hidden">
                                   {!isSampleMode && pages.filter(p => p.projectId === activeProjectId).length > 1 && (
                                     <Tip label="Delete Page" side="right">
                                       <div
@@ -11469,9 +11470,9 @@ export function AppShell() {
                                             handleDeletePage(page.id);
                                           }
                                         }}
-                                        className="p-1 hover:bg-elevated rounded text-faint hover:text-destructive transition-colors"
+                                        className="app-toolbar-dropdown-delete-btn"
                                       >
-                                        <Trash2 className="h-3 w-3" />
+                                        <Trash2 className="app-icon-3" />
                                       </div>
                                     </Tip>
                                   )}
@@ -11482,13 +11483,13 @@ export function AppShell() {
                         ))}
                       {!isSampleMode && (
                         <>
-                          <div className="h-[1px] bg-elevated my-1" />
+                          <div className="app-toolbar-dropdown-divider" />
                           <DropdownMenuItem
                             onClick={handleCreatePage}
-                            className="flex items-center gap-2 px-2 py-2 text-subtle focus:text-foreground focus:bg-secondary rounded-md cursor-pointer"
+                            className="app-toolbar-dropdown-add"
                           >
-                            <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed">
-                              <Plus className="h-3 w-3" />
+                            <div className="app-toolbar-dropdown-add-icon">
+                              <Plus className="app-icon-3" />
                             </div>
                             <span>Add new page</span>
                           </DropdownMenuItem>
@@ -11501,36 +11502,36 @@ export function AppShell() {
             )}
 
             {viewMode === 'export' && (
-              <div className="absolute left-1/2 transform -translate-x-1/2">
-                <span className="text-[13px] text-faint tracking-wide">Multi-Page Token Export</span>
+              <div className="app-toolbar-export-label">
+                <span className="app-toolbar-export-label-text">Multi-Page Token Export</span>
               </div>
             )}
 
             {/* Right: Theme Selector */}
             {viewMode !== 'export' && (
-              <div className="flex items-center gap-1.5">
+              <div className="app-toolbar-right">
                 {/* Table icon — independent from theme dropdown */}
                 <Tip label="Token Overview Table" side="bottom">
                   <button
                     onClick={() => setShowTokenTable(prev => !prev)}
-                    className={`flex items-center gap-2 h-9 px-3 rounded-lg border transition-all cursor-pointer ${showTokenTable ? 'border-transparent bg-secondary text-foreground' : 'border-transparent hover:bg-secondary text-subtle hover:text-foreground'}`}
+                    className={`app-toolbar-token-table-btn ${showTokenTable ? 'app-toolbar-token-table-btn-active' : 'app-toolbar-token-table-btn-inactive'}`}
                   >
-                    <Table className="h-4 w-4" />
-                    <span className="text-[13px]">Token Table</span>
+                    <Table className="app-icon-4" />
+                    <span className="app-toolbar-token-table-label">Token Table</span>
                   </button>
                 </Tip>
                 {/* Dev Mode toggle — moved to bottom toolbar */}
-                <div className="flex items-center h-9 px-1 gap-1 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg border border-transparent transition-all">
+                <div className="app-toolbar-theme-selector">
                   {/* Theme Name Area - Handles Double Click */}
-                  <div className="flex items-center px-2 h-full gap-2 cursor-default select-none max-w-[200px]">
+                  <div className="app-toolbar-theme-name-area">
                     {themes.find(t => t.id === activeThemeId)?.isPrimary ? (
-                      <Crown className="h-3.5 w-3.5 text-warning/80 fill-warning/80 shrink-0" />
+                      <Crown className="app-icon-3-5 app-icon-warning-fill app-icon-shrink" />
                     ) : (
-                      <SwatchBook className="h-3.5 w-3.5 text-faint shrink-0" />
+                      <SwatchBook className="app-icon-3-5 app-icon-faint app-icon-shrink" />
                     )}
 
                     <div
-                      className="flex items-center h-full overflow-hidden"
+                      className="app-toolbar-theme-name-inner"
                       onDoubleClick={(e) => {
                         if (isSampleMode) return;
                         e.stopPropagation();
@@ -11565,12 +11566,12 @@ export function AppShell() {
                               setEditingThemeName('');
                             }
                           }}
-                          className="bg-transparent border-none outline-none text-white w-24 p-0 h-auto font-medium"
+                          className="app-toolbar-rename-input"
                           autoFocus
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <span className="truncate">
+                        <span className="app-toolbar-truncate">
                           {themes.find(t => t.id === activeThemeId)?.name || 'Theme'}
                         </span>
                       )}
@@ -11580,12 +11581,12 @@ export function AppShell() {
                   {/* Dropdown Trigger - Only Icon */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="h-7 w-7 flex items-center justify-center rounded hover:bg-elevated text-faint hover:text-foreground transition-colors outline-none cursor-pointer">
-                        <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+                      <button className="app-toolbar-dropdown-trigger">
+                        <ChevronDown className="app-icon-3-5 app-icon-opacity-50" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-card p-1 shadow-lg z-[60]">
-                      <div className="px-2 py-1.5 text-xs font-medium text-faint uppercase tracking-wider">
+                    <DropdownMenuContent align="end" sideOffset={8} className="app-toolbar-dropdown-content">
+                      <div className="app-toolbar-dropdown-header">
                         Themes
                       </div>
                       {themes
@@ -11599,21 +11600,21 @@ export function AppShell() {
                                 handleSwitchTheme(theme.id);
                               }
                             }}
-                            className={`flex items-center justify-between px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-secondary focus:text-foreground ${activeThemeId === theme.id
-                                ? 'bg-[#141820] text-foreground'
-                                : 'text-subtle'
-                              } group mb-0.5`}
+                            className={`app-toolbar-dropdown-item ${activeThemeId === theme.id
+                                ? 'app-toolbar-dropdown-item-active'
+                                : 'app-toolbar-dropdown-item-inactive'
+                              } group`}
                           >
-                            <div className="flex items-center gap-2 overflow-hidden flex-1">
+                            <div className="app-toolbar-dropdown-item-row">
                               {/* Primary Indicator (default theme is always primary — not switchable) */}
                               <div
-                                className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+                                className="app-toolbar-theme-icon"
                                 title={theme.isPrimary ? "Primary Theme" : ""}
                               >
                                 {theme.isPrimary ? (
-                                  <Crown className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+                                  <Crown className="app-icon-3-5 app-icon-warning app-icon-shrink" />
                                 ) : (
-                                  <SwatchBook className={`h-3.5 w-3.5 flex-shrink-0 ${activeThemeId === theme.id ? 'text-subtle' : 'text-dim'
+                                  <SwatchBook className={`app-icon-3-5 app-icon-shrink ${activeThemeId === theme.id ? 'app-icon-grey-500' : 'app-icon-dim'
                                     }`} />
                                 )}
                               </div>
@@ -11642,13 +11643,13 @@ export function AppShell() {
                                       setEditingThemeName('');
                                     }
                                   }}
-                                  className="bg-transparent border-none outline-none text-white w-full p-0 h-auto font-medium"
+                                  className="app-toolbar-rename-input-full"
                                   autoFocus
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               ) : (
                                 <span
-                                  className="truncate flex-1"
+                                  className="app-toolbar-truncate-flex"
                                   onDoubleClick={(e) => {
                                     if (isSampleMode) return;
                                     e.stopPropagation();
@@ -11662,8 +11663,8 @@ export function AppShell() {
                             </div>
 
                             {editingThemeId !== theme.id && (
-                              <div className="flex items-center gap-1">
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="app-toolbar-dropdown-item-actions">
+                                <div className="app-toolbar-dropdown-item-actions-hidden">
                                   {!isSampleMode && themes.filter(t => t.projectId === activeProjectId).length > 1 && !theme.isPrimary && (
                                     <Tip label="Delete Theme" side="left">
                                       <div
@@ -11673,23 +11674,23 @@ export function AppShell() {
                                             handleDeleteTheme(theme.id);
                                           }
                                         }}
-                                        className="p-1 hover:bg-elevated rounded text-faint hover:text-destructive transition-colors"
+                                        className="app-toolbar-dropdown-delete-btn"
                                       >
-                                        <Trash2 className="h-3 w-3" />
+                                        <Trash2 className="app-icon-3" />
                                       </div>
                                     </Tip>
                                   )}
                                 </div>
                                 {index < 9 && (
-                                  <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[11px] text-dim bg-secondary border border-elevated" style={{ fontFamily: 'inherit' }}>
+                                  <kbd className="app-toolbar-kbd" style={{ fontFamily: 'inherit' }}>
                                     {index + 1}
                                   </kbd>
                                 )}
                               </div>
                             )}
                             {editingThemeId !== theme.id && index < 9 && (
-                              <div className="flex items-center gap-1">
-                                <kbd className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded text-[11px] text-dim bg-secondary border border-elevated" style={{ fontFamily: 'inherit' }}>
+                              <div className="app-toolbar-dropdown-item-actions">
+                                <kbd className="app-toolbar-kbd" style={{ fontFamily: 'inherit' }}>
                                   {index + 1}
                                 </kbd>
                               </div>
@@ -11698,13 +11699,13 @@ export function AppShell() {
                         ))}
                       {!isSampleMode && (
                         <>
-                          <div className="h-[1px] bg-elevated my-1" />
+                          <div className="app-toolbar-dropdown-divider" />
                           <DropdownMenuItem
                             onClick={handleCreateTheme}
-                            className="flex items-center gap-2 px-2 py-2 text-subtle focus:text-foreground focus:bg-secondary rounded-md cursor-pointer"
+                            className="app-toolbar-dropdown-add"
                           >
-                            <div className="w-5 h-5 flex items-center justify-center rounded border border-dashed">
-                              <Plus className="h-3 w-3" />
+                            <div className="app-toolbar-dropdown-add-icon">
+                              <Plus className="app-icon-3" />
                             </div>
                             <span>Add new theme</span>
                           </DropdownMenuItem>
@@ -11719,48 +11720,48 @@ export function AppShell() {
         </div>
 
         {/* Canvas Area - Floating Island */}
-        <div className="flex-1 relative rounded-xl overflow-hidden bg-background min-h-0">
+        <div className="app-canvas">
 
 
           {/* Top-right canvas area: Sign In button + Template Switcher */}
           {(isSampleMode || !authSession) && (
-            <div className="absolute top-3 right-3 pointer-events-auto flex items-center gap-2" style={{ zIndex: 100001 }}>
+            <div className="app-canvas-top-right" style={{ zIndex: 100001 }}>
               {/* Sign In / Sign Up — shown for non-authenticated users on ANY project type */}
               {!authSession && (
                 <button
-                  className="flex items-center gap-2 h-8 px-3 rounded-lg bg-card/90 backdrop-blur-md border border-[#1e2b33] hover:border-[#283841] text-brand hover:text-[#7B8FFF] transition-all cursor-pointer shadow-lg"
+                  className="app-canvas-signin-btn"
                   onClick={() => setShowAuthModal(true)}
                 >
-                  <LogIn className="h-3.5 w-3.5" />
-                  <span className="text-[12px] font-medium">Sign In</span>
+                  <LogIn className="app-icon-3-5" />
+                  <span className="app-canvas-signin-label">Sign In</span>
                 </button>
               )}
               {/* Template Switcher Dropdown — only in sample mode, NOT for community projects */}
               {isSampleMode && !isCommunityMode && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2 h-8 px-3 rounded-lg bg-card/90 backdrop-blur-md hover:bg-secondary text-foreground transition-all cursor-pointer shadow-lg">
-                      <BookOpen className="h-3.5 w-3.5 text-brand" />
-                      <span className="text-[12px] max-w-[160px] truncate">
+                    <button className="app-canvas-template-btn">
+                      <BookOpen className="app-icon-3-5 app-icon-brand" />
+                      <span className="app-canvas-template-name">
                         {sampleTemplates[activeSampleIdx]?.name || 'Template'}
                       </span>
                       {sampleTemplates.length > 1 && (
-                        <span className="text-[11px] text-dim tabular-nums">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
+                        <span className="app-canvas-template-count">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
                       )}
-                      <ChevronDown className="h-3 w-3 text-faint" />
+                      <ChevronDown className="app-icon-3 app-icon-faint" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-card p-1 shadow-lg" style={{ zIndex: 100002 }}>
-                    <div className="px-2 py-1.5 flex items-center justify-between">
-                      <span className="text-xs font-medium text-faint uppercase tracking-wider">Templates</span>
-                      <span className="text-[11px] text-dim tabular-nums">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
+                  <DropdownMenuContent align="end" sideOffset={8} className="app-canvas-template-dropdown" style={{ zIndex: 100002 }}>
+                    <div className="app-canvas-template-dropdown-header">
+                      <span className="app-canvas-template-dropdown-title">Templates</span>
+                      <span className="app-canvas-template-dropdown-count">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
                     </div>
                     {sampleTemplates.length >= 5 && (
-                      <div className="px-1.5 pb-1.5">
-                        <div className="relative">
-                          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-dim" />
+                      <div className="app-canvas-template-search-wrap">
+                        <div className="app-canvas-template-search-inner">
+                          <Search className="app-canvas-template-search-icon app-icon-3 app-icon-dim" />
                           <input
-                            className="w-full h-7 pl-7 pr-2 rounded-md bg-background text-[12px] text-foreground placeholder:text-ghost outline-none focus:bg-secondary transition-colors"
+                            className="app-canvas-template-search-input"
                             placeholder="Search templates…"
                             value={sampleTemplateSearch}
                             onChange={(e) => setSampleTemplateSearch(e.target.value)}
@@ -11771,32 +11772,32 @@ export function AppShell() {
                         </div>
                       </div>
                     )}
-                    <div className="overflow-y-auto" style={{ maxHeight: '280px' }}>
+                    <div className="app-canvas-template-scroll" style={{ maxHeight: '280px' }}>
                       {filteredSampleTemplates.length === 0 ? (
-                        <div className="px-3 py-4 text-center text-[11px] text-dim">No templates match "{sampleTemplateSearch}"</div>
+                        <div className="app-canvas-template-empty">No templates match "{sampleTemplateSearch}"</div>
                       ) : (
                         filteredSampleTemplates.map((t) => (
                           <DropdownMenuItem
                             key={`${t.projectId}-${t._origIdx}`}
                             onClick={() => handleSwitchSampleTemplate(t._origIdx)}
-                            className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors focus:bg-secondary focus:text-foreground ${activeSampleIdx === t._origIdx
-                                ? 'bg-[#141820] text-foreground'
-                                : 'text-subtle'
-                              } mb-0.5`}
+                            className={`app-canvas-template-item ${activeSampleIdx === t._origIdx
+                                ? 'app-canvas-template-item-active'
+                                : 'app-canvas-template-item-inactive'
+                              }`}
                           >
                             <div
-                              className="w-3.5 h-3.5 rounded-full shrink-0 border"
+                              className="app-canvas-template-swatch"
                               style={{
                                 background: `hsl(${t.folderColor}, 60%, 45%)`,
-                                borderColor: activeSampleIdx === t._origIdx ? 'var(--brand)' : 'transparent',
+                                borderColor: activeSampleIdx === t._origIdx ? 'var(--indigo-500)' : 'transparent',
                               }}
                             />
-                            <div className="flex flex-col flex-1 min-w-0">
-                              <span className="truncate text-[12px]">{t.name}</span>
-                              <span className="truncate text-[11px] text-dim">{t.description}</span>
+                            <div className="app-canvas-template-item-info">
+                              <span className="app-canvas-template-item-name">{t.name}</span>
+                              <span className="app-canvas-template-item-desc">{t.description}</span>
                             </div>
                             {activeSampleIdx === t._origIdx && (
-                              <span className="ml-auto text-[11px] text-brand font-medium shrink-0">Active</span>
+                              <span className="app-canvas-template-item-active-label">Active</span>
                             )}
                           </DropdownMenuItem>
                         ))
@@ -11809,15 +11810,15 @@ export function AppShell() {
           )}
 
           {isSampleMode && (
-            <div className={`absolute ${viewMode === 'canvas' && isViewingPrimaryTheme ? 'bottom-[5rem]' : 'bottom-6'} left-1/2 -translate-x-1/2 pointer-events-auto`} style={{ zIndex: 100000 }}>
-              <div className="flex items-center gap-4 bg-card/95 backdrop-blur-md rounded-full px-4 py-2 shadow-lg"
+            <div className="app-sample-bar-wrap" style={{ zIndex: 100000, bottom: viewMode === 'canvas' && isViewingPrimaryTheme ? '5rem' : '24px' }}>
+              <div className="app-sample-bar"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
-                <div className="flex items-center gap-2.5">
-                  <div className={`flex items-center justify-center w-5 h-5 rounded-md ${isCommunityMode ? 'bg-brand/10' : 'bg-brand/10'}`}>
-                    {isCommunityMode ? <Globe className="h-3 w-3 text-brand" /> : <Lock className="h-3 w-3 text-brand" />}
+                <div className="app-sample-bar-info">
+                  <div className="app-sample-bar-icon">
+                    {isCommunityMode ? <Globe className="app-icon-3 app-icon-brand" /> : <Lock className="app-icon-3 app-icon-brand" />}
                   </div>
-                  <span className="text-[12px] text-subtle whitespace-nowrap">
+                  <span className="app-sample-bar-text">
                     {isCommunityMode
                       ? `Community project${(window as any).__communityProjectMeta?.userName ? ` by ${(window as any).__communityProjectMeta.userName}` : ''}`
                       : 'You are viewing a read-only sample project'
@@ -11828,36 +11829,36 @@ export function AppShell() {
                 {(!isCommunityMode || (window as any).__communityProjectMeta?.allowRemix) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1.5 h-7 px-3 rounded-full bg-brand/10 border border-brand/20 hover:bg-brand/20 text-brand transition-all cursor-pointer text-[12px] font-medium">
-                        {isCommunityMode ? <Shuffle className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                      <button className="app-sample-bar-action-btn">
+                        {isCommunityMode ? <Shuffle className="app-icon-3" /> : <Copy className="app-icon-3" />}
                         <span>{isCommunityMode ? 'Remix' : 'Duplicate'}</span>
-                        <ChevronDown className="h-3 w-3 opacity-60" />
+                        <ChevronDown className="app-icon-3 app-icon-opacity-60" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-card p-1 shadow-lg" style={{ zIndex: 100001 }}>
-                      <div className="px-2 py-1.5 text-xs font-medium text-faint uppercase tracking-wider">
+                    <DropdownMenuContent align="end" sideOffset={8} className="app-sample-bar-dropdown" style={{ zIndex: 100001 }}>
+                      <div className="app-sample-bar-dropdown-header">
                         {isCommunityMode ? 'Remix as' : 'Duplicate as'}
                       </div>
                       {!!authSession && (
                         <DropdownMenuItem
                           onClick={() => handleDuplicateSampleProject('cloud')}
-                          className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-foreground focus:bg-secondary focus:text-foreground"
+                          className="app-sample-bar-dropdown-item"
                         >
-                          <RefreshCw className="h-3.5 w-3.5 text-ai" />
-                          <div className="flex flex-col">
-                            <span className="text-[13px]">Cloud Project</span>
-                            <span className="text-[11px] text-faint">Synced to Supabase</span>
+                          <RefreshCw className="app-icon-3-5 app-icon-ai" />
+                          <div className="app-sample-bar-dropdown-item-col">
+                            <span className="app-sample-bar-dropdown-item-title">Cloud Project</span>
+                            <span className="app-sample-bar-dropdown-item-desc">Synced to Supabase</span>
                           </div>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
                         onClick={() => handleDuplicateSampleProject('local')}
-                        className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-foreground focus:bg-secondary focus:text-foreground"
+                        className="app-sample-bar-dropdown-item"
                       >
-                        <Download className="h-3.5 w-3.5 text-[#8a9b77]" />
-                        <div className="flex flex-col">
-                          <span className="text-[13px]">Local Project</span>
-                          <span className="text-[11px] text-faint">Saved to browser storage</span>
+                        <Download className="app-icon-3-5 app-icon-grey-500" />
+                        <div className="app-sample-bar-dropdown-item-col">
+                          <span className="app-sample-bar-dropdown-item-title">Local Project</span>
+                          <span className="app-sample-bar-dropdown-item-desc">Saved to browser storage</span>
                         </div>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -11876,24 +11877,25 @@ export function AppShell() {
             else if (multiBarVisible || restoreBarVisible) bottomClass = 'bottom-[8.75rem]';
             return (
               <div
-                className={`absolute ${bottomClass} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
+                className="app-prompt-wrap app-prompt-wrap-transition"
                 style={{
+                  bottom: bottomClass === 'bottom-[12rem]' ? '12rem' : bottomClass === 'bottom-[8.75rem]' ? '8.75rem' : '5.5rem',
                   animation: goBackFading
                     ? `goBackFadeOut ${GO_BACK_FADE_MS}ms ease-in forwards`
                     : 'fadeSlideUp 0.25s ease-out',
                 }}
               >
                 <button
-                  className="pointer-events-auto group flex items-center gap-2.5 bg-secondary backdrop-blur-xl border border-hairline rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-elevated transition-all duration-200 cursor-pointer whitespace-nowrap"
+                  className="app-prompt-btn"
                   style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                   onClick={handleTokenNavGoBack}
                   onMouseEnter={handleGoBackMouseEnter}
                   onMouseLeave={handleGoBackMouseLeave}
                 >
-                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-brand/15 shrink-0">
-                    <ArrowLeft size={13} className="text-brand" />
+                  <div className="app-prompt-icon">
+                    <ArrowLeft size={13} className="app-icon-brand" />
                   </div>
-                  <span className="text-[13px] text-subtle group-hover:text-foreground transition-colors">
+                  <span className="app-prompt-label">
                     Go back
                   </span>
                 </button>
@@ -11905,18 +11907,18 @@ export function AppShell() {
           {viewMode === 'canvas' && isViewingPrimaryTheme && pendingTokenRestore && (() => {
             const multiBarVisible = isViewingPrimaryTheme && selectedNodeIds.length > 1 && !multiSelectBarDelay;
             return (
-              <div className={`absolute ${multiBarVisible ? 'bottom-[8.75rem]' : 'bottom-[5.5rem]'} left-0 right-0 flex items-center justify-center z-[52] pointer-events-none transition-[bottom] duration-300 ease-out`}
-                style={{ animation: 'fadeSlideUp 0.25s ease-out' }}
+              <div className="app-prompt-wrap app-prompt-wrap-transition"
+                style={{ bottom: multiBarVisible ? '8.75rem' : '5.5rem', animation: 'fadeSlideUp 0.25s ease-out' }}
               >
                 <button
-                  className="pointer-events-auto group flex items-center gap-2.5 bg-secondary backdrop-blur-xl border border-hairline rounded-2xl pl-2.5 pr-4 h-11 shadow-lg hover:border-[#ffffff]/[0.14] hover:bg-elevated transition-all duration-200 cursor-pointer whitespace-nowrap"
+                  className="app-prompt-btn"
                   style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                   onClick={handleRestoreTokens}
                 >
-                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-brand/15 shrink-0">
-                    <RotateCw size={13} className="text-brand" />
+                  <div className="app-prompt-icon">
+                    <RotateCw size={13} className="app-icon-brand" />
                   </div>
-                  <span className="text-[13px] text-subtle group-hover:text-foreground transition-colors">
+                  <span className="app-prompt-label">
                     Restore assigned tokens
                   </span>
                 </button>
@@ -11935,29 +11937,29 @@ export function AppShell() {
 
             return (
               <div
-                className="absolute bottom-[5.5rem] left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
-                style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
+                className="app-prompt-wrap"
+                style={{ bottom: '5.5rem', animation: 'fadeSlideUp 0.2s ease-out' }}
               >
                 <div
-                  className="pointer-events-auto flex items-center bg-secondary backdrop-blur-xl border border-hairline rounded-2xl h-11 pl-1 pr-1 gap-0"
+                  className="app-multiselect-bar"
                   style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                 >
                   {/* Selection count label */}
-                  <span className="text-[13px] text-faint px-3 select-none tabular-nums whitespace-nowrap">
+                  <span className="app-multiselect-count">
                     {selectedNodeIds.length} selected
                   </span>
 
                   {/* Divider */}
-                  <div className="w-px h-5 bg-hairline" />
+                  <div className="app-multiselect-divider" />
 
                   {/* Visibility toggle */}
                   <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
                     <button
-                      className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixed
-                          ? 'text-ghost cursor-not-allowed'
+                      className={`app-multiselect-btn ${mixed
+                          ? 'app-multiselect-btn-mixed'
                           : allHidden
-                            ? 'text-brand hover:bg-brand/10'
-                            : 'text-faint hover:text-foreground hover:bg-hairline'
+                            ? 'app-multiselect-btn-hidden-all'
+                            : 'app-multiselect-btn-default'
                         }`}
                       disabled={mixed}
                       onClick={() => {
@@ -11974,14 +11976,14 @@ export function AppShell() {
                         }));
                       }}
                     >
-                      {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
+                      {allHidden ? <EyeOff className="app-icon-16" /> : <Eye className="app-icon-16" />}
                     </button>
                   </Tip>
 
                   {/* Duplicate */}
                   <Tip label="Duplicate" side="top">
                     <button
-                      className="flex items-center justify-center h-9 w-9 rounded-xl text-faint hover:text-foreground hover:bg-hairline transition-all"
+                      className="app-multiselect-btn app-multiselect-btn-default"
                       onClick={() => {
                         if (selectedNodeIds.length > 1) {
                           duplicateNode(selectedNodeIds);
@@ -11990,21 +11992,21 @@ export function AppShell() {
                         }
                       }}
                     >
-                      <Copy className="h-[16px] w-[16px]" />
+                      <Copy className="app-icon-16" />
                     </button>
                   </Tip>
 
                   {/* Delete */}
                   <Tip label="Delete" side="top">
                     <button
-                      className="flex items-center justify-center h-9 w-9 rounded-xl text-faint hover:text-destructive hover:bg-destructive/[0.08] transition-all"
+                      className="app-multiselect-btn app-multiselect-btn-delete"
                       onClick={() => {
                         selectedNodeIds.forEach(nodeId => deleteNode(nodeId));
                         setSelectedNodeIds([]);
                         setSelectedNodeId(null);
                       }}
                     >
-                      <Trash2 className="h-[16px] w-[16px]" />
+                      <Trash2 className="app-icon-16" />
                     </button>
                   </Tip>
                 </div>
@@ -12031,35 +12033,35 @@ export function AppShell() {
 
             return (
               <div
-                className="absolute bottom-6 left-0 right-0 flex items-center justify-center z-[52] pointer-events-none"
-                style={{ animation: 'fadeSlideUp 0.2s ease-out' }}
+                className="app-prompt-wrap"
+                style={{ bottom: '24px', animation: 'fadeSlideUp 0.2s ease-out' }}
               >
                 <div
-                  className="pointer-events-auto flex items-center bg-secondary backdrop-blur-xl border border-hairline rounded-2xl h-11 pl-1 pr-1 gap-0"
+                  className="app-multiselect-bar"
                   style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                 >
                   {/* Selection count label */}
-                  <span className="text-[13px] text-faint px-3 select-none tabular-nums whitespace-nowrap">
+                  <span className="app-multiselect-count">
                     {selectedNodeIds.length} selected
                   </span>
 
                   {/* Divider */}
-                  <div className="w-px h-5 bg-hairline" />
+                  <div className="app-multiselect-divider" />
 
                   {/* Inheritance toggle */}
                   <Tip label={allInherited ? 'Unlink all from primary' : allNotInherited ? 'Link all to primary' : 'Mixed inheritance'} side="top">
                     <div
-                      className={`flex items-center gap-1.5 h-9 px-2 rounded-xl transition-all ${mixedInheritance ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-hairline'
+                      className={`app-multiselect-inherit-wrap ${mixedInheritance ? 'app-multiselect-inherit-disabled' : 'app-multiselect-inherit-enabled'
                         }`}
                     >
                       <Crown
-                        className={`h-3 w-3 shrink-0 transition-all ${mixedInheritance
-                            ? 'text-dim fill-none'
+                        className={`app-icon-3 app-icon-shrink ${mixedInheritance
+                            ? 'app-multiselect-inherit-icon-mixed'
                             : allInherited
-                              ? 'text-warning fill-warning'
+                              ? 'app-multiselect-inherit-icon-linked'
                               : allNotInherited
-                                ? 'text-brand fill-brand'
-                                : 'text-dim fill-none'
+                                ? 'app-multiselect-inherit-icon-unlinked'
+                                : 'app-multiselect-inherit-icon-mixed'
                           }`}
                       />
                       <Switch
@@ -12107,22 +12109,22 @@ export function AppShell() {
                             }
                           }));
                         }}
-                        className="data-[state=checked]:bg-[#EFB100] data-[state=unchecked]:bg-border dark:data-[state=unchecked]:bg-border h-[16px] w-[30px] shrink-0"
+                        className="app-inherit-switch"
                       />
                     </div>
                   </Tip>
 
                   {/* Divider */}
-                  <div className="w-px h-5 bg-hairline" />
+                  <div className="app-multiselect-divider" />
 
                   {/* Visibility toggle */}
                   <Tip label={allVisible ? 'Hide Selected' : allHidden ? 'Show Selected' : 'Mixed Visibility'} side="top">
                     <button
-                      className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${mixedVisibility
-                          ? 'text-ghost cursor-not-allowed'
+                      className={`app-multiselect-btn ${mixedVisibility
+                          ? 'app-multiselect-btn-mixed'
                           : allHidden
-                            ? 'text-brand hover:bg-brand/10'
-                            : 'text-faint hover:text-foreground hover:bg-hairline'
+                            ? 'app-multiselect-btn-hidden-all'
+                            : 'app-multiselect-btn-default'
                         }`}
                       disabled={mixedVisibility}
                       onClick={() => {
@@ -12139,7 +12141,7 @@ export function AppShell() {
                         }));
                       }}
                     >
-                      {allHidden ? <EyeOff className="h-[16px] w-[16px]" /> : <Eye className="h-[16px] w-[16px]" />}
+                      {allHidden ? <EyeOff className="app-icon-16" /> : <Eye className="app-icon-16" />}
                     </button>
                   </Tip>
                 </div>
@@ -12149,17 +12151,17 @@ export function AppShell() {
 
           {/* Floating Bottom Toolbar - Figma-style unified bar */}
           {viewMode === 'canvas' && isViewingPrimaryTheme && (
-            <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 z-[51] pointer-events-none">
+            <div className="app-bottom-toolbar">
               {/* Ask AI Island (leftmost) */}
               <div
-                className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="app-bottom-island"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Ask AI" side="top">
                   <button
-                    className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                        ? 'text-ai bg-ai/10'
-                        : 'text-muted-foreground hover:text-ai hover:bg-elevated'
+                    className={`app-bottom-btn-with-label ${showAIChat
+                        ? 'app-bottom-btn-active-ai'
+                        : ''
                       }`}
                     onClick={() => {
                       const activeProject = projects.find(p => p.id === activeProjectId);
@@ -12174,15 +12176,15 @@ export function AppShell() {
                       setShowAIChat(prev => !prev);
                     }}
                   >
-                    <Sparkles className="h-[18px] w-[18px]" />
-                    <span className="text-[11px] tracking-wide">AI</span>
+                    <Sparkles className="app-icon-18" />
+                    <span className="app-bottom-btn-label">AI</span>
                   </button>
                 </Tip>
               </div>
 
               {/* Sign In button moved to top-right of canvas (near template switcher) */}
 
-              <div className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+              <div className="app-bottom-island"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 {/* Node tool with dropdown */}
@@ -12190,35 +12192,35 @@ export function AppShell() {
                   <Tip label="Add Color Node" side="top">
                     <DropdownMenuTrigger asChild>
                       <button
-                        className="flex items-center gap-0.5 h-9 pl-2.5 pr-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all group"
+                        className="app-bottom-node-trigger"
                       >
-                        <Workflow className="h-[18px] w-[18px]" />
-                        <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-80" />
+                        <Workflow className="app-icon-18" />
+                        <ChevronDown className="app-icon-3 app-chevron-group" />
                       </button>
                     </DropdownMenuTrigger>
                   </Tip>
-                  <DropdownMenuContent align="center" sideOffset={12} className="w-[140px] bg-card">
+                  <DropdownMenuContent align="center" sideOffset={12} className="app-bottom-node-dropdown">
                     <DropdownMenuItem
                       onClick={() => addRootNode('hsl')}
-                      className="text-foreground focus:bg-elevated focus:text-foreground cursor-pointer"
+                      className="app-bottom-node-dropdown-item"
                     >
                       HSL
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => addRootNode('rgb')}
-                      className="text-foreground focus:bg-elevated focus:text-foreground cursor-pointer"
+                      className="app-bottom-node-dropdown-item"
                     >
                       RGB
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => addRootNode('oklch')}
-                      className="text-foreground focus:bg-elevated focus:text-foreground cursor-pointer"
+                      className="app-bottom-node-dropdown-item"
                     >
                       OKLCH
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => addRootNode('hct')}
-                      className="text-foreground focus:bg-elevated focus:text-foreground cursor-pointer"
+                      className="app-bottom-node-dropdown-item"
                     >
                       HCT
                     </DropdownMenuItem>
@@ -12228,64 +12230,64 @@ export function AppShell() {
                 {/* Palette tool */}
                 <Tip label="Add Palette" side="top">
                   <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
+                    className="app-bottom-btn"
                     onClick={addPaletteNode}
                   >
-                    <Palette className="h-[18px] w-[18px]" />
+                    <Palette className="app-icon-18" />
                   </button>
                 </Tip>
 
                 {/* Token Node tool */}
                 <Tip label="Add Token Node" side="top">
                   <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
+                    className="app-bottom-btn"
                     onClick={addTokenNode}
                   >
-                    <Tag className="h-[18px] w-[18px]" />
+                    <Tag className="app-icon-18" />
                   </button>
                 </Tip>
 
                 {/* Spacing tool — hidden for now, will implement later */}
-                {/* <button 
-              className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
+                {/* <button
+              className="app-bottom-btn"
               onClick={addSpacingNode}
               title="Add spacing node"
             >
-              <Ruler className="h-[18px] w-[18px]" />
+              <Ruler className="app-icon-18" />
             </button> */}
 
                 {/* Reset tool — hidden for now */}
-                {/* <button 
-              className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
+                {/* <button
+              className="app-bottom-btn"
               onClick={resetToDefaults}
               title="Reset to default data"
             >
-              <RotateCcw className="h-[18px] w-[18px]" />
+              <RotateCcw className="app-icon-18" />
             </button> */}
               </div>
 
               {/* Companion bar — View controls */}
               <div
-                className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="app-bottom-island"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 {/* Fit all nodes */}
                 <Tip label="Zoom to Fit" side="top">
                   <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
+                    className="app-bottom-btn"
                     onClick={() => window.dispatchEvent(new Event('canvasFitAll'))}
                   >
-                    <Maximize className="h-[18px] w-[18px]" />
+                    <Maximize className="app-icon-18" />
                   </button>
                 </Tip>
 
                 {/* Reset view */}
                 <Tip label="Reset View" side="top">
                   <button
-                    className="flex items-center justify-center h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
+                    className="app-bottom-btn"
                     onClick={() => window.dispatchEvent(new Event('canvasResetView'))}
                   >
-                    <Locate className="h-[18px] w-[18px]" />
+                    <Locate className="app-icon-18" />
                   </button>
                 </Tip>
               </div>
@@ -12295,19 +12297,19 @@ export function AppShell() {
                 const proj = projects.find(p => p.id === activeProjectId);
                 return proj?.isCloud ? (
                   <div
-                    className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                    className="app-bottom-island"
                     style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
                   >
                     <Tip label="Dev Mode — Code Sync & Webhooks" side="top">
                       <button
-                        className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showDevMode
-                            ? 'text-success bg-success/10'
-                            : 'text-muted-foreground hover:text-success hover:bg-elevated'
+                        className={`app-bottom-btn-with-label ${showDevMode
+                            ? 'app-bottom-btn-active-success'
+                            : ''
                           }`}
                         onClick={() => setShowDevMode(prev => !prev)}
                       >
-                        <Terminal className="h-[18px] w-[18px]" />
-                        <span className="text-[11px] tracking-wide">Dev</span>
+                        <Terminal className="app-icon-18" />
+                        <span className="app-bottom-btn-label">Dev</span>
                       </button>
                     </Tip>
                   </div>
@@ -12316,34 +12318,34 @@ export function AppShell() {
 
               {/* Actions (⌘K) Island */}
               <div
-                className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="app-bottom-island"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Actions (⌘K)" side="top">
                   <button
-                    className="flex items-center gap-1.5 h-9 px-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-elevated transition-all"
+                    className="app-bottom-btn-with-label"
                     onClick={() => setShowCommandPalette(true)}
                   >
-                    <Command className="h-[18px] w-[18px]" />
-                    <span className="text-[11px] text-dim tracking-wide">⌘K</span>
+                    <Command className="app-icon-18" />
+                    <span className="app-bottom-btn-label-dim">⌘K</span>
                   </button>
                 </Tip>
               </div>
 
               {/* Shortcuts & Tips Island */}
               <div
-                className="pointer-events-auto flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5 gap-0.5"
+                className="app-bottom-island"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Shortcuts & Tips" side="top">
                   <button
-                    className={`flex items-center justify-center h-9 w-9 rounded-xl transition-all ${showShortcuts
-                        ? 'text-foreground bg-elevated'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-elevated'
+                    className={`app-bottom-btn ${showShortcuts
+                        ? 'app-bottom-btn-active-fg'
+                        : ''
                       }`}
                     onClick={() => setShowShortcuts(prev => !prev)}
                   >
-                    <Lightbulb className="h-[18px] w-[18px]" />
+                    <Lightbulb className="app-icon-18" />
                   </button>
                 </Tip>
               </div>
@@ -12352,16 +12354,16 @@ export function AppShell() {
 
           {/* Ask AI floating button — for non-primary themes (primary themes have it in the main toolbar) */}
           {viewMode === 'canvas' && !isViewingPrimaryTheme && (
-            <div className="absolute bottom-6 right-6 z-[51] pointer-events-auto">
+            <div className="app-canvas-ai-float">
               <div
-                className="flex items-center bg-background border border-secondary rounded-2xl shadow-2xl h-12 px-1.5"
+                className="app-canvas-ai-float-inner"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Ask AI" side="top">
                   <button
-                    className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${showAIChat
-                        ? 'text-ai bg-ai/10'
-                        : 'text-muted-foreground hover:text-ai hover:bg-elevated'
+                    className={`app-bottom-btn-with-label ${showAIChat
+                        ? 'app-bottom-btn-active-ai'
+                        : ''
                       }`}
                     onClick={() => {
                       const activeProject = projects.find(p => p.id === activeProjectId);
@@ -12376,8 +12378,8 @@ export function AppShell() {
                       setShowAIChat(prev => !prev);
                     }}
                   >
-                    <Sparkles className="h-[18px] w-[18px]" />
-                    <span className="text-[11px] tracking-wide">AI</span>
+                    <Sparkles className="app-icon-18" />
+                    <span className="app-bottom-btn-label">AI</span>
                   </button>
                 </Tip>
               </div>
@@ -12386,43 +12388,43 @@ export function AppShell() {
 
           {/* Undo / Redo buttons — bottom-left of canvas (canvas view only) */}
           {viewMode === 'canvas' && (
-            <div className="absolute bottom-5 left-5 z-[51] flex items-center gap-1">
-              <div className="group/undo relative">
+            <div className="app-undo-redo-wrap">
+              <div className="app-undo-redo-group">
                 <Tip label="Undo" side="top" enabled={canUndo}>
                   <button
-                    className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canUndo
-                        ? 'text-muted-foreground hover:text-foreground hover:bg-elevated bg-card/80 backdrop-blur-sm'
-                        : 'text-ghost bg-card/50 cursor-default'
+                    className={`app-undo-redo-btn ${canUndo
+                        ? 'app-undo-redo-btn-enabled'
+                        : 'app-undo-redo-btn-disabled'
                       }`}
                     onClick={undo}
                     disabled={!canUndo}
                   >
-                    <Undo2 className="h-[15px] w-[15px]" />
+                    <Undo2 className="app-icon-15" />
                   </button>
                 </Tip>
                 {canUndo && (
-                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/undo:opacity-100 transition-opacity duration-150 bg-secondary text-foreground rounded-md px-1.5 py-0.5 tabular-nums"
+                  <span className="app-undo-redo-badge"
                     style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
                   >
                     {undoCount}
                   </span>
                 )}
               </div>
-              <div className="group/redo relative">
+              <div className="app-undo-redo-group">
                 <Tip label="Redo" side="top" enabled={canRedo}>
                   <button
-                    className={`flex items-center justify-center h-8 w-8 rounded-lg transition-all ${canRedo
-                        ? 'text-muted-foreground hover:text-foreground hover:bg-elevated bg-card/80 backdrop-blur-sm'
-                        : 'text-ghost bg-card/50 cursor-default'
+                    className={`app-undo-redo-btn ${canRedo
+                        ? 'app-undo-redo-btn-enabled'
+                        : 'app-undo-redo-btn-disabled'
                       }`}
                     onClick={redo}
                     disabled={!canRedo}
                   >
-                    <Redo2 className="h-[15px] w-[15px]" />
+                    <Redo2 className="app-icon-15" />
                   </button>
                 </Tip>
                 {canRedo && (
-                  <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/redo:opacity-100 transition-opacity duration-150 bg-secondary text-foreground rounded-md px-1.5 py-0.5 tabular-nums"
+                  <span className="app-undo-redo-badge"
                     style={{ fontSize: '10px', lineHeight: '14px', minWidth: '18px', textAlign: 'center' }}
                   >
                     {redoCount}
@@ -12433,7 +12435,7 @@ export function AppShell() {
           )}
 
           {/* Canvas Content Area */}
-          <div className="absolute inset-0 overflow-hidden">
+          <div className="app-canvas-content">
             {viewMode === 'canvas' ? (
               <ColorCanvas
                 nodes={nodes}
@@ -12535,10 +12537,10 @@ export function AppShell() {
 
             {/* Bottom-left hint for O key visibility toggle (non-primary themes, canvas mode only) */}
             {viewMode === 'canvas' && !isViewingPrimaryTheme && (
-              <div className={`absolute top-4 left-4 z-[52] pointer-events-none select-none transition-opacity duration-200 ${showAllVisible ? 'opacity-100' : 'opacity-80'}`}>
-                <div className="flex items-center gap-2 bg-secondary/90 backdrop-blur-sm rounded-lg px-3 py-2">
-                  <kbd className="text-[11px] text-muted-foreground bg-elevated border border-border rounded px-1.5 py-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>O</kbd>
-                  <span className="text-[11px] text-subtle">
+              <div className={`app-visibility-hint ${showAllVisible ? 'app-visibility-hint-visible' : 'app-visibility-hint-dim'}`}>
+                <div className="app-visibility-hint-inner">
+                  <kbd className="app-visibility-hint-kbd" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>O</kbd>
+                  <span className="app-visibility-hint-text">
                     {showAllVisible ? 'press O \u2014 restore to default' : 'press O \u2014 make it visible'}
                   </span>
                 </div>

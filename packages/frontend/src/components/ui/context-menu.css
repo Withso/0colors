@@ -1,0 +1,230 @@
+/* ============================================
+ * CONTEXT-MENU.CSS — Co-located styles for ContextMenu
+ * Uses [data-slot="context-menu-*"] selectors.
+ * Same styling as dropdown-menu.
+ * All values from variables.css tokens only.
+ * ============================================ */
+
+/* ─── Content ─── */
+[data-slot="context-menu-content"] {
+  z-index: 50;
+  min-width: 8rem;
+  max-height: var(--radix-context-menu-content-available-height);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 4px;
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-700);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--grey-100);
+  transform-origin: var(--radix-context-menu-content-transform-origin);
+}
+
+/* ─── Sub content ─── */
+[data-slot="context-menu-sub-content"] {
+  z-index: 50;
+  min-width: 8rem;
+  overflow: hidden;
+  padding: 4px;
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-700);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--grey-100);
+  transform-origin: var(--radix-context-menu-content-transform-origin);
+}
+
+/* ─── Item ─── */
+[data-slot="context-menu-item"] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: default;
+  outline: none;
+  user-select: none;
+  color: var(--grey-300);
+}
+
+[data-slot="context-menu-item"]:focus {
+  background-color: var(--grey-700);
+  color: var(--grey-50);
+}
+
+[data-slot="context-menu-item"][data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+[data-slot="context-menu-item"][data-inset] {
+  padding-left: 32px;
+}
+
+/* Destructive variant */
+[data-slot="context-menu-item"][data-variant="destructive"] {
+  color: var(--red-400);
+}
+
+[data-slot="context-menu-item"][data-variant="destructive"]:focus {
+  background-color: var(--red-600);
+  color: var(--grey-50);
+}
+
+[data-slot="context-menu-item"] svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Sub trigger ─── */
+[data-slot="context-menu-sub-trigger"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: default;
+  outline: none;
+  user-select: none;
+  color: var(--grey-300);
+}
+
+[data-slot="context-menu-sub-trigger"]:focus,
+[data-slot="context-menu-sub-trigger"][data-state="open"] {
+  background-color: var(--grey-700);
+  color: var(--grey-50);
+}
+
+[data-slot="context-menu-sub-trigger"][data-inset] {
+  padding-left: 32px;
+}
+
+[data-slot="context-menu-sub-trigger"] svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Checkbox item ─── */
+[data-slot="context-menu-checkbox-item"] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 32px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: default;
+  outline: none;
+  user-select: none;
+  color: var(--grey-300);
+}
+
+[data-slot="context-menu-checkbox-item"]:focus {
+  background-color: var(--grey-700);
+  color: var(--grey-50);
+}
+
+[data-slot="context-menu-checkbox-item"][data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+[data-slot="context-menu-checkbox-item"] svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Radio item ─── */
+[data-slot="context-menu-radio-item"] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 32px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: default;
+  outline: none;
+  user-select: none;
+  color: var(--grey-300);
+}
+
+[data-slot="context-menu-radio-item"]:focus {
+  background-color: var(--grey-700);
+  color: var(--grey-50);
+}
+
+[data-slot="context-menu-radio-item"][data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+[data-slot="context-menu-radio-item"] svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Indicator wrapper (checkbox/radio) ─── */
+[data-slot="context-menu-item-indicator-wrapper"] {
+  position: absolute;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+/* ─── Label ─── */
+[data-slot="context-menu-label"] {
+  padding: 6px 8px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--grey-100);
+}
+
+[data-slot="context-menu-label"][data-inset] {
+  padding-left: 32px;
+}
+
+/* ─── Separator ─── */
+[data-slot="context-menu-separator"] {
+  height: 1px;
+  margin: 4px -4px;
+  background-color: var(--grey-700);
+}
+
+/* ─── Shortcut ─── */
+[data-slot="context-menu-shortcut"] {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.1em;
+  color: var(--grey-500);
+}
+
+/* ─── Chevron icon in sub-trigger ─── */
+[data-slot="context-menu-chevron"] {
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Radio circle icon ─── */
+[data-slot="context-menu-radio-icon"] {
+  width: 8px;
+  height: 8px;
+  fill: currentColor;
+}

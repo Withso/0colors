@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { DesignToken, ColorNode, TokenGroup } from '../../types';
 import { isTokenHiddenInTheme } from '../../utils/visibility';
+import './TokenSearchBar.css';
 
 // ─── Filter Types ────────────────────────────────────────────
 export interface TokenSearchFilters {
@@ -331,11 +332,7 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`px-2 py-[3px] rounded text-[11px] transition-all duration-100 border ${
-        active
-          ? 'bg-[#1a2a3a] text-[#6ab0f3] border-[#2a4a6a]/60'
-          : 'bg-transparent text-faint border-hairline hover:text-subtle hover:border-[#ffffff]/[0.1] hover:bg-[#ffffff]/[0.02]'
-      }`}
+      className={`search-bar-chip ${active ? 'search-bar-chip-active' : ''}`}
     >
       {label}
     </button>
@@ -402,8 +399,8 @@ export function TokenSearchBar({
   return (
     <div ref={containerRef}>
       {/* Search Input */}
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-dim pointer-events-none" />
+      <div className="search-bar-input-wrapper">
+        <Search className="search-bar-icon" />
         <input
           ref={inputRef}
           type="text"
@@ -411,15 +408,13 @@ export function TokenSearchBar({
           value={searchQuery}
           onChange={(e) => onSearchQueryChange(e.target.value)}
           onFocus={() => setIsExpanded(true)}
-          className={`w-full h-7 pl-7 text-xs bg-background text-foreground placeholder-[#555] rounded-md border-0 outline-none transition-all ${
-            isExpanded ? 'ring-1 ring-elevated' : ''
-          } ${hasFilters ? 'pr-14' : 'pr-7'}`}
+          className={`search-bar-input ${isExpanded ? 'search-bar-input-expanded' : ''} ${hasFilters ? 'search-bar-input-has-filters' : 'search-bar-input-no-filters'}`}
         />
 
         {/* Right-side indicators */}
-        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+        <div className="search-bar-indicators">
           {hasFilters && !searchQuery && (
-            <span className="text-[11px] text-[#6ab0f3] bg-[#1a2a3a] rounded px-1 py-[1px]">
+            <span className="search-bar-badge">
               {activeFilterCount}
             </span>
           )}
@@ -429,9 +424,9 @@ export function TokenSearchBar({
                 e.stopPropagation();
                 clearAll();
               }}
-              className="text-dim hover:text-subtle p-0.5"
+              className="search-bar-clear-btn"
             >
-              <X className="h-3 w-3" />
+              <X className="search-bar-icon-sm" />
             </button>
           )}
           {!searchQuery && !hasFilters && (
@@ -441,9 +436,9 @@ export function TokenSearchBar({
                 setIsExpanded(!isExpanded);
                 if (!isExpanded) inputRef.current?.focus();
               }}
-              className="text-ghost hover:text-faint p-0.5"
+              className="search-bar-filter-btn"
             >
-              <SlidersHorizontal className="h-3 w-3" />
+              <SlidersHorizontal className="search-bar-icon-sm" />
             </button>
           )}
         </div>
@@ -451,13 +446,13 @@ export function TokenSearchBar({
 
       {/* Inline Filter Panel — rendered in flow to avoid overflow clipping */}
       {isExpanded && (
-        <div className="mt-1.5 bg-background border border-hairline rounded-lg overflow-hidden">
-          <div className="p-2 space-y-2">
+        <div className="search-bar-panel">
+          <div className="search-bar-panel-body">
 
             {/* Color Space Row */}
             <div>
-              <div className="text-[11px] text-dim uppercase tracking-wider mb-1">Color Space</div>
-              <div className="flex flex-wrap gap-1">
+              <div className="search-bar-section-label">Color Space</div>
+              <div className="search-bar-chip-row">
                 {colorSpaces.map(cs => (
                   <FilterChip
                     key={cs}
@@ -470,12 +465,12 @@ export function TokenSearchBar({
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-[#ffffff]/[0.04]" />
+            <div className="search-bar-divider" />
 
             {/* Status Filters */}
             <div>
-              <div className="text-[11px] text-dim uppercase tracking-wider mb-1">Status</div>
-              <div className="flex flex-wrap gap-1">
+              <div className="search-bar-section-label">Status</div>
+              <div className="search-bar-chip-row">
                 <FilterChip label="Hidden" active={filters.hiddenOnly} onClick={() => toggleBool('hiddenOnly')} />
                 <FilterChip label="Unassigned" active={filters.unassignedOnly} onClick={() => toggleBool('unassignedOnly')} />
                 <FilterChip label="Token Nodes" active={filters.tokenNodesOnly} onClick={() => toggleBool('tokenNodesOnly')} />
@@ -486,10 +481,10 @@ export function TokenSearchBar({
             {/* Theme Filters (only in non-primary) */}
             {!isPrimaryTheme && (
               <>
-                <div className="h-px bg-[#ffffff]/[0.04]" />
+                <div className="search-bar-divider" />
                 <div>
-                  <div className="text-[11px] text-dim uppercase tracking-wider mb-1">Theme</div>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="search-bar-section-label">Theme</div>
+                  <div className="search-bar-chip-row">
                     <FilterChip label="Modified" active={filters.modifiedOnly} onClick={() => toggleBool('modifiedOnly')} />
                   </div>
                 </div>
@@ -497,31 +492,31 @@ export function TokenSearchBar({
             )}
 
             {/* Palette Filters */}
-            <div className="h-px bg-[#ffffff]/[0.04]" />
+            <div className="search-bar-divider" />
             <div>
-              <div className="text-[11px] text-dim uppercase tracking-wider mb-1">Palette</div>
-              <div className="flex flex-wrap gap-1">
+              <div className="search-bar-section-label">Palette</div>
+              <div className="search-bar-chip-row">
                 <FilterChip label="Palette Only" active={filters.paletteOnly} onClick={() => toggleBool('paletteOnly')} />
               </div>
             </div>
 
             {/* Hints */}
-            <div className="h-px bg-[#ffffff]/[0.04]" />
-            <div className="text-[11px] text-ghost leading-relaxed">
-              <span className="text-dim">Tip:</span>{' '}
-              Type <span className="text-dim font-mono">#hex</span> for color,{' '}
-              <span className="text-dim font-mono">red</span>{' '}
-              <span className="text-dim font-mono">blue</span>{' '}etc. for color names
+            <div className="search-bar-divider" />
+            <div className="search-bar-hint">
+              <span className="search-bar-hint-label">Tip:</span>{' '}
+              Type <span className="search-bar-hint-code">#hex</span> for color,{' '}
+              <span className="search-bar-hint-code">red</span>{' '}
+              <span className="search-bar-hint-code">blue</span>{' '}etc. for color names
             </div>
           </div>
 
           {/* Footer */}
           {hasFilters && (
-            <div className="flex items-center justify-between px-2 py-1.5 bg-[#080808] border-t border-[#ffffff]/[0.04]">
-              <span className="text-[11px] text-dim">{activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}</span>
+            <div className="search-bar-footer">
+              <span className="search-bar-footer-count">{activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}</span>
               <button
                 onClick={clearAll}
-                className="text-[11px] text-faint hover:text-subtle transition-colors"
+                className="search-bar-footer-clear"
               >
                 Clear all
               </button>

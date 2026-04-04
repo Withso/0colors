@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, forwardRef } from 'react';
-import { cn } from '../ui/utils';
+import './ScrubberInput.css';
 
 interface ScrubberInputProps {
   value: number;
@@ -202,19 +202,7 @@ export const ScrubberInput = forwardRef<HTMLInputElement, ScrubberInputProps>(({
       onKeyDown={handleKeyDown}
       disabled={disabled}
       data-slot="input"
-      style={{
-        backgroundColor: 'var(--secondary)',
-        color: 'var(--foreground)',
-        borderColor: 'var(--elevated)',
-      }}
-      className={cn(
-        'file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
-        'focus-visible:border-brand focus-visible:ring-brand/50 focus-visible:ring-[2px]',
-        'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
-        '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
-        !isEditing ? 'cursor-ew-resize' : 'cursor-text',
-        className
-      )}
+      className={`scrubber-input ${!isEditing ? 'scrubber-input-scrubbing' : 'scrubber-input-editing'} ${className}`}
     />
   );
 });
