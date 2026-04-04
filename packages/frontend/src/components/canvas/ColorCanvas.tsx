@@ -2851,7 +2851,8 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       onMouseDown={handleCanvasMouseDown}
       style={{
         background: 'var(--grey-900)',
-        backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.02) 0.1em, transparent 0.1em), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0.1em, transparent 0.1em)`,
+        backgroundImage:
+          'linear-gradient(color-mix(in srgb, var(--grey-50) 2.5%, transparent) 0.1em, transparent 0.1em), linear-gradient(90deg, color-mix(in srgb, var(--grey-50) 2.5%, transparent) 0.1em, transparent 0.1em)',
         backgroundSize: `${1.5 * zoom}em ${1.5 * zoom}em`,
         backgroundPosition: `${safePan.x}px ${safePan.y}px`,
         cursor: isSpacePressed ? (isPanning ? 'grabbing' : 'grab') : 'default',
@@ -2917,7 +2918,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
             // Check if this wire connects to any selected node (single or multi-selection)
             const isSelectedWire = (selectedNodeId && (conn.parentId === selectedNodeId || conn.childId === selectedNodeId)) ||
               (selectedNodeIds.length > 0 && (selectedNodeIds.includes(conn.parentId) || selectedNodeIds.includes(conn.childId)));
-            const wireColor = isSelectedWire ? 'var(--indigo-500)' : 'var(--grey-600)';
+            const wireColor = isSelectedWire ? 'var(--blue-500)' : 'var(--grey-600)';
 
             const connKey = `${conn.parentId}__${conn.childId}`;
             return (
@@ -2946,7 +2947,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
 
             const toX = wireMousePosition.x;
             const toY = wireMousePosition.y;
-            const wireColor = wireHoverNodeId ? 'var(--indigo-500)' : 'var(--grey-600)';
+            const wireColor = wireHoverNodeId ? 'var(--blue-500)' : 'var(--grey-600)';
 
             // Helper to compute the "from" position for a given node
             const getFromPosition = (nodeId: string): { x: number; y: number } | null => {
@@ -3011,8 +3012,8 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                 y={minY}
                 width={width}
                 height={height}
-                fill="rgba(0, 108, 255, 0.1)"
-                stroke="var(--indigo-500)"
+                fill="color-mix(in srgb, var(--blue-600) 10%, transparent)"
+                stroke="var(--blue-500)"
                 strokeWidth="1"
                 strokeDasharray="4,4"
               />
@@ -3410,7 +3411,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
                                   }}
                                 >
                                   <div className="color-canvas-prompt-icon-box">
-                                    <Zap size={11} style={{ color: 'var(--indigo-500)' }} />
+                                    <Zap size={11} style={{ color: 'var(--blue-500)' }} />
                                   </div>
                                   <span className="color-canvas-prompt-text">
                                     Auto-assign tokens

@@ -501,10 +501,7 @@ export function MultiPageExport({
           </div>
 
           {/* ──── Footer ──── */}
-          <div
-            className="export-footer"
-            style={{ borderTop: '1px solid var(--grey-900)' }}
-          >
+          <div className="export-footer">
             <span className="export-footer-left">
               {!isDisabled && <>{lineCount} line{lineCount !== 1 ? 's' : ''} {'\u00b7'} </>}
               {formatLabels[selectedFormat]}

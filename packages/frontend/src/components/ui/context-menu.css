@@ -13,8 +13,8 @@
   overflow-x: hidden;
   overflow-y: auto;
   padding: 4px;
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-700);
+  background-color: var(--grey-925);
+  border: 1px solid var(--grey-800);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   color: var(--grey-100);
@@ -27,8 +27,8 @@
   min-width: 8rem;
   overflow: hidden;
   padding: 4px;
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-700);
+  background-color: var(--grey-925);
+  border: 1px solid var(--grey-800);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   color: var(--grey-100);

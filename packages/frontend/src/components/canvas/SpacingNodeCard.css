@@ -11,11 +11,11 @@
   position: relative;
   border-radius: 19px;
   transition: all 0.15s ease;
-  border: 1px solid var(--grey-800);
+  border: 1px solid var(--grey-700);
 }
 
 .spacing-card-root--selected {
-  border-color: var(--indigo-500);
+  border-color: var(--blue-500);
 }
 
 /* ═══════════════════════════════════════════
@@ -35,8 +35,8 @@
 }
 
 .spacing-card-connect-btn:hover {
-  background-color: var(--indigo-500);
-  border-color: var(--indigo-400);
+  background-color: var(--blue-500);
+  border-color: var(--blue-400);
 }
 
 .spacing-card-connect-btn--left {
@@ -54,7 +54,7 @@
    ═══════════════════════════════════════════ */
 
 .spacing-card-body {
-  background-color: var(--grey-800);
+  background-color: var(--grey-900);
   border-radius: 19px;
 }
 
@@ -64,7 +64,7 @@
 
 .spacing-card-top {
   padding: 16px;
-  background-color: var(--grey-800);
+  background-color: var(--grey-900);
   border-top-left-radius: 19px;
   border-top-right-radius: 19px;
   position: relative;
@@ -110,14 +110,14 @@
 .spacing-card-ruler-icon {
   height: 16px;
   width: 16px;
-  color: var(--indigo-400);
+  color: var(--blue-500);
 }
 
 .spacing-card-name-input {
   flex: 1;
   height: 28px;
-  background-color: var(--grey-700);
-  border-color: transparent;
+  background-color: var(--grey-950);
+  border-color: var(--grey-800);
   color: var(--grey-100);
   font-size: var(--text-sm);
 }
@@ -134,8 +134,8 @@
   height: 28px !important;
   padding-top: 4px !important;
   padding-bottom: 4px !important;
-  background-color: var(--grey-700);
-  border-color: transparent;
+  background-color: var(--grey-950);
+  border-color: var(--grey-800);
   color: var(--grey-100);
 }
 
@@ -144,13 +144,13 @@
   height: 28px !important;
   padding-top: 4px !important;
   padding-bottom: 4px !important;
-  background-color: var(--grey-700);
-  border-color: transparent;
+  background-color: var(--grey-950);
+  border-color: var(--grey-800);
   color: var(--grey-100);
 }
 
 .spacing-card-unit-content {
-  background-color: var(--grey-700);
+  background-color: var(--grey-800);
   border-color: var(--grey-700);
 }
 
@@ -164,7 +164,7 @@
 
 .spacing-card-bottom {
   padding: 16px;
-  border-top: 1px solid var(--grey-700);
+  border-top: 1px solid var(--grey-800);
 }
 
 /* ─── Assigned tokens list ─── */
@@ -189,7 +189,7 @@
   flex: 1;
   font-size: 12px;
   color: var(--grey-100);
-  background-color: var(--grey-700);
+  background-color: var(--grey-950);
   padding: 4px 8px;
   border-radius: 8px;
   display: flex;
@@ -210,7 +210,7 @@
 }
 
 .spacing-card-token-remove-btn:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .spacing-card-token-remove-icon {
@@ -233,12 +233,13 @@
   justify-content: space-between;
   font-size: var(--text-xs);
   overflow: hidden;
-  background-color: var(--grey-700);
+  background-color: var(--grey-950);
+  border-color: var(--grey-800);
   color: var(--grey-100);
 }
 
 .spacing-card-combo-btn:hover {
-  background-color: var(--grey-600);
+  background-color: var(--grey-800);
   color: var(--grey-100);
 }
 
@@ -258,18 +259,18 @@
 .spacing-card-popover {
   width: 240px;
   padding: 0;
-  background-color: var(--grey-700);
+  background-color: var(--grey-800);
   border-color: var(--grey-700);
 }
 
 .spacing-card-command {
-  background-color: var(--grey-700);
+  background-color: var(--grey-800);
 }
 
 .spacing-card-command-input {
   height: 36px;
   font-size: var(--text-xs);
-  background-color: var(--grey-700);
+  background-color: var(--grey-950);
   padding-left: 10px;
   margin: 4px;
   color: var(--grey-100);
@@ -281,7 +282,7 @@
 }
 
 .spacing-card-command-input:hover {
-  background-color: var(--grey-700);
+  background-color: var(--grey-900);
 }
 
 .spacing-card-command-list {
@@ -325,7 +326,7 @@
 }
 
 .spacing-card-command-item:hover {
-  background-color: rgba(255, 255, 255, 0.06) !important;
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent) !important;
 }
 
 .spacing-card-item-inner {
@@ -339,18 +340,18 @@
 }
 
 .spacing-card-item-inner--assigned {
-  background-color: rgba(250, 250, 250, 0.08);
+  background-color: color-mix(in srgb, var(--grey-50) 8%, transparent);
 }
 
 .spacing-card-item-inner--other {
-  background-color: var(--indigo-500);
+  background-color: var(--blue-500);
 }
 
 .spacing-card-item-dot {
   width: 12px;
   height: 12px;
   border-radius: var(--radius-full);
-  background-color: var(--indigo-400);
+  background-color: var(--blue-500);
   flex-shrink: 0;
 }
 
@@ -370,18 +371,18 @@
 }
 
 .spacing-card-command-item:hover .spacing-card-item-label {
-  color: white;
+  color: var(--grey-50);
 }
 
 .spacing-card-item-label--assigned {
-  color: white;
+  color: var(--grey-50);
   font-weight: 500;
 }
 
 .spacing-card-item-target-icon {
   height: 16px;
   width: 16px;
-  color: var(--indigo-400);
+  color: var(--blue-500);
   flex-shrink: 0;
 }
 
@@ -397,7 +398,7 @@
   height: 16px;
   cursor: nwse-resize;
   z-index: 10;
-  background-color: rgba(91, 91, 91, 0);
+  background-color: transparent;
 }
 
 .spacing-card-resize-svg {
@@ -408,4 +409,5 @@
   width: 12px;
   height: 12px;
   transition: color 0.15s;
+  color: var(--grey-600);
 }

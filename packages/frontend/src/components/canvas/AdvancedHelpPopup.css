@@ -7,8 +7,8 @@
   font-size: 10.5px;
   font-family: var(--font-mono);
   display: inline-block;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
 }
 
 /* ── FnCard ── */
@@ -17,8 +17,8 @@
   margin-bottom: 8px;
   overflow: hidden;
   transition: all 150ms;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
 }
 
 .help-popup-fn-header {
@@ -35,7 +35,7 @@
 }
 
 .help-popup-fn-header:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
 }
 
 .help-popup-fn-chevron {
@@ -64,7 +64,7 @@
 
 .help-popup-fn-body-inner {
   padding: 0 12px 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
 }
 
 .help-popup-fn-syntax {
@@ -77,9 +77,9 @@
   padding: 6px 10px;
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
-  background: rgba(0, 0, 0, 0.3);
+  background: color-mix(in srgb, var(--grey-950) 30%, transparent);
   color: var(--grey-400);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
 }
 
 .help-popup-fn-usecases {
@@ -143,7 +143,7 @@
 .help-popup-section-rule {
   height: 1px;
   margin-top: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 /* ── Backdrop ── */
@@ -159,7 +159,7 @@
 .help-popup-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: color-mix(in srgb, var(--grey-950) 60%, transparent);
   backdrop-filter: blur(4px);
 }
 
@@ -171,10 +171,10 @@
   overflow: hidden;
   width: min(820px, 90vw);
   height: min(620px, 85vh);
-  background: var(--grey-800);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6),
-              0 0 0 1px rgba(255, 255, 255, 0.03);
+  background: var(--grey-900);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  box-shadow: 0 24px 80px color-mix(in srgb, var(--grey-950) 60%, transparent),
+              0 0 0 1px color-mix(in srgb, var(--grey-50) 3%, transparent);
 }
 
 /* ── Left sidebar ── */
@@ -184,8 +184,8 @@
   flex-shrink: 0;
   padding: 12px 0;
   width: 180px;
-  background: rgba(0, 0, 0, 0.2);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--grey-950);
+  border-right: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .help-popup-sidebar-header {
@@ -235,12 +235,16 @@
 }
 
 .help-popup-nav-btn-active {
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
   color: var(--grey-100);
 }
 
 .help-popup-nav-btn-inactive {
   color: var(--grey-600);
+}
+
+.help-popup-nav-btn-inactive:hover {
+  background: color-mix(in srgb, var(--grey-50) 3%, transparent);
 }
 
 .help-popup-nav-label {
@@ -253,7 +257,7 @@
 .help-popup-sidebar-footer {
   padding: 8px 12px 0;
   margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
 }
 
 .help-popup-sidebar-tip {
@@ -265,7 +269,7 @@
   padding: 2px 4px;
   border-radius: var(--radius-sm);
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 /* ── Right content area ── */
@@ -274,6 +278,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  background: var(--grey-900);
 }
 
 .help-popup-content-header {
@@ -282,7 +287,7 @@
   justify-content: space-between;
   padding: 12px 20px;
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .help-popup-content-title {
@@ -307,7 +312,7 @@
 }
 
 .help-popup-close-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--grey-50) 5%, transparent);
 }
 
 .help-popup-scroll {
@@ -320,8 +325,8 @@
 .help-popup-info-box {
   border-radius: var(--radius-lg);
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
 }
 
 .help-popup-info-text {
@@ -345,8 +350,8 @@
 .help-popup-op-card {
   border-radius: var(--radius-md);
   padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
 }
 
 .help-popup-op-header {
@@ -386,8 +391,8 @@
 .help-popup-combo-card {
   border-radius: var(--radius-lg);
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--grey-50) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 5%, transparent);
 }
 
 .help-popup-combo-header {
@@ -422,9 +427,9 @@
   white-space: pre-wrap;
   overflow-wrap: break-word;
   word-break: break-all;
-  background: rgba(0, 0, 0, 0.3);
+  background: color-mix(in srgb, var(--grey-950) 30%, transparent);
   color: var(--grey-500);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 4%, transparent);
 }
 
 /* ── Spacer ── */

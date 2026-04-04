@@ -36,6 +36,10 @@
   border-radius: 21px;
   overflow: hidden;
   background: var(--grey-800);
+  box-shadow:
+    0 24px 80px color-mix(in srgb, var(--grey-950) 60%, transparent),
+    0 8px 24px color-mix(in srgb, var(--grey-950) 40%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--grey-50) 3%, transparent) inset;
 }
 
 /* ─── Header ─── */
@@ -119,7 +123,7 @@
 }
 
 .auth-confirmation-icon-box-brand {
-  background: color-mix(in srgb, var(--indigo-500) 10%, transparent);
+  background: color-mix(in srgb, var(--blue-500) 10%, transparent);
 }
 
 .auth-confirmation-icon-success {
@@ -131,7 +135,7 @@
 .auth-confirmation-icon-brand {
   width: 24px;
   height: 24px;
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .auth-confirmation-title {
@@ -166,7 +170,7 @@
   color: var(--grey-900);
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--grey-50) 6%, transparent);
   transition: opacity 0.2s ease, background-color 0.2s ease;
 }
 
@@ -268,7 +272,7 @@
   color: var(--grey-900);
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--grey-50) 6%, transparent);
   margin-bottom: 8px;
   transition: opacity 0.2s ease, background-color 0.2s ease;
 }
@@ -307,7 +311,7 @@
   border-radius: var(--radius-xl);
   margin-bottom: 20px;
   padding: 4px;
-  background: var(--grey-900);
+  background: var(--grey-925);
 }
 
 .auth-tab {
@@ -318,7 +322,16 @@
   font-weight: var(--font-weight-normal);
   border: none;
   cursor: pointer;
+  background: transparent;
+  color: var(--grey-600);
+  box-shadow: none;
   transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-tab--selected {
+  background: var(--grey-800);
+  color: var(--grey-200);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--grey-950) 45%, transparent);
 }
 
 /* ─── Forgot Password Sub-Header ─── */
@@ -336,7 +349,7 @@
 .auth-forgot-header-icon {
   width: 16px;
   height: 16px;
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .auth-forgot-header-title {
@@ -379,7 +392,7 @@
   border-radius: var(--radius-xl);
   font-size: 13px;
   color: var(--grey-50);
-  background: var(--grey-900);
+  background: var(--grey-950);
   border: none;
   outline: none;
   transition: box-shadow 0.15s ease;
@@ -402,7 +415,7 @@
 
 .auth-forgot-link {
   font-size: 11px;
-  color: color-mix(in srgb, var(--indigo-500) 70%, transparent);
+  color: color-mix(in srgb, var(--blue-500) 70%, transparent);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -410,7 +423,7 @@
 }
 
 .auth-forgot-link:hover {
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 /* ─── Submit Button ─── */
@@ -430,6 +443,10 @@
 
 .auth-submit-btn:disabled {
   cursor: not-allowed;
+}
+
+.auth-submit-btn:not(:disabled) {
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .auth-submit-btn-icon {

@@ -175,7 +175,9 @@ export function PublishPopup({
       className="publish-overlay"
       style={{
         zIndex: 200000,
-        background: mounted ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0)',
+        background: mounted
+          ? 'color-mix(in srgb, var(--grey-950) 70%, transparent)'
+          : 'transparent',
         backdropFilter: mounted ? 'blur(8px)' : 'none',
         transition: 'background 0.3s ease, backdrop-filter 0.3s ease',
       }}

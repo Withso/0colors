@@ -292,7 +292,7 @@ function CurveVisualizer({
       <line x1={PAD} y1={PAD + 0.25 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.25 * (H - PAD * 2)} stroke="var(--grey-800)" strokeWidth="0.5" strokeDasharray="1,4" />
       <line x1={PAD} y1={PAD + 0.75 * (H - PAD * 2)} x2={W - PAD} y2={PAD + 0.75 * (H - PAD * 2)} stroke="var(--grey-800)" strokeWidth="0.5" strokeDasharray="1,4" />
       {/* Curve path */}
-      <path d={pathParts.join(' ')} fill="none" stroke="var(--indigo-500)" strokeWidth="1.5" opacity="0.8" />
+      <path d={pathParts.join(' ')} fill="none" stroke="var(--blue-500)" strokeWidth="1.5" opacity="0.8" />
       {/* Shade dots — always draggable */}
       {dots.map((dot, i) => (
         <g key={i}>
@@ -310,7 +310,7 @@ function CurveVisualizer({
             cy={dot.y}
             r={draggingIndex !== null ? 5 : 4}
             fill={dot.color}
-            stroke={draggingIndex === i ? 'var(--indigo-500)' : 'var(--grey-900)'}
+            stroke={draggingIndex === i ? 'var(--blue-500)' : 'var(--grey-900)'}
             strokeWidth={draggingIndex === i ? 2 : 1}
             style={{ cursor: 'ns-resize' }}
             onMouseDown={(e) => handleDotMouseDown(e, i)}
@@ -374,7 +374,7 @@ function ShadePreviewStrip({
             >
               {/* Modification indicator dot */}
               {isModified && (
-                <div className="palette-card-shade-mod-dot" style={{ boxShadow: '0 0 2px rgba(0,0,0,0.5)' }} />
+                <div className="palette-card-shade-mod-dot" />
               )}
               {copiedIndex === i && (
                 <div className="palette-card-shade-copied">
@@ -405,14 +405,7 @@ function Island({
 }) {
   return (
     <div
-      className={`palette-card-island ${className}`}
-      style={{
-        backgroundColor: 'var(--grey-900)',
-        border: `1px solid ${isSelected || isMultiSelected ? 'rgba(70, 91, 254, 0.5)' : 'var(--grey-900)'}`,
-        boxShadow: isSelected
-          ? '0 0 0 1px rgba(70,91,254,0.3), 0 4px 16px rgba(0,0,0,0.4)'
-          : '0 2px 8px rgba(0,0,0,0.3)',
-      }}
+      className={`palette-card-island ${isSelected || isMultiSelected ? 'palette-card-island--selected' : ''} ${className}`}
     >
       {noPadding ? children : (
         <div className="palette-card-island-inner">
@@ -870,13 +863,7 @@ export function PaletteNodeCard({
         >
           {/* Inherited dim overlay on swatch — sits above content but below the crown */}
           {isAllInputDisabled && !showAllVisible && (
-            <div
-              className="palette-card-swatch-overlay"
-              style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.55)',
-                borderRadius: '11px 11px 0 0',
-              }}
-            />
+            <div className="palette-card-swatch-overlay" />
           )}
           <div className="palette-card-swatch-inner" style={isAllInputDisabled && !showAllVisible ? { opacity: 0.4 } : undefined}>
             <button
@@ -891,7 +878,7 @@ export function PaletteNodeCard({
                 <Copy className={`palette-card-copy-icon ${isLightBackground ? 'palette-card-copy-icon--light-dim' : 'palette-card-copy-icon--dark-dim'}`} />
               )}
             </button>
-            <span className="palette-card-swatch-value" style={{ color: isLightBackground ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)' }}>
+            <span className="palette-card-swatch-value" style={{ color: isLightBackground ? 'color-mix(in srgb, var(--grey-950) 75%, transparent)' : 'color-mix(in srgb, var(--grey-50) 90%, transparent)' }}>
               {displayColorValue}
             </span>
           </div>

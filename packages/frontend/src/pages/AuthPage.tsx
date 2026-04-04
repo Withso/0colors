@@ -306,7 +306,9 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
       className="auth-overlay"
       onClick={(e) => { if (e.target === e.currentTarget) onSkip(); }}
       style={{
-        background: mounted ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0)',
+        background: mounted
+          ? 'color-mix(in srgb, var(--grey-950) 55%, transparent)'
+          : 'transparent',
         backdropFilter: mounted ? 'blur(12px)' : 'blur(0px)',
         WebkitBackdropFilter: mounted ? 'blur(12px)' : 'blur(0px)',
         transition: 'background 300ms ease, backdrop-filter 300ms ease',
@@ -326,12 +328,12 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
         <div
           className="auth-glow-ring"
           style={{
-            background: 'linear-gradient(135deg, color-mix(in srgb, var(--indigo-500) 15%, transparent) 0%, color-mix(in srgb, var(--green-500) 8%, transparent) 50%, color-mix(in srgb, var(--indigo-500) 5%, transparent) 100%)',
+            background: 'linear-gradient(135deg, color-mix(in srgb, var(--blue-500) 15%, transparent) 0%, color-mix(in srgb, var(--green-500) 8%, transparent) 50%, color-mix(in srgb, var(--blue-500) 5%, transparent) 100%)',
           }}
         />
 
         {/* Card body */}
-        <div className="auth-card" style={{ boxShadow: '0 24px 80px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03) inset' }}>
+        <div className="auth-card">
           {/* Header with close button */}
           <div className="auth-header">
             <div className="auth-header-info">
@@ -383,8 +385,8 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 disabled={resending || resendCooldown > 0}
                 className="auth-resend-btn"
                 style={{
-                  background: resendSuccess ? 'color-mix(in srgb, var(--green-500) 10%, transparent)' : 'color-mix(in srgb, var(--indigo-500) 8%, transparent)',
-                  color: resendSuccess ? 'var(--green-500)' : (resendCooldown > 0 ? 'var(--grey-600)' : 'var(--indigo-500)'),
+                  background: resendSuccess ? 'color-mix(in srgb, var(--green-500) 10%, transparent)' : 'color-mix(in srgb, var(--blue-500) 8%, transparent)',
+                  color: resendSuccess ? 'var(--green-500)' : (resendCooldown > 0 ? 'var(--grey-600)' : 'var(--blue-500)'),
                   opacity: (resendCooldown > 0 && !resendSuccess) ? 0.6 : 1,
                 }}
               >
@@ -432,23 +434,13 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 <div className="auth-tabs">
                   <button
                     onClick={() => { setMode('signin'); setError(''); }}
-                    className="auth-tab"
-                    style={{
-                      background: mode === 'signin' ? 'var(--grey-800)' : 'transparent',
-                      color: mode === 'signin' ? 'var(--grey-200)' : 'var(--grey-600)',
-                      boxShadow: mode === 'signin' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none',
-                    }}
+                    className={`auth-tab${mode === 'signin' ? ' auth-tab--selected' : ''}`}
                   >
                     Sign in
                   </button>
                   <button
                     onClick={() => { setMode('signup'); setError(''); }}
-                    className="auth-tab"
-                    style={{
-                      background: mode === 'signup' ? 'var(--grey-800)' : 'transparent',
-                      color: mode === 'signup' ? 'var(--grey-200)' : 'var(--grey-600)',
-                      boxShadow: mode === 'signup' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none',
-                    }}
+                    className={`auth-tab${mode === 'signup' ? ' auth-tab--selected' : ''}`}
                   >
                     Sign up
                   </button>
@@ -542,7 +534,6 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                     background: loading ? 'var(--grey-800)' : 'var(--grey-200)',
                     color: loading ? 'var(--grey-600)' : 'var(--grey-900)',
                     cursor: loading ? 'not-allowed' : 'pointer',
-                    boxShadow: loading ? 'none' : '0 2px 12px rgba(255, 255, 255, 0.06)',
                   }}
                 >
                   {loading ? (

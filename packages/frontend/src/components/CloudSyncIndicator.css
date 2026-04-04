@@ -19,7 +19,7 @@
 }
 
 .sync-button--clickable:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: color-mix(in srgb, var(--grey-50) 8%, transparent);
 }
 
 .sync-button--waiting {
@@ -83,10 +83,10 @@
   font-size: 12px;
   letter-spacing: -0.01em;
   color: var(--grey-100);
-  background-color: rgba(38, 38, 38, 0.95);
+  background-color: color-mix(in srgb, var(--grey-800) 95%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  box-shadow: var(--shadow-lg);
   user-select: none;
   max-width: 220px;
 }
@@ -98,10 +98,10 @@
   font-size: 12px;
   letter-spacing: -0.01em;
   color: var(--grey-100);
-  background-color: rgba(38, 38, 38, 0.95);
+  background-color: color-mix(in srgb, var(--grey-800) 95%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  border: 1px solid color-mix(in srgb, var(--grey-50) 8%, transparent);
+  box-shadow: var(--shadow-lg);
   user-select: none;
 }
 

@@ -298,10 +298,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
       </div>
 
       {/* ─── Footer ─── */}
-      <div
-        className="code-preview-footer"
-        style={{ borderTop: '1px solid var(--grey-900)' }}
-      >
+      <div className="code-preview-footer">
         <span className="code-preview-footer-left">
           {lineCount} line{lineCount !== 1 ? 's' : ''}
           {' \u00b7 '}

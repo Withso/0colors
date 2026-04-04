@@ -22,10 +22,10 @@ const PILL = {
   keyword: '#FFA0E6',
   fn: '#5CD88E',
   op: '#FF7A90',
-  ref: 'var(--indigo-400)',
+  ref: 'var(--blue-400)',
   lit: 'var(--grey-400)',
   bool: 'var(--yellow-400)',
-  prop: 'var(--indigo-400)',
+  prop: 'var(--blue-400)',
   local: '#D4A0FF',
 };
 
@@ -210,12 +210,6 @@ export function AdvancedHelpPopup({ onClose }: AdvancedHelpPopupProps) {
                   key={s.id}
                   className={`help-popup-nav-btn ${isActive ? 'help-popup-nav-btn-active' : 'help-popup-nav-btn-inactive'}`}
                   onClick={() => scrollTo(s.id)}
-                  onMouseEnter={(e) => {
-                    if (!isActive) (e.currentTarget.style.background = 'rgba(255,255,255,0.03)');
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) (e.currentTarget.style.background = 'transparent');
-                  }}
                 >
                   <Icon size={12} style={{ flexShrink: 0 }} />
                   <span className="help-popup-nav-label">{s.label}</span>

@@ -43,5 +43,5 @@
   width: 14px;
   height: 14px;
   border-radius: 2px;
-  border: 2px solid white;
+  border: 2px solid var(--grey-50);
 }

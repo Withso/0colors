@@ -1807,15 +1807,12 @@ export function TokenTablePopup({
       {/* Panel — fixed positioned, no full-screen overlay so canvas/panels remain fully interactive */}
       <div
         ref={popupRef}
-        className="token-table-panel"
+        className={`token-table-panel${isActive ? ' token-table-panel--active' : ''}`}
         style={{
           left: position.x,
           top: position.y,
           width: size.width,
           height: size.height,
-          boxShadow: isActive
-            ? '0 24px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06) inset'
-            : '0 16px 48px rgba(0,0,0,.4)',
         }}
       >
         {/* Resize handles */}

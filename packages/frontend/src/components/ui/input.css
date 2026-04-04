@@ -25,8 +25,8 @@
 }
 
 [data-slot="input"]:focus-visible {
-  border-color: var(--indigo-500);
-  box-shadow: 0 0 0 2px var(--indigo-500);
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--blue-500) 45%, transparent);
 }
 
 [data-slot="input"]:disabled {

@@ -15,11 +15,12 @@
 html {
   overflow: hidden;
   overscroll-behavior: none;
+  background-color: var(--grey-950);
 }
 
 body {
-  background-color: var(--grey-900);
-  color: var(--grey-100);
+  background-color: var(--grey-950);
+  color: var(--default-text-color);
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   -webkit-font-smoothing: antialiased;
@@ -136,33 +137,43 @@ body.selecting * {
 /* Color-slider: transparent fill showing gradient colour */
 .color-slider::-webkit-slider-thumb {
   background: var(--slider-thumb-color, transparent) !important;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--grey-950) 15%, transparent),
+    0 1px 4px color-mix(in srgb, var(--grey-950) 40%, transparent) !important;
 }
 .color-slider::-webkit-slider-thumb:active {
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(255, 255, 255, 0.2), 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--grey-950) 15%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--grey-50) 20%, transparent),
+    0 1px 4px color-mix(in srgb, var(--grey-950) 40%, transparent) !important;
 }
 .color-slider::-moz-range-thumb {
   background: var(--slider-thumb-color, transparent) !important;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--grey-950) 15%, transparent),
+    0 1px 4px color-mix(in srgb, var(--grey-950) 40%, transparent) !important;
 }
 .color-slider::-moz-range-thumb:active {
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(255, 255, 255, 0.2), 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--grey-950) 15%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--grey-50) 20%, transparent),
+    0 1px 4px color-mix(in srgb, var(--grey-950) 40%, transparent) !important;
 }
 
 /* Palette-range-slider: fixed navy fill */
 .palette-range-slider::-webkit-slider-thumb {
-  background: var(--indigo-900) !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+  background: var(--blue-900) !important;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--grey-950) 35%, transparent) !important;
 }
 .palette-range-slider::-webkit-slider-thumb:active {
-  box-shadow: 0 0 0 3px rgba(49, 46, 129, 0.35), 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-900) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--grey-900) 35%, transparent) !important;
 }
 .palette-range-slider::-moz-range-thumb {
-  background: var(--indigo-900) !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+  background: var(--blue-900) !important;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--grey-950) 35%, transparent) !important;
 }
 .palette-range-slider::-moz-range-thumb:active {
-  box-shadow: 0 0 0 3px rgba(49, 46, 129, 0.35), 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-900) 35%, transparent), 0 1px 4px color-mix(in srgb, var(--grey-900) 35%, transparent) !important;
 }
 
 /* Slider tracks */

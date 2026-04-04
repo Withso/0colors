@@ -15,7 +15,7 @@
   width: 580px;
   max-height: 85vh;
   background-color: var(--grey-800);
-  border: 1px solid var(--grey-800);
+  border: 1px solid var(--grey-700);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
@@ -30,8 +30,9 @@
   justify-content: space-between;
   padding: 0 20px;
   height: 48px;
-  border-bottom: 1px solid var(--grey-900);
+  border-bottom: 1px solid var(--grey-700);
   flex-shrink: 0;
+  background-color: var(--grey-925);
 }
 
 .dev-mode-header-left {
@@ -129,8 +130,9 @@
 .dev-mode-tabs {
   display: flex;
   padding: 0 20px;
-  border-bottom: 1px solid var(--grey-900);
+  border-bottom: 1px solid var(--grey-700);
   flex-shrink: 0;
+  background-color: var(--grey-925);
 }
 
 .dev-mode-tab {
@@ -161,8 +163,9 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background-color: var(--grey-200);
+  height: 2px;
+  background-color: var(--blue-500);
+  border-radius: 1px 1px 0 0;
 }
 
 /* ─── Content area ─── */
@@ -170,6 +173,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 16px 20px;
+  background-color: var(--grey-900);
 }
 
 /* ─── Sections (output/input tabs) ─── */
@@ -182,8 +186,8 @@
 .dev-mode-section {
   padding: 16px;
   border-radius: var(--radius-lg);
-  border: 1px solid var(--grey-900);
-  background-color: var(--grey-900);
+  border: 1px solid var(--grey-700);
+  background-color: var(--grey-950);
 }
 
 /* ─── Section Header ─── */
@@ -415,8 +419,8 @@
 .dev-mode-pat-set-btn {
   height: 32px;
   padding: 0 10px;
-  background-color: rgba(43, 189, 104, 0.1);
-  border: 1px solid rgba(43, 189, 104, 0.3);
+  background-color: color-mix(in srgb, var(--green-500) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green-500) 30%, transparent);
   border-radius: var(--radius-md);
   font-size: 11px;
   color: var(--green-500);
@@ -425,8 +429,8 @@
 }
 
 .dev-mode-pat-set-btn:hover {
-  background-color: rgba(43, 189, 104, 0.2);
-  border-color: rgba(43, 189, 104, 0.4);
+  background-color: color-mix(in srgb, var(--green-500) 20%, transparent);
+  border-color: color-mix(in srgb, var(--green-500) 40%, transparent);
 }
 
 .dev-mode-pat-set-btn:disabled {
@@ -457,7 +461,7 @@
 
 .dev-mode-pat-saved {
   font-size: 11px;
-  color: rgba(43, 189, 104, 0.6);
+  color: color-mix(in srgb, var(--green-500) 60%, transparent);
   margin-top: 4px;
   display: flex;
   align-items: center;
@@ -585,13 +589,13 @@
   margin-top: 12px;
   padding: 12px;
   border-radius: var(--radius-md);
-  background-color: var(--grey-900);
-  border: 1px solid rgba(251, 191, 36, 0.2);
+  background-color: var(--grey-950);
+  border: 1px solid color-mix(in srgb, var(--yellow-400) 20%, transparent);
 }
 
 .dev-mode-per-node-title {
   font-size: 11px;
-  color: rgba(251, 191, 36, 0.8);
+  color: color-mix(in srgb, var(--yellow-400) 80%, transparent);
   margin-bottom: 8px;
   font-weight: var(--font-weight-normal);
   display: flex;
@@ -692,9 +696,9 @@
   justify-content: space-between;
   padding: 0 20px;
   height: 56px;
-  border-top: 1px solid var(--grey-900);
+  border-top: 1px solid var(--grey-700);
   flex-shrink: 0;
-  background-color: var(--grey-900);
+  background-color: var(--grey-925);
 }
 
 .dev-mode-footer-left {
@@ -775,7 +779,7 @@
 }
 
 .dev-mode-run-btn:hover {
-  background-color: white;
+  background-color: var(--grey-50);
 }
 
 .dev-mode-run-icon {

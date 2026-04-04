@@ -11,8 +11,8 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-700);
+  background-color: var(--grey-925);
+  border: 1px solid var(--grey-800);
   border-radius: var(--radius-lg);
   color: var(--grey-100);
 }

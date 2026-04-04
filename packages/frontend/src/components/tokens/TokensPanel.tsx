@@ -2878,8 +2878,8 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       top: Math.min(dragStart.y, dragEnd.y),
                       width: Math.abs(dragEnd.x - dragStart.x),
                       height: Math.abs(dragEnd.y - dragStart.y),
-                      backgroundColor: 'rgba(70, 91, 254, 0.1)',
-                      border: '1px solid var(--indigo-500)',
+                      backgroundColor: 'color-mix(in srgb, var(--blue-500) 10%, transparent)',
+                      border: '1px solid var(--blue-500)',
                       pointerEvents: 'none',
                       zIndex: 1000,
                     }}

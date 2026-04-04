@@ -28,7 +28,7 @@
 }
 
 .prop-control-label:hover {
-  color: white;
+  color: var(--grey-50);
 }
 
 .prop-control-hover-panel {
@@ -55,11 +55,11 @@
 }
 
 .prop-control-btn:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .prop-control-btn--brand {
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .prop-control-btn--muted {
@@ -108,7 +108,7 @@
   cursor: pointer;
   transition: filter 0.15s;
   flex-shrink: 0;
-  background-color: rgba(43, 189, 104, 0.12);
+  background-color: color-mix(in srgb, var(--green-500) 12%, transparent);
   border: none;
   color: var(--green-500);
 }
@@ -153,11 +153,11 @@
 }
 
 .prop-control-lock-btn--locked {
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .prop-control-lock-btn--locked:hover {
-  background-color: rgba(99, 102, 241, 0.1);
+  background-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
 }
 
 .prop-control-lock-btn--unlocked {
@@ -175,7 +175,7 @@
 }
 
 .prop-control-label-text--disabled {
-  color: rgba(245, 245, 245, 0.5);
+  color: color-mix(in srgb, var(--grey-100) 50%, transparent);
 }
 
 .prop-control-label-text--enabled {
@@ -205,11 +205,11 @@
 }
 
 .prop-control-diff-btn--enabled {
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .prop-control-diff-btn--enabled:hover {
-  background-color: rgba(99, 102, 241, 0.1);
+  background-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
 }
 
 .prop-control-diff-btn--muted {
@@ -304,7 +304,7 @@
 }
 
 .color-card-palette-lock-btn:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .color-card-palette-color-header {
@@ -335,7 +335,7 @@
   position: absolute;
   width: 12px;
   height: 12px;
-  border: 2px solid white;
+  border: 2px solid var(--grey-50);
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-lg);
   pointer-events: none;
@@ -374,7 +374,7 @@
 
 .color-card-palette-format-value {
   flex: 1;
-  background-color: var(--grey-800);
+  background-color: var(--grey-950);
   border: 1px solid var(--grey-800);
   border-radius: var(--radius-lg);
   padding: 8px 12px;
@@ -585,7 +585,7 @@
 }
 
 .color-card-shade-plus-icon--success {
-  color: white;
+  color: var(--grey-50);
 }
 
 .color-card-shade-plus-icon--default {
@@ -597,8 +597,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-left: 12px;
-  padding-right: 12px;
+  padding-left: 14px;
+  padding-right: 14px;
   position: relative;
   cursor: move;
   user-select: none;
@@ -673,7 +673,7 @@
 }
 
 .color-card-connect-plus--success {
-  color: white;
+  color: var(--grey-50);
 }
 
 .color-card-connect-plus--default {
@@ -684,8 +684,8 @@
   position: absolute;
   left: 32px;
   top: 0;
-  background-color: white;
-  border: 1px solid var(--grey-200);
+  background-color: var(--grey-800);
+  border: 1px solid var(--grey-700);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: 8px;
@@ -697,6 +697,7 @@
   font-size: var(--text-xs);
   margin-bottom: 4px;
   padding: 4px 8px;
+  color: var(--grey-500);
 }
 
 .color-card-parent-option {
@@ -708,17 +709,18 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--grey-100);
 }
 
 .color-card-parent-option:hover {
-  background-color: var(--grey-100);
+  background-color: var(--grey-700);
 }
 
 .color-card-parent-swatch {
   width: 16px;
   height: 16px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--grey-300);
+  border: 1px solid var(--grey-600);
 }
 
 .color-card-palette-shade-link {
@@ -733,7 +735,7 @@
   width: 10px;
   height: 10px;
   border-radius: var(--radius-full);
-  background-color: var(--indigo-500);
+  background-color: var(--blue-500);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -758,7 +760,7 @@
   width: 10px;
   height: 10px;
   border-radius: var(--radius-full);
-  background-color: var(--indigo-500);
+  background-color: var(--blue-500);
 }
 
 /* ═══════════════════════════════════════════
@@ -791,8 +793,8 @@
 }
 
 .color-card-inheritance-crown--modified {
-  color: var(--indigo-500);
-  fill: var(--indigo-500);
+  color: var(--blue-500);
+  fill: var(--blue-500);
 }
 
 .color-card-inheritance-crown--unlinked {
@@ -832,12 +834,15 @@
 
 .color-card-preview {
   height: 96px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   border-top-left-radius: 19px;
   border-top-right-radius: 19px;
+  /* Space above bottom-right palette/chevron so they clear the hex row */
+  padding-bottom: 10px;
 }
 
 .color-card-preview--dimmable {
@@ -849,7 +854,8 @@
 }
 
 .color-card-preview--mb {
-  margin-bottom: 12px;
+  /* With .color-card-controls-wrap margin-top: -12px, net gap below swatch ≈ 12px (matches inner control spacing) */
+  margin-bottom: 24px;
 }
 
 /* Webhook badge */
@@ -872,20 +878,20 @@
 }
 
 .color-card-webhook-badge--active {
-  background-color: rgba(251, 191, 36, 0.9);
-  color: black;
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+  background-color: color-mix(in srgb, var(--yellow-400) 90%, transparent);
+  color: var(--grey-900);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--yellow-400) 30%, transparent);
 }
 
 .color-card-webhook-badge--inactive {
-  background-color: rgba(0, 0, 0, 0.3);
-  color: rgba(255, 255, 255, 0.6);
+  background-color: color-mix(in srgb, var(--grey-950) 30%, transparent);
+  color: color-mix(in srgb, var(--grey-50) 60%, transparent);
   backdrop-filter: blur(4px);
 }
 
 .color-card-webhook-badge--inactive:hover {
-  background-color: rgba(0, 0, 0, 0.5);
-  color: rgba(255, 255, 255, 0.9);
+  background-color: color-mix(in srgb, var(--grey-950) 50%, transparent);
+  color: color-mix(in srgb, var(--grey-50) 90%, transparent);
 }
 
 .color-card-webhook-emoji {
@@ -930,7 +936,7 @@
 
 .color-card-visibility-toggle--hidden-node {
   opacity: 1;
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .color-card-visibility-toggle--hover {
@@ -988,11 +994,11 @@
 
 .color-card-bottom-controls {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
+  bottom: 10px;
+  right: 10px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .color-card-picker-btn {
@@ -1007,11 +1013,11 @@
 }
 
 .color-card-picker-btn--light:hover {
-  background-color: rgba(23, 23, 23, 0.1);
+  background-color: color-mix(in srgb, var(--grey-900) 10%, transparent);
 }
 
 .color-card-picker-btn--dark:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: color-mix(in srgb, var(--grey-50) 20%, transparent);
 }
 
 .color-card-picker-icon {
@@ -1020,11 +1026,11 @@
 }
 
 .color-card-picker-icon--light {
-  color: rgba(82, 82, 82, 0.8);
+  color: color-mix(in srgb, var(--grey-600) 80%, transparent);
 }
 
 .color-card-picker-icon--dark {
-  color: rgba(255, 255, 255, 0.8);
+  color: color-mix(in srgb, var(--grey-50) 80%, transparent);
 }
 
 .color-card-expand-btn {
@@ -1039,11 +1045,11 @@
 }
 
 .color-card-expand-btn--light:hover {
-  background-color: rgba(23, 23, 23, 0.1);
+  background-color: color-mix(in srgb, var(--grey-900) 10%, transparent);
 }
 
 .color-card-expand-btn--dark:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: color-mix(in srgb, var(--grey-50) 20%, transparent);
 }
 
 .color-card-expand-icon {
@@ -1057,11 +1063,11 @@
 }
 
 .color-card-expand-icon--light {
-  color: rgba(82, 82, 82, 0.8);
+  color: color-mix(in srgb, var(--grey-600) 80%, transparent);
 }
 
 .color-card-expand-icon--dark {
-  color: rgba(255, 255, 255, 0.8);
+  color: color-mix(in srgb, var(--grey-50) 80%, transparent);
 }
 
 /* sRGB fallback label */
@@ -1069,7 +1075,7 @@
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--grey-950) 50%, transparent));
   line-height: 1;
 }
 
@@ -1097,11 +1103,11 @@
 }
 
 .color-card-copy-btn--light:hover {
-  background-color: rgba(23, 23, 23, 0.1);
+  background-color: color-mix(in srgb, var(--grey-900) 10%, transparent);
 }
 
 .color-card-copy-btn--dark:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: color-mix(in srgb, var(--grey-50) 20%, transparent);
 }
 
 .color-card-copy-btn--visible {
@@ -1119,19 +1125,19 @@
 }
 
 .color-card-copy-icon--light {
-  color: rgba(82, 82, 82, 0.8);
+  color: color-mix(in srgb, var(--grey-600) 80%, transparent);
 }
 
 .color-card-copy-icon--dark-check {
-  color: rgba(255, 255, 255, 0.8);
+  color: color-mix(in srgb, var(--grey-50) 80%, transparent);
 }
 
 .color-card-copy-icon--light-faded {
-  color: rgba(82, 82, 82, 0.6);
+  color: color-mix(in srgb, var(--grey-600) 60%, transparent);
 }
 
 .color-card-copy-icon--dark-faded {
-  color: rgba(255, 255, 255, 0.6);
+  color: color-mix(in srgb, var(--grey-50) 60%, transparent);
 }
 
 /* Hex lock button */
@@ -1151,23 +1157,23 @@
 }
 
 .color-card-hex-lock-btn--light:hover {
-  background-color: rgba(23, 23, 23, 0.1);
+  background-color: color-mix(in srgb, var(--grey-900) 10%, transparent);
 }
 
 .color-card-hex-lock-btn--dark {
-  color: white;
+  color: var(--grey-50);
 }
 
 .color-card-hex-lock-btn--dark:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--grey-50) 10%, transparent);
 }
 
 .color-card-hex-lock-btn--brand-locked {
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .color-card-hex-lock-btn--brand-locked:hover {
-  background-color: rgba(99, 102, 241, 0.1);
+  background-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
 }
 
 .color-card-hex-lock-btn--brand-unlocked {
@@ -1193,7 +1199,7 @@
   width: auto;
   height: auto;
   padding: 4px 0;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--grey-950) 50%, transparent));
 }
 
 .color-card-hex-input:focus-visible {
@@ -1202,19 +1208,19 @@
 }
 
 .color-card-hex-input--light {
-  color: rgba(0, 0, 0, 0.8);
+  color: color-mix(in srgb, var(--grey-900) 80%, transparent);
 }
 
 .color-card-hex-input--light:focus-visible {
-  background-color: rgba(23, 23, 23, 0.1);
+  background-color: color-mix(in srgb, var(--grey-900) 10%, transparent);
 }
 
 .color-card-hex-input--dark {
-  color: rgba(255, 255, 255, 1);
+  color: var(--grey-50);
 }
 
 .color-card-hex-input--dark:focus-visible {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--grey-50) 10%, transparent);
 }
 
 /* ═══════════════════════════════════════════
@@ -1336,8 +1342,13 @@
    ═══════════════════════════════════════════ */
 
 .color-card-token-section {
-  padding: 0;
   position: relative;
+  width: calc(100% + 32px);
+  margin-left: -16px;
+  margin-right: -16px;
+  box-sizing: border-box;
+  /* Match token node: horizontal inset + vertical rhythm (.token-card-token-section) */
+  padding: 4px 18px 14px 18px;
 }
 
 .color-card-token-section > * + * {
@@ -1364,8 +1375,8 @@
 }
 
 .color-card-token-crown--modified {
-  color: var(--indigo-500);
-  fill: var(--indigo-500);
+  color: var(--blue-500);
+  fill: var(--blue-500);
 }
 
 .color-card-token-crown--inherited {
@@ -1426,7 +1437,7 @@
 .color-card-token-auto-icon {
   width: 12px;
   height: 12px;
-  color: var(--indigo-500);
+  color: var(--blue-500);
   flex-shrink: 0;
   fill: currentColor;
   margin-left: auto;
@@ -1440,7 +1451,7 @@
 }
 
 .color-card-token-remove-btn:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .color-card-token-remove-icon {
@@ -1504,7 +1515,7 @@
 .color-card-token-search-input {
   height: 36px;
   font-size: var(--text-xs);
-  background-color: var(--grey-900);
+  background-color: var(--grey-950);
   padding-left: 10px;
   margin: 4px 6px;
   border-radius: var(--radius-md);
@@ -1554,7 +1565,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background-color: rgba(255, 255, 255, 0.035);
+  background-color: color-mix(in srgb, var(--grey-50) 3.5%, transparent);
   border-radius: 5px;
   padding: 1px 6px;
 }
@@ -1578,27 +1589,27 @@
 }
 
 .color-card-token-item-inner--assigned {
-  background-color: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .color-card-token-item-inner--reassign-open {
-  background-color: rgba(99, 102, 241, 0.22);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.35);
+  background-color: color-mix(in srgb, var(--blue-500) 22%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--blue-500) 35%, transparent);
 }
 
 .color-card-token-item-inner--reassign {
-  background-color: rgba(99, 102, 241, 0.12);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2);
+  background-color: color-mix(in srgb, var(--blue-500) 12%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--blue-500) 20%, transparent);
 }
 
 .color-card-token-item-inner--reassign:hover {
-  background-color: rgba(99, 102, 241, 0.2);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3);
+  background-color: color-mix(in srgb, var(--blue-500) 20%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--blue-500) 30%, transparent);
 }
 
 .color-card-token-item-inner--default:hover {
-  background-color: rgba(250, 250, 250, 0.05);
+  background-color: color-mix(in srgb, var(--grey-50) 5%, transparent);
 }
 
 .color-card-token-swatch {
@@ -1609,7 +1620,7 @@
 }
 
 .color-card-token-swatch--empty {
-  border: 1px dashed rgba(38, 38, 38, 0.4);
+  border: 1px dashed color-mix(in srgb, var(--grey-800) 40%, transparent);
   opacity: 0.4;
 }
 
@@ -1654,13 +1665,13 @@
 }
 
 .color-card-token-navigate:hover {
-  background-color: rgba(250, 250, 250, 0.1);
+  background-color: color-mix(in srgb, var(--grey-50) 10%, transparent);
 }
 
 .color-card-token-navigate-icon {
   width: 14px;
   height: 14px;
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 /* Reassign popover */
@@ -1674,7 +1685,7 @@
   width: 288px;
   border-color: var(--grey-800);
   padding: 0;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--grey-950) 50%, transparent);
   background-color: var(--grey-800);
 }
 
@@ -1696,13 +1707,13 @@
 }
 
 .color-card-reassign-btn:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .color-card-reassign-link-icon {
   width: 16px;
   height: 16px;
-  color: var(--indigo-500);
+  color: var(--blue-500);
   flex-shrink: 0;
 }
 
@@ -1724,7 +1735,7 @@
 .color-card-reassign-hex {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: #FFB800;
+  color: var(--yellow-500);
 }
 
 /* ═══════════════════════════════════════════
@@ -1739,7 +1750,7 @@
   height: 16px;
   cursor: nwse-resize;
   z-index: 10;
-  background-color: rgba(91, 91, 91, 0);
+  background-color: transparent;
 }
 
 .color-card-resize-svg {
@@ -1750,7 +1761,7 @@
   width: 12px;
   height: 12px;
   transition: color 0.15s;
-  color: var(--grey-800);
+  color: var(--grey-600);
 }
 
 /* ═══════════════════════════════════════════
@@ -1797,7 +1808,7 @@
   border-radius: var(--radius-sm);
   user-select: none;
   color: var(--green-500);
-  background-color: rgba(43, 189, 104, 0.12);
+  background-color: color-mix(in srgb, var(--green-500) 12%, transparent);
   border: none;
 }
 
@@ -1811,7 +1822,7 @@
 
 .color-card-island-open-btn:hover {
   color: var(--grey-500);
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
 }
 
 /* ═══════════════════════════════════════════
@@ -1832,7 +1843,7 @@
 }
 
 .color-card-dialog-zap {
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .color-card-dialog-body {
@@ -1932,12 +1943,12 @@
 }
 
 .color-card-dialog-delete {
-  background-color: #EA0B2D;
-  color: white;
+  background-color: var(--red-600);
+  color: var(--grey-50);
 }
 
 .color-card-dialog-delete:hover {
-  background-color: #C00924;
+  background-color: var(--red-700);
 }
 
 /* ═══════════════════════════════════════════
@@ -1978,27 +1989,27 @@
 }
 
 .color-card-token-row.is-current {
-  background-color: rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .color-card-token-row.is-assigned {
-  box-shadow: inset 0 0 0 1px rgba(70, 91, 254, 0.2);
-  background-color: rgba(70, 91, 254, 0.12);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue-500) 20%, transparent);
+  background-color: color-mix(in srgb, var(--blue-500) 12%, transparent);
 }
 
 .color-card-token-row.is-assigned:hover {
-  background-color: rgba(70, 91, 254, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(70, 91, 254, 0.3);
+  background-color: color-mix(in srgb, var(--blue-500) 20%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue-500) 30%, transparent);
 }
 
 .color-card-token-row.is-assigned.is-reassign-open {
-  background-color: rgba(70, 91, 254, 0.22);
-  box-shadow: inset 0 0 0 1px rgba(70, 91, 254, 0.35);
+  background-color: color-mix(in srgb, var(--blue-500) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue-500) 35%, transparent);
 }
 
 .color-card-token-row.is-default:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: color-mix(in srgb, var(--grey-50) 5%, transparent);
 }
 
 .color-card-token-swatch {
@@ -2055,13 +2066,13 @@
 }
 
 .color-card-token-nav-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--grey-50) 10%, transparent);
 }
 
 .color-card-token-nav-icon {
   width: 14px;
   height: 14px;
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .color-card-popover-trigger-inset {
@@ -2074,7 +2085,7 @@
   width: 288px;
   border-color: var(--grey-800);
   padding: 0;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--grey-950) 50%, transparent);
   background-color: var(--grey-800);
 }
 
@@ -2098,13 +2109,13 @@
 }
 
 .color-card-reassign-btn:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .color-card-reassign-btn-icon {
   width: 16px;
   height: 16px;
-  color: var(--indigo-500);
+  color: var(--blue-500);
   flex-shrink: 0;
 }
 
@@ -2125,7 +2136,7 @@
 
 .color-card-reassign-prev-hex {
   font-family: var(--font-mono);
-  color: #FFB800;
+  color: var(--yellow-500);
 }
 
 /* ═══════════════════════════════════════════
@@ -2158,11 +2169,11 @@
    ═══════════════════════════════════════════ */
 
 .color-card-hex-lock-active {
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .color-card-hex-lock-active:hover {
-  background-color: rgba(99, 102, 241, 0.1);
+  background-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
 }
 
 .color-card-hex-lock-inactive {
@@ -2179,8 +2190,8 @@
    ═══════════════════════════════════════════ */
 
 .color-card-crown-brand {
-  color: var(--indigo-500);
-  fill: var(--indigo-500);
+  color: var(--blue-500);
+  fill: var(--blue-500);
 }
 
 .color-card-token-status-subtle {
@@ -2205,11 +2216,11 @@
 }
 
 .color-card-token-assign-zap {
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .color-card-token-remove-btn:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: color-mix(in srgb, var(--grey-50) 6%, transparent);
 }
 
 .color-card-token-remove-icon {
@@ -2224,18 +2235,27 @@
    Token combo (select-token popover)
    ═══════════════════════════════════════════ */
 
-.color-card-combo-trigger {
-  background-color: var(--grey-800);
-  border-color: var(--grey-800);
+/* Match token-node empty trigger; beat [data-variant="outline"] from button.css */
+[data-slot="button"].color-card-combo-trigger {
+  height: 36px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px dashed var(--grey-800);
   color: var(--grey-100);
 }
 
-.color-card-combo-trigger:hover {
-  background-color: var(--grey-800);
+[data-slot="button"].color-card-combo-trigger:hover {
+  border-color: var(--grey-700);
+  background-color: color-mix(in srgb, var(--grey-50) 2%, transparent);
   color: var(--grey-100);
 }
 
 .color-card-combo-placeholder {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
   color: var(--grey-500);
 }
 
@@ -2301,7 +2321,7 @@
 }
 
 .color-card-dialog-zap-icon {
-  color: var(--indigo-500);
+  color: var(--blue-500);
 }
 
 .color-card-dialog-desc {
@@ -2436,9 +2456,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 11px 3px 0;
-  padding-top: 1px;
-  padding-bottom: 3px;
+  padding: 4px 0 6px;
 }
 
 .color-card-token-inherit-crown {
@@ -2486,10 +2504,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 2rem;
+  min-height: 36px;
+  height: 36px;
   padding-left: 12px;
   padding-right: 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   min-width: 0;
 }
 
@@ -2536,9 +2555,15 @@
 }
 
 .color-card-combo-btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   flex: 1;
-  height: 2rem;
+  width: 100%;
+  min-height: 36px;
+  height: 36px;
   justify-content: space-between;
+  gap: 10px;
   font-size: var(--font-size-xs);
   overflow: hidden;
 }
@@ -2547,7 +2572,8 @@
   height: 1rem;
   width: 1rem;
   flex-shrink: 0;
-  opacity: 0.5;
+  margin-left: auto;
+  opacity: 0.55;
 }
 
 .color-card-combo-popover-wrap {
@@ -2577,7 +2603,7 @@
 .color-card-combo-search-input {
   height: 2.25rem;
   font-size: var(--font-size-xs);
-  background-color: var(--grey-900);
+  background-color: var(--grey-950);
   padding-left: 10px;
   margin: 4px 6px;
   border-radius: var(--radius-md);
@@ -2622,7 +2648,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background-color: rgba(255, 255, 255, 0.035);
+  background-color: color-mix(in srgb, var(--grey-50) 3.5%, transparent);
   border-radius: 5px;
   padding: 1px 6px;
 }
@@ -2637,7 +2663,7 @@
   height: 1rem;
   cursor: nwse-resize;
   z-index: 10;
-  background-color: rgba(91, 91, 91, 0);
+  background-color: transparent;
 }
 
 .color-card-resize-svg {
@@ -2648,6 +2674,7 @@
   width: 0.75rem;
   height: 0.75rem;
   transition: color 0.15s;
+  color: var(--grey-600);
 }
 
 /* --- Advanced island --- */
@@ -2698,7 +2725,7 @@
 }
 
 .color-card-advanced-open-btn:hover {
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: color-mix(in srgb, var(--grey-50) 4%, transparent);
 }
 
 /* --- Dialog --- */
@@ -2775,12 +2802,12 @@
 }
 
 .color-card-dialog-delete-btn {
-  background-color: #EA0B2D;
-  color: white;
+  background-color: var(--red-600);
+  color: var(--grey-50);
 }
 
 .color-card-dialog-delete-btn:hover {
-  background-color: #C00924;
+  background-color: var(--red-700);
 }
 
 /* --- Expand/collapse chevron button --- */
@@ -2797,11 +2824,11 @@
 }
 
 .color-card-chevron-btn--light:hover {
-  background-color: rgba(var(--grey-900-rgb, 0, 0, 0), 0.1);
+  background-color: color-mix(in srgb, var(--grey-900) 10%, transparent);
 }
 
 .color-card-chevron-btn--dark:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: color-mix(in srgb, var(--grey-50) 20%, transparent);
 }
 
 .color-card-chevron-icon {
@@ -2815,11 +2842,11 @@
 }
 
 .color-card-chevron-icon--light {
-  color: rgba(var(--grey-600-rgb, 100, 100, 100), 0.8);
+  color: color-mix(in srgb, var(--grey-600) 80%, transparent);
 }
 
 .color-card-chevron-icon--dark {
-  color: rgba(255, 255, 255, 0.8);
+  color: color-mix(in srgb, var(--grey-50) 80%, transparent);
 }
 
 /* --- Preview area elements --- */
@@ -2834,7 +2861,7 @@
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--grey-950) 30%, transparent));
   line-height: 1;
 }
 
@@ -2855,11 +2882,11 @@
 }
 
 .color-card-copy-btn--light:hover {
-  background-color: rgba(var(--grey-900-rgb, 0, 0, 0), 0.1);
+  background-color: color-mix(in srgb, var(--grey-900) 10%, transparent);
 }
 
 .color-card-copy-btn--dark:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: color-mix(in srgb, var(--grey-50) 20%, transparent);
 }
 
 .color-card-copy-btn--visible {
@@ -2877,19 +2904,19 @@
 }
 
 .color-card-copy-icon--light {
-  color: rgba(var(--grey-600-rgb, 100, 100, 100), 0.8);
+  color: color-mix(in srgb, var(--grey-600) 80%, transparent);
 }
 
 .color-card-copy-icon--dark {
-  color: rgba(255, 255, 255, 0.8);
+  color: color-mix(in srgb, var(--grey-50) 80%, transparent);
 }
 
 .color-card-copy-icon--light-dim {
-  color: rgba(var(--grey-600-rgb, 100, 100, 100), 0.6);
+  color: color-mix(in srgb, var(--grey-600) 60%, transparent);
 }
 
 .color-card-copy-icon--dark-dim {
-  color: rgba(255, 255, 255, 0.6);
+  color: color-mix(in srgb, var(--grey-50) 60%, transparent);
 }
 
 /* --- Hex lock button --- */
@@ -2910,15 +2937,15 @@
 }
 
 .color-card-hex-lock-btn--light:hover {
-  background-color: rgba(var(--grey-900-rgb, 0, 0, 0), 0.1);
+  background-color: color-mix(in srgb, var(--grey-900) 10%, transparent);
 }
 
 .color-card-hex-lock-btn--dark {
-  color: white;
+  color: var(--grey-50);
 }
 
 .color-card-hex-lock-btn--dark:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--grey-50) 10%, transparent);
 }
 
 .color-card-hex-lock-size {
@@ -2938,7 +2965,7 @@
   padding: 0;
   padding-top: 4px;
   padding-bottom: 4px;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--grey-950) 30%, transparent));
 }
 
 .color-card-hex-input:focus-visible {
@@ -2947,19 +2974,19 @@
 }
 
 .color-card-hex-input--light {
-  color: rgba(0, 0, 0, 0.8);
+  color: color-mix(in srgb, var(--grey-900) 80%, transparent);
 }
 
 .color-card-hex-input--light:focus-visible {
-  background-color: rgba(var(--grey-900-rgb, 0, 0, 0), 0.1);
+  background-color: color-mix(in srgb, var(--grey-900) 10%, transparent);
 }
 
 .color-card-hex-input--dark {
-  color: white;
+  color: var(--grey-50);
 }
 
 .color-card-hex-input--dark:focus-visible {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--grey-50) 10%, transparent);
 }
 
 /* --- Palette-specific / Palette dimming --- */
@@ -2972,7 +2999,7 @@
 
 .color-card-controls-wrap {
   padding: 0 16px 12px;
-  margin-top: -20px;
+  margin-top: -12px;
 }
 
 .color-card-controls-wrap > * + * {
@@ -3012,21 +3039,6 @@
 
 .color-card-channel-first > * + * {
   margin-top: 8px;
-}
-
-/* --- Token section wrapper --- */
-
-.color-card-token-section {
-  padding: 0;
-  position: relative;
-}
-
-.color-card-token-section > * + * {
-  margin-top: 8px;
-}
-
-.color-card-token-section--dimmable {
-  transition: opacity 0.2s;
 }
 
 /* --- Range hint font size override --- */

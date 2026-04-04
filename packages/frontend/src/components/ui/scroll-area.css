@@ -19,8 +19,8 @@
 }
 
 [data-slot="scroll-area-viewport"]:focus-visible {
-  box-shadow: 0 0 0 3px var(--indigo-400);
-  outline: 1px solid var(--indigo-400);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-500) 45%, transparent);
+  outline: 1px solid var(--blue-500);
 }
 
 /* ─── Scrollbar ─── */

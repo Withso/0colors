@@ -319,7 +319,7 @@ export function TokenNodeCard({
     if (!valueToken) return 'var(--grey-400)';
     const tv = activeThemeId && valueToken.themeValues?.[activeThemeId];
     const l = (tv && tv.lightness !== undefined) ? tv.lightness : (valueToken.lightness ?? 0);
-    return l > 55 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)';
+    return l > 55 ? 'color-mix(in srgb, var(--grey-950) 70%, transparent)' : 'color-mix(in srgb, var(--grey-50) 85%, transparent)';
   })();
 
   // Helper function to get theme-specific token assignments
@@ -801,7 +801,7 @@ export function TokenNodeCard({
         className="token-card-body"
         style={{
           backgroundColor: 'var(--grey-900)',
-          border: isSelected ? '1px solid var(--indigo-500)' : isMultiSelected ? '1px solid var(--indigo-400)' : '1px solid transparent',
+          border: isSelected ? '1px solid var(--blue-500)' : isMultiSelected ? '1px solid var(--blue-400)' : '1px solid transparent',
           width: `${nodeWidth}px`,
           maxWidth: `${nodeWidth}px`,
           minWidth: `${nodeWidth}px`,
@@ -972,8 +972,7 @@ export function TokenNodeCard({
             return (
               <div className="token-card-token-field">
                 {hasAdvancedTokenAssignment && (
-                  <div className="token-card-advanced-overlay"
-                    style={{ background: 'rgba(10,10,10,0.7)' }}>
+                  <div className="token-card-advanced-overlay">
                     {advancedTokenOutput ? (
                       advancedTokenOutput.type === 'error' ? (
                         <span className="token-card-advanced-error"

@@ -9,6 +9,14 @@
   overflow: hidden;
   transition: border-color 0.15s, box-shadow 0.15s;
   z-index: 100;
+  background: var(--grey-900);
+  box-shadow: 0 16px 48px color-mix(in srgb, var(--grey-950) 40%, transparent);
+}
+
+.shortcuts-panel--active {
+  box-shadow:
+    0 24px 80px color-mix(in srgb, var(--grey-950) 65%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--grey-50) 6%, transparent) inset;
 }
 
 /* ─── Header ─── */

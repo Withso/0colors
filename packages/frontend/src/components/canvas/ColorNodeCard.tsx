@@ -61,8 +61,8 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
         className="prop-control-label"
         style={{
           color: isSelected
-            ? 'white'
-            : 'rgb(229, 229, 229)',
+            ? 'var(--grey-50)'
+            : 'var(--grey-200)',
           backgroundColor: isSelected
             ? (() => {
                 // Calculate luminance to determine adaptive blue color
@@ -90,16 +90,16 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
                   b = node.blue;
                 } else if (node.colorSpace === 'oklch') {
                   // For OKLCH, use lightness to determine
-                  return node.oklchL > 50 ? '#60A5FA' : '#3B83F6';
+                  return node.oklchL > 50 ? 'var(--blue-400)' : 'var(--blue-500)';
                 } else if (node.colorSpace === 'hct') {
                   // For HCT, use tone to determine
-                  return node.hctT > 50 ? '#60A5FA' : '#3B83F6';
+                  return node.hctT > 50 ? 'var(--blue-400)' : 'var(--blue-500)';
                 } else {
-                  return '#3B83F6';
+                  return 'var(--blue-500)';
                 }
                 const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                 // If light node color (dark bg), use lighter blue; if dark node color (light bg), use darker blue
-                return luminance > 0.5 ? '#60A5FA' : '#3B83F6';
+                return luminance > 0.5 ? 'var(--blue-400)' : 'var(--blue-500)';
               })()
             : 'transparent',
           borderRadius: borderRadius
@@ -135,7 +135,7 @@ function PropertyControl({ label, prop, fullName, node, toggleLock, toggleDiff, 
             }}
             className="prop-control-btn"
             style={{
-              color: node[`diff${prop}` as keyof ColorNode] === true ? 'var(--indigo-500)' : 'var(--grey-400)'
+              color: node[`diff${prop}` as keyof ColorNode] === true ? 'var(--blue-500)' : 'var(--grey-400)'
             }}
             title={node[`diff${prop}` as keyof ColorNode] === false ? 'Diff disabled - matches parent' : 'Diff enabled - maintains offset'}
           >
@@ -327,8 +327,8 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
                 className="prop-control-diff-input"
                 style={{
                   background: 'var(--grey-800)',
-                  borderColor: 'var(--indigo-500)',
-                  color: isDiffEnabled ? 'var(--indigo-500)' : 'var(--grey-600)',
+                  borderColor: 'var(--blue-500)',
+                  color: isDiffEnabled ? 'var(--blue-500)' : 'var(--grey-600)',
                 }}
               />
             ) : (
@@ -343,7 +343,7 @@ function PropertyControls({ property, isDiffEnabled, isLocked, onToggleDiff, onT
                 disabled={disabled}
                 className="prop-control-diff-value-btn"
                 style={{
-                  color: isDiffEnabled ? 'var(--indigo-500)' : 'var(--grey-600)',
+                  color: isDiffEnabled ? 'var(--blue-500)' : 'var(--grey-600)',
                 }}
                 title={`Offset from parent: ${formattedDiff}. Click to edit.`}
               >
@@ -567,7 +567,7 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
             onMouseDown={(e) => e.stopPropagation()}
           >
             {node.paletteNameLocked ? (
-              <Lock className="prop-control-lock-icon" style={{ color: 'var(--indigo-500)' }} />
+              <Lock className="prop-control-lock-icon" style={{ color: 'var(--blue-500)' }} />
             ) : (
               <Unlock className="prop-control-lock-icon" style={{ color: 'var(--grey-400)' }} />
             )}
@@ -744,7 +744,7 @@ function PaletteControls({ node, onUpdateNode }: PaletteControlsProps) {
                     style={{ 
                       left: `${lightnessValue}%`,
                       backgroundColor: 'var(--grey-300)',
-                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                      boxShadow: '0 1px 2px color-mix(in srgb, var(--grey-950) 10%, transparent)'
                     }}
                   ></div>
                 );
@@ -1588,7 +1588,7 @@ export function ColorNodeCard({
         return node.hexValue;
       }
       // Locked but no hexValue - show default gray
-      return '#808080';
+      return 'var(--grey-500)';
     }
     
     // For unlocked hex nodes, use their own hexValue if set (preserves value when unlocking)
@@ -2578,9 +2578,9 @@ export function ColorNodeCard({
           style={{
             backgroundColor: hslColor,
             border: isSelected
-              ? '2px solid var(--indigo-500)'
+              ? '2px solid var(--blue-500)'
               : isMultiSelected
-              ? '2px solid var(--indigo-400)'
+              ? '2px solid var(--blue-400)'
               : '2px solid transparent',
             width: `${nodeWidth}px`,
             height: '44px',
@@ -2598,10 +2598,10 @@ export function ColorNodeCard({
           <span
             className="color-card-shade-hex"
             style={{
-              color: isLightBackground ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)',
+              color: isLightBackground ? 'color-mix(in srgb, var(--grey-950) 75%, transparent)' : 'color-mix(in srgb, var(--grey-50) 90%, transparent)',
               textShadow: isLightBackground
-                ? '0 1px 2px rgba(255,255,255,0.3)'
-                : '0 1px 2px rgba(0,0,0,0.4)',
+                ? '0 1px 2px color-mix(in srgb, var(--grey-50) 30%, transparent)'
+                : '0 1px 2px color-mix(in srgb, var(--grey-950) 40%, transparent)',
             }}
           >
             {displayColorValue !== hexColor ? displayColorValue : hexColor.toUpperCase()}
@@ -2614,10 +2614,10 @@ export function ColorNodeCard({
               <span
                 className="color-card-shade-token-name"
                 style={{
-                  color: isLightBackground ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)',
+                  color: isLightBackground ? 'color-mix(in srgb, var(--grey-950) 75%, transparent)' : 'color-mix(in srgb, var(--grey-50) 90%, transparent)',
                   textShadow: isLightBackground
-                    ? '0 1px 2px rgba(255,255,255,0.3)'
-                    : '0 1px 3px rgba(0,0,0,0.6)',
+                    ? '0 1px 2px color-mix(in srgb, var(--grey-50) 30%, transparent)'
+                    : '0 1px 3px color-mix(in srgb, var(--grey-950) 60%, transparent)',
                 }}
               >
                 {shadeToken.name}
@@ -2851,7 +2851,7 @@ export function ColorNodeCard({
     <Card
       className="color-card-card"
       style={{
-        border: isSelected ? '1px solid var(--indigo-500)' : isMultiSelected ? '1px solid var(--indigo-400)' : '1px solid transparent',
+        border: isSelected ? '1px solid var(--blue-500)' : isMultiSelected ? '1px solid var(--blue-400)' : '1px solid transparent',
         width: `${nodeWidth}px`,
         maxWidth: `${nodeWidth}px`,
         minWidth: `${nodeWidth}px`
@@ -2993,15 +2993,15 @@ export function ColorNodeCard({
                   b = node.blue;
                 } else if (node.colorSpace === 'oklch') {
                   // For OKLCH, use lightness to determine
-                  return node.oklchL > 50 ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)';
+                  return node.oklchL > 50 ? 'color-mix(in srgb, var(--grey-950) 30%, transparent)' : 'color-mix(in srgb, var(--grey-50) 30%, transparent)';
                 } else if (node.colorSpace === 'hct') {
                   // For HCT, use tone to determine
-                  return node.hctT > 50 ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)';
+                  return node.hctT > 50 ? 'color-mix(in srgb, var(--grey-950) 30%, transparent)' : 'color-mix(in srgb, var(--grey-50) 30%, transparent)';
                 }
                 // Calculate relative luminance
                 const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                 // If light color, use black background; if dark, use white
-                return luminance > 0.5 ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)';
+                return luminance > 0.5 ? 'color-mix(in srgb, var(--grey-950) 30%, transparent)' : 'color-mix(in srgb, var(--grey-50) 30%, transparent)';
               })(),
               color: (() => {
                 // Calculate luminance to determine text color
@@ -3029,14 +3029,14 @@ export function ColorNodeCard({
                   b = node.blue;
                 } else if (node.colorSpace === 'oklch') {
                   // For OKLCH, if light bg use dark text, if dark bg use light text
-                  return node.oklchL > 50 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)';
+                  return node.oklchL > 50 ? 'color-mix(in srgb, var(--grey-50) 90%, transparent)' : 'color-mix(in srgb, var(--grey-950) 80%, transparent)';
                 } else if (node.colorSpace === 'hct') {
                   // For HCT, if light tone use dark text, if dark tone use light text
-                  return node.hctT > 50 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)';
+                  return node.hctT > 50 ? 'color-mix(in srgb, var(--grey-50) 90%, transparent)' : 'color-mix(in srgb, var(--grey-950) 80%, transparent)';
                 }
                 const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                 // If light node color (black bg), use white text; if dark node color (white bg), use black text
-                return luminance > 0.5 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)';
+                return luminance > 0.5 ? 'color-mix(in srgb, var(--grey-50) 90%, transparent)' : 'color-mix(in srgb, var(--grey-950) 80%, transparent)';
               })()
             }}
           >
@@ -3565,7 +3565,7 @@ export function ColorNodeCard({
             <span
               className="color-card-srgb-fallback"
               style={{
-                color: isLightBackground ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
+                color: isLightBackground ? 'color-mix(in srgb, var(--grey-950) 50%, transparent)' : 'color-mix(in srgb, var(--grey-50) 50%, transparent)',
               }}
             >
               sRGB fallback
@@ -4558,7 +4558,7 @@ export function ColorNodeCard({
                     className="color-card-advanced-channel-badge"
                     style={{
                       color: 'var(--green-500)',
-                      backgroundColor: 'rgba(43,189,104,0.12)',
+                      backgroundColor: 'color-mix(in srgb, var(--green-400) 12%, transparent)',
                       border: 'none',
                     }}
                   >

@@ -43,6 +43,7 @@
   border-radius: var(--radius-full);
   background-color: var(--yellow-500);
   z-index: 10;
+  box-shadow: 0 0 2px color-mix(in srgb, var(--grey-950) 50%, transparent);
 }
 
 .palette-card-shade-copied {
@@ -63,6 +64,16 @@
   border-radius: var(--radius-xl);
   overflow: hidden;
   transition: all 0.15s;
+  background-color: var(--grey-900);
+  border: 1px solid var(--grey-900);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--grey-950) 30%, transparent);
+}
+
+.palette-card-island--selected {
+  border-color: color-mix(in srgb, var(--blue-500) 50%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--blue-500) 30%, transparent),
+    0 4px 16px color-mix(in srgb, var(--grey-950) 40%, transparent);
 }
 
 .palette-card-island-inner {
@@ -133,7 +144,7 @@
 }
 
 .palette-card-inherit-switch[data-state="checked"] {
-  background-color: #EFB100;
+  background-color: var(--yellow-500);
 }
 
 .palette-card-inherit-switch[data-state="unchecked"] {
@@ -191,6 +202,8 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
+  background-color: color-mix(in srgb, var(--grey-950) 55%, transparent);
+  border-radius: 11px 11px 0 0;
 }
 
 .palette-card-swatch-inner {
@@ -212,11 +225,11 @@
 }
 
 .palette-card-copy-btn--light:hover {
-  background-color: rgba(10, 10, 10, 0.1);
+  background-color: color-mix(in srgb, var(--grey-950) 10%, transparent);
 }
 
 .palette-card-copy-btn--dark:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: color-mix(in srgb, var(--grey-50) 20%, transparent);
 }
 
 .palette-card-copy-btn--visible {
@@ -234,33 +247,33 @@
 }
 
 .palette-card-copy-icon--light {
-  color: rgba(68, 68, 68, 0.8);
+  color: color-mix(in srgb, var(--grey-600) 80%, transparent);
 }
 
 .palette-card-copy-icon--light-dim {
-  color: rgba(68, 68, 68, 0.6);
+  color: color-mix(in srgb, var(--grey-600) 60%, transparent);
 }
 
 .palette-card-copy-icon--dark {
-  color: rgba(255, 255, 255, 0.8);
+  color: color-mix(in srgb, var(--grey-50) 80%, transparent);
 }
 
 .palette-card-copy-icon--dark-dim {
-  color: rgba(255, 255, 255, 0.6);
+  color: color-mix(in srgb, var(--grey-50) 60%, transparent);
 }
 
 .palette-card-swatch-value {
   font-family: var(--font-mono);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--grey-950) 25%, transparent));
 }
 
 /* ─── Section shared styles ─── */
 .palette-card-section {
-  border-top: 1px solid var(--grey-900);
+  border-top: 1px solid var(--grey-800);
 }
 
 .palette-card-section--color {
-  border-top: 1px solid var(--grey-900);
+  border-top: 1px solid var(--grey-800);
   transition: opacity 0.15s;
 }
 
@@ -398,8 +411,8 @@
 
 .palette-card-color-value-display {
   flex: 1;
-  background-color: var(--grey-800);
-  border: 1px solid var(--grey-900);
+  background-color: var(--grey-950);
+  border: 1px solid var(--grey-800);
   border-radius: var(--radius-lg);
   padding-left: 10px;
   padding-right: 10px;
@@ -414,10 +427,10 @@
 
 /* ─── Distribution section ─── */
 .palette-card-curve-box {
-  background-color: var(--grey-900);
+  background-color: var(--grey-950);
   border-radius: var(--radius-lg);
   padding: 6px;
-  border: 1px solid var(--grey-900);
+  border: 1px solid var(--grey-800);
 }
 
 /* ─── Lightness Scale section ─── */
@@ -543,7 +556,7 @@
 }
 
 .palette-card-connect-icon--hovered {
-  color: white;
+  color: var(--grey-50);
 }
 
 .palette-card-connect-icon--default {
@@ -579,19 +592,19 @@
 }
 
 .palette-card-delete-btn:hover {
-  background-color: #FF7A90;
+  background-color: var(--pink-400);
 }
 
 .palette-card-delete-icon {
   width: 10px;
   height: 10px;
-  color: white;
+  color: var(--grey-50);
 }
 
 /* ─── Trigger classes (select, input shared) ─── */
 .palette-card-select-trigger {
-  background-color: var(--grey-800);
-  border-color: var(--grey-900);
+  background-color: var(--grey-950);
+  border-color: var(--grey-800);
   color: var(--grey-100);
   height: 28px;
   font-size: var(--font-size-xs);
@@ -604,8 +617,8 @@
 
 .palette-card-select-trigger--format {
   width: 72px;
-  background-color: var(--grey-800);
-  border-color: var(--grey-900);
+  background-color: var(--grey-950);
+  border-color: var(--grey-800);
   color: var(--grey-100);
   font-size: 11px;
   height: 28px;
@@ -623,8 +636,8 @@
 
 .palette-card-name-input {
   height: 28px;
-  background-color: var(--grey-800);
-  border-color: var(--grey-900);
+  background-color: var(--grey-950);
+  border-color: var(--grey-800);
   color: var(--grey-100);
   font-size: var(--font-size-xs);
   border-radius: var(--radius-lg);

@@ -478,7 +478,7 @@ export function PaletteShadesGrid({
                   backgroundColor: shadeColor,
                   borderWidth: '2px',
                   borderStyle: 'solid',
-                  borderColor: isSelected ? 'var(--indigo-500)' : 'transparent',
+                  borderColor: isSelected ? 'var(--blue-500)' : 'transparent',
                   filter: isSelected ? 'brightness(1.1)' : 'none',
                 }}
                 tabIndex={0}
@@ -563,11 +563,11 @@ export function PaletteShadesGrid({
                   
                   const luminance = getLuminance(shadeColor);
                   const isDark = luminance < 0.5;
-                  const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)';
-                  const secondaryTextColor = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)';
-                  const badgeBgColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
-                  const buttonBgColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
-                  const buttonHoverBgColor = isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.2)';
+                  const textColor = isDark ? 'color-mix(in srgb, var(--grey-50) 90%, transparent)' : 'color-mix(in srgb, var(--grey-950) 80%, transparent)';
+                  const secondaryTextColor = isDark ? 'color-mix(in srgb, var(--grey-50) 60%, transparent)' : 'color-mix(in srgb, var(--grey-950) 50%, transparent)';
+                  const badgeBgColor = isDark ? 'color-mix(in srgb, var(--grey-50) 15%, transparent)' : 'color-mix(in srgb, var(--grey-950) 10%, transparent)';
+                  const buttonBgColor = isDark ? 'color-mix(in srgb, var(--grey-50) 15%, transparent)' : 'color-mix(in srgb, var(--grey-950) 10%, transparent)';
+                  const buttonHoverBgColor = isDark ? 'color-mix(in srgb, var(--grey-50) 25%, transparent)' : 'color-mix(in srgb, var(--grey-950) 20%, transparent)';
                   
                   return (
                     <>

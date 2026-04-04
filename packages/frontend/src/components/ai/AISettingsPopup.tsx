@@ -37,7 +37,7 @@ interface AISettingsPopupProps {
 
 const TIER_COLORS: Record<ContextTier, string> = {
   small: 'var(--red-500)',
-  medium: '#8B8FFF',
+  medium: 'var(--indigo-400)',
   large: 'var(--green-500)',
 };
 
@@ -100,8 +100,8 @@ function ServiceSection({
     <div
       className="ai-settings-service"
       style={{
-        background: isActiveService ? 'rgba(139,143,255,0.04)' : 'transparent',
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        background: isActiveService ? 'color-mix(in srgb, var(--indigo-400) 4%, transparent)' : 'transparent',
+        borderBottom: '1px solid color-mix(in srgb, var(--grey-50) 4%, transparent)',
       }}
     >
       {/* Header */}
@@ -470,7 +470,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                               className="ai-settings-context-usage-fill"
                               style={{
                                 width: `${Math.min((tokenBreakdown.totalWithResponse / activeCtx) * 100, 100)}%`,
-                                background: tokenBreakdown.totalWithResponse > activeCtx ? 'var(--red-500)' : 'var(--indigo-400)',
+                                background: tokenBreakdown.totalWithResponse > activeCtx ? 'var(--red-500)' : 'var(--blue-400)',
                               }}
                             />
                           </div>
@@ -500,8 +500,12 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                         onClick={() => setContextTier(tier)}
                         className="ai-settings-tier-btn"
                         style={{
-                          background: isSelected ? `${color}10` : 'rgba(255,255,255,0.02)',
-                          border: `1px solid ${isSelected ? `${color}40` : 'rgba(255,255,255,0.05)'}`,
+                          background: isSelected
+                            ? `color-mix(in srgb, ${color} 6%, transparent)`
+                            : 'color-mix(in srgb, var(--grey-50) 2%, transparent)',
+                          border: isSelected
+                            ? `1px solid color-mix(in srgb, ${color} 25%, transparent)`
+                            : '1px solid color-mix(in srgb, var(--grey-50) 5%, transparent)',
                         }}
                       >
                         <div className="ai-settings-tier-btn-header">
@@ -662,11 +666,11 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                 </div>
                 <div className="ai-settings-budget-bar">
                   {tokenBreakdown.activeKB > 0 && (
-                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeKB / tokenBreakdown.totalBudget) * 100}%`, background: '#7C66DC' }}
+                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeKB / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--purple-500)' }}
                       title={`Knowledge Base: ${formatTokens(tokenBreakdown.activeKB)}`} />
                   )}
                   {tokenBreakdown.activeProject > 0 && (
-                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--indigo-400)' }}
+                    <div className="ai-settings-budget-segment" style={{ width: `${(tokenBreakdown.activeProject / tokenBreakdown.totalBudget) * 100}%`, background: 'var(--blue-500)' }}
                       title={`Project: ${formatTokens(tokenBreakdown.activeProject)}`} />
                   )}
                   {tokenBreakdown.activeConv > 0 && (
@@ -674,16 +678,16 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                       title={`Conversation: ${formatTokens(tokenBreakdown.activeConv)}`} />
                   )}
                   <div className="ai-settings-budget-segment"
-                    style={{ width: `${((tokenBreakdown.tailTokens + tokenBreakdown.maxResponse) / tokenBreakdown.totalBudget) * 100}%`, background: 'rgba(255,255,255,0.08)' }}
+                    style={{ width: `${((tokenBreakdown.tailTokens + tokenBreakdown.maxResponse) / tokenBreakdown.totalBudget) * 100}%`, background: 'color-mix(in srgb, var(--grey-50) 8%, transparent)' }}
                     title={`System + Response: ${formatTokens(tokenBreakdown.tailTokens + tokenBreakdown.maxResponse)}`} />
                 </div>
                 <div className="ai-settings-budget-legend">
                   <div className="ai-settings-budget-legend-item">
-                    <div className="ai-settings-budget-legend-swatch" style={{ background: '#7C66DC' }} />
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--purple-500)' }} />
                     <span className="ai-settings-budget-legend-text">KB</span>
                   </div>
                   <div className="ai-settings-budget-legend-item">
-                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--indigo-400)' }} />
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'var(--blue-500)' }} />
                     <span className="ai-settings-budget-legend-text">Project</span>
                   </div>
                   <div className="ai-settings-budget-legend-item">
@@ -691,7 +695,7 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
                     <span className="ai-settings-budget-legend-text">Conversation</span>
                   </div>
                   <div className="ai-settings-budget-legend-item">
-                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'rgba(255,255,255,0.15)' }} />
+                    <div className="ai-settings-budget-legend-swatch" style={{ background: 'color-mix(in srgb, var(--grey-50) 15%, transparent)' }} />
                     <span className="ai-settings-budget-legend-text">System + Response</span>
                   </div>
                 </div>
@@ -712,7 +716,11 @@ export function AISettingsContent({ onSettingsSaved, projectContext, currentConv
 
       {/* ── Footer ── */}
       <div className={`ai-settings-footer ${inline ? '' : 'ai-settings-footer--modal'}`}
-        style={{ borderTop: `1px solid rgba(255,255,255,${inline ? '0.04' : '0.06'})` }}
+        style={{
+          borderTop: inline
+            ? '1px solid color-mix(in srgb, var(--grey-50) 4%, transparent)'
+            : '1px solid color-mix(in srgb, var(--grey-50) 6%, transparent)',
+        }}
       >
         <p className="ai-settings-footer-text">
           Keys encrypted locally before cloud sync

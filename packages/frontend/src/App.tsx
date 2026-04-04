@@ -9200,7 +9200,7 @@ export function AppShell() {
         };
       } else if (type === 'shadow') {
         themeValues[theme.id] = {
-          shadowValue: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          shadowValue: '0 1px 3px 0 color-mix(in srgb, var(--grey-950) 10%, transparent)',
         };
       } else if (type === 'opacity') {
         themeValues[theme.id] = {
@@ -11211,7 +11211,7 @@ export function AppShell() {
             backdropFilter: 'blur(12px)',
             border: 'none',
             color: 'var(--grey-100)',
-            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
+            boxShadow: '0 4px 24px color-mix(in srgb, var(--grey-950) 40%, transparent)',
             borderRadius: '8px',
             fontSize: '13px',
           },
@@ -11789,7 +11789,7 @@ export function AppShell() {
                               className="app-canvas-template-swatch"
                               style={{
                                 background: `hsl(${t.folderColor}, 60%, 45%)`,
-                                borderColor: activeSampleIdx === t._origIdx ? 'var(--indigo-500)' : 'transparent',
+                                borderColor: activeSampleIdx === t._origIdx ? 'var(--blue-500)' : 'transparent',
                               }}
                             />
                             <div className="app-canvas-template-item-info">
@@ -11811,9 +11811,7 @@ export function AppShell() {
 
           {isSampleMode && (
             <div className="app-sample-bar-wrap" style={{ zIndex: 100000, bottom: viewMode === 'canvas' && isViewingPrimaryTheme ? '5rem' : '24px' }}>
-              <div className="app-sample-bar"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
-              >
+              <div className="app-sample-bar">
                 <div className="app-sample-bar-info">
                   <div className="app-sample-bar-icon">
                     {isCommunityMode ? <Globe className="app-icon-3 app-icon-brand" /> : <Lock className="app-icon-3 app-icon-brand" />}
@@ -11887,7 +11885,6 @@ export function AppShell() {
               >
                 <button
                   className="app-prompt-btn"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                   onClick={handleTokenNavGoBack}
                   onMouseEnter={handleGoBackMouseEnter}
                   onMouseLeave={handleGoBackMouseLeave}
@@ -11912,7 +11909,6 @@ export function AppShell() {
               >
                 <button
                   className="app-prompt-btn"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
                   onClick={handleRestoreTokens}
                 >
                   <div className="app-prompt-icon">
@@ -11940,10 +11936,7 @@ export function AppShell() {
                 className="app-prompt-wrap"
                 style={{ bottom: '5.5rem', animation: 'fadeSlideUp 0.2s ease-out' }}
               >
-                <div
-                  className="app-multiselect-bar"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
-                >
+                <div className="app-multiselect-bar">
                   {/* Selection count label */}
                   <span className="app-multiselect-count">
                     {selectedNodeIds.length} selected
@@ -12036,10 +12029,7 @@ export function AppShell() {
                 className="app-prompt-wrap"
                 style={{ bottom: '24px', animation: 'fadeSlideUp 0.2s ease-out' }}
               >
-                <div
-                  className="app-multiselect-bar"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset' }}
-                >
+                <div className="app-multiselect-bar">
                   {/* Selection count label */}
                   <span className="app-multiselect-count">
                     {selectedNodeIds.length} selected
@@ -12155,7 +12145,6 @@ export function AppShell() {
               {/* Ask AI Island (leftmost) */}
               <div
                 className="app-bottom-island"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Ask AI" side="top">
                   <button
@@ -12185,7 +12174,6 @@ export function AppShell() {
               {/* Sign In button moved to top-right of canvas (near template switcher) */}
 
               <div className="app-bottom-island"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 {/* Node tool with dropdown */}
                 <DropdownMenu>
@@ -12269,7 +12257,6 @@ export function AppShell() {
               {/* Companion bar — View controls */}
               <div
                 className="app-bottom-island"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 {/* Fit all nodes */}
                 <Tip label="Zoom to Fit" side="top">
@@ -12298,7 +12285,6 @@ export function AppShell() {
                 return proj?.isCloud ? (
                   <div
                     className="app-bottom-island"
-                    style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
                   >
                     <Tip label="Dev Mode — Code Sync & Webhooks" side="top">
                       <button
@@ -12319,7 +12305,6 @@ export function AppShell() {
               {/* Actions (⌘K) Island */}
               <div
                 className="app-bottom-island"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Actions (⌘K)" side="top">
                   <button
@@ -12335,7 +12320,6 @@ export function AppShell() {
               {/* Shortcuts & Tips Island */}
               <div
                 className="app-bottom-island"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Shortcuts & Tips" side="top">
                   <button
@@ -12357,7 +12341,6 @@ export function AppShell() {
             <div className="app-canvas-ai-float">
               <div
                 className="app-canvas-ai-float-inner"
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 <Tip label="Ask AI" side="top">
                   <button

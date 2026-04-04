@@ -177,7 +177,7 @@ export function DevModePanel({
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15 }}
         className="dev-mode-backdrop"
-        style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+        style={{ backgroundColor: 'color-mix(in srgb, var(--grey-950) 70%, transparent)' }}
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
         <motion.div

@@ -708,7 +708,7 @@ export function AutoAssignTokenMenu({
             {/* Header */}
             <div className="auto-assign-popup-header">
               <div className="auto-assign-popup-header-left">
-                <Zap size={12} style={{ color: 'var(--indigo-500)' }} />
+                <Zap size={12} style={{ color: 'var(--blue-500)' }} />
                 <span className="auto-assign-popup-title">
                   {readOnly ? 'Auto-assign settings' : isEnabled ? 'Edit auto-assign' : 'Auto-assign tokens'}
                 </span>

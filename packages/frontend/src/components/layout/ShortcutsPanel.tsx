@@ -382,16 +382,12 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
   return (
     <div
       ref={popupRef}
-      className="shortcuts-panel"
+      className={`shortcuts-panel${isActive ? ' shortcuts-panel--active' : ''}`}
       style={{
         left: position.x,
         top: position.y,
         width: size.width,
         height: size.height,
-        background: 'var(--grey-900)',
-        boxShadow: isActive
-          ? '0 24px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06) inset'
-          : '0 16px 48px rgba(0,0,0,.4)',
       }}
     >
       {/* Resize handles */}

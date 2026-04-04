@@ -153,51 +153,42 @@ function parseStructuredError(content: string): StructuredError | null {
 }
 
 const ERROR_ICON_COLORS: Record<string, string> = {
-  'rate_limit_exceeded': '#FBBF24',
-  'rate_limited': '#FBBF24',
-  '429': '#FBBF24',
-  'authentication_error': '#FF4D6A',
-  '401': '#FF4D6A',
-  '403': '#FF4D6A',
-  'not_found': '#7C66DC',
-  '404': '#7C66DC',
-  'network_error': '#FF4D6A',
-  '0': '#FF4D6A',
+  'rate_limit_exceeded': 'var(--yellow-400)',
+  'rate_limited': 'var(--yellow-400)',
+  '429': 'var(--yellow-400)',
+  'authentication_error': 'var(--red-400)',
+  '401': 'var(--red-400)',
+  '403': 'var(--red-400)',
+  'not_found': 'var(--purple-500)',
+  '404': 'var(--purple-500)',
+  'network_error': 'var(--red-400)',
+  '0': 'var(--red-400)',
 };
 
 function getErrorColor(err: StructuredError): string {
   return ERROR_ICON_COLORS[err.errorCode] ||
     ERROR_ICON_COLORS[String(err.code)] ||
-    '#FF4D6A';
+    'var(--red-400)';
 }
 
 function ErrorBubble({ error }: { error: StructuredError }) {
-  const color = getErrorColor(error);
+  const accent = getErrorColor(error);
   return (
     <div
       className="ai-chat-error-bubble"
-      style={{
-        background: `${color}08`,
-        border: `1px solid ${color}20`,
-      }}
+      style={{ '--ai-chat-error-accent': accent } as React.CSSProperties}
     >
       {/* Header */}
-      <div className="ai-chat-error-header"
-        style={{ borderBottom: `1px solid ${color}15` }}
-      >
-        <div className="ai-chat-error-icon"
-          style={{ background: `${color}15` }}
-        >
-          <X size={10} style={{ color }} />
+      <div className="ai-chat-error-header">
+        <div className="ai-chat-error-icon">
+          <X size={10} className="ai-chat-error-icon-svg" />
         </div>
         <div className="ai-chat-error-header-inner">
           <div className="ai-chat-error-header-row">
-            <span className="ai-chat-error-title" style={{ color }}>
+            <span className="ai-chat-error-title">
               {error.title}
             </span>
-            <span className="ai-chat-error-code"
-              style={{ background: `${color}12`, color: `${color}` }}
-            >
+            <span className="ai-chat-error-code">
               {error.code || error.errorCode}
             </span>
           </div>
@@ -209,7 +200,7 @@ function ErrorBubble({ error }: { error: StructuredError }) {
           {error.message}
         </p>
         {error.suggestion && (
-          <p className="ai-chat-error-suggestion" style={{ color: `${color}90` }}>
+          <p className="ai-chat-error-suggestion">
             {error.suggestion}
           </p>
         )}
@@ -903,7 +894,7 @@ export function AskAIChat({
       <button
         onClick={(e) => { e.stopPropagation(); toggleDock(); }}
         className="ai-chat-header-btn"
-        style={{ color: isDocked ? 'var(--indigo-400)' : 'var(--grey-600)' }}
+        style={{ color: isDocked ? 'var(--blue-400)' : 'var(--grey-600)' }}
         title={isDocked ? 'Undock (floating popup)' : 'Dock to right panel'}
       >
         {isDocked ? <Maximize2 size={14} /> : <PanelRight size={14} />}
@@ -951,7 +942,7 @@ export function AskAIChat({
                   <span className="ai-chat-convos-title">Conversations</span>
                   {conversations.length > 0 && (
                     <span className="ai-chat-convos-count"
-                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? 'var(--indigo-400)' : 'var(--grey-600)' }}
+                      style={{ color: conversations.length >= MAX_CONVERSATIONS ? 'var(--blue-400)' : 'var(--grey-600)' }}
                       title={`${conversations.length} of ${MAX_CONVERSATIONS} max conversations`}
                     >
                       {conversations.length}/{MAX_CONVERSATIONS}
@@ -992,11 +983,11 @@ export function AskAIChat({
                           key={conv.id}
                           className={`ai-chat-convo-item${isActive ? ' is-active' : ''}`}
                           onClick={() => { setActiveConvId(conv.id); setShowSidebar(false); }}
-                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+                          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'color-mix(in srgb, var(--grey-50) 3%, transparent)'; }}
                           onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = ''; } }}
                         >
                           <div className="ai-chat-convo-item-icon">
-                            <MessageSquare size={12} style={{ color: isActive ? 'var(--indigo-400)' : 'var(--grey-700)' }} />
+                            <MessageSquare size={12} style={{ color: isActive ? 'var(--blue-500)' : 'var(--grey-700)' }} />
                           </div>
                           <div className="ai-chat-convo-item-body">
                             <div className="ai-chat-convo-item-top">
@@ -1024,7 +1015,7 @@ export function AskAIChat({
                               {preview}
                             </p>
                             <div className="ai-chat-convo-item-meta">
-                              <span className="ai-chat-convo-item-count" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? 'var(--indigo-400)' : 'var(--grey-700)' }}
+                              <span className="ai-chat-convo-item-count" style={{ color: msgCount >= MAX_MESSAGES_PER_CONVERSATION ? 'var(--blue-400)' : 'var(--grey-700)' }}
                                 title={msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5 ? `${msgCount}/${MAX_MESSAGES_PER_CONVERSATION} max messages` : undefined}
                               >
                                 {msgCount >= MAX_MESSAGES_PER_CONVERSATION - 5
@@ -1321,8 +1312,8 @@ export function AskAIChat({
                             className="ai-chat-send-btn"
                             style={{
                               background: input.trim() && !isOverLimit
-                                ? (aiMode === 'build' ? 'var(--orange-400)' : 'var(--indigo-400)')
-                                : 'rgba(255,255,255,0.04)',
+                                ? (aiMode === 'build' ? 'var(--orange-400)' : 'var(--blue-500)')
+                                : 'color-mix(in srgb, var(--grey-50) 4%, transparent)',
                               color: input.trim() && !isOverLimit ? 'var(--grey-900)' : 'var(--grey-700)',
                             }}
                           >

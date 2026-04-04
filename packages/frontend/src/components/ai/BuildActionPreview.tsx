@@ -22,14 +22,14 @@ export function PendingActionsCard({ toolCalls, descriptions, onApply, onSkip, o
     <div
       className="build-preview-card"
       style={{
-        background: 'rgba(139,143,255,0.06)',
-        border: '1px solid rgba(139,143,255,0.15)',
+        background: 'color-mix(in srgb, var(--indigo-400) 6%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--indigo-400) 15%, transparent)',
       }}
     >
       <div className="build-preview-header"
-        style={{ borderBottom: '1px solid rgba(139,143,255,0.1)' }}
+        style={{ borderBottom: '1px solid color-mix(in srgb, var(--indigo-400) 10%, transparent)' }}
       >
-        <span className="build-preview-header-text" style={{ color: 'var(--indigo-400)' }}>
+        <span className="build-preview-header-text" style={{ color: 'var(--blue-500)' }}>
           Proposed Actions ({toolCalls.length})
         </span>
       </div>
@@ -44,7 +44,7 @@ export function PendingActionsCard({ toolCalls, descriptions, onApply, onSkip, o
       </div>
 
       <div className="build-preview-actions"
-        style={{ borderTop: '1px solid rgba(139,143,255,0.1)' }}
+        style={{ borderTop: '1px solid color-mix(in srgb, var(--indigo-400) 10%, transparent)' }}
       >
         <button
           onClick={onApply}
@@ -113,12 +113,14 @@ export function ExecutedActionsSummary({ actions }: ExecutedActionsSummaryProps)
     <div
       className="build-preview-summary"
       style={{
-        background: 'rgba(43,189,104,0.04)',
-        border: `1px solid rgba(${failCount > 0 ? '255,77,106' : '43,189,104'}, 0.12)`,
+        background: 'color-mix(in srgb, var(--green-500) 4%, transparent)',
+        border: failCount > 0
+          ? '1px solid color-mix(in srgb, var(--red-500) 12%, transparent)'
+          : '1px solid color-mix(in srgb, var(--green-500) 12%, transparent)',
       }}
     >
       <div className="build-preview-summary-header"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+        style={{ borderBottom: '1px solid color-mix(in srgb, var(--grey-50) 4%, transparent)' }}
       >
         <span className="build-preview-summary-label" style={{ color: failCount > 0 ? 'var(--red-500)' : 'var(--green-500)' }}>
           {successCount} action{successCount !== 1 ? 's' : ''} applied
@@ -140,7 +142,10 @@ export function BuildModeBadge() {
   return (
     <span
       className="build-preview-badge"
-      style={{ background: 'rgba(255,160,50,0.12)', color: '#FFA032' }}
+      style={{
+        background: 'color-mix(in srgb, var(--orange-400) 12%, transparent)',
+        color: 'var(--orange-400)',
+      }}
     >
       Build
     </span>

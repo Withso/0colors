@@ -922,8 +922,10 @@ function TokenPill({
     <span
       className="advanced-pill"
       style={{
-        color: 'var(--grey-50)',
-        backgroundColor: isSelected ? `${finalColor}44` : `${finalColor}22`,
+        color: 'var(--grey-100)',
+        backgroundColor: isSelected
+          ? `color-mix(in srgb, ${finalColor} 28%, transparent)`
+          : `color-mix(in srgb, ${finalColor} 14%, transparent)`,
         border: 'none',
         outline: isSelected ? `1px solid ${finalColor}` : 'none',
         outlineOffset: '1px',
@@ -943,13 +945,13 @@ function TokenPill({
       {isTokenRef && !isMerged && token.refTokenColor && (
         <span
           className="advanced-pill-swatch"
-          style={{ backgroundColor: token.refTokenColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }}
+          style={{ backgroundColor: token.refTokenColor, boxShadow: 'inset 0 0 0 0.5px color-mix(in srgb, var(--grey-50) 15%, transparent)' }}
         />
       )}
       {isTokenRef && !isMerged && !token.refTokenColor && (
         <span
           className="advanced-pill-swatch"
-          style={{ backgroundColor: 'transparent', boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }}
+          style={{ backgroundColor: 'transparent', boxShadow: 'inset 0 0 0 0.5px color-mix(in srgb, var(--grey-50) 20%, transparent)' }}
         />
       )}
       {label}
@@ -1055,7 +1057,7 @@ function DropdownPortal({
                   data-highlighted={isHighlighted}
                   className="advanced-dropdown-item"
                   style={{
-                    background: isHighlighted ? 'rgba(255,255,255,0.06)' : 'transparent',
+                    background: isHighlighted ? 'color-mix(in srgb, var(--grey-800) 45%, transparent)' : 'transparent',
                   }}
                   onMouseEnter={() => { if (!isScrollingRef.current) setHighlightIndex(globalIdx); }}
                   onMouseDown={(e) => {
@@ -1067,13 +1069,13 @@ function DropdownPortal({
                   {item.tokenType === 'tokenRef' && item.refTokenColor && (
                     <span
                       className="advanced-dropdown-item-swatch"
-                      style={{ backgroundColor: item.refTokenColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }}
+                      style={{ backgroundColor: item.refTokenColor, boxShadow: 'inset 0 0 0 0.5px color-mix(in srgb, var(--grey-50) 15%, transparent)' }}
                     />
                   )}
                   {item.tokenType === 'tokenRef' && !item.refTokenColor && (
                     <span
                       className="advanced-dropdown-item-swatch"
-                      style={{ backgroundColor: 'transparent', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.15)' }}
+                      style={{ backgroundColor: 'transparent', boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--grey-50) 15%, transparent)' }}
                     />
                   )}
                   <span
@@ -2189,19 +2191,13 @@ function ConditionRowEditor({
   );
 
   return (
-    <div ref={rowRef} className="advanced-row" data-palette-open={showPalette || undefined}>
-      <div
-        className="advanced-row-inner"
-        style={{
-          background: row.enabled ? 'rgba(255,255,255,0.02)' : 'transparent',
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.04)';
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
-        }}
-      >
+    <div
+      ref={rowRef}
+      className="advanced-row"
+      data-palette-open={showPalette || undefined}
+      data-row-enabled={row.enabled ? 'true' : 'false'}
+    >
+      <div className="advanced-row-inner">
         {/* Enable/disable dot */}
         <button
           className="advanced-row-enable-btn"
@@ -2279,7 +2275,7 @@ function ConditionRowEditor({
               setCtxMenu(null);
             }}
           >
-            <Copy size={11} style={{ color: 'var(--indigo-400)' }} /> Copy
+            <Copy size={11} style={{ color: 'var(--blue-400)' }} /> Copy
             <span className="advanced-ctx-menu-shortcut">⌘C</span>
           </button>
           <button
@@ -2562,8 +2558,8 @@ function ChannelColumn({
     <div
       className="advanced-channel-col"
       style={{
-        borderRight: isLast ? 'none' : '1px solid rgba(255,255,255,0.04)',
-        outline: columnHovered ? '1px solid rgba(139,180,224,0.08)' : 'none',
+        borderRight: isLast ? 'none' : '1px solid color-mix(in srgb, var(--grey-800) 55%, transparent)',
+        outline: columnHovered ? '1px solid color-mix(in srgb, var(--blue-500) 8%, transparent)' : 'none',
       }}
       onMouseEnter={() => setColumnHovered(true)}
       onMouseLeave={() => setColumnHovered(false)}
@@ -2605,7 +2601,7 @@ function ChannelColumn({
                   onClick={(e) => handlePasteColumn(e.shiftKey)}
                   title={`Paste${_conditionClipboard?.sourceLabel ? ` from ${_conditionClipboard.sourceLabel}` : ''} (${_conditionClipboard?.rows.length} row${(_conditionClipboard?.rows.length ?? 0) > 1 ? 's' : ''}) · ⌘V · Shift = append`}
                 >
-                  <ClipboardPaste size={8} style={{ color: 'var(--indigo-400)' }} />
+                  <ClipboardPaste size={8} style={{ color: 'var(--blue-500)' }} />
                 </button>
               )}
             </>
@@ -2672,7 +2668,7 @@ function ChannelColumn({
                   color: rowOutput?.error ? 'var(--red-500)'
                     : rowOutput?.skipped ? 'var(--grey-700)'
                     : rowOutput?.isNaN ? 'var(--grey-600)'
-                    : rowOutput?.isBoolean ? 'var(--indigo-400)'
+                    : rowOutput?.isBoolean ? 'var(--blue-400)'
                     : rowOutput?.value !== null ? 'var(--grey-500)'
                     : 'var(--grey-700)',
                 }}>
@@ -2757,10 +2753,10 @@ function ChannelColumn({
               <div
                 className="advanced-constraint-bar"
                 style={{
-                  borderTop: '1px solid rgba(251,191,36,0.2)',
+                  borderTop: '1px solid color-mix(in srgb, var(--yellow-400) 20%, transparent)',
                   background: isAutoConstrain
-                    ? 'rgba(251,191,36,0.06)'
-                    : 'rgba(212,114,114,0.04)',
+                    ? 'color-mix(in srgb, var(--yellow-400) 6%, transparent)'
+                    : 'color-mix(in srgb, var(--red-400) 4%, transparent)',
                 }}
               >
                 <div className="advanced-constraint-bar-inner">
@@ -2769,7 +2765,7 @@ function ChannelColumn({
                     <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="advanced-constraint-icon">
                       <path
                         d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z"
-                        fill={isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(212,114,114,0.2)'}
+                        fill={isAutoConstrain ? 'color-mix(in srgb, var(--yellow-400) 30%, transparent)' : 'color-mix(in srgb, var(--red-400) 20%, transparent)'}
                         stroke={isAutoConstrain ? 'var(--yellow-400)' : 'var(--red-500)'}
                         strokeWidth="1.2"
                       />
@@ -2801,9 +2797,9 @@ function ChannelColumn({
                       className="advanced-constraint-toggle"
                       style={{
                         background: isAutoConstrain
-                          ? 'rgba(251,191,36,0.15)'
-                          : 'rgba(255,255,255,0.06)',
-                        border: `1px solid ${isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                          ? 'color-mix(in srgb, var(--yellow-400) 15%, transparent)'
+                          : 'color-mix(in srgb, var(--grey-800) 40%, transparent)',
+                        border: `1px solid ${isAutoConstrain ? 'color-mix(in srgb, var(--yellow-400) 30%, transparent)' : 'color-mix(in srgb, var(--grey-700) 45%, transparent)'}`,
                       }}
                       title={isAutoConstrain
                         ? `Disable auto-constrain (allow values outside ${constraint?.min ?? 0}–${constraint?.max ?? '?'})`
@@ -2848,17 +2844,17 @@ function ChannelColumn({
                 style={{
                   borderTop: showConstraintBar
                     ? 'none'
-                    : '1px solid rgba(43,189,104,0.2)',
+                    : '1px solid color-mix(in srgb, var(--green-400) 20%, transparent)',
                   background: resolvedSource === 'logic'
-                    ? 'rgba(43,189,104,0.06)'
-                    : 'rgba(255,255,255,0.02)',
+                    ? 'color-mix(in srgb, var(--green-400) 6%, transparent)'
+                    : 'color-mix(in srgb, var(--grey-800) 38%, transparent)',
                 }}
               >
                 <div className="advanced-final-output-inner">
                   {/* Left side: label + inline dropdown */}
                   <div className="advanced-final-output-left">
                     <span className="advanced-final-output-label" style={{
-                      color: resolvedSource === 'logic' ? 'var(--green-500)' : 'var(--grey-700)',
+                      color: resolvedSource === 'logic' ? 'var(--green-500)' : 'var(--grey-500)',
                     }}>
                       Final Output
                     </span>
@@ -2869,10 +2865,10 @@ function ChannelColumn({
                           className="advanced-final-output-select"
                           style={{
                             background: (hasValidationError || hasBooleanWarning)
-                              ? 'rgba(212,114,114,0.12)'
-                              : 'rgba(43,189,104,0.12)',
+                              ? 'color-mix(in srgb, var(--red-400) 12%, transparent)'
+                              : 'color-mix(in srgb, var(--green-400) 12%, transparent)',
                             color: (hasValidationError || hasBooleanWarning) ? 'var(--red-500)' : 'var(--green-500)',
-                            border: `1px solid ${(hasValidationError || hasBooleanWarning) ? 'rgba(212,114,114,0.25)' : 'rgba(43,189,104,0.25)'}`,
+                            border: `1px solid ${(hasValidationError || hasBooleanWarning) ? 'color-mix(in srgb, var(--red-400) 25%, transparent)' : 'color-mix(in srgb, var(--green-400) 25%, transparent)'}`,
                           }}
                           value={selectedVar || '__last__'}
                           onChange={(e) => {
@@ -3045,8 +3041,8 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
       const css = getTokenCssColor(ro.result.tokenId);
       return (
         <span className="advanced-token-row-output-wrap">
-          <span className="advanced-token-row-swatch" style={{ backgroundColor: css, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }} />
-          <span className="advanced-token-row-label" style={{ color: TOKEN_COLORS.tokenRef }}>
+          <span className="advanced-token-row-swatch" style={{ backgroundColor: css, boxShadow: 'inset 0 0 0 0.5px color-mix(in srgb, var(--grey-50) 15%, transparent)' }} />
+          <span className="advanced-token-row-label advanced-token-row-label--token-ref">
             {'{' + ro.result.tokenName + '}'}
           </span>
         </span>
@@ -3057,7 +3053,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
       const displayStr = formatColorDisplay(ro.result.color, rowCs);
       return (
         <span className="advanced-token-row-output-wrap">
-          <span className="advanced-token-row-swatch" style={{ backgroundColor: ro.result.cssColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.15)' }} />
+          <span className="advanced-token-row-swatch" style={{ backgroundColor: ro.result.cssColor, boxShadow: 'inset 0 0 0 0.5px color-mix(in srgb, var(--grey-50) 15%, transparent)' }} />
           <span className="advanced-token-row-label" style={{ color: 'var(--grey-500)' }}>{displayStr}</span>
         </span>
       );
@@ -3066,7 +3062,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
       return <span className="advanced-token-row-label" style={{ color: 'var(--grey-500)' }}>{Math.round(ro.result.value * 100) / 100}</span>;
     }
     if (ro.result.type === 'boolean') {
-      return <span className="advanced-token-row-label" style={{ color: 'var(--indigo-400)' }}>{ro.result.value ? 'true' : 'false'}</span>;
+      return <span className="advanced-token-row-label" style={{ color: 'var(--blue-500)' }}>{ro.result.value ? 'true' : 'false'}</span>;
     }
     return <span className="advanced-token-row-label" style={{ color: 'var(--grey-700)' }}>—</span>;
   };
@@ -3173,7 +3169,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
           {currentValueToken && (
             <div>
               <div className="advanced-token-info-label">Current Value</div>
-              <div className="advanced-token-info-value" style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}11`, border: `1px solid ${TOKEN_COLORS.tokenRef}33` }}>
+              <div className="advanced-token-info-value">
                 {'{' + currentValueToken + '}'}
               </div>
             </div>
@@ -3189,7 +3185,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
       {/* Column 2: Assign Token */}
       <div
         className="advanced-token-assign-col"
-        style={{ outline: tokenColumnHovered ? '1px solid rgba(139,180,224,0.08)' : 'none' }}
+        style={{ outline: tokenColumnHovered ? '1px solid color-mix(in srgb, var(--blue-500) 8%, transparent)' : 'none' }}
         onMouseEnter={() => setTokenColumnHovered(true)}
         onMouseLeave={() => setTokenColumnHovered(false)}
       >
@@ -3228,7 +3224,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                     onClick={(e) => handlePasteTokenColumn(e.shiftKey)}
                     title={`Paste${_conditionClipboard?.sourceLabel ? ` from ${_conditionClipboard.sourceLabel}` : ''} (${_conditionClipboard?.rows.length} row${(_conditionClipboard?.rows.length ?? 0) > 1 ? 's' : ''}) · ⌘V · Shift = append`}
                   >
-                    <ClipboardPaste size={8} style={{ color: 'var(--indigo-400)' }} />
+                    <ClipboardPaste size={8} style={{ color: 'var(--blue-500)' }} />
                   </button>
                 )}
               </>
@@ -3265,7 +3261,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
             <div className="advanced-token-assign-empty">
               <div className="advanced-token-assign-empty-inner">
                 <div className="advanced-token-assign-empty-text">No assignment rules yet</div>
-                <button className="advanced-token-assign-add-btn" style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15` }} onClick={addRow}>+ Add Rule</button>
+                <button type="button" className="advanced-token-assign-add-btn" onClick={addRow}>+ Add Rule</button>
               </div>
             </div>
           ) : (
@@ -3426,7 +3422,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
               const css = getTokenCssColor(resolvedResult.tokenId);
               return (
                 <span className="advanced-token-row-output-wrap">
-                  <span className="advanced-token-final-swatch" style={{ backgroundColor: css, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }} />
+                  <span className="advanced-token-final-swatch" style={{ backgroundColor: css, boxShadow: 'inset 0 0 0 0.5px color-mix(in srgb, var(--grey-50) 20%, transparent)' }} />
                   <span className="advanced-token-final-label" style={{ color: 'var(--green-500)' }}>
                     {'{' + resolvedResult.tokenName + '}'}
                   </span>
@@ -3437,7 +3433,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
               const finalDisplayStr = formatColorDisplay(resolvedResult.color, finalColorSpace);
               return (
                 <span className="advanced-token-row-output-wrap">
-                  <span className="advanced-token-final-swatch" style={{ backgroundColor: resolvedResult.cssColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.2)' }} />
+                  <span className="advanced-token-final-swatch" style={{ backgroundColor: resolvedResult.cssColor, boxShadow: 'inset 0 0 0 0.5px color-mix(in srgb, var(--grey-50) 20%, transparent)' }} />
                   <span className="advanced-token-final-label" style={{ color: 'var(--green-500)' }}>{finalDisplayStr}</span>
                 </span>
               );
@@ -3452,10 +3448,10 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                 <div
                   className="advanced-constraint-bar"
                   style={{
-                    borderTop: '1px solid rgba(251,191,36,0.2)',
+                    borderTop: '1px solid color-mix(in srgb, var(--yellow-400) 20%, transparent)',
                     background: isAutoConstrain
-                      ? 'rgba(251,191,36,0.06)'
-                      : 'rgba(212,114,114,0.04)',
+                      ? 'color-mix(in srgb, var(--yellow-400) 6%, transparent)'
+                      : 'color-mix(in srgb, var(--red-400) 4%, transparent)',
                   }}
                 >
                   <div className="advanced-constraint-bar-inner">
@@ -3464,7 +3460,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                       <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="advanced-constraint-icon">
                         <path
                           d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z"
-                          fill={isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(212,114,114,0.2)'}
+                          fill={isAutoConstrain ? 'color-mix(in srgb, var(--yellow-400) 30%, transparent)' : 'color-mix(in srgb, var(--red-400) 20%, transparent)'}
                           stroke={isAutoConstrain ? 'var(--yellow-400)' : 'var(--red-500)'}
                           strokeWidth="1.2"
                         />
@@ -3495,9 +3491,9 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                         className="advanced-constraint-toggle"
                         style={{
                           background: isAutoConstrain
-                            ? 'rgba(251,191,36,0.15)'
-                            : 'rgba(255,255,255,0.06)',
-                          border: `1px solid ${isAutoConstrain ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                            ? 'color-mix(in srgb, var(--yellow-400) 15%, transparent)'
+                            : 'color-mix(in srgb, var(--grey-800) 40%, transparent)',
+                          border: `1px solid ${isAutoConstrain ? 'color-mix(in srgb, var(--yellow-400) 30%, transparent)' : 'color-mix(in srgb, var(--grey-700) 45%, transparent)'}`,
                         }}
                         title={isAutoConstrain
                           ? 'Disable auto-constrain (allow out-of-range color values)'
@@ -3536,17 +3532,17 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                   style={{
                     borderTop: showConstraintBar
                       ? 'none'
-                      : '1px solid rgba(43,189,104,0.2)',
+                      : '1px solid color-mix(in srgb, var(--green-400) 20%, transparent)',
                     background: resolvedSource === 'logic'
-                      ? 'rgba(43,189,104,0.06)'
-                      : 'rgba(255,255,255,0.02)',
+                      ? 'color-mix(in srgb, var(--green-400) 6%, transparent)'
+                      : 'color-mix(in srgb, var(--grey-800) 38%, transparent)',
                   }}
                 >
                   <div className="advanced-final-output-inner">
                     {/* Left side: label + inline dropdown */}
                     <div className="advanced-final-output-left">
                       <span className="advanced-final-output-label" style={{
-                        color: resolvedSource === 'logic' ? 'var(--green-500)' : 'var(--grey-700)',
+                        color: resolvedSource === 'logic' ? 'var(--green-500)' : 'var(--grey-500)',
                       }}>
                         Final Output
                       </span>
@@ -3557,10 +3553,10 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                             className="advanced-final-output-select"
                             style={{
                               background: hasAnyWarning
-                                ? 'rgba(212,114,114,0.12)'
-                                : 'rgba(43,189,104,0.12)',
+                                ? 'color-mix(in srgb, var(--red-400) 12%, transparent)'
+                                : 'color-mix(in srgb, var(--green-400) 12%, transparent)',
                               color: hasAnyWarning ? 'var(--red-500)' : 'var(--green-500)',
-                              border: `1px solid ${hasAnyWarning ? 'rgba(212,114,114,0.25)' : 'rgba(43,189,104,0.25)'}`,
+                              border: `1px solid ${hasAnyWarning ? 'color-mix(in srgb, var(--red-400) 25%, transparent)' : 'color-mix(in srgb, var(--green-400) 25%, transparent)'}`,
                             }}
                             value={selectedVar || '__last__'}
                             onChange={(e) => {
@@ -5000,10 +4996,11 @@ export function AdvancedPopup({
         zIndex: 9999,
         borderRadius: '12px 12px 0 0',
         overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.05)',
+        border: '1px solid color-mix(in srgb, var(--grey-800) 65%, transparent)',
         borderBottom: 'none',
-        background: 'var(--grey-900)',
-        boxShadow: '0 -8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+        background: 'var(--grey-950)',
+        boxShadow:
+          '0 -12px 48px color-mix(in srgb, var(--grey-950) 85%, transparent), 0 0 0 1px color-mix(in srgb, var(--grey-800) 50%, transparent)',
         userSelect: isDragging || isResizing ? 'none' : 'auto',
       }}
     >
@@ -5016,7 +5013,7 @@ export function AdvancedPopup({
       <div
         className="advanced-popup-header"
         style={{
-          borderBottom: isMinimized ? 'none' : '1px solid rgba(255,255,255,0.04)',
+          borderBottom: isMinimized ? 'none' : '1px solid color-mix(in srgb, var(--grey-800) 55%, transparent)',
           cursor: isMinimized ? 'default' : (isDragging ? 'grabbing' : 'grab'),
         }}
         onMouseDown={isMinimized ? undefined : handleDragStart}
@@ -5044,12 +5041,7 @@ export function AdvancedPopup({
             {nodeDisplayName || node.referenceName || node.id.slice(0, 8)}
           </span>
           {isTokenNodeChild && (
-            <span
-              className="advanced-popup-header-token-badge"
-              style={{ color: TOKEN_COLORS.tokenRef, background: `${TOKEN_COLORS.tokenRef}15` }}
-            >
-              Token
-            </span>
+            <span className="advanced-popup-header-token-badge">Token</span>
           )}
         </div>
 
@@ -5127,7 +5119,7 @@ export function AdvancedPopup({
                       className="advanced-info-swatch"
                       style={{
                         backgroundColor: colorInfo.cssColor,
-                        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)',
+                        boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--grey-50) 8%, transparent)',
                       }}
                     />
                     <span className="advanced-info-cs-badge">

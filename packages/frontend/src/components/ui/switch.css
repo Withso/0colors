@@ -17,11 +17,11 @@
 }
 
 [data-slot="switch"][data-state="checked"] {
-  background-color: var(--indigo-500);
+  background-color: var(--blue-500);
 }
 
 [data-slot="switch"]:focus-visible {
-  box-shadow: 0 0 0 2px var(--indigo-500);
+  box-shadow: 0 0 0 2px var(--blue-500);
 }
 
 [data-slot="switch"]:disabled {

@@ -26,9 +26,9 @@
   overflow: hidden;
   border-radius: var(--radius-xl);
   background: var(--grey-900);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06),
-              0 24px 68px rgba(0, 0, 0, 0.6),
-              0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--grey-50) 6%, transparent),
+              0 24px 68px color-mix(in srgb, var(--grey-950) 60%, transparent),
+              0 8px 24px color-mix(in srgb, var(--grey-950) 40%, transparent);
   animation: cmdkSlideIn 0.15s ease-out;
   height: 440px;
 }

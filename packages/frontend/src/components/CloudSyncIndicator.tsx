@@ -101,7 +101,7 @@ export function CloudSyncIndicator({
 
     switch (effectiveStatus) {
       case 'syncing':
-        lines.push({ label: 'Status', value: 'Syncing...', color: 'var(--indigo-500)' });
+        lines.push({ label: 'Status', value: 'Syncing...', color: 'var(--blue-500)' });
         break;
       case 'synced':
         lines.push({ label: 'Status', value: 'All changes saved', color: 'var(--green-500)' });
@@ -130,7 +130,7 @@ export function CloudSyncIndicator({
     }
 
     if (isClickable && effectiveStatus !== 'synced') {
-      lines.push({ label: '', value: 'Click to sync now', color: '#888' });
+      lines.push({ label: '', value: 'Click to sync now', color: 'var(--grey-500)' });
     }
 
     return lines;
@@ -143,7 +143,7 @@ export function CloudSyncIndicator({
           <div className="sync-icon-wrap">
             <Cloud size={16} style={{ color: 'var(--grey-100)' }} />
             <div className="sync-icon-badge">
-              <Loader2 size={10} style={{ color: 'var(--indigo-400)', animation: 'spin 1s linear infinite' }} />
+              <Loader2 size={10} style={{ color: 'var(--blue-400)', animation: 'spin 1s linear infinite' }} />
             </div>
           </div>
         );
