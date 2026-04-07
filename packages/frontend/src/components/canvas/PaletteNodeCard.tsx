@@ -783,6 +783,7 @@ export function PaletteNodeCard({
     <div
       className="palette-card-root palette-node-card"
       data-node-card
+      data-testid={`canvas-palette-node-card-${node.id}`}
       style={{ width: `${nodeWidth}px` }}
       onMouseDown={(e) => {
         // Always stop propagation to prevent canvas from starting selection/panning.

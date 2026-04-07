@@ -293,7 +293,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
       <div className="auth-confirmation-icon-wrap">{icon}</div>
       <h3 className="auth-confirmation-title">{title}</h3>
       <p className="auth-confirmation-desc">{description}</p>
-      <button onClick={onAction} className="auth-action-btn">
+      <button onClick={onAction} className="auth-action-btn" data-testid="auth-confirmation-action-button">
         {actionLabel}
       </button>
     </div>
@@ -304,6 +304,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
   return (
     <div
       className="auth-overlay"
+      data-testid="auth-modal-overlay"
       onClick={(e) => { if (e.target === e.currentTarget) onSkip(); }}
       style={{
         background: mounted
@@ -318,6 +319,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
       <div
         ref={cardRef}
         className="auth-card-wrapper"
+        data-testid="auth-modal-card"
         style={{
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0) scale(1)' : 'translateY(12px) scale(0.97)',
@@ -333,7 +335,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
         />
 
         {/* Card body */}
-        <div className="auth-card">
+        <div className="auth-card" data-testid="auth-modal-content">
           {/* Header with close button */}
           <div className="auth-header">
             <div className="auth-header-info">
@@ -342,7 +344,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
               </h2>
               <p className="auth-brand-subtitle">Design token color system</p>
             </div>
-            <button onClick={onSkip} className="auth-close-btn" title="Close (Esc)">
+            <button onClick={onSkip} className="auth-close-btn" title="Close (Esc)" data-testid="auth-close-button">
               <X className="auth-close-btn-icon" />
             </button>
           </div>
@@ -384,6 +386,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                 onClick={() => { setResendSuccess(false); handleResendVerificationEmail(); }}
                 disabled={resending || resendCooldown > 0}
                 className="auth-resend-btn"
+                data-testid="auth-resend-verification-button"
                 style={{
                   background: resendSuccess ? 'var(--surface-success-subtle)' : 'var(--surface-info-subtle)',
                   color: resendSuccess ? 'var(--text-success)' : (resendCooldown > 0 ? 'var(--text-disabled)' : 'var(--text-info)'),
@@ -414,13 +417,14 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
               <button
                 onClick={() => { setMode('signin'); setError(''); setResendSuccess(false); setResendCooldown(0); }}
                 className="auth-verified-signin-btn"
+                data-testid="auth-already-verified-button"
               >
                 Already verified? Sign in
               </button>
 
               {/* Continue without account */}
               <div className="auth-skip-wrap">
-                <button onClick={onSkip} className="auth-skip-btn">
+                <button onClick={onSkip} className="auth-skip-btn" data-testid="auth-skip-button">
                   Continue without account
                 </button>
               </div>
@@ -435,12 +439,14 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                   <button
                     onClick={() => { setMode('signin'); setError(''); }}
                     className={`auth-tab${mode === 'signin' ? ' auth-tab--selected' : ''}`}
+                    data-testid="auth-tab-signin"
                   >
                     Sign in
                   </button>
                   <button
                     onClick={() => { setMode('signup'); setError(''); }}
                     className={`auth-tab${mode === 'signup' ? ' auth-tab--selected' : ''}`}
+                    data-testid="auth-tab-signup"
                   >
                     Sign up
                   </button>
@@ -469,6 +475,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                       value={name}
                       onChange={e => setName(e.target.value)}
                       className="auth-input"
+                      data-testid="auth-input-name"
                     />
                   </div>
                 )}
@@ -485,6 +492,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                     required
                     autoComplete="email"
                     autoFocus
+                    data-testid="auth-input-email"
                   />
                 </div>
 
@@ -501,6 +509,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                       required
                       minLength={6}
                       autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                      data-testid="auth-input-password"
                     />
                   </div>
                 )}
@@ -512,6 +521,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                       type="button"
                       onClick={() => { setMode('forgot'); setError(''); }}
                       className="auth-forgot-link"
+                      data-testid="auth-forgot-password-link"
                     >
                       Forgot password?
                     </button>
@@ -530,6 +540,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
                   type="submit"
                   disabled={loading}
                 className="auth-submit-btn"
+                data-testid="auth-submit-button"
                 style={{
                     background: loading ? 'var(--surface-3)' : 'var(--on-surface-1)',
                     color: loading ? 'var(--text-disabled)' : 'var(--on-surface-inverse)',
@@ -562,7 +573,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
 
               {/* Skip link */}
               <div className="auth-footer">
-                <button onClick={onSkip} className="auth-footer-skip-btn">
+                <button onClick={onSkip} className="auth-footer-skip-btn" data-testid="auth-footer-skip-button">
                   Continue without account (local only)
                 </button>
               </div>

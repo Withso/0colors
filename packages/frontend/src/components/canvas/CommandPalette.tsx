@@ -594,9 +594,11 @@ export function CommandPalette({
       className="cmd-palette-backdrop"
       onClick={handleBackdropClick}
       onKeyDown={handleKeyDown}
+      data-testid="command-palette-backdrop"
     >
       <div
         className="cmd-palette-panel"
+        data-testid="command-palette-panel"
         style={{
           width: CMDK_PANEL_WIDTH,
           minWidth: CMDK_PANEL_WIDTH,
@@ -607,7 +609,7 @@ export function CommandPalette({
         {/* Search input */}
         <div className="cmd-palette-search">
           <Search className="cmd-palette-search-icon" />
-          <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search nodes, tokens, palettes, or type an action..." className="cmd-palette-search-input" autoComplete="off" autoCorrect="off" spellCheck={false} />
+          <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search nodes, tokens, palettes, or type an action..." className="cmd-palette-search-input" autoComplete="off" autoCorrect="off" spellCheck={false} data-testid="command-palette-search-input" />
           {query && (
             <span className="cmd-palette-result-count">
               {dataResultCount > 0 ? `${dataResultCount} result${dataResultCount !== 1 ? 's' : ''}` : 'No results'}
@@ -616,7 +618,7 @@ export function CommandPalette({
         </div>
 
         {/* Results */}
-        <div ref={listRef} className="cmd-palette-results">
+        <div ref={listRef} className="cmd-palette-results" data-testid="command-palette-results">
           {groupedResults.length === 0 && query.trim() && (
             <div className="cmd-palette-empty">
               <Search className="cmd-palette-empty-icon" />
@@ -655,6 +657,7 @@ export function CommandPalette({
                     className={`cmd-palette-row ${sel ? 'cmd-palette-row-selected' : ''}`}
                     onClick={() => executeResult(result)}
                     onMouseEnter={() => setSelectedIndex(ci)}
+                    data-testid={`command-palette-row-${result.id}`}
                   >
                     <div className="cmd-palette-row-icon-box">
                       {renderIcon(result)}

@@ -10,6 +10,7 @@ Full-stack monorepo with npm workspaces.
 ## Commands
 
 - `npm run dev` — Start both backend and frontend in dev mode
+- `npm run dev:qa` — Same as `dev` plus local QA runner (`qa:runner` on `127.0.0.1:47841`) for QA hub “Run all tests”
 - `npm run dev:frontend` — Frontend only
 - `npm run dev:backend` — Backend only
 - `npm run build` — Build all workspaces

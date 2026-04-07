@@ -216,6 +216,7 @@ function FxButton({ nodeId, channelKey }: { nodeId: string; channelKey: string }
       onMouseDown={(e) => e.stopPropagation()}
       className="color-card-fx-btn"
       title="Advanced logic active — click to edit"
+      data-testid={`canvas-node-fx-${nodeId}-${channelKey}`}
     >
       <span className="color-card-fx-label">fx</span>
     </button>
@@ -2630,7 +2631,7 @@ export function ColorNodeCard({
   }
 
   return (
-    <div className="color-card-root" data-node-card>
+    <div className="color-card-root" data-node-card data-testid={`canvas-node-card-${node.id}`}>
       {/* Left side + button for parent connection — always interactive for wire connections */}
       {!isPaletteShade && (
         <div
@@ -4556,6 +4557,7 @@ export function ColorNodeCard({
                   <span
                     key={chKey}
                     className="color-card-advanced-channel-badge"
+                    data-testid={`canvas-node-advanced-badge-${node.id}-${chKey}`}
                     style={{
                       color: 'var(--text-success)',
                       backgroundColor: 'var(--surface-success-subtle)',
@@ -4571,6 +4573,7 @@ export function ColorNodeCard({
         </div>
         <button
           className="color-card-advanced-btn color-card-advanced-open-btn"
+          data-testid={`canvas-node-advanced-open-${node.id}`}
           onClick={(e) => {
             e.stopPropagation();
             window.dispatchEvent(new CustomEvent('openAdvancedPopup', { detail: { nodeId: node.id } }));

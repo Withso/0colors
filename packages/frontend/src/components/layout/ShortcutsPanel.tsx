@@ -383,6 +383,7 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
     <div
       ref={popupRef}
       className={`shortcuts-panel${isActive ? ' shortcuts-panel--active' : ''}`}
+      data-testid="shortcuts-panel-container"
       style={{
         left: position.x,
         top: position.y,
@@ -414,6 +415,7 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
         <button
           onClick={onClose}
           className="shortcuts-close-btn"
+          data-testid="shortcuts-panel-close-button"
         >
           <X size={14} />
         </button>

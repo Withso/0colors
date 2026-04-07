@@ -670,7 +670,7 @@ export function TokenNodeCard({
   })();
 
   return (
-    <div className="token-card-root" data-node-card
+    <div className="token-card-root" data-node-card data-testid={`tokens-token-node-card-${node.id}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

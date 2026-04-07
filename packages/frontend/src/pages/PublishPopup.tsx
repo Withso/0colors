@@ -173,6 +173,7 @@ export function PublishPopup({
   return (
     <div
       className="publish-overlay"
+      data-testid="publish-popup-overlay"
       style={{
         zIndex: 200000,
         background: mounted
@@ -185,6 +186,7 @@ export function PublishPopup({
       <div
         ref={cardRef}
         className="publish-card"
+        data-testid="publish-popup-card"
         style={{
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.97)',
@@ -209,6 +211,7 @@ export function PublishPopup({
           <button
             onClick={onClose}
             className="publish-close-btn"
+            data-testid="publish-popup-close-button"
           >
             <X className="publish-close-icon" />
           </button>

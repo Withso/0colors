@@ -896,6 +896,7 @@ export function AskAIChat({
         className="ai-chat-header-btn"
         style={{ color: isDocked ? 'var(--accent-primary-hover)' : 'var(--icon-disabled)' }}
         title={isDocked ? 'Undock (floating popup)' : 'Dock to right panel'}
+        data-testid="ai-chat-dock-toggle-button"
       >
         {isDocked ? <Maximize2 size={14} /> : <PanelRight size={14} />}
       </button>
@@ -1201,6 +1202,7 @@ export function AskAIChat({
                       disabled={isStreaming}
                       className="ai-chat-textarea"
                       style={{ minHeight: TEXTAREA_MIN_H, maxHeight: TEXTAREA_MAX_H }}
+                      data-testid="ai-chat-message-input"
                     />
                     <div className="ai-chat-input-footer">
                       <div className="ai-chat-input-left">
@@ -1310,6 +1312,7 @@ export function AskAIChat({
                             onClick={aiMode === 'build' ? sendBuildMessage : sendMessage}
                             disabled={!input.trim() || isOverLimit}
                             className="ai-chat-send-btn"
+                            data-testid="ai-chat-send-button"
                             style={{
                               background: input.trim() && !isOverLimit
                                 ? (aiMode === 'build' ? 'var(--utility-build)' : 'var(--accent-primary)')
@@ -1362,6 +1365,7 @@ export function AskAIChat({
         exit={{ opacity: 0, x: 20 }}
         transition={{ duration: 0.2 }}
         className="ai-chat-docked"
+        data-testid="ai-chat-panel-docked"
         style={{ width: DOCKED_WIDTH, zIndex: 50 }}
         onWheel={e => e.stopPropagation()}
       >
@@ -1389,6 +1393,7 @@ export function AskAIChat({
       exit={{ opacity: 0, y: 20, scale: 0.97 }}
       transition={{ duration: 0.2 }}
       className="ai-chat-floating"
+      data-testid="ai-chat-panel-floating"
       style={{
         width: CHAT_WIDTH,
         height,

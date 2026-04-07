@@ -199,6 +199,7 @@ export function SpacingNodeCard({
       ref={cardRef}
       data-node-card
       className={`spacing-card-root${isSelected ? ' spacing-card-root--selected' : ''}`}
+      data-testid={`canvas-spacing-node-card-${node.id}`}
       style={{ width: `${node.width || 240}px` }}
       onMouseEnter={() => {
         setIsHovered(true);

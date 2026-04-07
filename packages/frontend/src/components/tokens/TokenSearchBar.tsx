@@ -397,7 +397,7 @@ export function TokenSearchBar({
   const colorSpaces = ['HSL', 'RGB', 'OKLCH', 'HCT', 'HEX', 'TOKEN'];
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} data-testid="tokens-panel-search-bar">
       {/* Search Input */}
       <div className="search-bar-input-wrapper">
         <Search className="search-bar-icon" />
@@ -409,6 +409,7 @@ export function TokenSearchBar({
           onChange={(e) => onSearchQueryChange(e.target.value)}
           onFocus={() => setIsExpanded(true)}
           className={`search-bar-input ${isExpanded ? 'search-bar-input-expanded' : ''} ${hasFilters ? 'search-bar-input-has-filters' : 'search-bar-input-no-filters'}`}
+          data-testid="tokens-panel-search-input"
         />
 
         {/* Right-side indicators */}
@@ -425,6 +426,7 @@ export function TokenSearchBar({
                 clearAll();
               }}
               className="search-bar-clear-btn"
+              data-testid="tokens-panel-search-clear-button"
             >
               <X className="search-bar-icon-sm" />
             </button>
@@ -437,6 +439,7 @@ export function TokenSearchBar({
                 if (!isExpanded) inputRef.current?.focus();
               }}
               className="search-bar-filter-btn"
+              data-testid="tokens-panel-search-filter-toggle"
             >
               <SlidersHorizontal className="search-bar-icon-sm" />
             </button>

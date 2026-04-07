@@ -1685,6 +1685,7 @@ export function TokenTablePopup({
     <tr
       key={token.id}
       data-table-token-id={token.id}
+      data-testid={`token-table-row-${token.id}`}
       className={`token-table-row ${highlightRowTokenId === token.id ? 'token-table-row-highlight' : ''}`}
     >
       <td className="token-table-row-name-td" style={{ paddingLeft: isGroupChild ? 36 : 16 }}>
@@ -1808,6 +1809,7 @@ export function TokenTablePopup({
       <div
         ref={popupRef}
         className={`token-table-panel${isActive ? ' token-table-panel--active' : ''}`}
+        data-testid="token-table-popup-panel"
         style={{
           left: position.x,
           top: position.y,
@@ -2001,6 +2003,7 @@ export function TokenTablePopup({
           <button
             onClick={onClose}
             className="token-table-header-close-btn"
+            data-testid="token-table-popup-close-button"
           >
             <X className="token-table-header-close-icon" />
           </button>

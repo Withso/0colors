@@ -179,6 +179,7 @@ export function DevModePanel({
         className="dev-mode-backdrop"
         style={{ backgroundColor: 'var(--surface-overlay)' }}
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        data-testid="dev-mode-backdrop"
       >
         <motion.div
           key="dev-mode-panel"
@@ -188,6 +189,7 @@ export function DevModePanel({
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="dev-mode-panel"
           onClick={(e) => e.stopPropagation()}
+          data-testid="dev-mode-panel-container"
         >
           {/* Header */}
           <div className="dev-mode-header">
@@ -211,7 +213,7 @@ export function DevModePanel({
                   <span className="dev-mode-last-run-text">{lastRunDisplay}</span>
                 </div>
               )}
-              <button onClick={onClose} className="dev-mode-close-btn">
+              <button onClick={onClose} className="dev-mode-close-btn" data-testid="dev-mode-close-button">
                 <X className="dev-mode-close-icon" />
               </button>
             </div>
@@ -222,6 +224,7 @@ export function DevModePanel({
             <button
               onClick={() => setActiveTab('output')}
               className={`dev-mode-tab ${activeTab === 'output' ? 'dev-mode-tab--active' : 'dev-mode-tab--inactive'}`}
+              data-testid="dev-mode-tab-output"
             >
               Code Sync
               {activeTab === 'output' && (
@@ -231,6 +234,7 @@ export function DevModePanel({
             <button
               onClick={() => setActiveTab('input')}
               className={`dev-mode-tab ${activeTab === 'input' ? 'dev-mode-tab--active' : 'dev-mode-tab--inactive'}`}
+              data-testid="dev-mode-tab-input"
             >
               Webhook Input
               {activeTab === 'input' && (
@@ -280,6 +284,7 @@ export function DevModePanel({
               <button
                 onClick={onTestWebhook}
                 className="dev-mode-test-btn"
+                data-testid="dev-mode-test-webhook-button"
               >
                 <TestTube className="dev-mode-test-icon" />
                 Test
@@ -287,6 +292,7 @@ export function DevModePanel({
               <button
                 onClick={onRunNow}
                 className="dev-mode-run-btn"
+                data-testid="dev-mode-run-now-button"
               >
                 <Play className="dev-mode-run-icon" />
                 Run Now

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Plus, Trash2, Circle, ChevronRight, ChevronDown, Minus, Maximize2, Play, Save, HelpCircle, Copy, ClipboardPaste, Scissors } from 'lucide-react';
 import { AdvancedHelpPopup } from './AdvancedHelpPopup';
@@ -1124,6 +1124,7 @@ interface ConditionRowEditorProps {
   tokenRefs?: TokenRefInfo[]; // For tokenAssignment mode — available token references
   designTokens?: DesignToken[]; // For tokenAssignment mode
   pages?: Page[]; // For cross-page indication in token node popup
+  testIdBase?: string;
 }
 
 function ConditionRowEditor({
@@ -1141,6 +1142,7 @@ function ConditionRowEditor({
   tokenRefs = [],
   designTokens = [],
   pages = [],
+  testIdBase,
 }: ConditionRowEditorProps) {
   const [showPalette, setShowPalette] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -2160,6 +2162,7 @@ function ConditionRowEditor({
       key={key}
       ref={inputRef}
       className="advanced-row-input"
+      data-testid={testIdBase ? `${testIdBase}-input` : undefined}
       style={{ width: `${Math.max(row.tokens.length > 0 ? 6 : 60, inputText.length * 7 + 4)}px`, minWidth: row.tokens.length > 0 ? '6px' : '60px' }}
       placeholder={row.tokens.length === 0 ? 'Type expression...' : ''}
       value={inputText}
@@ -2194,6 +2197,7 @@ function ConditionRowEditor({
     <div
       ref={rowRef}
       className="advanced-row"
+      data-testid={testIdBase ? `${testIdBase}-row` : undefined}
       data-palette-open={showPalette || undefined}
       data-row-enabled={row.enabled ? 'true' : 'false'}
     >
@@ -2201,6 +2205,7 @@ function ConditionRowEditor({
         {/* Enable/disable dot */}
         <button
           className="advanced-row-enable-btn"
+          data-testid={testIdBase ? `${testIdBase}-enable` : undefined}
           onClick={() => onUpdate({ ...row, enabled: !row.enabled })}
           title={row.enabled ? 'Disable condition' : 'Enable condition'}
         >
@@ -2215,6 +2220,7 @@ function ConditionRowEditor({
         <div
           ref={expressionContainerRef}
           className="advanced-row-expression"
+          data-testid={testIdBase ? `${testIdBase}-expression` : undefined}
           onClick={(e) => {
             // Click in the container background (not on a pill or gap) → move cursor to end
             if (e.target === e.currentTarget) {
@@ -2242,6 +2248,7 @@ function ConditionRowEditor({
           {onCopy && (
             <button
               className="advanced-row-copy-btn"
+              data-testid={testIdBase ? `${testIdBase}-copy` : undefined}
               onClick={onCopy}
               title="Copy condition"
             >
@@ -2250,6 +2257,7 @@ function ConditionRowEditor({
           )}
           <button
             className="advanced-row-delete-btn"
+            data-testid={testIdBase ? `${testIdBase}-delete` : undefined}
             onClick={onDelete}
             title="Delete condition"
           >
@@ -2557,6 +2565,7 @@ function ChannelColumn({
   return (
     <div
       className="advanced-channel-col"
+      data-testid={`advanced-channel-column-${channelKey}`}
       style={{
         borderRight: isLast ? 'none' : '1px solid var(--border-subtle)',
         outline: columnHovered ? '1px solid color-mix(in srgb, var(--border-focus) 8%, transparent)' : 'none',
@@ -2577,6 +2586,7 @@ function ChannelColumn({
           {hasRows && (
             <button
               className="advanced-channel-play-btn"
+              data-testid={`advanced-channel-play-${channelKey}`}
               onClick={() => onSaveChannel(channelKey)}
               title="Re-evaluate and apply logic"
             >
@@ -2618,6 +2628,7 @@ function ChannelColumn({
           {channelHasUnsaved ? (
             <button
               className="advanced-channel-save-btn"
+              data-testid={`advanced-channel-save-${channelKey}`}
               onClick={() => onSaveChannel(channelKey)}
               title={`Save ${channelDef.label} logic`}
             >
@@ -2653,9 +2664,10 @@ function ChannelColumn({
                 onDelete={() => deleteRow(index)}
                 onCopy={() => handleCopyRow(row)}
                 availableLocals={logic.rows.slice(0, index).map((r, i) => r.outputName || `out_${i + 1}`)}
+                testIdBase={`advanced-row-${channelKey}-${index}`}
               />
               {/* Per-row output box */}
-              <div className="advanced-row-output">
+              <div className="advanced-row-output" data-testid={`advanced-row-output-${channelKey}-${index}`}>
                 <div className="advanced-row-output-left">
                   <span className="advanced-row-output-dollar">$</span>
                   <OutputNameInput
@@ -2690,6 +2702,7 @@ function ChannelColumn({
         {/* Add condition row */}
         <button
           className="advanced-add-condition-btn"
+          data-testid={`advanced-add-condition-${channelKey}`}
           onClick={addRow}
         >
           <Plus size={10} />
@@ -2863,6 +2876,7 @@ function ChannelColumn({
                       <div className="advanced-final-output-select-wrapper">
                         <select
                           className="advanced-final-output-select"
+                          data-testid={`advanced-final-output-select-${channelKey}`}
                           style={{
                             background: (hasValidationError || hasBooleanWarning)
                               ? 'color-mix(in srgb, var(--status-critical) 12%, transparent)'
@@ -2899,9 +2913,13 @@ function ChannelColumn({
                       Error
                     </span>
                   ) : (
-                    <span className="advanced-final-output-value" style={{
-                      color: resolvedSource === 'logic' ? 'var(--text-success)' : 'var(--text-disabled)',
-                    }}>
+                    <span
+                      className="advanced-final-output-value"
+                      data-testid={`advanced-final-output-value-${channelKey}`}
+                      style={{
+                        color: resolvedSource === 'logic' ? 'var(--text-success)' : 'var(--text-disabled)',
+                      }}
+                    >
                       {displayValue !== undefined ? `${Math.round(displayValue * 100) / 100}${getUnit(channelKey, colorSpace)}` : '—'}
                       {resolvedSource === 'fallback' && (
                         <span className="advanced-final-output-fallback">(fallback)</span>
@@ -2916,7 +2934,7 @@ function ChannelColumn({
       })()}
 
       {/* Fallback */}
-      <div className="advanced-fallback-bar">
+      <div className="advanced-fallback-bar" data-testid={`advanced-fallback-${channelKey}`}>
         <span className="advanced-fallback-label">
           Fallback
         </span>
@@ -3157,7 +3175,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
   }, [tokenColumnHovered, handleCopyTokenColumn, handlePasteTokenColumn, logic.rows.length]);
 
   return (
-    <div className="advanced-token-panel">
+    <div className="advanced-token-panel" data-testid="advanced-token-assignment-panel">
       {/* Column 1: Token Info */}
       <div className="advanced-token-info-col">
         <div className="advanced-token-info-title">Token Info</div>
@@ -3200,6 +3218,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
             {hasRows && (
               <button
                 className="advanced-channel-play-btn"
+                data-testid="advanced-token-play"
                 onClick={onPlay}
                 title="Re-evaluate and apply logic"
               >
@@ -3238,6 +3257,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
             {hasUnsaved ? (
               <button
                 className="advanced-channel-save-btn"
+                data-testid="advanced-token-save"
                 onClick={onSave}
                 title="Save token assignment logic"
               >
@@ -3261,7 +3281,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
             <div className="advanced-token-assign-empty">
               <div className="advanced-token-assign-empty-inner">
                 <div className="advanced-token-assign-empty-text">No assignment rules yet</div>
-                <button type="button" className="advanced-token-assign-add-btn" onClick={addRow}>+ Add Rule</button>
+                <button type="button" className="advanced-token-assign-add-btn" data-testid="advanced-token-add-rule" onClick={addRow}>+ Add Rule</button>
               </div>
             </div>
           ) : (
@@ -3278,9 +3298,10 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                       availableLocals={getAvailableLocals(idx)}
                       mode="tokenAssignment" tokenRefs={tokenRefs} designTokens={tokens}
                       pages={pages}
+                      testIdBase={`advanced-token-row-${idx}`}
                     />
                     {/* Per-row output box */}
-                    <div className="advanced-row-output">
+                    <div className="advanced-row-output" data-testid={`advanced-token-row-output-${idx}`}>
                       <div className="advanced-row-output-left">
                         <span className="advanced-row-output-dollar">$</span>
                         <OutputNameInput
@@ -3298,6 +3319,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
               {/* Add condition row */}
               <button
                 className="advanced-add-condition-btn"
+                data-testid="advanced-token-add-condition"
                 onClick={addRow}
               >
                 <Plus size={10} />
@@ -3551,6 +3573,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                         <div className="advanced-final-output-select-wrapper">
                           <select
                             className="advanced-final-output-select"
+                            data-testid="advanced-token-final-output-select"
                             style={{
                               background: hasAnyWarning
                                 ? 'color-mix(in srgb, var(--status-critical) 12%, transparent)'
@@ -3582,7 +3605,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
                     </div>
 
                     {/* Right side: value */}
-                    {renderFinalValue()}
+                    <div data-testid="advanced-token-final-output-value">{renderFinalValue()}</div>
                   </div>
                 </div>
               </div>
@@ -3591,7 +3614,7 @@ function TokenAssignmentPanel({ node, nodes, tokens, logic, tokenRefs, evalCtx, 
         })()}
 
         {/* Fallback */}
-        <div className="advanced-fallback-bar">
+        <div className="advanced-fallback-bar" data-testid="advanced-token-fallback">
           <span className="advanced-fallback-label">Fallback</span>
           <span className="advanced-fallback-value">{currentValueToken ? `{${currentValueToken}}` : 'Manual assignment'}</span>
         </div>
@@ -4979,6 +5002,7 @@ export function AdvancedPopup({
   return (
     <motion.div
       data-advanced-popup
+      data-testid={`advanced-popup-panel-${node.id}`}
       initial={{ y: 40, opacity: 0 }}
       animate={{
         y: 0,
@@ -5012,6 +5036,7 @@ export function AdvancedPopup({
       {/* Header */}
       <div
         className="advanced-popup-header"
+        data-testid="advanced-popup-header"
         style={{
           borderBottom: isMinimized ? 'none' : '1px solid color-mix(in srgb, var(--border-on-surface-0) 55%, transparent)',
           cursor: isMinimized ? 'default' : (isDragging ? 'grabbing' : 'grab'),
@@ -5051,12 +5076,14 @@ export function AdvancedPopup({
             className="advanced-popup-header-btn"
             onClick={isMinimized ? handleExpandClick : handleMinimizeClick}
             title={isMinimized ? 'Expand' : 'Minimize'}
+            data-testid="advanced-popup-minimize-button"
           >
             {isMinimized ? <Maximize2 size={12} /> : <Minus size={14} />}
           </button>
           {/* Close */}
           <button
             className="advanced-popup-header-btn"
+            data-testid="advanced-popup-close-button"
             onClick={(e) => {
               e.stopPropagation();
               onClose();

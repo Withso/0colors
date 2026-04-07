@@ -1,0 +1,61 @@
+{
+  "channelCases": [
+    {
+      "name": "parent_hue_shift",
+      "channelKey": "hue",
+      "baseValue": 30,
+      "context": {
+        "self": { "hue": 30, "h": 30 },
+        "parent": { "hue": 120, "h": 120 },
+        "allNodes": []
+      },
+      "logic": {
+        "fallbackMode": "default",
+        "rows": [
+          {
+            "id": "row-parent-shift",
+            "enabled": true,
+            "outputName": "out_1",
+            "tokens": [
+              { "id": "ref-parent", "type": "reference", "value": "@Parent", "displayLabel": "@Parent" },
+              { "id": "prop-hue", "type": "property", "value": ".hue", "displayLabel": ".hue", "refProperty": "hue" },
+              { "id": "plus", "type": "operator", "value": "+", "displayLabel": "+" },
+              { "id": "literal-30", "type": "literal", "value": "30" }
+            ]
+          }
+        ]
+      },
+      "expected": { "value": 150, "source": "logic" }
+    }
+  ],
+  "tokenCases": [
+    {
+      "name": "token_name_fallback",
+      "logic": {
+        "fallbackMode": "default",
+        "rows": [
+          {
+            "id": "row-token",
+            "enabled": true,
+            "outputName": "out_1",
+            "tokens": [
+              { "id": "token-ref", "type": "tokenRef", "value": "{Brand Blue}", "displayLabel": "{Brand Blue}" }
+            ]
+          }
+        ]
+      },
+      "context": {
+        "self": {},
+        "parent": null,
+        "allNodes": [],
+        "tokenValues": [
+          ["palette-blue-40", { "h": 210, "s": 80, "l": 50, "a": 100 }]
+        ],
+        "tokenNames": [
+          ["palette-blue-40", "Brand Blue"]
+        ]
+      },
+      "expected": { "type": "tokenRef", "tokenId": "palette-blue-40", "tokenName": "Brand Blue" }
+    }
+  ]
+}

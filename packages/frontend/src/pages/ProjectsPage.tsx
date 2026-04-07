@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, RefreshCw, Sparkles, Eye, LogIn, Globe, Folder, User } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
+import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, RefreshCw, Sparkles, Eye, LogIn, Globe, Folder, User, FlaskConical } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +13,11 @@ import {
 import { CommunityPage } from './CommunityPage';
 import { AISettingsContent } from '../components/ai/AISettingsPopup';
 import "./ProjectsPage.css";
+import type { DashboardSection } from '../store/slices/auth-slice';
+const AdminQaDashboard = lazy(async () => {
+  const mod = await import('../components/admin/AdminQaDashboard');
+  return { default: mod.AdminQaDashboard };
+});
 
 interface ColorNode {
   id: string;
@@ -62,8 +67,6 @@ interface TokenGroup {
   projectId: string;
 }
 
-type DashboardSection = 'projects' | 'community' | 'ai-settings' | 'profile';
-
 interface ProjectsPageProps {
   projects: Project[];
   allNodes: ColorNode[];
@@ -102,13 +105,14 @@ interface ProjectsPageProps {
    NavItem — sidebar navigation item
    ═══════════════════════════════════════════════════════════════ */
 
-function NavItem({ icon: Icon, label, active, onClick }: {
-  icon: any; label: string; active: boolean; onClick: () => void;
+function NavItem({ icon: Icon, label, active, onClick, testId }: {
+  icon: any; label: string; active: boolean; onClick: () => void; testId?: string;
 }) {
   return (
     <button
       onClick={onClick}
       className={`projects-nav-item${active ? ' is-active' : ''}`}
+      data-testid={testId}
     >
       <Icon className="projects-nav-item-icon" />
       {label}
@@ -152,6 +156,7 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
       ref={innerRef}
       className={`projects-row${isHighlighted ? ' when-highlighted' : ''}`}
       onClick={onClick}
+      data-testid={`projects-card-${project.id}`}
     >
       {/* Colored dot */}
       <div
@@ -183,19 +188,20 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="projects-row-menu-trigger"
+            data-testid={`projects-card-menu-${project.id}`}
           >
             <MoreHorizontal className="projects-row-menu-trigger-icon" />
           </button>
           {menuOpen && (
             <div className="projects-row-menu-dropdown">
-              <button className="projects-row-menu-item" onClick={(e) => { onExport(e); setMenuOpen(false); }}>
+              <button className="projects-row-menu-item" onClick={(e) => { onExport(e); setMenuOpen(false); }} data-testid={`projects-card-export-${project.id}`}>
                 <Download className="projects-row-menu-item-icon" /> Export
               </button>
-              <button className="projects-row-menu-item" onClick={(e) => { onDuplicate(e); setMenuOpen(false); }}>
+              <button className="projects-row-menu-item" onClick={(e) => { onDuplicate(e); setMenuOpen(false); }} data-testid={`projects-card-duplicate-${project.id}`}>
                 <Copy className="projects-row-menu-item-icon" /> Duplicate
               </button>
               <div className="projects-row-menu-divider" />
-              <button className="projects-row-menu-item projects-row-menu-item-destructive" onClick={(e) => { onDelete(e); setMenuOpen(false); }}>
+              <button className="projects-row-menu-item projects-row-menu-item-destructive" onClick={(e) => { onDelete(e); setMenuOpen(false); }} data-testid={`projects-card-delete-${project.id}`}>
                 <Trash2 className="projects-row-menu-item-icon" /> Delete
               </button>
             </div>
@@ -306,13 +312,24 @@ function ProjectList({
                 onClick={onForceCloudRefresh}
                 className="projects-section-refresh-btn"
                 title="Force re-download all cloud projects from server"
+                data-testid="projects-cloud-refresh-button"
               >
                 <RefreshCw className="projects-section-refresh-icon" />
               </button>
             )}
           </div>
           {showCreate && (
-            <button onClick={() => onCreateProject(createType)} className="projects-section-create-btn">
+            <button
+              onClick={() => onCreateProject(createType)}
+              className="projects-section-create-btn"
+              data-testid={
+                createType === 'template'
+                  ? 'projects-create-template'
+                  : createType === 'cloud'
+                    ? 'projects-create-cloud'
+                    : 'projects-create-local'
+              }
+            >
               <Plus className="projects-section-create-icon" />
               {createLabel}
             </button>
@@ -354,11 +371,11 @@ function ProjectList({
   };
 
   return (
-    <div className="projects-list">
+    <div className="projects-list" data-testid="projects-list-container">
       <div className="projects-list-header">
         <h1 className="projects-list-title">Projects</h1>
         <div className="projects-list-actions">
-          <button onClick={onImportProject} className="projects-import-btn">
+          <button onClick={onImportProject} className="projects-import-btn" data-testid="projects-import-button">
             <Upload className="projects-import-btn-icon" />
             Import
           </button>
@@ -484,9 +501,9 @@ export function ProjectsPage({
   const canCreateCloudProject = isAuthenticated && (isAdmin || cloudProjects.length < 20);
 
   return (
-    <div className="projects-page">
+    <div className="projects-page" data-testid="page-projects">
       {/* Sidebar */}
-      <div className="projects-sidebar">
+      <div className="projects-sidebar" data-testid="projects-sidebar">
         {/* Logo area */}
         <div className="projects-sidebar-logo">
           <div className="projects-sidebar-logo-row">
@@ -514,28 +531,41 @@ export function ProjectsPage({
 
         {/* Navigation */}
         <nav className="projects-sidebar-nav">
-          <NavItem icon={Folder} label="Projects" active={activeSection === 'projects'} onClick={() => onSectionChange?.('projects')} />
-          <NavItem icon={Globe} label="Community" active={activeSection === 'community'} onClick={() => onSectionChange?.('community')} />
+          <NavItem icon={Folder} label="Projects" active={activeSection === 'projects'} onClick={() => onSectionChange?.('projects')} testId="projects-nav-projects" />
+          <NavItem icon={Globe} label="Community" active={activeSection === 'community'} onClick={() => onSectionChange?.('community')} testId="projects-nav-community" />
 
           <div className="projects-sidebar-divider" />
 
           {isAuthenticated && (
-            <NavItem icon={Sparkles} label="AI Settings" active={activeSection === 'ai-settings'} onClick={() => onSectionChange?.('ai-settings')} />
+            <NavItem icon={Sparkles} label="AI Settings" active={activeSection === 'ai-settings'} onClick={() => onSectionChange?.('ai-settings')} testId="projects-nav-ai-settings" />
           )}
           {isAuthenticated && (
-            <NavItem icon={User} label="Profile" active={activeSection === 'profile'} onClick={() => onSectionChange?.('profile')} />
+            <NavItem icon={User} label="Profile" active={activeSection === 'profile'} onClick={() => onSectionChange?.('profile')} testId="projects-nav-profile" />
+          )}
+
+          {isAdmin && (
+            <>
+              <div className="projects-sidebar-divider" />
+              <NavItem
+                icon={FlaskConical}
+                label="QA hub"
+                active={activeSection === 'qa-hub'}
+                onClick={() => onSectionChange?.('qa-hub')}
+                testId="projects-nav-qa-hub"
+              />
+            </>
           )}
         </nav>
 
         {/* Bottom */}
         <div className="projects-sidebar-bottom">
           {isAuthenticated && onSignOut ? (
-            <button onClick={onSignOut} className="projects-sidebar-auth-btn">
+            <button onClick={onSignOut} className="projects-sidebar-auth-btn" data-testid="projects-auth-signout-button">
               <LogOut className="projects-sidebar-auth-btn-icon" />
               Sign out
             </button>
           ) : !isAuthenticated && onSignIn ? (
-            <button onClick={onSignIn} className="projects-sidebar-auth-btn projects-sidebar-auth-btn-signin">
+            <button onClick={onSignIn} className="projects-sidebar-auth-btn projects-sidebar-auth-btn-signin" data-testid="projects-auth-signin-button">
               <LogIn className="projects-sidebar-auth-btn-icon" />
               Sign in
             </button>
@@ -544,7 +574,7 @@ export function ProjectsPage({
       </div>
 
       {/* Main Content */}
-      <main className="projects-main">
+      <main className="projects-main" data-testid="projects-main-content">
         {activeSection === 'projects' && (
           <ProjectList
             projects={projects}
@@ -597,11 +627,16 @@ export function ProjectsPage({
             isTemplateAdmin={isTemplateAdmin}
           />
         )}
+        {activeSection === 'qa-hub' && isAdmin && (
+          <Suspense fallback={<div className="projects-section-text">Loading QA hub...</div>}>
+            <AdminQaDashboard />
+          </Suspense>
+        )}
       </main>
 
       {/* Delete dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="projects-delete-dialog">
+        <AlertDialogContent className="projects-delete-dialog" data-testid="projects-delete-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Project</AlertDialogTitle>
             <AlertDialogDescription className="projects-delete-dialog-description">
@@ -610,12 +645,13 @@ export function ProjectsPage({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="projects-delete-dialog-cancel">
+            <AlertDialogCancel className="projects-delete-dialog-cancel" data-testid="projects-delete-dialog-cancel">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               className="projects-delete-dialog-confirm"
+              data-testid="projects-delete-dialog-confirm"
             >
               Delete
             </AlertDialogAction>

@@ -144,7 +144,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
   };
 
   return (
-    <div className="code-preview-root">
+    <div className="code-preview-root" data-testid="code-preview-page">
       {/* ─── Top Bar ─── */}
       <div className="code-preview-top-bar">
         <div className="code-preview-top-bar-left">
@@ -219,7 +219,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
           {/* Format selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="code-preview-action-btn">
+              <button className="code-preview-action-btn" data-testid="code-preview-format-dropdown-trigger">
                 <span>{formatLabels[selectedFormat]}</span>
                 <ChevronDown className="code-preview-action-icon" style={{ opacity: 0.4 }} />
               </button>
@@ -250,6 +250,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
           <button
             onClick={copyToClipboard}
             className="code-preview-action-btn"
+            data-testid="code-preview-copy-button"
           >
             {copied ? (
               <>
@@ -268,6 +269,7 @@ export function CodePreview({ tokens, tokenGroups, nodes, allProjectTokens, allP
           <button
             onClick={downloadFile}
             className="code-preview-action-btn"
+            data-testid="code-preview-download-button"
           >
             <Download className="code-preview-action-icon" />
             <span>Download</span>

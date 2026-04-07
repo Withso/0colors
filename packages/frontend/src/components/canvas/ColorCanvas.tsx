@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
-import { ColorNode as ColorNodeType, DesignToken, TokenProject, TokenGroup, Page } from '../../types';
+import { ColorNode as ColorNodeType, DesignToken, TokenGroup } from '../../types';
 import { ColorNodeCard } from './ColorNodeCard';
 import { SpacingNodeCard } from './SpacingNodeCard';
 import { PaletteNodeCard } from './PaletteNodeCard';
@@ -24,6 +24,11 @@ import {
   TokenColor,
 } from '../../utils/advanced-logic-engine';
 import { tokenColorToNativeCSS } from '../../utils/tokenFormatters';
+import { useStore } from '../../store';
+import { useTokenOperations } from '../../store/useTokenOperations';
+import { useNodeUpdate } from '../../store/useNodeUpdate';
+import { useNodeMutations } from '../../store/useNodeMutations';
+import { useNodeCreation } from '../../store/useNodeCreation';
 import './ColorCanvas.css';
 
 // ─── Reference Name Utilities ──────────────────────────────────
@@ -399,54 +404,7 @@ function NodeReferenceLabel({
 }
 
 interface ColorCanvasProps {
-  nodes: ColorNodeType[];
-  tokens: DesignToken[];
-  projects: TokenProject[];
-  groups: TokenGroup[];
-  activeProjectId: string;
-  onUpdateNode: (id: string, updates: Partial<ColorNodeType>) => void;
-  onAddChild: (parentId: string, manualPosition?: { x: number; y: number }) => void;
-  onAddParent: (nodeId: string) => void;
-  onTogglePrefix?: (nodeId: string, makePrefix: boolean) => void;
-  onDeleteNode: (id: string) => void;
-  onUnlinkNode: (id: string) => void;
-  onLinkNode: (nodeId: string, newParentId: string | null) => void;
-  onAssignToken: (nodeId: string, tokenId: string, isAssigned: boolean) => void;
-  onAddToken: (name?: string, groupId?: string | null, projectId?: string) => string | undefined;
-  onUpdateToken: (id: string, updates: Partial<DesignToken>) => void;
-  onDeleteToken: (id: string) => void;
-  onUpdateProjects: (projects: TokenProject[]) => void;
-  onUpdateGroups: (groups: TokenGroup[] | ((prev: TokenGroup[]) => TokenGroup[])) => void;
-  onExportProject: (projectId: string) => void;
-  onImportProject: () => void;
-  selectedNodeId: string | null;
-  onSelectNode: (id: string | null) => void;
-  selectedNodeIds: string[];
-  onSelectNodeWithChildren: (id: string) => void;
-  onMoveSelectedNodes: (draggedNodeId: string, deltaX: number, deltaY: number) => void;
-  onClearMultiSelection: () => void;
-  onUpdateMultiSelection: (nodeIds: string[]) => void;
-  onUpdateNodeFromPanel?: (id: string, updates: Partial<ColorNodeType>) => void;
-  canvasState: any;
-  onUpdateCanvasState: any;
-  sidebarMode: 'color' | 'variables' | 'text' | 'components' | 'animation' | 'layout';
-  onSidebarModeChange: (mode: 'color' | 'variables' | 'text' | 'components' | 'animation' | 'layout') => void;
   onNavigateToProjects: () => void;
-  showInheritanceIcon?: boolean; // Show crown icon for non-primary themes
-  activeThemeId?: string; // Current active theme for theme-specific token assignments
-  isPrimaryTheme?: boolean; // Whether the current active theme is the primary theme
-  primaryThemeId?: string; // The primary theme's ID for comparing token assignments
-  showAllVisible?: boolean; // Override dimming — show all nodes at full opacity
-  autoAssignTriggerNodeId?: string | null; // External trigger to open auto-assign popup for a node
-  onAutoAssignTriggered?: () => void; // Callback to clear the external trigger
-  pages?: Page[]; // All pages for the active project (for cross-page token assignment)
-  allProjectNodes?: ColorNodeType[]; // All nodes across all pages in the project
-  advancedLogic?: NodeAdvancedLogic[]; // Advanced logic layer data (stored separately from nodes)
-  onUpdateAdvancedLogic?: (logic: NodeAdvancedLogic[]) => void; // Update advanced logic
-  onRevertThemeAdvancedLogic?: (nodeId: string, themeId: string) => void; // Clear theme-specific logic on relink
-  readOnly?: boolean; // When true, hide editing UI like auto-assign menus
-  showDevMode?: boolean; // Show webhook badges on nodes when Dev Mode is active
-  onToggleWebhookInput?: (nodeId: string) => void; // Toggle isWebhookInput flag on a node
 }
 
 const ANIMATION_DURATION = 500; // milliseconds — default for fit-all, restore-view
@@ -466,7 +424,89 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, onUpdateNode, onAddChild, onAddParent, onTogglePrefix, onDeleteNode, onUnlinkNode, onLinkNode, onAssignToken, onAddToken, onUpdateToken, onDeleteToken, onUpdateProjects, onUpdateGroups, onExportProject, onImportProject, selectedNodeId, onSelectNode, selectedNodeIds, onSelectNodeWithChildren, onMoveSelectedNodes, onClearMultiSelection, onUpdateMultiSelection, onUpdateNodeFromPanel, canvasState, onUpdateCanvasState, sidebarMode, onSidebarModeChange, onNavigateToProjects, showInheritanceIcon = false, activeThemeId = '', isPrimaryTheme = true, primaryThemeId = '', showAllVisible = false, autoAssignTriggerNodeId = null, onAutoAssignTriggered, pages = [], allProjectNodes = [], advancedLogic = [], onUpdateAdvancedLogic, onRevertThemeAdvancedLogic, readOnly = false, showDevMode = false, onToggleWebhookInput }: ColorCanvasProps) {
+export function ColorCanvas({ onNavigateToProjects }: ColorCanvasProps) {
+  // ── Store state ──
+  const allNodes = useStore(s => s.allNodes);
+  const tokens = useStore(s => s.tokens);
+  const projects = useStore(s => s.projects);
+  const groups = useStore(s => s.groups);
+  const allPages = useStore(s => s.pages);
+  const activeProjectId = useStore(s => s.activeProjectId);
+  const activePageId = useStore(s => s.activePageId);
+  const activeThemeId = useStore(s => s.activeThemeId);
+  const canvasStates = useStore(s => s.canvasStates);
+  const advancedLogic = useStore(s => s.advancedLogic);
+  const setAdvancedLogic = useStore(s => s.setAdvancedLogic);
+  const selectedNodeId = useStore(s => s.selectedNodeId);
+  const setSelectedNodeId = useStore(s => s.setSelectedNodeId);
+  const selectedNodeIds = useStore(s => s.selectedNodeIds);
+  const setSelectedNodeIds = useStore(s => s.setSelectedNodeIds);
+  const sidebarMode = useStore(s => s.sidebarMode);
+  const setSidebarMode = useStore(s => s.setSidebarMode);
+  const showAllVisible = useStore(s => s.showAllVisible);
+  const autoAssignTriggerNodeId = useStore(s => s.autoAssignTriggerNodeId);
+  const setAutoAssignTriggerNodeId = useStore(s => s.setAutoAssignTriggerNodeId);
+  const showDevMode = useStore(s => s.showDevMode);
+  const setCanvasStates = useStore(s => s.setCanvasStates);
+  const setProjects = useStore(s => s.setProjects);
+  const setGroups = useStore(s => s.setGroups);
+
+  // ── Mutation hooks ──
+  const { updateNode, revertThemeAdvancedLogic } = useNodeUpdate();
+  const { addChildNode: onAddChild, addParentNode: onAddParent, togglePrefixNode: onTogglePrefix } = useNodeCreation();
+  const { deleteNode: onDeleteNode, selectNodeWithChildren: onSelectNodeWithChildren, moveSelectedNodes: onMoveSelectedNodes, unlinkNode: onUnlinkNode, linkNode: onLinkNode } = useNodeMutations();
+  const { addToken: onAddToken, updateToken: onUpdateToken, deleteToken: onDeleteToken, assignTokenToNode: onAssignToken } = useTokenOperations();
+
+  // ── Derived state ──
+  const nodes = allNodes.filter(n => n.projectId === activeProjectId && n.pageId === activePageId);
+  const allProjectNodes = allNodes.filter(n => n.projectId === activeProjectId);
+  const pages = allPages.filter(p => p.projectId === activeProjectId);
+  const themes = useStore(s => s.themes);
+  const primaryTheme = themes.find(t => t.projectId === activeProjectId && t.isPrimary);
+  const isPrimaryTheme = primaryTheme?.id === activeThemeId;
+  const primaryThemeId = primaryTheme?.id || '';
+  const showInheritanceIcon = !isPrimaryTheme;
+  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
+  const readOnly = isSampleMode;
+
+  // ── Canvas state ──
+  const canvasState = canvasStates.find(
+    cs => cs.projectId === activeProjectId && cs.pageId === activePageId
+  ) || { projectId: activeProjectId, pageId: activePageId, pan: { x: 0, y: 0 }, zoom: 1 };
+
+  // ── Callback aliases (to match original prop names used throughout the file) ──
+  const onUpdateNode = updateNode;
+  const onRevertThemeAdvancedLogic = revertThemeAdvancedLogic;
+  const onSelectNode = (id: string | null) => { setSelectedNodeId(id); setSelectedNodeIds([]); };
+  const onClearMultiSelection = () => setSelectedNodeIds([]);
+  const onUpdateMultiSelection = (nodeIds: string[]) => { setSelectedNodeIds(nodeIds); setSelectedNodeId(null); };
+  const onUpdateCanvasState = (updates: any) => {
+    setCanvasStates((prev: any[]) => {
+      const idx = prev.findIndex(
+        (cs: any) => cs.projectId === activeProjectId && cs.pageId === activePageId
+      );
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = { ...updated[idx], ...updates };
+        return updated;
+      }
+      return [...prev, { projectId: activeProjectId, pageId: activePageId, pan: { x: 0, y: 0 }, zoom: 1, ...updates }];
+    });
+  };
+  const onSidebarModeChange = setSidebarMode;
+  const onAutoAssignTriggered = () => setAutoAssignTriggerNodeId(null);
+  const onUpdateAdvancedLogic = setAdvancedLogic;
+  const onUpdateProjects = setProjects;
+  const onUpdateGroups = setGroups;
+  const onToggleWebhookInput = (nodeId: string) => {
+    const node = allNodes.find(n => n.id === nodeId);
+    if (node) updateNode(nodeId, { isWebhookInput: !node.isWebhookInput });
+  };
+  // Unused callbacks (kept as no-ops for any child references)
+  const onExportProject = (_projectId: string) => {};
+  const onImportProject = () => {};
+  const onUpdateNodeFromPanel = updateNode;
+
   const canvasRef = useRef<HTMLDivElement>(null);
   const [draggedNode, setDraggedNode] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -2845,6 +2885,7 @@ export function ColorCanvas({ nodes, tokens, projects, groups, activeProjectId, 
       ref={canvasRef}
       tabIndex={-1}
       className="color-canvas-root"
+      data-testid="canvas-root"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}

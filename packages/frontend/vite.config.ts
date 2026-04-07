@@ -23,6 +23,12 @@ export default defineConfig({
         target: 'http://localhost:4455',
         changeOrigin: true,
       },
+      /** Local QA runner (npm run qa:runner) — same-origin so no CORS vs 127.0.0.1 */
+      '/__qa-runner': {
+        target: 'http://127.0.0.1:47841',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/__qa-runner/, '') || '/',
+      },
     },
   },
 });

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 4,
+  "runId": null,
+  "startedAt": null,
+  "finishedAt": null,
+  "generatedAt": null,
+  "source": "sample",
+  "textReport": "No automation has been ingested yet.\n\nRun the full layered pipeline from repo root:\n  npm run qa:full\n\nOr run layers manually and sync:\n  npm run test:unit\n  npm run test:domain\n  npm run test:property\n  npm run test:component\n  npm run test:integration\n  npm run test:e2e\n  npm run qa:sync-report\n\nOr start the local runner:\n  Terminal 1: npm run dev:qa\nThen QA hub → Run all tests.",
+  "summary": {
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "durationMs": 0,
+    "total": 0
+  },
+  "layers": {
+    "unit": {
+      "summary": { "passed": 0, "failed": 0, "skipped": 0, "flaky": 0, "durationMs": 0, "total": 0 },
+      "allResults": []
+    },
+    "domain": {
+      "summary": { "passed": 0, "failed": 0, "skipped": 0, "flaky": 0, "durationMs": 0, "total": 0 },
+      "allResults": []
+    },
+    "property": {
+      "summary": { "passed": 0, "failed": 0, "skipped": 0, "flaky": 0, "durationMs": 0, "total": 0 },
+      "allResults": []
+    },
+    "component": {
+      "summary": { "passed": 0, "failed": 0, "skipped": 0, "flaky": 0, "durationMs": 0, "total": 0 },
+      "allResults": []
+    },
+    "integration": {
+      "summary": { "passed": 0, "failed": 0, "skipped": 0, "flaky": 0, "durationMs": 0, "total": 0 },
+      "allResults": []
+    },
+    "e2e": {
+      "summary": { "passed": 0, "failed": 0, "skipped": 0, "flaky": 0, "durationMs": 0, "total": 0 },
+      "allResults": []
+    }
+  },
+  "unit": {
+    "summary": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 0,
+      "total": 0
+    },
+    "allResults": []
+  },
+  "e2e": {
+    "summary": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 0,
+      "total": 0
+    },
+    "allResults": []
+  },
+  "failures": [],
+  "skippedTests": [],
+  "allResults": [],
+  "coverage": {
+    "introForNonTechnicalReaders": "After you run tests, this panel explains **what ran** vs the full **Test catalog**.",
+    "catalogVsAutomation": "The catalog lists desired coverage; automation rows show only what executed on your machine.",
+    "repo": {
+      "unitTestFiles": 0,
+      "e2eSpecFiles": 0,
+      "unitTestPaths": [],
+      "e2eSpecNames": []
+    },
+    "repoTotals": {
+      "unitFiles": 0,
+      "domainFiles": 0,
+      "propertyFiles": 0,
+      "componentFiles": 0,
+      "integrationFiles": 0,
+      "e2eFiles": 0
+    },
+    "thisRun": {
+      "unitCases": 0,
+      "e2eCases": 0,
+      "combinedCases": 0
+    },
+    "layerCounts": {
+      "unit": 0,
+      "domain": 0,
+      "property": 0,
+      "component": 0,
+      "integration": 0,
+      "e2e": 0
+    },
+    "coverageByModule": {},
+    "caseManifest": {
+      "path": "QA-automation/automated-case-manifest.json",
+      "totalFiles": 0,
+      "totalCases": 0
+    },
+    "integrity": null,
+    "automationGaps": []
+  },
+  "catalogPath": "QA-automation/TEST-CATALOG.md",
+  "catalogUrl": "/qa-docs/TEST-CATALOG.md",
+  "note": "latest-run.json is gitignored after sync. Run qa:sync-report or use Run all tests from QA hub."
+}

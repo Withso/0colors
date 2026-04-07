@@ -1,4 +1,4 @@
-import { DesignToken, ColorNode, TokenGroup, TokenProject, Page, NodeAdvancedLogic } from '../../types';
+import { DesignToken, ColorNode, TokenGroup } from '../../types';
 import { Copy, Check, ChevronDown, ChevronRight, Plus, Trash2, Edit2, Folder, FolderPlus, Library, Download, Upload, Target, X, GripVertical, Home, Lock, Unlock, Crown, Link2, ArrowUp, ArrowDown, Zap, Eye, EyeOff, Tag } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { copyTextToClipboard } from '../../utils/clipboard';
@@ -46,6 +46,11 @@ import { Tip } from '../Tip';
 import { CloudSyncIndicator, type CloudSyncStatus } from '../CloudSyncIndicator';
 import { isNodeHiddenInTheme, isTokenExplicitlyHidden, isTokenForcedHiddenByNodes, isTokenHiddenInTheme, toggleVisibilityMap } from '../../utils/visibility';
 import { TokenSearchBar, TokenSearchFilters, DEFAULT_FILTERS, hasActiveFilters, smartSearchTokens, applyTokenFilters } from './TokenSearchBar';
+import { useStore } from '../../store';
+import { useTokenOperations } from '../../store/useTokenOperations';
+import { useNodeUpdate } from '../../store/useNodeUpdate';
+import { useNodeMutations } from '../../store/useNodeMutations';
+import { useImportExport } from '../../store/useImportExport';
 
 // Component to handle token name with text truncation
 function TokenName({ name, onDoubleClick, panelWidth, hasCheckbox }: { name: string; onDoubleClick: () => void; panelWidth: number; hasCheckbox: boolean }) {
@@ -307,38 +312,13 @@ function TokenTooltipBody({ name, color, spaceName, spaceValue, hex, alpha, valu
 }
 
 interface TokensPanelProps {
-  tokens: DesignToken[];
-  nodes: ColorNode[];
-  allProjectTokens?: DesignToken[]; // All tokens across all pages in the project (for cross-page reference resolution)
-  allProjectNodes?: ColorNode[]; // All nodes across all pages in the project (for cross-page lookups)
-  projects: TokenProject[];
-  pages: Page[];
-  groups: TokenGroup[];
-  activeProjectId: string;
-  activePageId: string; // Add pageId prop
-  activeThemeId?: string; // Add themeId prop for displaying theme-specific values
-  isPrimaryTheme?: boolean; // Whether the current theme is the primary theme
-  primaryThemeId?: string; // The primary theme's ID for checking inheritance
-  showAllVisible?: boolean; // Override dimming — show all tokens at full opacity
-  onAddToken: (name?: string, groupId?: string | null, projectId?: string) => void;
-  onUpdateToken: (id: string, updates: Partial<DesignToken>) => void;
-  onDeleteToken: (id: string) => void;
-  onUpdateProjects: (projects: TokenProject[]) => void;
-  onUpdatePages: (pages: Page[]) => void;
-  onUpdateGroups: (groups: TokenGroup[]) => void;
-  onExportProject: (projectId: string) => void;
-  onImportProject: () => void;
-  onUpdateNode?: (id: string, updates: Partial<ColorNode>) => void;
-  onDeleteNode?: (id: string) => void;
   onNavigateToNode?: (nodeId: string) => void;
   onNavigateToProjects?: () => void;
-  advancedLogic?: NodeAdvancedLogic[];
   cloudSyncStatus?: CloudSyncStatus;
   lastSyncedAt?: number;
   lastSyncError?: string;
   onManualSync?: () => void;
   dirtyCount?: number;
-  readOnly?: boolean;
 }
 
 // Helper function to format relative time
@@ -356,7 +336,47 @@ function formatRelativeTime(timestamp: number): string {
   return `${days} day${days !== 1 ? 's' : ''} ago`;
 }
 
-export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNodes = [], projects, pages, groups, activeProjectId, activePageId, activeThemeId, isPrimaryTheme = true, primaryThemeId, showAllVisible = false, onAddToken, onUpdateToken, onDeleteToken, onUpdateProjects, onUpdatePages, onUpdateGroups, onExportProject, onImportProject, onUpdateNode, onDeleteNode, onNavigateToNode, onNavigateToProjects, advancedLogic, cloudSyncStatus = 'local', lastSyncedAt, lastSyncError, onManualSync, dirtyCount = 0, readOnly = false }: TokensPanelProps) {
+export function TokensPanel({ onNavigateToNode, onNavigateToProjects, cloudSyncStatus = 'local', lastSyncedAt, lastSyncError, onManualSync, dirtyCount = 0 }: TokensPanelProps) {
+  // ── Store state ──
+  const allNodes = useStore(s => s.allNodes);
+  const allTokens = useStore(s => s.tokens);
+  const projects = useStore(s => s.projects);
+  const allPages = useStore(s => s.pages);
+  const allGroups = useStore(s => s.groups);
+  const themes = useStore(s => s.themes);
+  const activeProjectId = useStore(s => s.activeProjectId);
+  const activePageId = useStore(s => s.activePageId);
+  const activeThemeId = useStore(s => s.activeThemeId);
+  const advancedLogic = useStore(s => s.advancedLogic);
+  const showAllVisible = useStore(s => s.showAllVisible);
+  const setProjects = useStore(s => s.setProjects);
+  const setPages = useStore(s => s.setPages);
+  const setGroups = useStore(s => s.setGroups);
+
+  // ── Mutation hooks ──
+  const { addToken: onAddToken, updateToken: onUpdateToken, deleteToken: onDeleteToken } = useTokenOperations();
+  const { updateNode: onUpdateNode } = useNodeUpdate();
+  const { deleteNode: onDeleteNode } = useNodeMutations();
+  const { exportProjectJSON: onExportProject, importProjectJSON: onImportProject } = useImportExport({ authSessionRef: { current: null } as any });
+
+  // ── Derived state ──
+  const tokens = allTokens.filter(t => t.projectId === activeProjectId && t.pageId === activePageId);
+  const nodes = allNodes.filter(n => n.projectId === activeProjectId && n.pageId === activePageId);
+  const allProjectTokens = allTokens.filter(t => t.projectId === activeProjectId);
+  const allProjectNodes = allNodes.filter(n => n.projectId === activeProjectId);
+  const pages = allPages.filter(p => p.projectId === activeProjectId);
+  const groups = allGroups.filter(g => g.projectId === activeProjectId && g.pageId === activePageId);
+  const primaryTheme = themes.find(t => t.projectId === activeProjectId && t.isPrimary);
+  const isPrimaryTheme = primaryTheme?.id === activeThemeId;
+  const primaryThemeId = primaryTheme?.id;
+  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
+  const readOnly = isSampleMode;
+
+  // ── Callback aliases ──
+  const onUpdateProjects = setProjects;
+  const onUpdatePages = setPages;
+  const onUpdateGroups = setGroups;
+
   // Non-primary themes are read-only in the tokens panel:
   // the only allowed action is clicking a token to navigate to its node.
   const isReadOnly = readOnly || !isPrimaryTheme;
@@ -2338,6 +2358,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
           <div
             data-token-item
             data-token-id={token.id}
+            data-testid={`tokens-panel-token-row-${token.id}`}
             ref={(el) => {
               if (el) {
                 tokenRefs.current.set(token.id, el);
@@ -2746,6 +2767,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
       <div
         ref={panelRef}
         className="tokens-panel-root"
+        data-testid="tokens-panel-container"
         style={{
           width: `${panelWidth}px`,
         }}
@@ -2759,6 +2781,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                 <Home
                   className="tokens-panel-home-icon"
                   onClick={() => onNavigateToProjects && onNavigateToProjects()}
+                  data-testid="tokens-panel-nav-projects"
                 />
               </Tip>
               {isEditingProjectName ? (
@@ -2777,6 +2800,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                   }}
                   onBlur={saveProjectName}
                   className="tokens-panel-project-name-input"
+                  data-testid="tokens-panel-project-rename-input"
                 />
               ) : (
                 <span
@@ -2806,7 +2830,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
         {/* Tokens Island */}
         <div className="tokens-panel-tokens-island">
           {/* Search + Filters */}
-          <div className="tokens-panel-search-area">
+          <div className="tokens-panel-search-area" data-testid="tokens-panel-search-area">
             <TokenSearchBar
               searchQuery={searchQuery}
               onSearchQueryChange={setSearchQuery}
@@ -2817,7 +2841,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
           </div>
 
           {/* View Filter Tabs */}
-          <div className="tokens-panel-tabs">
+          <div className="tokens-panel-tabs" data-testid="tokens-panel-view-tabs">
             {isSearchOrFilterActive ? (
               /* Combined mode: single label showing both counts when search/filter is active */
               <div className="tokens-panel-tab-label">
@@ -2836,6 +2860,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       ? 'tokens-panel-tab-active'
                       : 'tokens-panel-tab-inactive'
                     }`}
+                  data-testid="tokens-panel-tab-tokens"
                 >
                   Tokens
                   {(filteredRegularGroups.length + filteredUngroupedTokens.length) > 0 && (
@@ -2850,6 +2875,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                       ? 'tokens-panel-tab-active'
                       : 'tokens-panel-tab-inactive'
                     }`}
+                  data-testid="tokens-panel-tab-palettes"
                 >
                   Color Palettes
                   {filteredPaletteEntries.length > 0 && (
@@ -2941,6 +2967,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                               <button
                                 onClick={() => addGroup(activeProjectId)}
                                 className="tokens-panel-header-action-btn tokens-panel-header-action-btn-ml"
+                                data-testid="tokens-panel-add-group-button"
                               >
                                 <Folder className="tokens-panel-header-action-icon" />
                               </button>
@@ -2949,6 +2976,7 @@ export function TokensPanel({ tokens, nodes, allProjectTokens = [], allProjectNo
                               <button
                                 onClick={() => onAddToken(undefined, null, activeProjectId)}
                                 className="tokens-panel-header-action-btn"
+                                data-testid="tokens-panel-add-variable-button"
                               >
                                 <Plus className="tokens-panel-header-action-icon" />
                               </button>

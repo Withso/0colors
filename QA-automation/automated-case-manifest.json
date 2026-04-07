@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "layerDescriptions": {
+    "unit": "Small deterministic logic checks.",
+    "domain": "Deep domain/evaluator coverage for advanced logic and pure QA-critical helpers.",
+    "property": "Seeded generated checks that explore many valid combinations.",
+    "component": "React/UI tests in isolation with stable selectors.",
+    "integration": "Cross-store and effect wiring tests without a real browser.",
+    "e2e": "Real-browser user workflow coverage."
+  },
+  "files": {
+    "slugify.unit.test.ts": {
+      "layer": "unit",
+      "profile": "full",
+      "module": "Project names & URLs (code)",
+      "moduleOrder": 5,
+      "tags": ["unit", "routing"],
+      "fileBlurb": "Deterministic checks for project slug generation and route lookup helpers.",
+      "cases": [
+        { "match": "lowercases and replaces spaces", "caseId": "AUTO-UNIT-M01-001", "tags": ["slug"], "parentScenario": "project-slug", "equivalenceClass": "basic-title" },
+        { "match": "strips accents", "caseId": "AUTO-UNIT-M01-002", "tags": ["slug", "unicode"], "parentScenario": "project-slug", "equivalenceClass": "accented-title" },
+        { "match": "returns untitled for empty-ish input", "caseId": "AUTO-UNIT-M01-003", "tags": ["slug", "fallback"], "parentScenario": "project-slug", "equivalenceClass": "empty-title" },
+        { "match": "resolves by slugified name", "caseId": "AUTO-UNIT-M01-004", "tags": ["lookup"], "parentScenario": "project-route-resolution", "equivalenceClass": "slug-match" },
+        { "match": "falls back to id match", "caseId": "AUTO-UNIT-M01-005", "tags": ["lookup", "fallback"], "parentScenario": "project-route-resolution", "equivalenceClass": "id-match" }
+      ]
+    },
+    "advanced-logic-engine.domain.test.ts": {
+      "layer": "domain",
+      "profile": "full",
+      "module": "Advanced logic engine",
+      "moduleOrder": 15,
+      "tags": ["advanced-logic", "domain"],
+      "fileBlurb": "Pure evaluator and export-path checks for parsing, execution, theme inheritance, token assignment, and curated golden fixtures.",
+      "cases": [
+        { "match": "parses conditional expressions with local references", "caseId": "AUTO-DOM-M05-001", "tags": ["parser"], "parentScenario": "advanced-logic-parser", "equivalenceClass": "conditional-local" },
+        { "match": "chains local outputs and honors final output selection", "caseId": "AUTO-DOM-M05-002", "tags": ["locals", "final-output"], "parentScenario": "advanced-logic-channel-eval", "equivalenceClass": "selected-output" },
+        { "match": "falls back when a false conditional has no else branch", "caseId": "AUTO-DOM-M05-003", "tags": ["fallback"], "parentScenario": "advanced-logic-channel-eval", "equivalenceClass": "optional-else" },
+        { "match": "uses locked values instead of mutable self state when requested", "caseId": "AUTO-DOM-M05-004", "tags": ["locked"], "parentScenario": "advanced-logic-channel-eval", "equivalenceClass": "locked-keyword" },
+        { "match": "wraps hue and clamps saturation", "caseId": "AUTO-DOM-M05-005", "tags": ["constraints"], "parentScenario": "advanced-logic-constraints", "equivalenceClass": "wrap-vs-clamp" },
+        { "match": "resolves theme-effective logic only when the node is unlinked", "caseId": "AUTO-DOM-M05-006", "tags": ["themes"], "parentScenario": "advanced-logic-theme-resolution", "equivalenceClass": "linked-vs-unlinked" },
+        { "match": "keeps golden advanced-logic fixtures stable", "caseId": "AUTO-DOM-M05-007", "tags": ["fixtures", "golden"], "fixture": "QA-automation/fixtures/advanced-logic/golden-cases.json", "parentScenario": "advanced-logic-regression-pack", "equivalenceClass": "golden-fixtures" },
+        { "match": "evaluates token assignments for export through token nodes", "caseId": "AUTO-DOM-M05-008", "tags": ["token-assignment", "export"], "parentScenario": "advanced-logic-token-export", "equivalenceClass": "token-node-export" },
+        { "match": "builds token evaluation context with resolved value-token chains", "caseId": "AUTO-DOM-M05-009", "tags": ["token-context"], "parentScenario": "advanced-logic-token-context", "equivalenceClass": "value-token-chain" }
+      ]
+    },
+    "advanced-logic-engine.property.test.ts": {
+      "layer": "property",
+      "profile": "full",
+      "module": "Advanced logic engine",
+      "moduleOrder": 16,
+      "tags": ["advanced-logic", "property"],
+      "fileBlurb": "Seeded generated checks for constrained outputs, replayability, and theme-resolution matrices.",
+      "seed": 424242,
+      "generatedFrom": "fast-check seeded generators",
+      "generatedRuns": 40,
+      "cases": [
+        { "match": "generates valid channel logic without throwing and keeps constrained outputs in range", "caseId": "AUTO-PROP-M05-001", "tags": ["generated", "constraints"], "seed": 424242, "generatedFrom": "channel-logic generators", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "valid-channel-rows" },
+        { "match": "keeps generated checks pinned to a fixed replay seed", "caseId": "AUTO-PROP-M05-002", "tags": ["generated", "determinism"], "seed": 424242, "generatedFrom": "channel-logic generators", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "seed-replay" },
+        { "match": "keeps theme resolution deterministic across pairwise primary/unlinked combinations", "caseId": "AUTO-PROP-M05-003", "tags": ["generated", "themes"], "seed": 424242, "generatedFrom": "pairwise theme matrix", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "theme-pairwise" }
+      ]
+    },
+    "color-conversions.domain.test.ts": {
+      "layer": "domain",
+      "profile": "full",
+      "module": "Color engine",
+      "moduleOrder": 12,
+      "tags": ["color-engine", "conversions"],
+      "fileBlurb": "Direct color conversion coverage for HSL, RGB, HEX, and OKLCH behavior including round-trips and gamut clamping.",
+      "cases": [
+        { "match": "formats RGB values as uppercase hex and clamps out-of-range channels", "caseId": "AUTO-DOM-M04-001", "tags": ["hex", "clamp"], "parentScenario": "rgb-hex-formatting", "equivalenceClass": "out-of-range-channels" },
+        { "match": "round-trips canonical RGB values through HSL exactly or within a one-step tolerance", "caseId": "AUTO-DOM-M04-002", "tags": ["rgb", "hsl", "round-trip"], "parentScenario": "rgb-hsl-roundtrip", "equivalenceClass": "canonical-colors" },
+        { "match": "keeps muted HSL colors reasonably stable through OKLCH", "caseId": "AUTO-DOM-M04-003", "tags": ["oklch", "round-trip"], "parentScenario": "oklch-roundtrip", "equivalenceClass": "muted-colors" },
+        { "match": "keeps neutral colors stable when round-tripping through OKLCH", "caseId": "AUTO-DOM-M04-004", "tags": ["oklch", "neutral"], "parentScenario": "oklch-roundtrip", "equivalenceClass": "neutral-colors" },
+        { "match": "clamps out-of-gamut OKLCH values into valid sRGB output", "caseId": "AUTO-DOM-M04-005", "tags": ["oklch", "gamut"], "parentScenario": "oklch-gamut", "equivalenceClass": "out-of-gamut-clamp" }
+      ]
+    },
+    "hct-utils.domain.test.ts": {
+      "layer": "domain",
+      "profile": "full",
+      "module": "Color engine",
+      "moduleOrder": 13,
+      "tags": ["color-engine", "hct"],
+      "fileBlurb": "Direct HCT utility coverage for normalization, RGB/HEX conversion, and gamut-related max chroma checks.",
+      "cases": [
+        { "match": "normalizes hue and clamps chroma/tone before converting", "caseId": "AUTO-DOM-M04-006", "tags": ["hct", "normalize"], "parentScenario": "hct-normalization", "equivalenceClass": "hue-chroma-tone-clamp" },
+        { "match": "round-trips HCT-derived RGB values back into close HCT readings", "caseId": "AUTO-DOM-M04-007", "tags": ["hct", "round-trip"], "parentScenario": "hct-rgb-roundtrip", "equivalenceClass": "derived-rgb" },
+        { "match": "treats hex input with or without a hash consistently", "caseId": "AUTO-DOM-M04-008", "tags": ["hct", "hex"], "parentScenario": "hex-parse", "equivalenceClass": "hash-vs-no-hash" },
+        { "match": "agrees with rgbToHex when converting through HCT to RGB", "caseId": "AUTO-DOM-M04-009", "tags": ["hct", "hex", "consistency"], "parentScenario": "hct-hex-consistency", "equivalenceClass": "rgb-hex-alignment" },
+        { "match": "reports finite max chroma values within the supported gamut", "caseId": "AUTO-DOM-M04-010", "tags": ["hct", "gamut"], "parentScenario": "hct-gamut", "equivalenceClass": "max-chroma" }
+      ]
+    },
+    "visibility.domain.test.ts": {
+      "layer": "domain",
+      "profile": "full",
+      "module": "Token visibility",
+      "moduleOrder": 19,
+      "tags": ["token-propagation", "visibility"],
+      "fileBlurb": "Direct visibility checks for theme-specific hidden states, palette inheritance, and token filtering.",
+      "cases": [
+        { "match": "toggles visibility per theme and cleans up empty maps", "caseId": "AUTO-DOM-M06-001", "tags": ["visibility", "toggle"], "parentScenario": "theme-visibility-map", "equivalenceClass": "toggle-cleanup" },
+        { "match": "treats palette shades as hidden when their parent palette is hidden in the same theme", "caseId": "AUTO-DOM-M06-002", "tags": ["palette", "inheritance"], "parentScenario": "palette-visibility", "equivalenceClass": "parent-cascade" },
+        { "match": "treats token visibility as explicit, forced-by-node, and owner-hidden", "caseId": "AUTO-DOM-M06-003", "tags": ["token", "visibility"], "parentScenario": "token-visibility", "equivalenceClass": "explicit-forced-owner" },
+        { "match": "filters visible tokens without leaking hidden node or owner-hidden tokens", "caseId": "AUTO-DOM-M06-004", "tags": ["token", "visibility"], "parentScenario": "visible-token-filter", "equivalenceClass": "filtered-list" }
+      ]
+    },
+    "computed-tokens.domain.test.ts": {
+      "layer": "domain",
+      "profile": "full",
+      "module": "Computed token propagation",
+      "moduleOrder": 20,
+      "tags": ["token-propagation", "computed-tokens"],
+      "fileBlurb": "Computed token export coverage for visible colors, token-node alias chains, hidden propagation, and project scoping.",
+      "cases": [
+        { "match": "computes a visible color token with stable export metadata", "caseId": "AUTO-DOM-M07-001", "tags": ["computed-tokens", "color"], "parentScenario": "computed-token-export", "equivalenceClass": "visible-color-export" },
+        { "match": "resolves token-node value refs from the active theme and falls back to primary", "caseId": "AUTO-DOM-M07-002", "tags": ["token-node", "theme-fallback"], "parentScenario": "token-node-chain", "equivalenceClass": "theme-specific-vs-primary" },
+        { "match": "omits hidden palette-shade and token-node owner tokens from the computed outputs", "caseId": "AUTO-DOM-M07-003", "tags": ["visibility", "token-node"], "parentScenario": "computed-token-filtering", "equivalenceClass": "hidden-propagation" },
+        { "match": "keeps project-level computations isolated when computing all projects", "caseId": "AUTO-DOM-M07-004", "tags": ["multi-project"], "parentScenario": "project-scoped-compute", "equivalenceClass": "project-isolation" }
+      ]
+    },
+    "AdvancedPopup.component.test.tsx": {
+      "layer": "component",
+      "profile": "full",
+      "module": "Advanced logic popup",
+      "moduleOrder": 17,
+      "tags": ["advanced-popup", "component"],
+      "fileBlurb": "UI-level selector and rendering checks for color-node and token-node advanced popup layouts.",
+      "cases": [
+        { "match": "renders channel column controls with stable test hooks", "caseId": "AUTO-COMP-M05-001", "tags": ["selectors", "channel-ui"], "parentScenario": "advanced-popup-render", "equivalenceClass": "color-node-popup" },
+        { "match": "renders token assignment selectors for token-node advanced logic", "caseId": "AUTO-COMP-M05-002", "tags": ["selectors", "token-ui"], "parentScenario": "advanced-popup-render", "equivalenceClass": "token-node-popup" }
+      ]
+    },
+    "useAdvancedLogicEffect.integration.test.tsx": {
+      "layer": "integration",
+      "profile": "full",
+      "module": "Advanced logic integration",
+      "moduleOrder": 18,
+      "tags": ["advanced-logic", "integration"],
+      "fileBlurb": "Store/effect integration coverage for advanced-logic recomputation and token synchronization.",
+      "cases": [
+        { "match": "recomputes dependent nodes and updates assigned tokens", "caseId": "AUTO-INT-M05-001", "tags": ["store", "token-sync"], "parentScenario": "advanced-logic-effect", "equivalenceClass": "primary-theme-update" }
+      ]
+    },
+    "app-navigation.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "App loading & navigation",
+      "moduleOrder": 10,
+      "tags": ["e2e", "navigation"],
+      "cases": [
+        { "match": "loads without uncaught page errors", "caseId": "AUTO-E2E-M01-001", "parentScenario": "app-shell", "equivalenceClass": "cold-load" },
+        { "match": "home resolves to editor or projects dashboard", "caseId": "AUTO-E2E-M01-002", "parentScenario": "routing", "equivalenceClass": "root-route" },
+        { "match": "/projects shows projects page", "caseId": "AUTO-E2E-M01-003", "parentScenario": "routing", "equivalenceClass": "projects-route" },
+        { "match": "/sample-project shows editor shell", "caseId": "AUTO-E2E-M01-004", "parentScenario": "routing", "equivalenceClass": "sample-route" },
+        { "match": "browser back navigation does not blank screen", "caseId": "AUTO-E2E-M01-005", "parentScenario": "navigation-history", "equivalenceClass": "back-nav" }
+      ]
+    },
+    "project-management.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Projects dashboard",
+      "moduleOrder": 20,
+      "tags": ["e2e", "projects"],
+      "cases": [
+        { "match": "create local project opens editor", "caseId": "AUTO-E2E-M02-001", "parentScenario": "project-create", "equivalenceClass": "local-create" },
+        { "match": "project card appears after create", "caseId": "AUTO-E2E-M02-002", "parentScenario": "project-create", "equivalenceClass": "dashboard-return" },
+        { "match": "import button is available on projects page", "caseId": "AUTO-E2E-M02-003", "parentScenario": "project-import-entry", "equivalenceClass": "import-entry" }
+      ]
+    },
+    "node-operations.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Canvas & nodes",
+      "moduleOrder": 40,
+      "tags": ["e2e", "canvas"],
+      "cases": [
+        { "match": "add HSL root node from toolbar", "caseId": "AUTO-E2E-M03-001", "parentScenario": "node-add", "equivalenceClass": "hsl-root" },
+        { "match": "add palette node", "caseId": "AUTO-E2E-M03-002", "parentScenario": "node-add", "equivalenceClass": "palette-root" },
+        { "match": "open token table from toolbar", "caseId": "AUTO-E2E-M03-003", "parentScenario": "toolbar-popup", "equivalenceClass": "token-table" }
+      ]
+    },
+    "token-operations.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Design tokens",
+      "moduleOrder": 50,
+      "tags": ["e2e", "tokens"],
+      "cases": [
+        { "match": "tokens panel container and search visible", "caseId": "AUTO-E2E-M06-001", "parentScenario": "tokens-panel", "equivalenceClass": "panel-open" },
+        { "match": "add variable creates token row", "caseId": "AUTO-E2E-M06-002", "parentScenario": "tokens-panel", "equivalenceClass": "create-token" },
+        { "match": "token search filters", "caseId": "AUTO-E2E-M06-003", "parentScenario": "tokens-panel", "equivalenceClass": "search-filter" }
+      ]
+    },
+    "themes-pages.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Pages & themes",
+      "moduleOrder": 55,
+      "tags": ["e2e", "themes", "pages"],
+      "cases": [
+        { "match": "page dropdown opens", "caseId": "AUTO-E2E-M07-001", "parentScenario": "page-toolbar", "equivalenceClass": "open-page-menu" },
+        { "match": "theme dropdown opens", "caseId": "AUTO-E2E-M07-002", "parentScenario": "theme-toolbar", "equivalenceClass": "open-theme-menu" },
+        { "match": "add new page from toolbar", "caseId": "AUTO-E2E-M07-003", "parentScenario": "page-toolbar", "equivalenceClass": "add-page" }
+      ]
+    },
+    "undo-redo.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Undo & redo",
+      "moduleOrder": 45,
+      "tags": ["e2e", "history"],
+      "cases": [
+        { "match": "undo removes last node after add", "caseId": "AUTO-E2E-M08-001", "parentScenario": "history", "equivalenceClass": "undo-node-add" },
+        { "match": "redo restores after undo", "caseId": "AUTO-E2E-M08-002", "parentScenario": "history", "equivalenceClass": "redo-node-add" }
+      ]
+    },
+    "import-export.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Import & export",
+      "moduleOrder": 35,
+      "tags": ["e2e", "import-export"],
+      "cases": [
+        { "match": "projects page exposes import", "caseId": "AUTO-E2E-M09-001", "parentScenario": "import-entry", "equivalenceClass": "dashboard-import" },
+        { "match": "code preview has copy and download", "caseId": "AUTO-E2E-M09-002", "parentScenario": "export-entry", "equivalenceClass": "code-preview" }
+      ]
+    },
+    "command-palette.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Command palette",
+      "moduleOrder": 60,
+      "tags": ["e2e", "command-palette"],
+      "cases": [
+        { "match": "open via bottom bar and close with Escape", "caseId": "AUTO-E2E-M10-001", "parentScenario": "command-palette", "equivalenceClass": "open-close" },
+        { "match": "open via keyboard shortcut", "caseId": "AUTO-E2E-M10-002", "parentScenario": "command-palette", "equivalenceClass": "keyboard-open" },
+        { "match": "search filters results area", "caseId": "AUTO-E2E-M10-003", "parentScenario": "command-palette", "equivalenceClass": "search-filter" }
+      ]
+    },
+    "keyboard-shortcuts.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Keyboard & shortcuts",
+      "moduleOrder": 65,
+      "tags": ["e2e", "keyboard"],
+      "cases": [
+        { "match": "Cmd/Ctrl+K opens command palette", "caseId": "AUTO-E2E-M10-004", "parentScenario": "keyboard-shortcuts", "equivalenceClass": "open-palette" },
+        { "match": "switch to code view with toolbar", "caseId": "AUTO-E2E-M10-005", "parentScenario": "keyboard-shortcuts", "equivalenceClass": "code-view" },
+        { "match": "shortcuts panel toggles", "caseId": "AUTO-E2E-M10-006", "parentScenario": "keyboard-shortcuts", "equivalenceClass": "shortcuts-panel" }
+      ]
+    },
+    "sample-templates.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Sample & templates",
+      "moduleOrder": 25,
+      "tags": ["e2e", "sample"],
+      "cases": [
+        { "match": "sample route loads editor shell", "caseId": "AUTO-E2E-M11-001", "parentScenario": "sample-route", "equivalenceClass": "sample-editor" }
+      ]
+    },
+    "ai-chat.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "AI assistant (UI)",
+      "moduleOrder": 70,
+      "tags": ["e2e", "ai"],
+      "cases": [
+        { "match": "AI button visible for cloud/template only", "caseId": "AUTO-E2E-M13-001", "parentScenario": "ai-entry", "equivalenceClass": "local-project-gating" }
+      ]
+    },
+    "a11y.audit.ts": {
+      "layer": "e2e",
+      "profile": "audit",
+      "module": "Accessibility smoke",
+      "moduleOrder": 72,
+      "tags": ["e2e", "a11y"],
+      "fileBlurb": "Runs serious/critical accessibility smoke checks on the projects dashboard and the visible Advanced popup state.",
+      "cases": [
+        { "match": "projects dashboard has no serious or critical accessibility violations", "caseId": "AUTO-E2E-M14-001", "kind": "workflow", "surfacesChecked": ["browser", "projects-dashboard"], "stepList": ["Open projects dashboard", "Run axe on visible page", "Assert no serious or critical issues"], "parentScenario": "a11y-projects-dashboard", "equivalenceClass": "dashboard-smoke" },
+        { "match": "advanced popup has no serious or critical accessibility violations in its visible state", "caseId": "AUTO-E2E-M14-002", "kind": "workflow", "surfacesChecked": ["browser", "advanced-popup"], "stepList": ["Create a local project", "Add an HSL node", "Open the Advanced popup", "Run axe on the popup", "Assert no serious or critical issues"], "parentScenario": "a11y-advanced-popup", "equivalenceClass": "popup-smoke" }
+      ]
+    },
+    "persistence.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Data persistence",
+      "moduleOrder": 30,
+      "tags": ["e2e", "persistence"],
+      "cases": [
+        { "match": "local project survives reload", "caseId": "AUTO-E2E-M16-001", "parentScenario": "persistence", "equivalenceClass": "reload-retains-data" }
+      ]
+    },
+    "advanced-logic.spec.ts": {
+      "layer": "e2e",
+      "profile": "full",
+      "module": "Advanced logic popup",
+      "moduleOrder": 21,
+      "tags": ["e2e", "advanced-logic"],
+      "fileBlurb": "Focused real-browser coverage for opening the Advanced Popup, entering a simple hue rule, saving it, and reloading the persisted result.",
+      "cases": [
+        { "match": "save and reopen a simple hue expression from the advanced popup", "caseId": "AUTO-E2E-M05-001", "fixture": "local-project-with-fresh-hsl-node", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "simple-hue-save" }
+      ]
+    }
+  }
+}

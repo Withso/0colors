@@ -8,6 +8,7 @@
     ],
     "scripts": {
         "dev": "concurrently --names backend,frontend --prefix-colors cyan,magenta \"npm run dev -w @0colors/backend\" \"npm run dev -w @0colors/frontend\"",
+        "dev:qa": "concurrently --names backend,frontend,qa-runner --prefix-colors cyan,magenta,green \"npm run dev -w @0colors/backend\" \"npm run dev -w @0colors/frontend\" \"npm run qa:runner\"",
         "dev:backend": "npm run dev -w @0colors/backend",
         "dev:frontend": "npm run dev -w @0colors/frontend",
         "build": "npm run build --workspaces --if-present",
@@ -15,9 +16,28 @@
         "build:frontend": "npm run build -w @0colors/frontend",
         "typecheck": "npm run typecheck -w @0colors/backend",
         "start:backend": "npm run start -w @0colors/backend",
-        "start:frontend": "npm run start -w @0colors/frontend"
+        "start:frontend": "npm run start -w @0colors/frontend",
+        "test:e2e": "node scripts/qa-e2e-run.mjs",
+        "test:e2e:a11y": "npx playwright test -c playwright.a11y.config.ts",
+        "test:e2e:headed": "QA_RUN_ID=manual-local npx playwright test --headed",
+        "test:e2e:ui": "npx playwright test --ui",
+        "test:e2e:install": "playwright install chromium",
+        "test:domain": "node scripts/qa-vitest-layer.mjs domain",
+        "test:property": "node scripts/qa-vitest-layer.mjs property",
+        "test:component": "node scripts/qa-vitest-layer.mjs component",
+        "test:integration": "node scripts/qa-vitest-layer.mjs integration",
+        "qa:sync-report": "node scripts/sync-qa-dashboard.mjs",
+        "qa:full": "node scripts/qa-full-run.mjs",
+        "qa:runner": "node scripts/qa-local-runner.mjs",
+        "test:e2e:report": "npm run test:e2e && npm run qa:sync-report",
+        "test:unit": "node scripts/qa-vitest-layer.mjs unit",
+        "test:mutation": "stryker run"
     },
     "devDependencies": {
+        "@axe-core/playwright": "^4.11.1",
+        "@playwright/test": "^1.49.1",
+        "@stryker-mutator/core": "^9.6.0",
+        "@stryker-mutator/vitest-runner": "^9.6.0",
         "concurrently": "^9.1.2"
     },
     "engines": {

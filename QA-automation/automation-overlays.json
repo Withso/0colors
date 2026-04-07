@@ -1,0 +1,421 @@
+{
+  "version": 1,
+  "notYetAutomatedInPlaywright": [
+    {
+      "name": "Advanced Logic popup (the big “fx” / expression editor)",
+      "code": "AdvancedPopup.tsx, advanced-logic-engine.ts, useAdvancedLogicEffect",
+      "howWeTestToday": "Now covered by a dedicated **domain/property/component** stack plus one focused **Playwright** flow. The full combinatorial surface is still broader than browser automation alone, so the **Test catalog** remains the backlog for additional equivalence classes.",
+      "why": "The popup spans parser, evaluator, theme inheritance, token assignment, and dense UI editing. We automate this mostly below the browser layer for scale and determinism, then keep a smaller E2E slice for wiring confidence."
+    },
+    {
+      "name": "Token table popup, publish flow, cloud sync",
+      "code": "Various components",
+      "howWeTestToday": "Partially touched by token-operations and project specs; deep paths are mostly **manual** in the catalog.",
+      "why": "Requires stable test accounts or mocked backends for full coverage."
+    }
+  ],
+  "introForNonTechnicalReaders": "This screen shows what the **automated robots** actually checked in this run. **Unit** tests exercise tiny pieces of code in milliseconds. **E2E** (end-to-end) tests open a real browser like you would and click through flows. They are only a **slice** of quality: the full **Test catalog** tab lists many more scenarios (including manual checks) that are not all automated yet.",
+  "catalogVsAutomation": "The **Test catalog** is the master list of what *should* be verified for the product. **This run** is only what the computer executed automatically. A passing run does not mean every catalog line is covered — it means every **listed row below** passed.",
+  "files": {
+    "slugify.unit.test.ts": {
+      "module": "Project names & URLs (code)",
+      "moduleOrder": 5,
+      "fileBlurb": "Validates helper logic that turns project titles into URL slugs and finds a project when you open a link.",
+      "plainByPhrase": [
+        {
+          "includes": "lowercases and replaces spaces",
+          "plain": "A normal title like “My Project” becomes a clean web-style id: my-project."
+        },
+        {
+          "includes": "strips accents",
+          "plain": "Letters with accents (e.g. café) become plain letters so URLs stay predictable."
+        },
+        {
+          "includes": "returns untitled for empty-ish",
+          "plain": "Garbage-only titles fall back to “untitled” so the app never produces an empty slug."
+        },
+        {
+          "includes": "resolves by slugified name",
+          "plain": "When you have a slug derived from a name, the app can find the right project."
+        },
+        {
+          "includes": "falls back to id match",
+          "plain": "If someone uses the raw project id in the URL, it still resolves correctly."
+        }
+      ],
+      "fallbackPlain": "Unit check for slug / lookup helper behavior."
+    },
+    "app-navigation.spec.ts": {
+      "module": "App loading & navigation",
+      "moduleOrder": 10,
+      "fileBlurb": "Opens the app like a user and checks that main URLs work and the browser’s Back button does not break the screen.",
+      "plainByPhrase": [
+        {
+          "includes": "loads without uncaught page errors",
+          "plain": "Home loads without hidden JavaScript crashes in the background."
+        },
+        {
+          "includes": "home resolves to editor or projects dashboard",
+          "plain": "Opening “/” lands you either in the editor or the projects list — something real should appear."
+        },
+        {
+          "includes": "/projects shows projects page",
+          "plain": "The /projects address shows your projects screen and list area."
+        },
+        {
+          "includes": "/sample-project shows editor shell",
+          "plain": "The sample project route opens the editor shell and toolbar."
+        },
+        {
+          "includes": "browser back navigation does not blank screen",
+          "plain": "Going from projects → sample → Back returns to projects without a blank page."
+        }
+      ],
+      "fallbackPlain": "Navigation or load stability check."
+    },
+    "project-management.spec.ts": {
+      "module": "Projects dashboard",
+      "moduleOrder": 20,
+      "fileBlurb": "Creates a local project from the UI and checks it appears on the dashboard; also checks import entry points.",
+      "plainByPhrase": [
+        {
+          "includes": "create local project opens editor",
+          "plain": "Creating a new local project drops you into the editor with toolbar and canvas."
+        },
+        {
+          "includes": "project card appears after create",
+          "plain": "After creating a project, going back to the list shows at least as many cards as before."
+        },
+        {
+          "includes": "import button is available on projects page",
+          "plain": "The projects page shows a way to import a project file."
+        }
+      ],
+      "fallbackPlain": "Project list or create-flow check."
+    },
+    "sample-templates.spec.ts": {
+      "module": "Sample & templates",
+      "moduleOrder": 25,
+      "fileBlurb": "Smoke check that built-in sample routes still render the editor.",
+      "plainByPhrase": [
+        {
+          "includes": "sample route loads editor shell",
+          "plain": "The sample route still opens the editor shell (template/demo path works)."
+        }
+      ],
+      "fallbackPlain": "Sample route smoke test."
+    },
+    "persistence.spec.ts": {
+      "module": "Data persistence",
+      "moduleOrder": 30,
+      "fileBlurb": "Checks that work saved locally survives refreshing the browser tab.",
+      "plainByPhrase": [
+        {
+          "includes": "local project survives reload",
+          "plain": "After you work in a local project, reloading the page keeps your project usable (data did not vanish)."
+        }
+      ],
+      "fallbackPlain": "Reload / persistence check."
+    },
+    "import-export.spec.ts": {
+      "module": "Import & export",
+      "moduleOrder": 35,
+      "fileBlurb": "Sanity checks for bringing data in and copying or downloading code output.",
+      "plainByPhrase": [
+        {
+          "includes": "projects page exposes import",
+          "plain": "Projects screen exposes import so you can bring work in from a file."
+        },
+        {
+          "includes": "code preview has copy and download",
+          "plain": "Code view offers copy and download so you can take generated output out of the app."
+        }
+      ],
+      "fallbackPlain": "Import or export UI check."
+    },
+    "node-operations.spec.ts": {
+      "module": "Canvas & nodes",
+      "moduleOrder": 40,
+      "fileBlurb": "Inside the editor, adds nodes from the toolbar and opens related panels.",
+      "plainByPhrase": [
+        {
+          "includes": "add HSL root node from toolbar",
+          "plain": "You can add an HSL color node from the bottom “add node” menu and see it on the canvas."
+        },
+        {
+          "includes": "add palette node",
+          "plain": "You can add a palette node and see it appear on the canvas."
+        },
+        {
+          "includes": "open token table from toolbar",
+          "plain": "Toolbar can open the token table popup and close it again."
+        }
+      ],
+      "fallbackPlain": "Editor node or toolbar check."
+    },
+    "undo-redo.spec.ts": {
+      "module": "Undo & redo",
+      "moduleOrder": 45,
+      "fileBlurb": "Checks history: undo removes the last change; redo brings it back.",
+      "plainByPhrase": [
+        {
+          "includes": "undo removes last node after add",
+          "plain": "After adding a node, Undo removes that last addition."
+        },
+        {
+          "includes": "redo restores after undo",
+          "plain": "After Undo, Redo puts the change back."
+        }
+      ],
+      "fallbackPlain": "History (undo/redo) check."
+    },
+    "token-operations.spec.ts": {
+      "module": "Design tokens",
+      "moduleOrder": 50,
+      "fileBlurb": "Tokens panel: visibility, adding a variable, and search filtering.",
+      "plainByPhrase": [
+        {
+          "includes": "tokens panel container and search visible",
+          "plain": "Tokens panel shows its container and a search field so you can find tokens."
+        },
+        {
+          "includes": "add variable creates token row",
+          "plain": "Adding a design token variable creates a new row you can see."
+        },
+        {
+          "includes": "token search filters",
+          "plain": "Typing in token search narrows the list."
+        }
+      ],
+      "fallbackPlain": "Tokens panel check."
+    },
+    "themes-pages.spec.ts": {
+      "module": "Pages & themes",
+      "moduleOrder": 55,
+      "fileBlurb": "Toolbar menus for switching pages and themes, and adding a page.",
+      "plainByPhrase": [
+        {
+          "includes": "page dropdown opens",
+          "plain": "The page dropdown in the toolbar opens so you can switch pages."
+        },
+        {
+          "includes": "theme dropdown opens",
+          "plain": "The theme dropdown opens so you can change theme."
+        },
+        {
+          "includes": "add new page from toolbar",
+          "plain": "You can add a new page from the toolbar flow."
+        }
+      ],
+      "fallbackPlain": "Pages or themes UI check."
+    },
+    "command-palette.spec.ts": {
+      "module": "Command palette",
+      "moduleOrder": 60,
+      "fileBlurb": "Command palette opens from the UI and keyboard, closes with Escape, and search filters results.",
+      "plainByPhrase": [
+        {
+          "includes": "open via bottom bar and close with Escape",
+          "plain": "Palette opens from the bottom bar and Escape closes it."
+        },
+        {
+          "includes": "open via keyboard shortcut",
+          "plain": "Keyboard shortcut opens the command palette."
+        },
+        {
+          "includes": "search filters results area",
+          "plain": "Typing in the palette filters what you see in the results list."
+        }
+      ],
+      "fallbackPlain": "Command palette check."
+    },
+    "keyboard-shortcuts.spec.ts": {
+      "module": "Keyboard & shortcuts",
+      "moduleOrder": 65,
+      "fileBlurb": "Keyboard shortcuts for palette, code view, and the shortcuts help panel.",
+      "plainByPhrase": [
+        {
+          "includes": "Cmd/Ctrl+K opens command palette",
+          "plain": "Cmd/Ctrl+K opens the command palette."
+        },
+        {
+          "includes": "switch to code view with toolbar",
+          "plain": "You can switch to code view using the toolbar without breaking the layout."
+        },
+        {
+          "includes": "shortcuts panel toggles",
+          "plain": "The shortcuts help panel can be opened and closed."
+        }
+      ],
+      "fallbackPlain": "Keyboard shortcut check."
+    },
+    "ai-chat.spec.ts": {
+      "module": "AI assistant (UI)",
+      "moduleOrder": 70,
+      "fileBlurb": "Checks how the AI entry behaves for local vs cloud/template contexts (expectations differ).",
+      "plainByPhrase": [
+        {
+          "includes": "AI button visible for cloud/template only",
+          "plain": "AI affordances differ by project type: cloud/template vs local — the test asserts the expected visibility or messaging."
+        }
+      ],
+      "fallbackPlain": "AI entry-point check."
+    },
+    "a11y.audit.ts": {
+      "module": "Accessibility smoke",
+      "moduleOrder": 72,
+      "fileBlurb": "Serious/critical accessibility smoke coverage for the projects dashboard and the visible Advanced popup state.",
+      "plainByPhrase": [
+        {
+          "includes": "projects dashboard has no serious or critical accessibility violations",
+          "plain": "The projects dashboard does not expose serious or critical accessibility issues in its visible state."
+        },
+        {
+          "includes": "advanced popup has no serious or critical accessibility violations in its visible state",
+          "plain": "The visible Advanced popup state does not expose serious or critical accessibility issues."
+        }
+      ],
+      "fallbackPlain": "Accessibility smoke check."
+    },
+    "advanced-logic-engine.domain.test.ts": {
+      "module": "Advanced logic engine",
+      "moduleOrder": 15,
+      "fileBlurb": "Pure evaluator coverage for parser behavior, constraints, theme resolution, token assignment, export paths, and golden fixtures.",
+      "fallbackPlain": "Advanced logic domain check."
+    },
+    "advanced-logic-engine.property.test.ts": {
+      "module": "Advanced logic engine",
+      "moduleOrder": 16,
+      "fileBlurb": "Seeded generated checks that run many valid Advanced Logic combinations without relying on brittle browser clicks.",
+      "fallbackPlain": "Advanced logic property/generator check."
+    },
+    "color-conversions.domain.test.ts": {
+      "module": "Color engine",
+      "moduleOrder": 12,
+      "fileBlurb": "Checks color conversion helpers directly, including HEX formatting, HSL/RGB round-trips, OKLCH stability, and gamut clamping.",
+      "plainByPhrase": [
+        {
+          "includes": "formats RGB values as uppercase hex and clamps out-of-range channels",
+          "plain": "RGB channels are clamped into a valid range and exported as uppercase hex."
+        },
+        {
+          "includes": "round-trips canonical RGB values through HSL exactly or within a one-step tolerance",
+          "plain": "Core RGB colors survive an RGB to HSL to RGB round-trip without noticeable drift."
+        },
+        {
+          "includes": "keeps muted HSL colors reasonably stable through OKLCH",
+          "plain": "Muted colors stay visually close when converted through OKLCH and back."
+        },
+        {
+          "includes": "keeps neutral colors stable when round-tripping through OKLCH",
+          "plain": "Neutral grayscale colors remain neutral after an OKLCH round-trip."
+        },
+        {
+          "includes": "clamps out-of-gamut OKLCH values into valid sRGB output",
+          "plain": "Extreme OKLCH values are safely pulled back into displayable RGB output."
+        }
+      ],
+      "fallbackPlain": "Color conversion engine check."
+    },
+    "hct-utils.domain.test.ts": {
+      "module": "Color engine",
+      "moduleOrder": 13,
+      "fileBlurb": "Checks HCT utility helpers for normalization, hex parsing, RGB conversion, and max-chroma behavior.",
+      "plainByPhrase": [
+        {
+          "includes": "normalizes hue and clamps chroma/tone before converting",
+          "plain": "Invalid HCT inputs are normalized into safe hue, chroma, and tone values before conversion."
+        },
+        {
+          "includes": "round-trips HCT-derived RGB values back into close HCT readings",
+          "plain": "Colors converted out of HCT and back stay close to the original HCT reading."
+        },
+        {
+          "includes": "treats hex input with or without a hash consistently",
+          "plain": "Hex parsing behaves the same whether the input includes the hash prefix or not."
+        },
+        {
+          "includes": "agrees with rgbToHex when converting through HCT to RGB",
+          "plain": "HCT conversion stays consistent with the standard RGB-to-hex formatter."
+        },
+        {
+          "includes": "reports finite max chroma values within the supported gamut",
+          "plain": "The max-chroma helper returns sane finite values within the expected gamut."
+        }
+      ],
+      "fallbackPlain": "HCT utility check."
+    },
+    "visibility.domain.test.ts": {
+      "module": "Token visibility",
+      "moduleOrder": 19,
+      "fileBlurb": "Checks hidden-node and hidden-token rules, including palette inheritance and theme-specific filtering.",
+      "plainByPhrase": [
+        {
+          "includes": "toggles visibility per theme and cleans up empty maps",
+          "plain": "Turning visibility on and off only changes the selected theme, and empty maps are removed."
+        },
+        {
+          "includes": "treats palette shades as hidden when their parent palette is hidden in the same theme",
+          "plain": "A hidden parent palette hides its child shades for that same theme."
+        },
+        {
+          "includes": "treats token visibility as explicit, forced-by-node, and owner-hidden",
+          "plain": "Tokens can be hidden directly, by hidden assigned nodes, or by a hidden token-node owner."
+        },
+        {
+          "includes": "filters visible tokens without leaking hidden node or owner-hidden tokens",
+          "plain": "The visible-token filter only keeps tokens that still have a visible path through the theme."
+        }
+      ],
+      "fallbackPlain": "Token visibility rules check."
+    },
+    "computed-tokens.domain.test.ts": {
+      "module": "Computed token propagation",
+      "moduleOrder": 20,
+      "fileBlurb": "Resolves exported tokens across themes, including alias chains, hidden propagation, and project isolation.",
+      "plainByPhrase": [
+        {
+          "includes": "computes a visible color token with stable export metadata",
+          "plain": "A visible color token is exported with stable names, page path, and color fields."
+        },
+        {
+          "includes": "resolves token-node value refs from the active theme and falls back to primary",
+          "plain": "Token-node exports use the active theme value token first and fall back to the primary theme when needed."
+        },
+        {
+          "includes": "omits hidden palette-shade and token-node owner tokens from the computed outputs",
+          "plain": "Hidden palette shades and hidden token-node owners do not appear in the computed export list."
+        },
+        {
+          "includes": "keeps project-level computations isolated when computing all projects",
+          "plain": "Computing all projects keeps each project’s token output separate."
+        }
+      ],
+      "fallbackPlain": "Computed token propagation check."
+    },
+    "AdvancedPopup.component.test.tsx": {
+      "module": "Advanced logic popup",
+      "moduleOrder": 17,
+      "fileBlurb": "Component-level coverage for the Advanced Popup selectors and layouts used by automation.",
+      "fallbackPlain": "Advanced popup component check."
+    },
+    "useAdvancedLogicEffect.integration.test.tsx": {
+      "module": "Advanced logic integration",
+      "moduleOrder": 18,
+      "fileBlurb": "Store/effect integration coverage for applying Advanced Logic and synchronizing assigned tokens.",
+      "fallbackPlain": "Advanced logic integration check."
+    },
+    "advanced-logic.spec.ts": {
+      "module": "Advanced logic popup",
+      "moduleOrder": 21,
+      "fileBlurb": "Real-browser coverage for opening the Advanced Popup, entering a simple hue rule, saving it, and reopening it.",
+      "plainByPhrase": [
+        {
+          "includes": "save and reopen a simple hue expression from the advanced popup",
+          "plain": "A user can open the Advanced popup, save a simple hue rule, close it, and reopen it without losing the result."
+        }
+      ],
+      "fallbackPlain": "Advanced popup browser-flow check."
+    }
+  }
+}

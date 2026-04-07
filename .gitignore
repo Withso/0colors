@@ -9,6 +9,9 @@ packages/frontend/build/
 .env
 .env.local
 .env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
 
 # IDE
 .vscode/
@@ -32,3 +35,16 @@ npm-debug.log*
 
 # Factory
 .factory/
+
+# Generated QA dashboard payload (run: npm run qa:sync-report)
+packages/frontend/public/qa-reports/latest-run.json
+
+# Playwright machine-local JSON (regenerated each run)
+QA-automation/reports/e2e-results.json
+QA-automation/reports/unit-results.json
+QA-automation/reports/latest-raw-run.json
+QA-automation/reports/runs/
+QA-automation/reports/scratch/
+
+# QA hub run history (local machine)
+packages/frontend/public/qa-reports/runs-history.json
