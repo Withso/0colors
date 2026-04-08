@@ -190,9 +190,11 @@ export function AppShell() {
   const dashboardSection = useStore(s => s.dashboardSection);
   const setDashboardSection = useStore(s => s.setDashboardSection);
 
-  // Auth modal state (replaces full-screen auth gate for first-time users)
-  const showAuthModal = useStore(s => s.showAuthModal);
-  const setShowAuthModal = useStore(s => s.setShowAuthModal);
+  // Auth: redirect to accounts.zeros.design instead of showing local AuthPage
+  const redirectToZerosLogin = useCallback(() => {
+    const returnUrl = encodeURIComponent(window.location.href);
+    window.location.href = `https://accounts.zeros.design/login?product_id=0colors&redirect_url=${returnUrl}`;
+  }, []);
 
   // ── Community state ──
   const isCommunityMode = useStore(s => s.isCommunityMode);
@@ -936,7 +938,7 @@ export function AppShell() {
           isTemplateAdmin={!!authSession?.isTemplateAdmin}
           userEmail={authSession?.email}
           onSignOut={handleSignOut}
-          onSignIn={() => setShowAuthModal(true)}
+          onSignIn={redirectToZerosLogin}
           cloudSyncStatus={cloudSyncStatus}
           onForceCloudRefresh={handleForceCloudRefresh}
           publishedProjectIds={publishedProjectIds}
@@ -962,16 +964,7 @@ export function AppShell() {
             handleRemixCommunityProject(slug);
           }}
         />
-        {/* Auth popup — appears when user clicks Sign In from projects page */}
-        {showAuthModal && (
-          <AuthPage
-            onAuth={(session) => {
-              handleAuth(session);
-              setShowAuthModal(false);
-            }}
-            onSkip={() => setShowAuthModal(false)}
-          />
-        )}
+        {/* Auth is now handled by accounts.zeros.design — redirect via redirectToZerosLogin */}
       </Suspense>
     );
   }
@@ -1122,16 +1115,7 @@ export function AppShell() {
       {/* Publish to Community popup */}
       <ConnectedPublishPopup handlePublishChange={handlePublishChange} />
 
-      {/* Auth popup — appears when user clicks Sign In from canvas */}
-      {showAuthModal && (
-        <AuthPage
-          onAuth={(session) => {
-            handleAuth(session);
-            setShowAuthModal(false);
-          }}
-          onSkip={() => setShowAuthModal(false)}
-        />
-      )}
+      {/* Auth is now handled by accounts.zeros.design — redirect via redirectToZerosLogin */}
     </div>
     </Suspense>
   );
