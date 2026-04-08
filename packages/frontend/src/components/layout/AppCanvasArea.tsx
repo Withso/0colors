@@ -113,7 +113,11 @@ export function AppCanvasArea({
   const setShowCommandPalette = useStore(s => s.setShowCommandPalette);
   const showAllVisible = useStore(s => s.showAllVisible);
   const autoAssignTriggerNodeId = useStore(s => s.autoAssignTriggerNodeId);
-  const setShowAuthModal = useStore(s => s.setShowAuthModal);
+  // Auth: redirect to accounts.zeros.design
+  const redirectToZerosLogin = () => {
+    const returnUrl = encodeURIComponent(window.location.href);
+    window.location.href = `https://accounts.zeros.design/login?product_id=0colors&redirect_url=${returnUrl}`;
+  };
 
   const viewMode = useStore(s => s.viewMode);
   const authSession = useStore(s => s.authSession);
@@ -155,7 +159,7 @@ export function AppCanvasArea({
           {!authSession && (
             <button
               className="app-canvas-signin-btn"
-              onClick={() => setShowAuthModal(true)}
+              onClick={redirectToZerosLogin}
               data-testid="auth-canvas-signin-button"
             >
               <LogIn className="app-icon-3-5" />

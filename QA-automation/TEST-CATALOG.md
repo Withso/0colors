@@ -314,7 +314,7 @@ npm run test:e2e:report
 
 The runner executes Vitest (JSON report) → Playwright with `PLAYWRIGHT_SKIP_WEB_SERVER=1` and your current app URL → `qa:sync-report`. The hub reloads `latest-run.json` and `runs-history.json` when the pipeline finishes.
 
-Vite proxies `/__qa-runner/*` to the runner so the browser stays same-origin (no CORS).
+Vite proxies `/__qa-runner/`* to the runner so the browser stays same-origin (no CORS).
 
 Then open the app as **admin**, go to **Projects → QA hub**, and use **Reload reports** if needed. If `latest-run.json` is missing, use **Run all tests** or `npm run qa:sync-report` after a local test run.
 
