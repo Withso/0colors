@@ -974,7 +974,11 @@ export function useCloudSyncAuth() {
 
   // ── Auto-skip auth gate for first-time users ──
   useEffect(() => {
-    if (!authChecking && !authSession && !authSkipped) {
+    // Don't auto-skip if Supabase is still processing tokens from the URL hash
+    // (redirect back from accounts.zeros.design). The SIGNED_IN event will fire shortly.
+    const hashHasTokens =
+      window.location.hash && window.location.hash.includes("access_token");
+    if (!authChecking && !authSession && !authSkipped && !hashHasTokens) {
       handleSkipAuth();
     }
   }, [authChecking, authSession, authSkipped, handleSkipAuth]);
