@@ -1,31 +1,27 @@
-// Persistence middleware — debounced save via store subscription
-// Writes to IndexedDB (async, non-blocking) as primary storage.
-// Falls back to localStorage for backward compatibility during migration period.
+/**
+ * Persistence middleware — write-through sync on every state change.
+ *
+ * When entity state changes:
+ * 1. Identifies which project(s) changed
+ * 2. Calls syncProject() for each — saves to IndexedDB + cloud (500ms debounce)
+ *
+ * This replaces the old flow of:
+ *   1s debounce → IndexedDB only
+ *   3s debounce → markDirty → 2min timer → cloud
+ */
 import type { StoreApi } from 'zustand';
 import type { StoreState } from '../types';
-import { saveGroupExpandStates, saveToLocalStorage } from '../../utils/app-helpers';
-import { CURRENT_SCHEMA_VERSION } from '../../utils/migrations';
-import { db, saveAllToDB } from '../../db';
+import { saveGroupExpandStates } from '../../utils/app-helpers';
+import { syncProject } from '../../sync/write-through';
 
-/**
- * Sets up debounced persistence via store subscription.
- * Writes to both IndexedDB (primary) and localStorage (fallback).
- * Call once after store creation.
- *
- * Reads isInitialLoad, isImporting, and isSampleMode directly from the store.
- * computedTokensRef is still external (passed as callback) since it's a derived cache.
- */
 export function setupPersistenceMiddleware(
   store: StoreApi<StoreState>,
-  getComputedTokens: () => any,
+  _getComputedTokens: () => any,
 ) {
-  let saveTimer: ReturnType<typeof setTimeout> | null = null;
-
   store.subscribe((state, prevState) => {
     // Guard: skip during initial load, import, or sample mode
     if (state.isInitialLoad || state.isImporting) return;
 
-    // Derive isSampleMode from store state
     const isSampleMode = state.projects.find(p => p.id === state.activeProjectId)?.isSample === true;
     if (isSampleMode) return;
 
@@ -49,27 +45,25 @@ export function setupPersistenceMiddleware(
       saveGroupExpandStates(state.groups);
     }
 
-    // Debounced full save
-    if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      const s = store.getState();
+    // Identify which project(s) changed and sync them
+    // Most changes affect the active project only
+    const activeProjectId = state.activeProjectId;
+    const activeProject = state.projects.find(p => p.id === activeProjectId);
 
-      // Primary: async write to IndexedDB (non-blocking)
-      saveAllToDB({
-        projects: s.projects,
-        allNodes: s.allNodes,
-        tokens: s.tokens,
-        groups: s.groups,
-        pages: s.pages,
-        themes: s.themes,
-        canvasStates: s.canvasStates,
-        advancedLogic: s.advancedLogic,
-        schemaVersion: CURRENT_SCHEMA_VERSION,
-      }).catch((err) => {
-        console.error('[Persistence] IndexedDB save failed, falling back to localStorage:', err);
+    if (activeProject && !activeProject.isSample) {
+      syncProject(activeProjectId);
+    }
+
+    // If projects array itself changed (rename, delete, etc.), sync all affected
+    if (state.projects !== prevState.projects) {
+      const changedProjects = state.projects.filter(p => {
+        if (p.isSample) return false;
+        const prev = prevState.projects.find(pp => pp.id === p.id);
+        return !prev || prev.name !== p.name || prev.folderColor !== p.folderColor;
       });
-
-      // localStorage fallback removed — IndexedDB is the primary local storage
-    }, 1000);
+      for (const p of changedProjects) {
+        if (p.id !== activeProjectId) syncProject(p.id);
+      }
+    }
   });
 }
