@@ -387,7 +387,7 @@
 
 .tokens-panel-tab-count-inactive {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .tokens-panel-tab-label {
@@ -537,6 +537,12 @@
   margin-left: auto;
 }
 
+.tokens-panel-header-action-btn-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .tokens-panel-header-action-icon {
   height: 12px;
   width: 12px;
@@ -663,7 +669,7 @@
 .tokens-panel-drag-handle-icon {
   height: 12px;
   width: 12px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 /* ── Theme crown column ── */
@@ -1379,7 +1385,7 @@
 .tokens-panel-empty-subtitle {
   font-size: var(--font-size-xs);
   margin-top: 4px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 /* ══════════════════════════════════════════════
@@ -1451,7 +1457,7 @@
 }
 
 .tokens-panel-bulk-eye-btn-disabled {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   cursor: not-allowed;
 }
 
@@ -1505,7 +1511,7 @@
   width: 12px;
   height: 12px;
   transition: color 0.15s;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 /* ══════════════════════════════════════════════
@@ -1882,7 +1888,7 @@
 }
 
 .tp-empty-ghost {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 /* ══════════════════════════════════════════════
@@ -1903,7 +1909,7 @@
 }
 
 .tp-bulk-vis-ghost {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   cursor: not-allowed;
 }
 
@@ -1969,7 +1975,7 @@
    ══════════════════════════════════════════════ */
 
 .tp-bulk-vis-ghost-btn {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   background-color: var(--surface-3);
   cursor: not-allowed;
 }

@@ -62,12 +62,20 @@ Single source for **what** to verify across the product. Automated suites (Playw
 
 Selectors: `data-testid` only (project convention).
 
-### 2.2 Vitest (`*.unit.test.ts`)
+### 2.2 Vitest (unit / domain / property / component / integration)
 
 
-| File                   | Scope                          |
-| ---------------------- | ------------------------------ |
-| `slugify.unit.test.ts` | `slugify`, `findProjectBySlug` |
+| File                                           | Layer       | Scope                                           |
+| ---------------------------------------------- | ----------- | ----------------------------------------------- |
+| `slugify.unit.test.ts`                         | unit        | `slugify`, `findProjectBySlug`                  |
+| `advanced-logic-engine.domain.test.ts`         | domain      | Parser, evaluator, constraints, themes, tokens, golden fixtures |
+| `advanced-logic-engine.property.test.ts`       | property    | Generated: channel rows, conditionals, constraints, token assignment |
+| `color-conversions.domain.test.ts`             | domain      | HSL, RGB, HEX, OKLCH round-trips, gamut clamping |
+| `hct-utils.domain.test.ts`                     | domain      | HCT normalization, RGB conversion, max chroma   |
+| `visibility.domain.test.ts`                    | domain      | Hidden-node/token rules, palette inheritance     |
+| `computed-tokens.domain.test.ts`               | domain      | Token export, alias chains, hidden propagation   |
+| `AdvancedPopup.component.test.tsx`             | component   | Popup selectors: multi-row, disabled, multi-channel, fallback, token |
+| `useAdvancedLogicEffect.integration.test.tsx`  | integration | Store/effect: recompute, siblings, multi-channel, literal |
 
 
 ---
@@ -98,7 +106,7 @@ Convention: **TC-****-**** — priority ****P0** (ship blocker) … **P3** (nice
 | TC-M02-002         | E2E    | P1       | Import button present                                               |
 | TC-M02-003         | E2E    | P1       | Project cards count after create                                    |
 | TC-M02-004         | Manual | P1       | Cloud/template sections when authenticated                          |
-| TC-M02-005         | E2E    | P2       | Delete / duplicate / export per row (expand specs)                  |
+| TC-M02-005         | **E2E** | P2      | Delete / duplicate / export per row *(AUTO-E2E-M02-004 thru -006)* |
 | TC-M02-006         | Manual | P2       | Published badge when applicable                                     |
 | **TC-M02-ADM-001** | Manual | P2       | **Admin:** QA hub shows last run; upload JSON; history              |
 
@@ -149,13 +157,13 @@ Convention: **TC-****-**** — priority ****P0** (ship blocker) … **P3** (nice
 
 | ID         | Layer    | Priority | Case                                                                         |
 | ---------- | -------- | -------- | ---------------------------------------------------------------------------- |
-| TC-M05-001 | Manual   | P0       | Open advanced popup; save empty → no crash                                   |
+| TC-M05-001 | **E2E**  | P0       | Open advanced popup; save empty → no crash *(AUTO-E2E-M05-002)*              |
 | TC-M05-002 | Manual   | P0       | Single `mix` / `lighten` row drives channel                                  |
 | TC-M05-003 | Manual   | P1       | Conditional on token presence                                                |
 | TC-M05-004 | Manual   | P1       | Non-primary unlinked uses `themeChannels` / `themeTokenAssignment`           |
 | TC-M05-005 | Manual   | P2       | Token ref by name fallback vs id                                             |
-| TC-M05-006 | Unit     | P2       | *Future:* `constrainChannelValue`, `getEffectiveChannels` in isolated module |
-| TC-M05-007 | Property | P3       | *Future:* random AST within grammar → no throw                               |
+| TC-M05-006 | **Domain** | P2     | `constrainChannelValue`, `getEffectiveChannels` *(AUTO-DOM-M05-005, -010 thru -020)* |
+| TC-M05-007 | **Property** | P3   | Random AST within grammar → no throw *(AUTO-PROP-M05-001 thru -007)*         |
 
 
 ### M06 — Tokens panel (`TokensPanel.tsx`, `TokenSearchBar.tsx`, `TokenTablePopup.tsx`)

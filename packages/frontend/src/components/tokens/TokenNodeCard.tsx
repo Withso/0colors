@@ -800,7 +800,6 @@ export function TokenNodeCard({
       <Card
         className="token-card-body"
         style={{
-          backgroundColor: 'var(--surface-2)',
           border: isSelected ? '1px solid var(--accent-primary)' : isMultiSelected ? '1px solid var(--accent-primary-hover)' : '1px solid transparent',
           width: `${nodeWidth}px`,
           maxWidth: `${nodeWidth}px`,
@@ -836,8 +835,6 @@ export function TokenNodeCard({
         <div
           className={`token-card-name-area ${isPrefix ? 'token-card-name-area-prefix' : 'token-card-name-area-child'} ${isNodeInherited && !showAllVisible ? 'token-card-name-area-inherited' : ''}`}
           style={{
-            backgroundColor: 'var(--surface-2)',
-            border: '1px solid var(--border-on-surface-0)',
             ...(nameDimOpacity !== undefined ? { opacity: nameDimOpacity } : {}),
           }}
           onMouseEnter={() => { if (!isPrimaryTheme) setHoveredSection('name'); }}

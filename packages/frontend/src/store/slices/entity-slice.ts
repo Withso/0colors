@@ -11,7 +11,7 @@ function resolve<T>(action: SetStateAction<T>, current: T): T {
 const defaultData = getDefaultData();
 
 export const createEntitySlice: StateCreator<StoreState, [], [], EntitySlice> = (set, get) => ({
-  // ── State ──
+  // ── State (default data, overwritten by IndexedDB/localStorage hydration on mount) ──
   allNodes: defaultData.nodes,
   tokens: defaultData.tokens,
   groups: defaultData.groups,

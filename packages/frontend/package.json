@@ -35,6 +35,8 @@
     "clsx": "*",
     "cmdk": "^1.1.1",
     "color-namer": "*",
+    "dexie": "^4.4.2",
+    "dexie-react-hooks": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
     "hono": "*",
     "input-otp": "^1.4.2",

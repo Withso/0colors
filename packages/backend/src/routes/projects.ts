@@ -5,8 +5,9 @@ import {
     deleteDevConfig, deleteWebhookPending,
     getCommunityMeta, deleteCommunityPublication,
     batchUpsertProjects, getProjectsByIds, upsertProjectOwner,
+    lockProject, refreshLock, unlockProject, forceLockProject,
 } from '../db.js';
-import { CLOUD_PROJECT_LIMIT, SYNC_BATCH_MAX, VALID_TOKEN_FORMATS } from '../constants.js';
+import { CLOUD_PROJECT_LIMIT, SYNC_BATCH_MAX } from '../constants.js';
 import { requireAuth, getUserRole, normalizeUserToMeta } from '../middleware/auth.js';
 import { invalidateCommunityListCache } from './community.js';
 
@@ -241,6 +242,70 @@ router.post('/sync-batch', async (c) => {
         });
     } catch (err: any) {
         console.error('[sync-batch] Error:', err);
+        return c.json({ error: err.message || 'Internal server error' }, 500);
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/project-lock — Acquire lock on a project (session locking)
+// ---------------------------------------------------------------------------
+router.post('/project-lock', async (c) => {
+    try {
+        const userId = await requireAuth(c);
+        if (!userId) return c.json({ error: 'Unauthorized' }, 401);
+        const { projectId, sessionId } = await c.req.json();
+        if (!projectId || !sessionId) return c.json({ error: 'Missing projectId or sessionId' }, 400);
+        const result = await lockProject(projectId, userId, sessionId);
+        return c.json(result);
+    } catch (err: any) {
+        return c.json({ error: err.message || 'Internal server error' }, 500);
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/project-lock-heartbeat — Refresh lock (keep alive)
+// ---------------------------------------------------------------------------
+router.post('/project-lock-heartbeat', async (c) => {
+    try {
+        const userId = await requireAuth(c);
+        if (!userId) return c.json({ error: 'Unauthorized' }, 401);
+        const { projectId, sessionId } = await c.req.json();
+        if (!projectId || !sessionId) return c.json({ error: 'Missing projectId or sessionId' }, 400);
+        const ok = await refreshLock(projectId, sessionId);
+        return c.json({ ok });
+    } catch (err: any) {
+        return c.json({ error: err.message || 'Internal server error' }, 500);
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/project-unlock — Release lock
+// ---------------------------------------------------------------------------
+router.post('/project-unlock', async (c) => {
+    try {
+        const userId = await requireAuth(c);
+        if (!userId) return c.json({ error: 'Unauthorized' }, 401);
+        const { projectId, sessionId } = await c.req.json();
+        if (!projectId || !sessionId) return c.json({ error: 'Missing projectId or sessionId' }, 400);
+        const ok = await unlockProject(projectId, sessionId);
+        return c.json({ ok });
+    } catch (err: any) {
+        return c.json({ error: err.message || 'Internal server error' }, 500);
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/project-lock-force — Force-take lock (user chose "continue here")
+// ---------------------------------------------------------------------------
+router.post('/project-lock-force', async (c) => {
+    try {
+        const userId = await requireAuth(c);
+        if (!userId) return c.json({ error: 'Unauthorized' }, 401);
+        const { projectId, sessionId } = await c.req.json();
+        if (!projectId || !sessionId) return c.json({ error: 'Missing projectId or sessionId' }, 400);
+        const ok = await forceLockProject(projectId, userId, sessionId);
+        return c.json({ ok });
+    } catch (err: any) {
         return c.json({ error: err.message || 'Internal server error' }, 500);
     }
 });

@@ -99,6 +99,11 @@ interface ProjectsPageProps {
   // Community (inline)
   onOpenCommunityProject?: (slug: string) => void;
   onRemixCommunityProject?: (slug: string) => void;
+  // Sample projects (individual template cards)
+  sampleTemplates?: Array<{ id: string; name: string; description: string; folderColor?: number; nodes?: any[]; _origIdx?: number }>;
+  onSelectSampleProject?: (templateIdx: number) => void;
+  starredTemplateId?: string | null;
+  onStarTemplate?: (projectId: string) => void;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -124,7 +129,7 @@ function NavItem({ icon: Icon, label, active, onClick, testId }: {
    ProjectRow — replaces FolderCard
    ═══════════════════════════════════════════════════════════════ */
 
-function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished, onClick, onExport, onDuplicate, onDelete, innerRef }: {
+function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished, onClick, onExport, onDuplicate, onDelete, innerRef, isStarred, onStar }: {
   project: Project;
   tokenCount: number;
   nodeCount: number;
@@ -135,6 +140,8 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
   onDuplicate: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
   innerRef: (el: HTMLDivElement | null) => void;
+  isStarred?: boolean;
+  onStar?: (e: React.MouseEvent) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -182,6 +189,17 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
         {tokenCount > 0 && nodeCount > 0 && ' \u00b7 '}
         {nodeCount > 0 && `${nodeCount} nodes`}
       </span>
+      {/* Star button (template admin only) */}
+      {onStar && (
+        <button
+          className={`projects-row-star-btn${isStarred ? ' is-starred' : ''}`}
+          title={isStarred ? 'Default for new visitors' : 'Set as default for new visitors'}
+          onClick={(e) => { e.stopPropagation(); onStar(e); }}
+          data-testid={`projects-star-${project.id}`}
+        >
+          ★
+        </button>
+      )}
       {/* Menu */}
       {!isSample && (
         <div className="projects-row-menu-wrapper" ref={menuRef} onClick={e => e.stopPropagation()}>
@@ -266,6 +284,10 @@ function ProjectList({
   onDeleteClick,
   onForceCloudRefresh,
   sampleProjects,
+  sampleTemplates,
+  onSelectSampleProject,
+  starredTemplateId,
+  onStarTemplate,
 }: {
   projects: Project[];
   projectStats: Map<string, { tokenCount: number; nodeCount: number }>;
@@ -289,6 +311,10 @@ function ProjectList({
   onDeleteClick: (projectId: string, e: React.MouseEvent) => void;
   onForceCloudRefresh?: () => void;
   sampleProjects: Project[];
+  sampleTemplates?: Array<{ id: string; name: string; description: string; folderColor?: number; nodes?: any[]; _origIdx?: number }>;
+  onSelectSampleProject?: (templateIdx: number) => void;
+  starredTemplateId?: string | null;
+  onStarTemplate?: (projectId: string) => void;
 }) {
   const renderSection = (
     label: string,
@@ -345,6 +371,7 @@ function ProjectList({
           <div>
             {projectList.map(p => {
               const stats = projectStats.get(p.id) || { tokenCount: 0, nodeCount: 0 };
+              const isTemplateRow = createType === 'template';
               return (
                 <ProjectRow
                   key={p.id}
@@ -357,6 +384,8 @@ function ProjectList({
                   onExport={(e) => { e.stopPropagation(); onExportProject(p.id); }}
                   onDuplicate={(e) => { e.stopPropagation(); onDuplicateProject(p.id); }}
                   onDelete={(e) => onDeleteClick(p.id, e)}
+                  isStarred={isTemplateRow ? starredTemplateId === p.id : undefined}
+                  onStar={isTemplateRow && onStarTemplate ? () => onStarTemplate(p.id) : undefined}
                   innerRef={(el) => {
                     if (el) projectRefs.current.set(p.id, el);
                     else projectRefs.current.delete(p.id);
@@ -369,6 +398,20 @@ function ProjectList({
       </div>
     );
   };
+
+  const isLoading = cloudSyncStatus === 'syncing' || cloudSyncStatus === 'loading';
+
+  const renderSkeleton = (count = 3) => (
+    <div className="projects-section-skeleton">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="projects-row-skeleton">
+          <div className="projects-row-skeleton-dot" />
+          <div className="projects-row-skeleton-text" />
+          <div className="projects-row-skeleton-stats" />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="projects-list" data-testid="projects-list-container">
@@ -383,29 +426,34 @@ function ProjectList({
       </div>
 
       {/* Templates section (if template admin) */}
-      {isAuthenticated && isTemplateAdmin && renderSection(
-        'Templates',
-        templateProjects,
-        'template',
-        true,
-        'New template',
+      {isAuthenticated && isTemplateAdmin && (
+        templateProjects.length > 0 || true ? renderSection(
+          'Templates',
+          templateProjects,
+          'template',
+          true,
+          'New template',
+        ) : null
       )}
 
       {/* Cloud section (authenticated) */}
-      {isAuthenticated && renderSection(
-        'Cloud Projects',
-        cloudSectionProjects,
-        'cloud',
-        !!canCreateCloudProject,
-        'New cloud project',
-      )}
-
-      {/* Cloud section for unauthenticated — show sample projects */}
-      {!isAuthenticated && sampleProjects.length > 0 && renderSection(
-        'Cloud Projects',
-        sampleProjects,
-        'cloud',
-        false,
+      {isAuthenticated && (
+        cloudSectionProjects.length > 0 || !!canCreateCloudProject ? renderSection(
+          'Cloud Projects',
+          cloudSectionProjects,
+          'cloud',
+          !!canCreateCloudProject,
+          'New cloud project',
+        ) : (
+          <div className="projects-section">
+            <div className="projects-section-header">
+              <div className="projects-section-header-left">
+                <span className="projects-section-label">Cloud Projects</span>
+              </div>
+            </div>
+            {renderSkeleton(2)}
+          </div>
+        )
       )}
 
       {/* Local section */}
@@ -415,6 +463,51 @@ function ProjectList({
         'local',
         true,
         'New local project',
+      )}
+
+      {/* Sample Projects section — row layout matching other sections */}
+      {!sampleTemplates && (
+        <div className="projects-section" data-testid="projects-sample-section">
+          <div className="projects-section-header">
+            <div className="projects-section-header-left">
+              <span className="projects-section-label">Sample Projects</span>
+            </div>
+          </div>
+          {renderSkeleton(2)}
+        </div>
+      )}
+      {sampleTemplates && sampleTemplates.length > 0 && (
+        <div className="projects-section" data-testid="projects-sample-section">
+          <div className="projects-section-header">
+            <div className="projects-section-header-left">
+              <span className="projects-section-label">Sample Projects</span>
+              <span className="projects-section-count">{sampleTemplates.length}</span>
+            </div>
+          </div>
+          <div>
+            {sampleTemplates.map((tmpl, idx) => (
+              <div
+                key={tmpl.id}
+                className="projects-row"
+                data-testid={`projects-sample-card-${tmpl.id}`}
+                onClick={() => onSelectSampleProject?.(tmpl._origIdx ?? idx)}
+              >
+                <div
+                  className="projects-row-dot"
+                  style={{ background: `hsl(${tmpl.folderColor ?? 210}, 55%, 50%)` }}
+                />
+                <span className="projects-row-name">{tmpl.name}</span>
+                <span className="projects-row-badge-sample">
+                  <Eye className="projects-row-badge-sample-icon" />
+                  Read-only
+                </span>
+                <span className="projects-row-stats">
+                  {tmpl.nodes?.length ?? 0} nodes
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -452,6 +545,10 @@ export function ProjectsPage({
   aiProjectContext,
   onOpenCommunityProject,
   onRemixCommunityProject,
+  sampleTemplates,
+  onSelectSampleProject,
+  starredTemplateId,
+  onStarTemplate,
 }: ProjectsPageProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
@@ -496,8 +593,8 @@ export function ProjectsPage({
   const cloudProjects = useMemo(() => projects.filter(p => p.isCloud && !p.isTemplate), [projects]);
   const sampleProjects = useMemo(() => projects.filter(p => p.isSample), [projects]);
   const localProjects = useMemo(() => projects.filter(p => !p.isCloud && !p.isTemplate && !p.isSample), [projects]);
-  // Combine sample + cloud projects for display (sample first)
-  const cloudSectionProjects = useMemo(() => [...sampleProjects, ...cloudProjects], [sampleProjects, cloudProjects]);
+  // Cloud section shows only actual cloud projects (not samples)
+  const cloudSectionProjects = useMemo(() => cloudProjects, [cloudProjects]);
   const canCreateCloudProject = isAuthenticated && (isAdmin || cloudProjects.length < 20);
 
   return (
@@ -599,6 +696,10 @@ export function ProjectsPage({
             onDeleteClick={handleDeleteClick}
             onForceCloudRefresh={onForceCloudRefresh}
             sampleProjects={sampleProjects}
+            sampleTemplates={sampleTemplates}
+            onSelectSampleProject={onSelectSampleProject}
+            starredTemplateId={starredTemplateId}
+            onStarTemplate={onStarTemplate}
           />
         )}
         {activeSection === 'community' && onOpenCommunityProject && onRemixCommunityProject && (

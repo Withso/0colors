@@ -504,61 +504,19 @@ export const adjustNodeSpacing = (nodes: ColorNode[], tokens: DesignToken[], pro
 
 // ── Default data structure ───────────────────────────────────────
 
+/**
+ * Default data for brand-new users (no localStorage, no IndexedDB).
+ * Contains a single sample project with one node.
+ *
+ * NOTE: The URL guard in useUrlRouting.ts blocks `/project/sample-project`
+ * and redirects to /projects, so this data never appears at a /project/ URL.
+ * It is ONLY used as initial store data and as a fallback for missing fields
+ * during data hydration from localStorage/IndexedDB.
+ */
 export const getDefaultData = () => ({
-  nodes: [
-    {
-      id: '1',
-      colorSpace: 'hsl' as const,
-      hue: 120,
-      saturation: 70,
-      lightness: 50,
-      alpha: 100,
-      position: { x: 100, y: 200 },
-      parentId: null,
-      hueOffset: 0,
-      saturationOffset: 0,
-      lightnessOffset: 0,
-      alphaOffset: 0,
-      tokenId: null,
-      tokenIds: [],
-      width: 240,
-      projectId: 'sample-project',
-      pageId: 'page-1',
-      lockHue: false,
-      lockSaturation: false,
-      lockLightness: false,
-      lockAlpha: false,
-      lockRed: false,
-      lockGreen: false,
-      lockBlue: false,
-      diffHue: false,
-      diffSaturation: false,
-      diffLightness: false,
-      diffAlpha: false,
-      diffRed: false,
-      diffGreen: false,
-      diffBlue: false,
-      isExpanded: false,
-    },
-  ],
-  tokens: [
-    { id: 'grey-50', name: 'grey-50', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 98, alpha: 100 } }, hue: 0, saturation: 0, lightness: 98, alpha: 100 },
-    { id: 'grey-100', name: 'grey-100', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 96, alpha: 100 } }, hue: 0, saturation: 0, lightness: 96, alpha: 100 },
-    { id: 'grey-200', name: 'grey-200', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 90, alpha: 100 } }, hue: 0, saturation: 0, lightness: 90, alpha: 100 },
-    { id: 'grey-300', name: 'grey-300', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 83, alpha: 100 } }, hue: 0, saturation: 0, lightness: 83, alpha: 100 },
-    { id: 'grey-400', name: 'grey-400', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 64, alpha: 100 } }, hue: 0, saturation: 0, lightness: 64, alpha: 100 },
-    { id: 'grey-500', name: 'grey-500', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 45, alpha: 100 } }, hue: 0, saturation: 0, lightness: 45, alpha: 100 },
-    { id: 'grey-600', name: 'grey-600', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 32, alpha: 100 } }, hue: 0, saturation: 0, lightness: 32, alpha: 100 },
-    { id: 'grey-700', name: 'grey-700', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 25, alpha: 100 } }, hue: 0, saturation: 0, lightness: 25, alpha: 100 },
-    { id: 'grey-800', name: 'grey-800', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 15, alpha: 100 } }, hue: 0, saturation: 0, lightness: 15, alpha: 100 },
-    { id: 'grey-900', name: 'grey-900', type: 'color' as const, groupId: 'grey-group', projectId: 'sample-project', pageId: 'page-1', themeValues: { 'theme-1': { hue: 0, saturation: 0, lightness: 9, alpha: 100 } }, hue: 0, saturation: 0, lightness: 9, alpha: 100 },
-  ],
-  groups: [{
-    id: 'grey-group',
-    name: 'grey',
-    projectId: 'sample-project',
-    isExpanded: true,
-  }],
+  nodes: [] as any[],
+  tokens: [] as any[],
+  groups: [] as any[],
   projects: [{
     id: 'sample-project',
     name: 'Sample Project',

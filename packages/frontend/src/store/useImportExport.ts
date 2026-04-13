@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import type { ColorNode, DesignToken, TokenProject, TokenGroup, CanvasState, Page, Theme, NodeAdvancedLogic } from '../types';
 import { migrateToLatest, CURRENT_SCHEMA_VERSION } from '../utils/migrations';
 import { useStore } from './index';
+import { useReadOnlyState } from '../hooks/useReadOnlyState';
 import { toast } from 'sonner';
 
 interface UseImportExportParams {
@@ -39,7 +40,7 @@ export function useImportExport({
   const flushUndo = useStore(s => s.flushUndo);
 
   // ── Local sample-mode guard (reads from store) ──
-  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
+  const { isSampleMode } = useReadOnlyState();
   const sampleModeToast = useCallback((action?: string) => {
     toast('Duplicate this project to make changes', {
       description: action ? `${action} is not available in sample mode` : undefined,

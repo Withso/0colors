@@ -53,6 +53,7 @@ export function useUrlRouting({
   const communitySlug = useStore(s => s.communitySlug);
   const setCommunitySlug = useStore(s => s.setCommunitySlug);
   const isInitialLoad = useStore(s => s.isInitialLoad);
+  const authChecking = useStore(s => s.authChecking);
   const cloudTemplatesLoaded = useStore(s => s.cloudTemplatesLoaded);
   const authSession = useStore(s => s.authSession);
   const activeSampleTemplateId = useStore(s => s.activeSampleTemplateId);
@@ -79,6 +80,25 @@ export function useUrlRouting({
   // ── URL → state sync (handles browser back/forward & direct URL access) ──
   useEffect(() => {
     const path = location.pathname;
+
+    // After data loads (isInitialLoad becomes false), re-process the current URL
+    // even if it matches lastSyncedPathnameRef. This ensures the active project
+    // matches the URL (not the default 'sample-project').
+    if (!isInitialLoad && path === lastSyncedPathnameRef.current) {
+      const projectMatch = path.match(/^\/project\/([^/]+)/);
+      if (projectMatch) {
+        const slug = projectMatch[1];
+        const project = findProjectBySlug(useStore.getState().projects, slug);
+        if (project && project.id !== activeProjectId) {
+          lastSyncedPathnameRef.current = ''; // Force re-process
+        } else {
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+
     if (path === lastSyncedPathnameRef.current) return;
     lastSyncedPathnameRef.current = path;
 
@@ -142,11 +162,9 @@ export function useUrlRouting({
         _setViewingProjects(false);
         viewingProjectsRef.current = false;
       }
-      // Activate the sample project
-      const sampleProject = useStore.getState().projects.find(p => p.isSample);
-      if (sampleProject && sampleProject.id !== activeProjectId) {
-        setActiveProjectId(sampleProject.id);
-      }
+      // NOTE: Don't call setActiveProjectId separately here!
+      // handleSwitchSampleTemplate does it atomically in one setState,
+      // preventing the bug where activePageId points to a cloud project's page.
       // Find and activate the matching template by slug (if templates are loaded)
       if (sampleTemplates.length > 0) {
         if (templateSlug) {
@@ -167,6 +185,7 @@ export function useUrlRouting({
         }
       }
       _setViewMode('canvas');
+      // Zoom-to-fit is handled by handleSwitchSampleTemplate setting canvasState directly
       return;
     }
 
@@ -174,8 +193,24 @@ export function useUrlRouting({
     if (match) {
       const slug = match[1];
       const view = match[2] as 'code' | 'export' | undefined;
+
+      // /project/ is ONLY for user's own cloud/local projects.
+      // Sample projects must use /sample-project/ path.
+      // Reject 'sample-project' slug and redirect to projects page.
+      if (slug === 'sample-project') {
+        console.log('🚫 /project/sample-project is not a valid route — redirecting to /projects');
+        navigate('/projects', { replace: true });
+        return;
+      }
+
       const project = findProjectBySlug(useStore.getState().projects, slug);
       if (project) {
+        // Block sample/template projects from being accessed via /project/ path
+        if ((project as any).isSample || (project as any).isTemplate) {
+          console.log(`🚫 /project/${slug} is a sample/template — redirecting to /projects`);
+          navigate('/projects', { replace: true });
+          return;
+        }
         if (viewingProjectsRef.current) {
           _setViewingProjects(false);
           viewingProjectsRef.current = false;
@@ -190,14 +225,27 @@ export function useUrlRouting({
         }
         const newMode = view === 'code' ? 'code' : view === 'export' ? 'export' : 'canvas';
         _setViewMode(newMode);
+      } else if (!isInitialLoad) {
+        // Project not found AFTER data has loaded — it genuinely doesn't exist.
+        console.log(`🚫 /project/${slug} — project not found, redirecting to /projects`);
+        navigate('/projects', { replace: true });
+      } else {
+        // Project not found but data is still loading — allow the effect to
+        // re-run after hydration by NOT marking this path as synced.
+        lastSyncedPathnameRef.current = '';
       }
       return;
     }
-  }, [location.pathname, sampleTemplates, activeSampleTemplateId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [location.pathname, isInitialLoad, sampleTemplates, activeSampleTemplateId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Home redirect logic (runs after localStorage restore) ──
+  // ── Home redirect logic (runs after localStorage restore + auth check) ──
   useEffect(() => {
     if (isInitialLoad) return;
+    // Wait for auth check to complete before deciding where to redirect.
+    // Without this gate, the redirect can fire while authSession is still null
+    // (auth in progress), causing a flash redirect to /sample-project that
+    // then has to be corrected to /projects once auth resolves.
+    if (authChecking) return;
     const path = location.pathname;
     if (path !== '/' && path !== '') return;
 
@@ -212,8 +260,15 @@ export function useUrlRouting({
         // to prevent a flash of hardcoded data → then template data shift
         if (!cloudTemplatesLoaded) return; // Will re-run when cloudTemplatesLoaded changes
 
-        const firstTemplate = sampleTemplates[0];
-        const templateSlug = slugify(firstTemplate?.name || 'starter');
+        // Use the admin-starred template if available, otherwise first template
+        const starredId = useStore.getState().starredTemplateId;
+        let targetIdx = 0;
+        if (starredId) {
+          const starredIdx = sampleTemplates.findIndex(t => t.id === starredId);
+          if (starredIdx >= 0) targetIdx = starredIdx;
+        }
+        const targetTemplate = sampleTemplates[targetIdx] || sampleTemplates[0];
+        const templateSlug = slugify(targetTemplate?.name || 'starter');
         navigate(`/sample-project/${templateSlug}`, { replace: true });
         lastSyncedPathnameRef.current = `/sample-project/${templateSlug}`;
         const sampleProject = projects.find(p => p.isSample);
@@ -223,27 +278,33 @@ export function useUrlRouting({
         _setViewingProjects(false);
         viewingProjectsRef.current = false;
 
-        // If cloud templates are loaded, switch to the first one
-        if (firstTemplate) {
-          handleSwitchSampleTemplate(0);
+        // Switch to the target template
+        if (targetTemplate) {
+          handleSwitchSampleTemplate(targetIdx);
         }
-        setTimeout(() => window.dispatchEvent(new Event('canvasFitAll')), 200);
+        requestAnimationFrame(() => requestAnimationFrame(() => window.dispatchEvent(new Event('canvasFitAll'))));
       }
     }
-  }, [isInitialLoad, location.pathname, cloudTemplatesLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isInitialLoad, authChecking, authSession, location.pathname, cloudTemplatesLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Sync URL when active project is renamed ──
   useEffect(() => {
+    // Don't rewrite URL during initial load — activeProjectId is still the default
+    // ('sample-project') and doesn't match the URL slug, which would incorrectly
+    // rewrite e.g. /project/project-2 → /project/sample-project.
+    if (isInitialLoad) return;
     if (viewingProjectsRef.current) return;
     const project = projects.find(p => p.id === activeProjectId);
     if (!project) return;
+    // Don't rewrite URL for sample projects — they use /sample-project/ path
+    if ((project as any).isSample) return;
     const newSlug = slugify(project.name);
     const parts = location.pathname.split('/').filter(Boolean);
     if (parts[0] === 'project' && parts[1] && parts[1] !== newSlug) {
       const viewSuffix = parts[2] ? `/${parts[2]}` : '';
       navigate(`/project/${newSlug}${viewSuffix}`, { replace: true });
     }
-  }, [projects, activeProjectId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [projects, activeProjectId, isInitialLoad]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { setViewingProjects, setViewMode };
 }

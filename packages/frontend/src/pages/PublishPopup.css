@@ -68,7 +68,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-md);
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   cursor: pointer;
   transition: color 0.15s, background-color 0.15s;
   background: none;
@@ -133,7 +133,7 @@
 }
 
 .publish-input::placeholder {
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 .publish-input:focus {
@@ -154,7 +154,7 @@
 }
 
 .publish-textarea::placeholder {
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 .publish-textarea:focus {
@@ -168,7 +168,7 @@
 
 .publish-char-count-text {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 /* ─── Remix checkbox ─── */
@@ -235,7 +235,7 @@
 
 .publish-remix-description {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   margin-top: 2px;
 }
 
@@ -283,7 +283,7 @@
   padding: 0 12px;
   border-radius: var(--radius-lg);
   font-size: 12px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   cursor: pointer;
   transition: color 0.15s;
   background: none;

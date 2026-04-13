@@ -96,7 +96,7 @@
 
 .help-popup-fn-usecase-bullet {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   flex-shrink: 0;
   margin-top: 2px;
   width: 6px;
@@ -206,7 +206,7 @@
 
 .help-popup-sidebar-subtitle {
   font-size: 9.5px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   display: block;
   margin-top: 2px;
 }
@@ -262,7 +262,7 @@
 
 .help-popup-sidebar-tip {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .help-popup-kbd {
@@ -297,7 +297,7 @@
 
 .help-popup-content-subtitle {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   margin-top: 2px;
 }
 
@@ -375,7 +375,7 @@
 
 .help-popup-op-use {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   display: block;
   margin-top: 2px;
 }

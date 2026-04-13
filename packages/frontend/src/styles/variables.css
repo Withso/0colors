@@ -299,9 +299,9 @@
   --color--surface--code: var(--grey-850);
   --color--surface--floor: var(--grey-750);
   --color--surface--absolute: var(--0colors--brand--wolf-black);
-  --color--surface--overlay: color-mix(in srgb, var(--grey-950) 70%, transparent);
-  --color--surface--hover: color-mix(in srgb, var(--grey-50) 4%, transparent);
-  --color--surface--hover-strong: color-mix(in srgb, var(--grey-50) 8%, transparent);
+  --color--surface--overlay: color-mix(in srgb, var(--grey-950) 75%, transparent);
+  --color--surface--hover: color-mix(in srgb, var(--grey-50) 5%, transparent);
+  --color--surface--hover-strong: color-mix(in srgb, var(--grey-50) 10%, transparent);
   --color--surface--selected: color-mix(in srgb, var(--color--base--primary) 10%, transparent);
   --color--surface--selected-strong: color-mix(in srgb, var(--color--base--primary) 20%, transparent);
   --color--surface--primary: var(--color--base--primary-pressed);
@@ -319,9 +319,9 @@
   --color--on-surface--2: var(--grey-300);
   --color--on-surface--3: var(--grey-350);
   --color--on-surface--4: var(--grey-400);
-  --color--on-surface--5: var(--grey-500);
-  --color--on-surface--6: var(--grey-600);
-  --color--on-surface--disabled: var(--grey-700);
+  --color--on-surface--5: var(--grey-450);
+  --color--on-surface--6: var(--grey-500);
+  --color--on-surface--disabled: var(--grey-600);
   --color--on-surface--inverse: var(--grey-900);
   --color--on-primary: var(--grey-100);
   --color--on-success: var(--green-950);
@@ -332,9 +332,9 @@
   --color--border--on-surface-0: var(--grey-800);
   --color--border--on-surface-1: var(--grey-700);
   --color--border--on-surface-2: var(--grey-600);
-  --color--border--strong: color-mix(in srgb, var(--grey-50) 8%, transparent);
-  --color--border--subtle: color-mix(in srgb, var(--grey-50) 6%, transparent);
-  --color--border--faint: color-mix(in srgb, var(--grey-50) 3%, transparent);
+  --color--border--strong: color-mix(in srgb, var(--grey-50) 10%, transparent);
+  --color--border--subtle: color-mix(in srgb, var(--grey-50) 7%, transparent);
+  --color--border--faint: color-mix(in srgb, var(--grey-50) 4%, transparent);
   --color--border--focus: var(--color--base--primary);
   --color--border--primary: color-mix(in srgb, var(--color--base--primary) 30%, transparent);
   --color--border--info: color-mix(in srgb, var(--blue-500) 25%, transparent);
@@ -636,6 +636,25 @@
   --default-link-color: var(--text-link);
   --absolute-black: var(--0colors--brand--wolf-black);
   --absolute-white: var(--0colors--brand--polar-white);
+
+  /* ─── Extended semantic aliases (referenced across components) ─── */
+  --text-quaternary: var(--on-surface-6);
+  --bg-primary: var(--surface-0);
+  --bg-secondary: var(--surface-2);
+  --bg-tertiary: var(--surface-3);
+
+  /* ─── Z-index scale (semantic layering) ─── */
+  --z-canvas: 1;
+  --z-node-card: 10;
+  --z-toolbar: 50;
+  --z-dropdown: 100;
+  --z-sample-bar: 200;
+  --z-popup: 500;
+  --z-advanced-popup: 600;
+  --z-modal: 700;
+  --z-toast: 800;
+  --z-ai-chat: 900;
+  --z-max: 999;
   --markdown-block-font-color: var(--text-primary);
   --red: var(--red-700);
   --light-blue: var(--0colors--brand--ice-blue);

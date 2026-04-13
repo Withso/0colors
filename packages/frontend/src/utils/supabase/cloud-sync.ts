@@ -22,6 +22,7 @@ import { SERVER_BASE } from './client';
 import { publicAnonKey } from './info';
 import type { ColorNode, DesignToken, TokenProject, TokenGroup, Page, Theme, CanvasState, NodeAdvancedLogic } from '../../types';
 import type { ProjectComputedTokens } from '../computed-tokens';
+import { isTabLeader, broadcastChange, requestSync } from '../../sync/tab-channel';
 
 // ── Types ──
 
@@ -49,12 +50,13 @@ interface SyncState {
 }
 
 // ── Constants ──
-const SYNC_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes (safety-net interval)
+const SYNC_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes (safety-net interval for pushing dirty projects)
+const REMOTE_POLL_MS = 30 * 1000; // 30 seconds — poll for remote changes (cross-browser sync)
 const IDLE_SAVE_MS = 30 * 1000; // 30 seconds idle → auto save
 const DEBOUNCE_SAVE_MS = 3_000; // 3 seconds debounce after any markDirty → instant save
 const DIRTY_KEY = '0colors-cloud-dirty-projects';
-const FETCH_TIMEOUT_MS = 20_000; // 20s timeout (edge functions can have cold starts)
-const MAX_RETRIES = 1; // Retry once on network failure
+const FETCH_TIMEOUT_MS = 30_000; // 30s timeout (edge functions can have cold starts + large batches)
+const MAX_RETRIES = 2; // Retry twice with exponential backoff on network failure
 
 // ── Module state ──
 const state: SyncState = {
@@ -79,6 +81,13 @@ let _idleListenersAttached = false;
 let onSyncStart: (() => void) | null = null;
 let onSyncComplete: ((success: boolean, projectIds: string[]) => void) | null = null;
 let onSyncError: ((error: string) => void) | null = null;
+// Token refresh callback — invoked when sync gets a 401 so the app can refresh the JWT
+let onTokenExpired: (() => Promise<string | null>) | null = null;
+// Visibility resume callback — invoked when tab regains focus to check for remote changes
+let onVisibilityResume: (() => void) | null = null;
+// Remote poll callback — invoked every REMOTE_POLL_MS to check for changes from other browsers/devices
+let onRemotePoll: (() => void) | null = null;
+let _remotePollIntervalId: ReturnType<typeof setInterval> | null = null;
 
 // Data getter — provided by App.tsx so sync service can grab current state
 let getProjectSnapshot: ((projectId: string) => ProjectSnapshot | null) | null = null;
@@ -140,6 +149,9 @@ export function initCloudSync(config: {
   onComplete?: (success: boolean, projectIds: string[]) => void;
   onError?: (error: string) => void;
   onSynced?: (projectIds: string[], timestamps: Record<string, number>) => void;
+  onTokenExpired?: () => Promise<string | null>;
+  onVisibilityResume?: () => void;
+  onRemotePoll?: () => void;
 }) {
   state.accessToken = config.accessToken;
   getProjectSnapshot = config.getSnapshot;
@@ -147,15 +159,26 @@ export function initCloudSync(config: {
   onSyncComplete = config.onComplete || null;
   onSyncError = config.onError || null;
   onProjectsSynced = config.onSynced || null;
+  onTokenExpired = config.onTokenExpired || null;
+  onVisibilityResume = config.onVisibilityResume || null;
+  onRemotePoll = config.onRemotePoll || null;
 
   // Load any pending dirty state from localStorage (e.g., from a previous session that didn't flush)
   loadDirtyState();
 
-  // Start periodic sync
+  // Start periodic sync — only the leader tab runs the interval to prevent
+  // duplicate syncs from multiple tabs.
   if (state.intervalId) clearInterval(state.intervalId);
   state.intervalId = setInterval(() => {
-    flushDirtyProjects();
+    if (isTabLeader()) {
+      flushDirtyProjects();
+    }
   }, SYNC_INTERVAL_MS);
+
+  // NOTE: Remote polling disabled — it causes conflicts when two browsers
+  // edit the same project (one overwrites the other's changes).
+  // Real-time sync via WebSockets or session locking will replace this.
+  // The visibility-based sync (onVisibilityResume) still works for tab-switch scenarios.
 
   // Listen for online/offline
   if (typeof window !== 'undefined') {
@@ -180,6 +203,10 @@ export function destroyCloudSync() {
     clearInterval(state.intervalId);
     state.intervalId = null;
   }
+  if (_remotePollIntervalId) {
+    clearInterval(_remotePollIntervalId);
+    _remotePollIntervalId = null;
+  }
   // Clear debounced save timer
   if (_debounceSaveTimerId) {
     clearTimeout(_debounceSaveTimerId);
@@ -201,11 +228,20 @@ export function updateAccessToken(token: string | null) {
 
 /** Mark a cloud project as dirty (needs sync).
  *  Triggers a debounced auto-flush (3 s) so changes are saved near-instantly
- *  without hammering the server during rapid edits. */
+ *  without hammering the server during rapid edits.
+ *  Also broadcasts the change to other tabs and requests sync from the leader. */
 export function markDirty(projectId: string) {
   state.dirtyProjectIds.add(projectId);
   saveDirtyState();
   _scheduleDebouncedFlush();
+
+  // Notify other tabs that this project changed
+  broadcastChange(projectId, ['nodes', 'tokens', 'groups', 'pages', 'themes']);
+
+  // If this tab is not the leader, request the leader to sync
+  if (!isTabLeader()) {
+    requestSync(projectId);
+  }
 }
 
 /** Schedule a debounced flush — resets the timer on every call so rapid
@@ -309,6 +345,22 @@ export async function syncProject(projectId: string): Promise<boolean> {
   }
 }
 
+/** Load a single cloud project snapshot from server (lightweight — for polling) */
+export async function loadSingleProject(projectId: string, accessToken: string): Promise<ProjectSnapshot | null> {
+  try {
+    const res = await safeFetch(`${SERVER_BASE}/load/${encodeURIComponent(projectId)}`, {
+      method: 'GET',
+      headers: makeHeaders(accessToken),
+    }, 1, 10_000); // 1 retry, 10s timeout (lightweight)
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.snapshot || null;
+  } catch {
+    return null;
+  }
+}
+
 /** Load all cloud project snapshots from server */
 export async function loadCloudProjects(accessToken: string): Promise<{
   projectId: string;
@@ -344,11 +396,14 @@ export async function loadCloudProjects(accessToken: string): Promise<{
  * reading from the same KV store but filtered to isTemplate projects.
  */
 export async function loadPublicTemplates(): Promise<{
-  templateId: string;
-  snapshot: ProjectSnapshot | null;
-  name?: string;
-  description?: string;
-}[]> {
+  templates: {
+    templateId: string;
+    snapshot: ProjectSnapshot | null;
+    name?: string;
+    description?: string;
+  }[];
+  starredTemplateId: string | null;
+}> {
   try {
     const res = await safeFetch(`${SERVER_BASE}/templates`, {
       method: 'GET',
@@ -360,20 +415,35 @@ export async function loadPublicTemplates(): Promise<{
     if (!res.ok) {
       // Expected to fail until backend endpoint is deployed
       console.log(`☁️ Load public templates failed (${res.status}) — using built-in templates`);
-      return [];
+      return { templates: [], starredTemplateId: null };
     }
 
     const data = await res.json();
-    // Backend returns { projectId, name, snapshot } — normalize to { templateId, ... }
-    return (data.templates || []).map((t: any) => ({
+    // Backend returns { templates: [{projectId, name, snapshot}], starredTemplateId }
+    const templates = (data.templates || []).map((t: any) => ({
       templateId: t.templateId || t.projectId,
       snapshot: t.snapshot || null,
       name: t.name,
       description: t.description,
     }));
+    return { templates, starredTemplateId: data.starredTemplateId || null };
   } catch (e) {
     console.log(`☁️ Load public templates error: ${e} — using built-in templates`);
-    return [];
+    return { templates: [], starredTemplateId: null };
+  }
+}
+
+/** Set or clear the starred template (template admin only) */
+export async function setStarredTemplate(templateId: string | null, accessToken: string): Promise<boolean> {
+  try {
+    const res = await safeFetch(`${SERVER_BASE}/templates/starred`, {
+      method: 'PUT',
+      headers: makeHeaders(accessToken, true),
+      body: JSON.stringify({ templateId }),
+    });
+    return res.ok;
+  } catch {
+    return false;
   }
 }
 
@@ -473,21 +543,28 @@ async function flushDirtyProjects(): Promise<boolean> {
 
   const projectIds = [...state.dirtyProjectIds];
   const snapshots: { projectId: string; snapshot: ProjectSnapshot }[] = [];
+  const staleIds: string[] = [];
 
   for (const pid of projectIds) {
     const snapshot = getProjectSnapshot(pid);
     if (snapshot) {
       snapshots.push({ projectId: pid, snapshot });
+    } else {
+      // Project no longer exists (deleted) — mark as stale
+      staleIds.push(pid);
     }
   }
 
-  if (snapshots.length === 0) {
-    // All dirty projects returned null snapshots (e.g. local-only projects).
-    // Clear them from the dirty set so we don't keep retrying, and notify
-    // the UI that sync completed (nothing to send is still a success).
-    for (const pid of projectIds) {
+  // Remove stale (deleted) projects from dirty set
+  if (staleIds.length > 0) {
+    for (const pid of staleIds) {
       state.dirtyProjectIds.delete(pid);
     }
+    console.log(`☁️ Removed ${staleIds.length} stale project(s) from dirty set`);
+  }
+
+  if (snapshots.length === 0) {
+    // All dirty projects returned null snapshots (e.g. local-only or deleted).
     saveDirtyState();
     state.isSyncing = false;
     onSyncComplete?.(true, projectIds);
@@ -496,16 +573,81 @@ async function flushDirtyProjects(): Promise<boolean> {
 
   try {
     // Use batch sync for efficiency
-    const res = await safeFetch(`${SERVER_BASE}/sync-batch`, {
+    let res = await safeFetch(`${SERVER_BASE}/sync-batch`, {
       method: 'POST',
       headers: makeHeaders(state.accessToken, true),
       body: JSON.stringify({ projects: snapshots }),
     });
 
+    // ── 401 Unauthorized: attempt token refresh and retry once ──
+    if (res.status === 401 && onTokenExpired) {
+      console.log('☁️ Sync got 401 — attempting token refresh…');
+      const newToken = await onTokenExpired();
+      if (newToken) {
+        state.accessToken = newToken;
+        res = await safeFetch(`${SERVER_BASE}/sync-batch`, {
+          method: 'POST',
+          headers: makeHeaders(newToken, true),
+          body: JSON.stringify({ projects: snapshots }),
+        });
+      }
+    }
+
+    // ── 403 Forbidden: fall back to individual project syncs ──
+    // One unregistered project in the batch fails the whole request,
+    // so retry each project individually to save the ones that work.
+    if (res.status === 403 && snapshots.length > 1) {
+      const err403 = await res.json().catch(() => ({ error: 'Unknown' }));
+      console.log(`☁️ Batch sync 403 — falling back to individual syncs: ${err403.error}`);
+      let anySuccess = false;
+      const successPids: string[] = [];
+      const timestamps: Record<string, number> = {};
+      for (const { projectId: pid, snapshot } of snapshots) {
+        try {
+          const indRes = await safeFetch(`${SERVER_BASE}/sync`, {
+            method: 'POST',
+            headers: makeHeaders(state.accessToken, true),
+            body: JSON.stringify({ projectId: pid, snapshot }),
+          }, 1); // 1 retry for individual syncs
+          if (indRes.ok) {
+            const indResult = await indRes.json();
+            state.dirtyProjectIds.delete(pid);
+            anySuccess = true;
+            successPids.push(pid);
+            if (indResult.syncedAt) timestamps[pid] = indResult.syncedAt;
+          } else {
+            const indErr = await indRes.json().catch(() => ({ error: 'Unknown' }));
+            console.log(`☁️ Individual sync failed for ${pid} (${indRes.status}): ${indErr.error}`);
+            // If 403 for this specific project, remove it from dirty set
+            // to prevent it from blocking future batch syncs
+            if (indRes.status === 403) {
+              state.dirtyProjectIds.delete(pid);
+              console.log(`☁️ Removed unregistered project ${pid} from dirty set`);
+            }
+          }
+        } catch (indE) {
+          console.log(`☁️ Individual sync error for ${pid}: ${indE}`);
+        }
+      }
+      saveDirtyState();
+      if (successPids.length > 0 && onProjectsSynced) {
+        onProjectsSynced(successPids, timestamps);
+      }
+      if (anySuccess) {
+        console.log(`☁️ Individual sync: ${successPids.length}/${snapshots.length} succeeded`);
+        onSyncComplete?.(state.dirtyProjectIds.size === 0, projectIds);
+      } else {
+        onSyncError?.(`Sync failed: ${err403.error}`);
+        onSyncComplete?.(false, projectIds);
+      }
+      state.isSyncing = false;
+      return anySuccess;
+    }
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-      console.log(`☁️ Batch sync failed: ${err.error}`);
-      onSyncError?.(`Sync failed: ${err.error}`);
+      console.log(`☁️ Batch sync failed (${res.status}): ${err.error}`);
+      onSyncError?.(`Sync failed (${res.status}): ${err.error}`);
       state.isSyncing = false;
       onSyncComplete?.(false, projectIds);
       return false;
@@ -646,6 +788,14 @@ function _handleVisibilityChange() {
   } else {
     // Tab coming back — reset idle timer
     _resetIdleTimer();
+
+    // Check for remote changes when tab regains focus.
+    // This handles the "edited on laptop, now on desktop" scenario:
+    // the server may have newer data from another device/browser.
+    if (state.accessToken && state.isOnline && isTabLeader()) {
+      console.log('☁️ Tab visible — checking for remote changes');
+      onVisibilityResume?.();
+    }
   }
 }
 
@@ -686,6 +836,13 @@ export function stopIdleTracking() {
 /** Check if any cloud project has unsaved local changes (dirty flag set). */
 export function hasDirtyProjects(): boolean {
   return state.dirtyProjectIds.size > 0;
+}
+
+/** Clear ALL dirty flags — used on session start to remove stale flags
+ *  from previous sessions that didn't flush properly. */
+export function clearAllDirtyFlags() {
+  state.dirtyProjectIds.clear();
+  saveDirtyState();
 }
 
 /** Get all dirty project IDs (for pre-reconcile flush). */

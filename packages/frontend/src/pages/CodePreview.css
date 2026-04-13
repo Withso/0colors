@@ -32,13 +32,13 @@
 .code-preview-file-icon {
   height: 14px;
   width: 14px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   flex-shrink: 0;
 }
 
 .code-preview-label {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   flex-shrink: 0;
@@ -160,7 +160,7 @@
 
 .code-preview-dropdown-item-desc {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 .code-preview-dropdown-check {
@@ -260,7 +260,7 @@
 .code-preview-empty-icon {
   height: 20px;
   width: 20px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 .code-preview-empty-title {
@@ -270,7 +270,7 @@
 }
 
 .code-preview-empty-subtitle {
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   font-size: 11px;
 }
 
@@ -289,13 +289,13 @@
 
 .code-preview-footer-left {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   font-variant-numeric: tabular-nums;
 }
 
 .code-preview-footer-right {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }

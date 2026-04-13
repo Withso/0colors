@@ -40,7 +40,18 @@
         { "match": "resolves theme-effective logic only when the node is unlinked", "caseId": "AUTO-DOM-M05-006", "tags": ["themes"], "parentScenario": "advanced-logic-theme-resolution", "equivalenceClass": "linked-vs-unlinked" },
         { "match": "keeps golden advanced-logic fixtures stable", "caseId": "AUTO-DOM-M05-007", "tags": ["fixtures", "golden"], "fixture": "QA-automation/fixtures/advanced-logic/golden-cases.json", "parentScenario": "advanced-logic-regression-pack", "equivalenceClass": "golden-fixtures" },
         { "match": "evaluates token assignments for export through token nodes", "caseId": "AUTO-DOM-M05-008", "tags": ["token-assignment", "export"], "parentScenario": "advanced-logic-token-export", "equivalenceClass": "token-node-export" },
-        { "match": "builds token evaluation context with resolved value-token chains", "caseId": "AUTO-DOM-M05-009", "tags": ["token-context"], "parentScenario": "advanced-logic-token-context", "equivalenceClass": "value-token-chain" }
+        { "match": "builds token evaluation context with resolved value-token chains", "caseId": "AUTO-DOM-M05-009", "tags": ["token-context"], "parentScenario": "advanced-logic-token-context", "equivalenceClass": "value-token-chain" },
+        { "match": "evaluates self-reference expression to read current node channel", "caseId": "AUTO-DOM-M05-010", "tags": ["self-ref"], "parentScenario": "advanced-logic-channel-eval", "equivalenceClass": "self-reference" },
+        { "match": "resolves cross-node reference via allNodes map", "caseId": "AUTO-DOM-M05-011", "tags": ["node-ref"], "parentScenario": "advanced-logic-channel-eval", "equivalenceClass": "cross-node-ref" },
+        { "match": "returns fallback without throwing for empty expression rows", "caseId": "AUTO-DOM-M05-012", "tags": ["fallback", "empty"], "parentScenario": "advanced-logic-edge-cases", "equivalenceClass": "empty-expression" },
+        { "match": "returns fallback with error for malformed token sequence", "caseId": "AUTO-DOM-M05-013", "tags": ["error", "malformed"], "parentScenario": "advanced-logic-edge-cases", "equivalenceClass": "malformed-expression" },
+        { "match": "handles division by zero gracefully using fallback", "caseId": "AUTO-DOM-M05-014", "tags": ["error", "division"], "parentScenario": "advanced-logic-edge-cases", "equivalenceClass": "division-by-zero" },
+        { "match": "skips disabled rows during evaluation", "caseId": "AUTO-DOM-M05-015", "tags": ["disabled-row"], "parentScenario": "advanced-logic-channel-eval", "equivalenceClass": "disabled-rows" },
+        { "match": "evaluates conditional token assignment with if/then/else", "caseId": "AUTO-DOM-M05-016", "tags": ["token-assignment", "conditional"], "parentScenario": "advanced-logic-token-eval", "equivalenceClass": "conditional-token" },
+        { "match": "falls back gracefully when a referenced token is missing", "caseId": "AUTO-DOM-M05-017", "tags": ["token-assignment", "missing"], "parentScenario": "advanced-logic-token-eval", "equivalenceClass": "missing-token" },
+        { "match": "evaluates compound boolean AND/OR conditions", "caseId": "AUTO-DOM-M05-018", "tags": ["boolean", "compound"], "parentScenario": "advanced-logic-channel-eval", "equivalenceClass": "compound-boolean" },
+        { "match": "evaluates nested arithmetic with multiple operators", "caseId": "AUTO-DOM-M05-019", "tags": ["arithmetic", "nested"], "parentScenario": "advanced-logic-channel-eval", "equivalenceClass": "nested-arithmetic" },
+        { "match": "falls back to primary logic when theme override is missing", "caseId": "AUTO-DOM-M05-020", "tags": ["themes", "fallback"], "parentScenario": "advanced-logic-theme-resolution", "equivalenceClass": "missing-theme-override" }
       ]
     },
     "advanced-logic-engine.property.test.ts": {
@@ -56,7 +67,11 @@
       "cases": [
         { "match": "generates valid channel logic without throwing and keeps constrained outputs in range", "caseId": "AUTO-PROP-M05-001", "tags": ["generated", "constraints"], "seed": 424242, "generatedFrom": "channel-logic generators", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "valid-channel-rows" },
         { "match": "keeps generated checks pinned to a fixed replay seed", "caseId": "AUTO-PROP-M05-002", "tags": ["generated", "determinism"], "seed": 424242, "generatedFrom": "channel-logic generators", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "seed-replay" },
-        { "match": "keeps theme resolution deterministic across pairwise primary/unlinked combinations", "caseId": "AUTO-PROP-M05-003", "tags": ["generated", "themes"], "seed": 424242, "generatedFrom": "pairwise theme matrix", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "theme-pairwise" }
+        { "match": "keeps theme resolution deterministic across pairwise primary/unlinked combinations", "caseId": "AUTO-PROP-M05-003", "tags": ["generated", "themes"], "seed": 424242, "generatedFrom": "pairwise theme matrix", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "theme-pairwise" },
+        { "match": "generates valid multi-row chaining with local references between rows", "caseId": "AUTO-PROP-M05-004", "tags": ["generated", "locals", "chaining"], "seed": 424242, "generatedFrom": "multi-row generators", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "multi-row-chain" },
+        { "match": "generates valid conditional expressions with varied thresholds", "caseId": "AUTO-PROP-M05-005", "tags": ["generated", "conditional"], "seed": 424242, "generatedFrom": "conditional generators", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "conditional-varied" },
+        { "match": "validates constraint behavior across all color space channels", "caseId": "AUTO-PROP-M05-006", "tags": ["generated", "constraints", "all-channels"], "seed": 424242, "generatedFrom": "constraint matrix", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "constraint-all-spaces" },
+        { "match": "generates token assignment logic without throwing", "caseId": "AUTO-PROP-M05-007", "tags": ["generated", "token-assignment"], "seed": 424242, "generatedFrom": "token-assignment generators", "generatedRuns": 40, "parentScenario": "advanced-logic-generated-matrix", "equivalenceClass": "token-assignment-gen" }
       ]
     },
     "color-conversions.domain.test.ts": {
@@ -126,6 +141,10 @@
       "fileBlurb": "UI-level selector and rendering checks for color-node and token-node advanced popup layouts.",
       "cases": [
         { "match": "renders channel column controls with stable test hooks", "caseId": "AUTO-COMP-M05-001", "tags": ["selectors", "channel-ui"], "parentScenario": "advanced-popup-render", "equivalenceClass": "color-node-popup" },
+        { "match": "renders popup with multiple rows and verifies all row testids", "caseId": "AUTO-COMP-M05-003", "tags": ["selectors", "multi-row"], "parentScenario": "advanced-popup-render", "equivalenceClass": "multi-row-popup" },
+        { "match": "renders popup with disabled row showing correct state", "caseId": "AUTO-COMP-M05-004", "tags": ["selectors", "disabled-row"], "parentScenario": "advanced-popup-render", "equivalenceClass": "disabled-row-popup" },
+        { "match": "renders channel columns for saturation and lightness when logic is present", "caseId": "AUTO-COMP-M05-005", "tags": ["selectors", "multi-channel"], "parentScenario": "advanced-popup-render", "equivalenceClass": "multi-channel-popup" },
+        { "match": "renders fallback section with channel-specific fallback values", "caseId": "AUTO-COMP-M05-006", "tags": ["selectors", "fallback"], "parentScenario": "advanced-popup-render", "equivalenceClass": "fallback-section" },
         { "match": "renders token assignment selectors for token-node advanced logic", "caseId": "AUTO-COMP-M05-002", "tags": ["selectors", "token-ui"], "parentScenario": "advanced-popup-render", "equivalenceClass": "token-node-popup" }
       ]
     },
@@ -137,7 +156,10 @@
       "tags": ["advanced-logic", "integration"],
       "fileBlurb": "Store/effect integration coverage for advanced-logic recomputation and token synchronization.",
       "cases": [
-        { "match": "recomputes dependent nodes and updates assigned tokens", "caseId": "AUTO-INT-M05-001", "tags": ["store", "token-sync"], "parentScenario": "advanced-logic-effect", "equivalenceClass": "primary-theme-update" }
+        { "match": "recomputes dependent nodes and updates assigned tokens", "caseId": "AUTO-INT-M05-001", "tags": ["store", "token-sync"], "parentScenario": "advanced-logic-effect", "equivalenceClass": "primary-theme-update" },
+        { "match": "recomputes two sibling nodes independently from the same parent", "caseId": "AUTO-INT-M05-002", "tags": ["store", "sibling-nodes"], "parentScenario": "advanced-logic-effect", "equivalenceClass": "sibling-recompute" },
+        { "match": "applies saturation logic alongside hue logic on the same node", "caseId": "AUTO-INT-M05-003", "tags": ["store", "multi-channel"], "parentScenario": "advanced-logic-effect", "equivalenceClass": "multi-channel-update" },
+        { "match": "uses literal value ignoring parent when logic has no parent reference", "caseId": "AUTO-INT-M05-004", "tags": ["store", "literal"], "parentScenario": "advanced-logic-effect", "equivalenceClass": "literal-only-update" }
       ]
     },
     "app-navigation.spec.ts": {
@@ -151,7 +173,9 @@
         { "match": "home resolves to editor or projects dashboard", "caseId": "AUTO-E2E-M01-002", "parentScenario": "routing", "equivalenceClass": "root-route" },
         { "match": "/projects shows projects page", "caseId": "AUTO-E2E-M01-003", "parentScenario": "routing", "equivalenceClass": "projects-route" },
         { "match": "/sample-project shows editor shell", "caseId": "AUTO-E2E-M01-004", "parentScenario": "routing", "equivalenceClass": "sample-route" },
-        { "match": "browser back navigation does not blank screen", "caseId": "AUTO-E2E-M01-005", "parentScenario": "navigation-history", "equivalenceClass": "back-nav" }
+        { "match": "browser back navigation does not blank screen", "caseId": "AUTO-E2E-M01-005", "parentScenario": "navigation-history", "equivalenceClass": "back-nav" },
+        { "match": "forward navigation after back preserves state", "caseId": "AUTO-E2E-M01-006", "parentScenario": "navigation-history", "equivalenceClass": "forward-nav" },
+        { "match": "unknown route does not crash the application", "caseId": "AUTO-E2E-M01-007", "parentScenario": "routing", "equivalenceClass": "unknown-route" }
       ]
     },
     "project-management.spec.ts": {
@@ -163,7 +187,10 @@
       "cases": [
         { "match": "create local project opens editor", "caseId": "AUTO-E2E-M02-001", "parentScenario": "project-create", "equivalenceClass": "local-create" },
         { "match": "project card appears after create", "caseId": "AUTO-E2E-M02-002", "parentScenario": "project-create", "equivalenceClass": "dashboard-return" },
-        { "match": "import button is available on projects page", "caseId": "AUTO-E2E-M02-003", "parentScenario": "project-import-entry", "equivalenceClass": "import-entry" }
+        { "match": "import button is available on projects page", "caseId": "AUTO-E2E-M02-003", "parentScenario": "project-import-entry", "equivalenceClass": "import-entry" },
+        { "match": "project card context menu has delete option", "caseId": "AUTO-E2E-M02-004", "parentScenario": "project-card-menu", "equivalenceClass": "delete-option" },
+        { "match": "project card context menu has duplicate option", "caseId": "AUTO-E2E-M02-005", "parentScenario": "project-card-menu", "equivalenceClass": "duplicate-option" },
+        { "match": "delete project removes it from the list", "caseId": "AUTO-E2E-M02-006", "parentScenario": "project-card-menu", "equivalenceClass": "delete-project" }
       ]
     },
     "node-operations.spec.ts": {
@@ -175,7 +202,11 @@
       "cases": [
         { "match": "add HSL root node from toolbar", "caseId": "AUTO-E2E-M03-001", "parentScenario": "node-add", "equivalenceClass": "hsl-root" },
         { "match": "add palette node", "caseId": "AUTO-E2E-M03-002", "parentScenario": "node-add", "equivalenceClass": "palette-root" },
-        { "match": "open token table from toolbar", "caseId": "AUTO-E2E-M03-003", "parentScenario": "toolbar-popup", "equivalenceClass": "token-table" }
+        { "match": "open token table from toolbar", "caseId": "AUTO-E2E-M03-003", "parentScenario": "toolbar-popup", "equivalenceClass": "token-table" },
+        { "match": "add RGB root node from toolbar", "caseId": "AUTO-E2E-M03-004", "parentScenario": "node-add", "equivalenceClass": "rgb-root" },
+        { "match": "add OKLCH root node from toolbar", "caseId": "AUTO-E2E-M03-005", "parentScenario": "node-add", "equivalenceClass": "oklch-root" },
+        { "match": "add HCT root node from toolbar", "caseId": "AUTO-E2E-M03-006", "parentScenario": "node-add", "equivalenceClass": "hct-root" },
+        { "match": "multiselect bar appears when multiple nodes are on canvas", "caseId": "AUTO-E2E-M03-007", "parentScenario": "canvas-multiselect", "equivalenceClass": "multiselect-bar" }
       ]
     },
     "token-operations.spec.ts": {
@@ -187,7 +218,9 @@
       "cases": [
         { "match": "tokens panel container and search visible", "caseId": "AUTO-E2E-M06-001", "parentScenario": "tokens-panel", "equivalenceClass": "panel-open" },
         { "match": "add variable creates token row", "caseId": "AUTO-E2E-M06-002", "parentScenario": "tokens-panel", "equivalenceClass": "create-token" },
-        { "match": "token search filters", "caseId": "AUTO-E2E-M06-003", "parentScenario": "tokens-panel", "equivalenceClass": "search-filter" }
+        { "match": "token search filters", "caseId": "AUTO-E2E-M06-003", "parentScenario": "tokens-panel", "equivalenceClass": "search-filter" },
+        { "match": "token table popup opens and closes from toolbar", "caseId": "AUTO-E2E-M06-004", "parentScenario": "token-table", "equivalenceClass": "token-table-toggle" },
+        { "match": "palettes tab is accessible in tokens panel", "caseId": "AUTO-E2E-M06-005", "parentScenario": "tokens-panel", "equivalenceClass": "palettes-tab" }
       ]
     },
     "themes-pages.spec.ts": {
@@ -199,7 +232,11 @@
       "cases": [
         { "match": "page dropdown opens", "caseId": "AUTO-E2E-M07-001", "parentScenario": "page-toolbar", "equivalenceClass": "open-page-menu" },
         { "match": "theme dropdown opens", "caseId": "AUTO-E2E-M07-002", "parentScenario": "theme-toolbar", "equivalenceClass": "open-theme-menu" },
-        { "match": "add new page from toolbar", "caseId": "AUTO-E2E-M07-003", "parentScenario": "page-toolbar", "equivalenceClass": "add-page" }
+        { "match": "add new page from toolbar", "caseId": "AUTO-E2E-M07-003", "parentScenario": "page-toolbar", "equivalenceClass": "add-page" },
+        { "match": "switch page shows correct page name in toolbar", "caseId": "AUTO-E2E-M07-004", "parentScenario": "page-toolbar", "equivalenceClass": "switch-page" },
+        { "match": "add new theme from toolbar", "caseId": "AUTO-E2E-M07-005", "parentScenario": "theme-toolbar", "equivalenceClass": "add-theme" },
+        { "match": "delete page shows confirmation or removes page", "caseId": "AUTO-E2E-M07-006", "parentScenario": "page-toolbar", "equivalenceClass": "delete-page" },
+        { "match": "rename page inline via dropdown", "caseId": "AUTO-E2E-M07-007", "parentScenario": "page-toolbar", "equivalenceClass": "rename-page" }
       ]
     },
     "undo-redo.spec.ts": {
@@ -210,7 +247,8 @@
       "tags": ["e2e", "history"],
       "cases": [
         { "match": "undo removes last node after add", "caseId": "AUTO-E2E-M08-001", "parentScenario": "history", "equivalenceClass": "undo-node-add" },
-        { "match": "redo restores after undo", "caseId": "AUTO-E2E-M08-002", "parentScenario": "history", "equivalenceClass": "redo-node-add" }
+        { "match": "redo restores after undo", "caseId": "AUTO-E2E-M08-002", "parentScenario": "history", "equivalenceClass": "redo-node-add" },
+        { "match": "undo twice reverts two sequential additions", "caseId": "AUTO-E2E-M08-003", "parentScenario": "history", "equivalenceClass": "multi-undo" }
       ]
     },
     "import-export.spec.ts": {
@@ -221,7 +259,9 @@
       "tags": ["e2e", "import-export"],
       "cases": [
         { "match": "projects page exposes import", "caseId": "AUTO-E2E-M09-001", "parentScenario": "import-entry", "equivalenceClass": "dashboard-import" },
-        { "match": "code preview has copy and download", "caseId": "AUTO-E2E-M09-002", "parentScenario": "export-entry", "equivalenceClass": "code-preview" }
+        { "match": "code preview has copy and download", "caseId": "AUTO-E2E-M09-002", "parentScenario": "export-entry", "equivalenceClass": "code-preview" },
+        { "match": "code preview format dropdown is functional", "caseId": "AUTO-E2E-M09-003", "parentScenario": "export-entry", "equivalenceClass": "format-dropdown" },
+        { "match": "switching back to canvas view from code view works", "caseId": "AUTO-E2E-M09-004", "parentScenario": "view-switching", "equivalenceClass": "code-to-canvas" }
       ]
     },
     "command-palette.spec.ts": {
@@ -255,7 +295,9 @@
       "moduleOrder": 25,
       "tags": ["e2e", "sample"],
       "cases": [
-        { "match": "sample route loads editor shell", "caseId": "AUTO-E2E-M11-001", "parentScenario": "sample-route", "equivalenceClass": "sample-editor" }
+        { "match": "sample route loads editor shell", "caseId": "AUTO-E2E-M11-001", "parentScenario": "sample-route", "equivalenceClass": "sample-editor" },
+        { "match": "sample project has duplicate option in sample bar", "caseId": "AUTO-E2E-M11-002", "parentScenario": "sample-route", "equivalenceClass": "sample-duplicate-option" },
+        { "match": "duplicate sample to local creates editable project", "caseId": "AUTO-E2E-M11-003", "parentScenario": "sample-route", "equivalenceClass": "sample-to-local" }
       ]
     },
     "ai-chat.spec.ts": {
@@ -296,9 +338,15 @@
       "module": "Advanced logic popup",
       "moduleOrder": 21,
       "tags": ["e2e", "advanced-logic"],
-      "fileBlurb": "Focused real-browser coverage for opening the Advanced Popup, entering a simple hue rule, saving it, and reloading the persisted result.",
+      "fileBlurb": "Real-browser coverage for opening the Advanced Popup, editing expressions, saving, and verifying UI interactions.",
       "cases": [
-        { "match": "save and reopen a simple hue expression from the advanced popup", "caseId": "AUTO-E2E-M05-001", "fixture": "local-project-with-fresh-hsl-node", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "simple-hue-save" }
+        { "match": "save and reopen a simple hue expression from the advanced popup", "caseId": "AUTO-E2E-M05-001", "fixture": "local-project-with-fresh-hsl-node", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "simple-hue-save" },
+        { "match": "open popup and close without saving does not crash", "caseId": "AUTO-E2E-M05-002", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "close-without-save" },
+        { "match": "add and delete a condition row in the hue channel", "caseId": "AUTO-E2E-M05-003", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "add-delete-row" },
+        { "match": "add multiple rows and verify chaining output display", "caseId": "AUTO-E2E-M05-004", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "multi-row-display" },
+        { "match": "play button previews channel output without saving", "caseId": "AUTO-E2E-M05-005", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "play-preview" },
+        { "match": "fallback section displays in the hue channel", "caseId": "AUTO-E2E-M05-006", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "fallback-display" },
+        { "match": "popup renders token assignment panel for token node", "caseId": "AUTO-E2E-M05-007", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "token-node-popup" }
       ]
     }
   }

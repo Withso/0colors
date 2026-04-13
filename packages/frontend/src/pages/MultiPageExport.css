@@ -32,7 +32,7 @@
 
 .export-top-bar-label {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   flex-shrink: 0;
@@ -67,7 +67,7 @@
   background-color: var(--surface-2);
   border: 1px solid var(--border-on-surface-0);
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   outline: none;
   cursor: pointer;
   max-width: 140px;
@@ -187,7 +187,7 @@
 
 .export-sidebar-section-title {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -208,7 +208,7 @@
 
 .export-sidebar-section-count {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   font-variant-numeric: tabular-nums;
 }
 
@@ -227,7 +227,7 @@
 
 .export-sidebar-hex-hint {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 /* ─── Sidebar List Items ─── */
@@ -271,12 +271,12 @@
 }
 
 .export-sidebar-item-label--unselected {
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 .export-sidebar-item-badge {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 /* ─── Sidebar Divider ─── */
@@ -329,7 +329,7 @@
 .export-empty-icon {
   height: 20px;
   width: 20px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 .export-empty-title {
@@ -339,7 +339,7 @@
 }
 
 .export-empty-subtitle {
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   font-size: 11px;
 }
 
@@ -358,13 +358,13 @@
 
 .export-footer-left {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   font-variant-numeric: tabular-nums;
 }
 
 .export-footer-right {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -385,7 +385,7 @@
 
 .export-format-dropdown-item-desc {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 .export-format-dropdown-check {

@@ -146,6 +146,10 @@ export interface ColorNode {
 
   // Dev Mode: webhook input flag — when true, this node accepts incoming webhook color values
   isWebhookInput?: boolean;
+
+  // Sync metadata — foundation for per-entity sync and future multi-user collaboration
+  updatedAt?: number;  // Timestamp of last modification (ms since epoch)
+  updatedBy?: string;  // userId or clientId of who made the change
 }
 
 // Token type enumeration
@@ -217,6 +221,10 @@ export interface DesignToken {
 
   // Visibility per theme: false=hidden, true=visible override, undefined=inherit from primary
   themeVisibility?: Record<string, boolean>;
+
+  // Sync metadata — foundation for per-entity sync and future multi-user collaboration
+  updatedAt?: number;
+  updatedBy?: string;
 }
 
 export interface TokenGroup {
@@ -232,6 +240,10 @@ export interface TokenGroup {
   isTokenNodeGroup?: boolean; // True if this group was created by a token prefix node (tokens are managed on the canvas)
   sortOrder?: number; // Explicit sort position within its list (ascending); undefined = legacy createdAt order
   createdAt?: number; // Timestamp for sorting
+
+  // Sync metadata
+  updatedAt?: number;
+  updatedBy?: string;
 }
 
 export interface TokenProject {
@@ -243,6 +255,10 @@ export interface TokenProject {
   isCloud?: boolean; // True for projects synced to Supabase cloud (max 20 per user)
   isTemplate?: boolean; // True for template projects (template admin only, cloud-backed, no limit)
   lastSyncedAt?: number; // Timestamp of last successful cloud sync
+
+  // Sync metadata
+  updatedAt?: number;
+  updatedBy?: string;
 }
 
 export interface Page {
@@ -250,6 +266,8 @@ export interface Page {
   name: string;
   projectId: string; // Reference to parent project
   createdAt: number; // Timestamp for sorting
+  updatedAt?: number;
+  updatedBy?: string;
 }
 
 export interface Theme {
@@ -258,6 +276,8 @@ export interface Theme {
   projectId: string; // Reference to parent project
   createdAt: number; // Timestamp for sorting
   isPrimary?: boolean; // Whether this is the primary theme (default: false)
+  updatedAt?: number;
+  updatedBy?: string;
 }
 
 export interface CanvasState {

@@ -35,7 +35,7 @@
 }
 
 .build-preview-item-number {
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -95,7 +95,7 @@
 }
 
 .build-preview-error-hint {
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   margin-left: 4px;
 }
 

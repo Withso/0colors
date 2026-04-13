@@ -25,6 +25,7 @@ import {
 } from '../../utils/advanced-logic-engine';
 import { tokenColorToNativeCSS } from '../../utils/tokenFormatters';
 import { useStore } from '../../store';
+import { useReadOnlyState } from '../../hooks/useReadOnlyState';
 import { useTokenOperations } from '../../store/useTokenOperations';
 import { useNodeUpdate } from '../../store/useNodeUpdate';
 import { useNodeMutations } from '../../store/useNodeMutations';
@@ -466,8 +467,9 @@ export function ColorCanvas({ onNavigateToProjects }: ColorCanvasProps) {
   const isPrimaryTheme = primaryTheme?.id === activeThemeId;
   const primaryThemeId = primaryTheme?.id || '';
   const showInheritanceIcon = !isPrimaryTheme;
-  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
-  const readOnly = isSampleMode;
+  // ── Read-only state (centralized) ──
+  const { isSampleMode, canEdit } = useReadOnlyState();
+  const readOnly = !canEdit;
 
   // ── Canvas state ──
   const canvasState = canvasStates.find(

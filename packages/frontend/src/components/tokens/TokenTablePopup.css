@@ -290,7 +290,7 @@
 .token-table-header-grip {
   height: 14px;
   width: 14px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   flex-shrink: 0;
 }
 
@@ -409,7 +409,7 @@
 
 .token-table-header-tab-inactive {
   background: transparent;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .token-table-header-tab-inactive:hover {
@@ -426,7 +426,7 @@
 .token-table-header-tab-count-inactive {
   margin-left: 6px;
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 /* ── Hex override dropdown ── */
@@ -575,7 +575,7 @@
   width: 26px;
   height: 26px;
   border-radius: var(--radius-md, 6px);
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   transition: color 150ms, background-color 150ms;
   cursor: pointer;
   border: none;
@@ -654,7 +654,7 @@
 .token-table-body-thead-sort-icon-ghost {
   height: 12px;
   width: 12px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .token-table-body-thead-theme-th {
@@ -727,7 +727,7 @@
 .token-table-group-header-chevron {
   height: 12px;
   width: 12px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .token-table-group-header-tag-icon {
@@ -747,7 +747,7 @@
 
 .token-table-group-header-count {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   margin-left: 4px;
 }
 
@@ -883,7 +883,7 @@
 
 /* ── Placeholder text ── */
 .token-table-cell-placeholder {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   font-size: 11px;
   flex: 1;
 }
@@ -892,12 +892,12 @@
 .token-table-cell-hidden-icon {
   height: 12px;
   width: 12px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   flex-shrink: 0;
 }
 
 .token-table-cell-hidden-text {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   font-size: 11px;
 }
 
@@ -1011,7 +1011,7 @@
 
 .token-table-empty-text {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .token-table-empty-clear-btn {
@@ -1053,7 +1053,7 @@
 
 .token-table-footer-stats {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1096,7 +1096,7 @@
 
 .token-table-footer-readonly {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }

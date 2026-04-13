@@ -1,8 +1,56 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEventHandler, type ReactNode } from 'react';
-import { FlaskConical, ClipboardCopy, Upload, RefreshCw, Play, ArrowLeft, BookOpen, LayoutList, Loader2 } from 'lucide-react';
+import { FlaskConical, ClipboardCopy, Upload, RefreshCw, Play, ArrowLeft, BookOpen, LayoutList, Loader2, Copy, Check } from 'lucide-react';
 import './AdminQaDashboard.css';
 
 const HISTORY_KEY = '0colors-qa-run-history';
+
+/** Inline copy button with feedback */
+function CopyBtn({ text, label = 'Copy' }: { text: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2_000);
+    });
+  }, [text]);
+  return (
+    <button className="admin-qa-copy-inline" onClick={handleCopy} title={label} data-testid="admin-qa-copy-btn">
+      {copied ? <Check size={13} /> : <Copy size={13} />}
+      <span>{copied ? 'Copied' : label}</span>
+    </button>
+  );
+}
+
+/** Build a consolidated plain-text bug report for clipboard */
+function buildFullBugReport(bugs: QaFailure[]): string {
+  if (!bugs.length) return 'No bugs found in this run.';
+  const lines: string[] = [];
+  lines.push(`0colors QA — ${bugs.length} bug(s) found`);
+  lines.push('═'.repeat(60));
+  lines.push('');
+  bugs.forEach((b, i) => {
+    lines.push(`── Bug ${i + 1}: ${b.id} ──`);
+    lines.push(`Module:  ${b.module}`);
+    lines.push(`Title:   ${b.title}`);
+    lines.push(`File:    ${b.file}`);
+    if (b.plainDescription) lines.push(`What:    ${b.plainDescription}`);
+    lines.push(`Summary: ${b.summary}`);
+    if (b.detail && b.detail !== b.summary) {
+      lines.push('');
+      lines.push('Call log / error detail:');
+      lines.push(b.detail);
+    }
+    if (b.stack) {
+      lines.push('');
+      lines.push('Stack trace:');
+      lines.push(b.stack);
+    }
+    lines.push('');
+  });
+  lines.push('═'.repeat(60));
+  lines.push('Report-only — fix defects in separate development work.');
+  return lines.join('\n');
+}
 const MAX_LOCAL = 15;
 const RUNNER_PREFIX = '/__qa-runner';
 
@@ -856,23 +904,35 @@ export function AdminQaDashboard() {
 
         {bugs.length > 0 && (
           <>
-            <h2 className="admin-qa-section-title">Issues & bugs (categorized)</h2>
+            <h2 className="admin-qa-section-title">
+              Issues & bugs ({bugs.length})
+              <CopyBtn text={buildFullBugReport(bugs)} label="Copy all bugs" />
+            </h2>
             {bugs.map((b) => (
               <article key={b.id + b.title} className="admin-qa-bug">
                 <div className="admin-qa-bug-id">
                   {b.id} · {b.module}
+                  <CopyBtn text={[b.id, b.module, b.title, b.file, b.summary, b.detail || ''].join('\n')} label="Copy" />
                 </div>
                 <div className="admin-qa-bug-title">{b.title}</div>
                 {b.plainDescription && <p className="admin-qa-bug-plain">{b.plainDescription}</p>}
                 <div className="admin-qa-bug-file">{b.file}</div>
                 <div className="admin-qa-bug-summary">{b.summary}</div>
-                {b.detail && b.detail !== b.summary && <pre className="admin-qa-text-report-block">{b.detail}</pre>}
+                {b.detail && b.detail !== b.summary && (
+                  <div style={{ position: 'relative' }}>
+                    <CopyBtn text={b.detail} label="Copy log" />
+                    <pre className="admin-qa-text-report-block">{b.detail}</pre>
+                  </div>
+                )}
               </article>
             ))}
           </>
         )}
 
-        <h2 className="admin-qa-section-title">Text report</h2>
+        <h2 className="admin-qa-section-title">
+          Text report
+          <CopyBtn text={detailPayload.textReport || ''} label="Copy report" />
+        </h2>
         <pre className="admin-qa-text-report" data-testid="admin-qa-text-report">
           {detailPayload.textReport || 'No text report in this payload.'}
         </pre>

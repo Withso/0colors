@@ -128,12 +128,19 @@
 }
 
 /* ── Card body ── */
-.token-card-body {
+.token-card-body[data-slot="card"] {
   overflow: visible;
   cursor: default;
   position: relative;
   border-radius: 20px;
   gap: 0;
+  /* Darker than previous surface-2 override for contrast on canvas; align with app Card default */
+  background-color: var(--surface-1);
+}
+
+[data-nc-theme~="Light"] .token-card-body[data-slot="card"] {
+  /* Slightly deeper than surface-2 so the node reads off the light canvas */
+  background-color: var(--surface-4);
 }
 
 /* ── Token name area ── */
@@ -143,6 +150,12 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  border: 1px solid var(--border-on-surface-0);
+  background-color: var(--surface-1);
+}
+
+[data-nc-theme~="Light"] .token-card-name-area {
+  background-color: var(--surface-4);
 }
 
 .token-card-name-area-prefix {
@@ -465,7 +478,7 @@
 .token-card-empty-swatch-icon {
   height: 8px;
   width: 8px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .token-card-trigger-label {
@@ -488,7 +501,7 @@
   height: 12px;
   width: 12px;
   flex-shrink: 0;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   opacity: 0;
   transition: opacity 0.15s;
 }
@@ -964,7 +977,7 @@
 }
 
 .token-card-advanced-label-dormant {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .token-card-advanced-label-active {
@@ -1022,7 +1035,7 @@
 }
 
 .token-card-advanced-btn-dormant {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .token-card-advanced-btn-dormant:hover {

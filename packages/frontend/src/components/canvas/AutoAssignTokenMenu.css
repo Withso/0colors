@@ -188,7 +188,7 @@
 /* ── Form fields ── */
 .auto-assign-label {
   font-size: 11px;
-  color: var(--on-surface-5);
+  color: var(--on-surface-3);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -375,7 +375,7 @@
 
 .auto-assign-preview-label {
   font-size: 11px;
-  color: var(--on-surface-6);
+  color: var(--on-surface-4);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 4px;

@@ -3,6 +3,7 @@
 import { useCallback, useRef } from 'react';
 import type { Theme } from '../types';
 import { useStore } from './index';
+import { useReadOnlyState } from '../hooks/useReadOnlyState';
 import { toast } from 'sonner';
 import { getUniqueTokenName } from '../utils/nameValidation';
 import { getNodeEffectiveHSL, getNodeHeight } from '../utils/app-helpers';
@@ -23,7 +24,7 @@ export function useTokenOperations() {
   const setGroups = useStore(s => s.setGroups);
 
   // Derive sample mode from store state
-  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
+  const { isSampleMode } = useReadOnlyState();
   const isSampleModeRef = useRef(isSampleMode);
   isSampleModeRef.current = isSampleMode;
 

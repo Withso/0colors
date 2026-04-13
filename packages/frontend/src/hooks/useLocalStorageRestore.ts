@@ -2,7 +2,7 @@
  * useLocalStorageRestore — extracted from App.tsx
  *
  * Handles:
- *   1. Loading & migrating data from localStorage on mount
+ *   1. Loading data on mount — tries IndexedDB first, falls back to localStorage
  *      (node migrations, token/group migrations, data integrity checks,
  *       state hydration, auth/config hydration, URL state hydration,
  *       undo middleware seeding)
@@ -18,6 +18,8 @@ import {
 } from '../utils/app-helpers';
 import { migrateAdvancedLogic } from '../utils/migrations';
 import { loadLocalConversations } from '../utils/ai-provider';
+import { loadAllFromDB } from '../db';
+import { migrateLocalStorageToIndexedDB } from '../db/migrate-from-localstorage';
 
 // Auth session key (same as in App.tsx / useCloudSyncAuth)
 const AUTH_SESSION_KEY = '0colors-auth-session';
@@ -33,13 +35,61 @@ export function useLocalStorageRestore(refs: LocalStorageRestoreRefs) {
 
   // ── Store state used for the persist effect ──
   const advancedLogic = useStore(s => s.advancedLogic);
-  const isSampleMode = useStore(s => s.activeSampleTemplateId) !== null;
+  // Use the same derivation as everywhere else: project.isSample flag
+  const activeProjectId = useStore(s => s.activeProjectId);
+  const projects = useStore(s => s.projects);
+  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
 
-  // ── Load from localStorage on mount ──
+  // ── Load data on mount (IndexedDB primary, localStorage fallback) ──
   useEffect(() => {
     const defaultData = getDefaultData();
-    const storedData = loadFromLocalStorage();
-    if (storedData) {
+
+    // Try IndexedDB first, then fall back to localStorage
+    const loadData = async (): Promise<any> => {
+      try {
+        // Attempt to migrate from localStorage if not done yet
+        await migrateLocalStorageToIndexedDB();
+
+        // Load from IndexedDB
+        const idbData = await loadAllFromDB();
+        if (idbData && idbData.projects.length > 0) {
+          console.log(`📋 Loaded from IndexedDB: ${idbData.projects.length} projects, ${idbData.allNodes.length} nodes`);
+          return {
+            nodes: idbData.allNodes,
+            tokens: idbData.tokens,
+            groups: idbData.groups,
+            projects: idbData.projects,
+            pages: idbData.pages,
+            themes: idbData.themes,
+            canvasStates: idbData.canvasStates,
+            advancedLogic: idbData.advancedLogic,
+            schemaVersion: idbData.schemaVersion,
+          };
+        }
+      } catch (err) {
+        console.warn('[Restore] IndexedDB load failed, falling back to localStorage:', err);
+      }
+
+      // Fallback to localStorage
+      return loadFromLocalStorage();
+    };
+
+    loadData().then(storedData => {
+      hydrateFromStoredData(storedData, defaultData);
+    });
+
+    function hydrateFromStoredData(storedData: any, defaultData: any) {
+      // If no stored data (brand new user), keep the default sample project
+      // from getDefaultData(). Just unblock the app so routing can proceed.
+      if (!storedData) {
+        console.log('📋 No stored data — brand new user, using defaults');
+        setTimeout(() => {
+          undoMiddleware.seed();
+          useStore.setState({ isInitialLoad: false });
+        }, 0);
+        return;
+      }
+      if (storedData) {
       // Migration: convert old tokenId to tokenIds array and add colorSpace
       const migratedNodes = (storedData.nodes || []).map((node: any) => {
         let migrated = { ...node };
@@ -159,7 +209,16 @@ export function useLocalStorageRestore(refs: LocalStorageRestoreRefs) {
       }
     }
 
-    // ── Hydrate localStorage-derived auth/config state into Zustand store (batched) ──
+      // Set timeout after state updates have settled
+      setTimeout(() => {
+        console.log('📋 Post-load state settled');
+        // Seed undo middleware now that data hydration is complete
+        undoMiddleware.seed();
+        useStore.setState({ isInitialLoad: false });
+      }, 0);
+    } // end hydrateFromStoredData
+
+    // ── Hydrate localStorage-derived auth/config state SYNCHRONOUSLY (runs immediately) ──
     {
       const authConfigPatch: Record<string, any> = {};
 
@@ -189,7 +248,7 @@ export function useLocalStorageRestore(refs: LocalStorageRestoreRefs) {
       useStore.setState(authConfigPatch);
     }
 
-    // ── Hydrate URL-derived navigation state into Zustand store (batched) ──
+    // ── Hydrate URL-derived navigation state SYNCHRONOUSLY ──
     {
       const p = window.location.pathname;
       const urlPatch: Record<string, any> = {};
@@ -223,19 +282,14 @@ export function useLocalStorageRestore(refs: LocalStorageRestoreRefs) {
 
       useStore.setState(urlPatch);
     }
-
-    // Set timeout after state updates have settled
-    setTimeout(() => {
-      console.log('📋 Post-load state settled');
-      // Seed undo middleware now that localStorage hydration is complete
-      undoMiddleware.seed();
-      useStore.setState({ isInitialLoad: false });
-    }, 0);
   }, []);
 
-  // Persist advanced logic to localStorage (skip in sample mode — changes are transient)
+  // Persist advanced logic (skip in sample mode — changes are transient)
+  // Writes to both IndexedDB (primary) and localStorage (fallback)
   useEffect(() => {
     if (isSampleMode) return;
+    // IndexedDB: already handled by the persistence middleware (advancedLogic is part of saveAllToDB)
+    // localStorage: kept as fallback during migration period
     try {
       localStorage.setItem('advanced-logic-v1', JSON.stringify(advancedLogic));
     } catch { /* ignore quota errors */ }

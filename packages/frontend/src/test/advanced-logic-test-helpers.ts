@@ -62,6 +62,13 @@ export function tokenRef(name: string, tokenId = ''): ExpressionToken {
   });
 }
 
+export function nodeRef(nodeName: string, property: string, nodeId = ''): ExpressionToken[] {
+  return [
+    makeExpressionToken({ type: 'reference', value: nodeName, displayLabel: nodeName, refNodeId: nodeId }),
+    makeExpressionToken({ type: 'property', value: `.${property}`, displayLabel: `.${property}`, refProperty: property }),
+  ];
+}
+
 export function row(tokens: ExpressionToken[], outputName = 'out_1', enabled = true): ConditionRow {
   return {
     id: `row-${outputName}-${Math.random().toString(36).slice(2, 8)}`,

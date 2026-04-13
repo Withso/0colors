@@ -92,7 +92,7 @@
   padding: 0 10px;
   border-radius: var(--radius-md);
   font-size: 11px;
-  color: var(--on-surface-6);
+  color: var(--on-surface-4);
   transition: color 0.15s;
   cursor: pointer;
   background: none;
@@ -100,7 +100,7 @@
 }
 
 .app-toolbar-back-btn:hover {
-  color: var(--on-surface-4);
+  color: var(--on-surface-1);
 }
 
 .app-toolbar-view-switcher {
@@ -130,11 +130,11 @@
 }
 
 .app-toolbar-view-btn-inactive {
-  color: var(--on-surface-6);
+  color: var(--on-surface-4);
 }
 
 .app-toolbar-view-btn-inactive:hover {
-  color: var(--on-surface-4);
+  color: var(--on-surface-1);
 }
 
 .app-toolbar-export-btn {
@@ -144,7 +144,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--on-surface-6);
+  color: var(--on-surface-4);
   transition: all 0.15s;
   background: none;
   border: none;
@@ -152,7 +152,7 @@
 }
 
 .app-toolbar-export-btn:hover {
-  color: var(--on-surface-4);
+  color: var(--on-surface-1);
 }
 
 .app-toolbar-publish-btn {
@@ -177,7 +177,7 @@
 }
 
 .app-toolbar-publish-btn-inactive {
-  color: var(--on-surface-6);
+  color: var(--on-surface-4);
 }
 
 .app-toolbar-publish-btn-inactive:hover {
@@ -265,7 +265,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-md);
-  color: var(--on-surface-6);
+  color: var(--on-surface-4);
   transition: color 0.15s, background-color 0.15s;
   outline: none;
   cursor: pointer;
@@ -539,6 +539,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  z-index: var(--z-toolbar);
 }
 
 .app-canvas-signin-btn {
@@ -659,7 +660,7 @@
 }
 
 .app-canvas-template-search-input::placeholder {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .app-canvas-template-search-input:focus {
@@ -748,6 +749,7 @@
   left: 50%;
   transform: translateX(-50%);
   pointer-events: auto;
+  z-index: var(--z-sample-bar);
 }
 
 .app-sample-bar {
@@ -810,6 +812,7 @@
   background-color: var(--surface-3);
   padding: 4px;
   box-shadow: var(--shadow-lg);
+  z-index: var(--z-dropdown);
 }
 
 .app-sample-bar-dropdown-header {
@@ -992,7 +995,7 @@
 }
 
 .app-multiselect-btn-mixed {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   cursor: not-allowed;
 }
 
@@ -1231,7 +1234,7 @@
 }
 
 .app-undo-redo-btn-disabled {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   background-color: color-mix(in srgb, var(--surface-3) 50%, transparent);
   cursor: default;
 }

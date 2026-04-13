@@ -69,6 +69,187 @@ describe('AdvancedPopup component selectors', () => {
     expect(screen.getByTestId('advanced-fallback-hue')).toBeInTheDocument();
   });
 
+  it('renders popup with multiple rows and verifies all row testids', async () => {
+    const node = createColorNode({
+      id: 'node-multi',
+      hue: 30,
+      saturation: 60,
+      lightness: 50,
+      referenceName: 'Multi',
+    });
+    const advancedLogic = [
+      createNodeAdvancedLogic({
+        nodeId: node.id,
+        channels: {
+          hue: channelLogic([
+            row([literal(10)], 'seed'),
+            row([literal(20)], 'shifted'),
+          ]),
+        },
+        baseValues: { hue: 30 },
+      }),
+    ];
+
+    render(
+      <AdvancedPopup
+        nodeId={node.id}
+        node={node}
+        nodes={[node]}
+        tokens={[]}
+        activeThemeId="theme-1"
+        isPrimaryTheme
+        primaryThemeId="theme-1"
+        advancedLogic={advancedLogic}
+        onUpdateAdvancedLogic={vi.fn()}
+        onClose={vi.fn()}
+        nodeDisplayName="Multi"
+        pages={[createPage()]}
+      />,
+    );
+
+    expect(await screen.findByTestId(`advanced-popup-panel-${node.id}`)).toBeInTheDocument();
+    // Use queryAllByTestId because clipboard preview may duplicate some selectors
+    expect(screen.queryAllByTestId('advanced-row-hue-0-row').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByTestId('advanced-row-hue-0-input').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByTestId('advanced-row-hue-1-row').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByTestId('advanced-row-hue-1-input').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByTestId('advanced-row-output-hue-0').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByTestId('advanced-row-output-hue-1').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders popup with disabled row showing correct state', async () => {
+    const node = createColorNode({
+      id: 'node-disabled',
+      hue: 40,
+      saturation: 50,
+      lightness: 45,
+      referenceName: 'DisabledTest',
+    });
+    const advancedLogic = [
+      createNodeAdvancedLogic({
+        nodeId: node.id,
+        channels: {
+          hue: channelLogic([
+            row([literal(10)], 'out_1', false),  // disabled row
+          ]),
+        },
+        baseValues: { hue: 40 },
+      }),
+    ];
+
+    render(
+      <AdvancedPopup
+        nodeId={node.id}
+        node={node}
+        nodes={[node]}
+        tokens={[]}
+        activeThemeId="theme-1"
+        isPrimaryTheme
+        primaryThemeId="theme-1"
+        advancedLogic={advancedLogic}
+        onUpdateAdvancedLogic={vi.fn()}
+        onClose={vi.fn()}
+        nodeDisplayName="DisabledTest"
+        pages={[createPage()]}
+      />,
+    );
+
+    expect(await screen.findByTestId(`advanced-popup-panel-${node.id}`)).toBeInTheDocument();
+    // Row should render even when disabled
+    expect(screen.queryAllByTestId('advanced-row-hue-0-row').length).toBeGreaterThanOrEqual(1);
+    // The enable toggle should exist
+    expect(screen.queryAllByTestId('advanced-row-hue-0-enable').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders channel columns for saturation and lightness when logic is present', async () => {
+    const node = createColorNode({
+      id: 'node-multi-ch',
+      hue: 20,
+      saturation: 70,
+      lightness: 55,
+      referenceName: 'MultiChannel',
+    });
+    const advancedLogic = [
+      createNodeAdvancedLogic({
+        nodeId: node.id,
+        channels: {
+          hue: channelLogic([row([literal(10)], 'out_1')]),
+          saturation: channelLogic([row([literal(80)], 'out_1')]),
+          lightness: channelLogic([row([literal(45)], 'out_1')]),
+        },
+        baseValues: { hue: 20, saturation: 70, lightness: 55 },
+      }),
+    ];
+
+    render(
+      <AdvancedPopup
+        nodeId={node.id}
+        node={node}
+        nodes={[node]}
+        tokens={[]}
+        activeThemeId="theme-1"
+        isPrimaryTheme
+        primaryThemeId="theme-1"
+        advancedLogic={advancedLogic}
+        onUpdateAdvancedLogic={vi.fn()}
+        onClose={vi.fn()}
+        nodeDisplayName="MultiChannel"
+        pages={[createPage()]}
+      />,
+    );
+
+    expect(await screen.findByTestId(`advanced-popup-panel-${node.id}`)).toBeInTheDocument();
+    expect(screen.queryAllByTestId('advanced-channel-column-hue').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByTestId('advanced-channel-column-saturation').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByTestId('advanced-channel-column-lightness').length).toBeGreaterThanOrEqual(1);
+    // Verify channel output elements exist — values contain unit suffixes (° for hue, % for sat/light)
+    const hueOutputs = screen.queryAllByTestId('advanced-final-output-value-hue');
+    const satOutputs = screen.queryAllByTestId('advanced-final-output-value-saturation');
+    const litOutputs = screen.queryAllByTestId('advanced-final-output-value-lightness');
+    expect(hueOutputs.length).toBeGreaterThanOrEqual(1);
+    expect(satOutputs.length).toBeGreaterThanOrEqual(1);
+    expect(litOutputs.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders fallback section with channel-specific fallback values', async () => {
+    const node = createColorNode({
+      id: 'node-fallback',
+      hue: 50,
+      saturation: 60,
+      lightness: 40,
+      referenceName: 'FallbackTest',
+    });
+    const advancedLogic = [
+      createNodeAdvancedLogic({
+        nodeId: node.id,
+        channels: {
+          hue: channelLogic([row([literal(15)], 'out_1')], { fallbackMode: 'default' }),
+        },
+        baseValues: { hue: 50 },
+      }),
+    ];
+
+    render(
+      <AdvancedPopup
+        nodeId={node.id}
+        node={node}
+        nodes={[node]}
+        tokens={[]}
+        activeThemeId="theme-1"
+        isPrimaryTheme
+        primaryThemeId="theme-1"
+        advancedLogic={advancedLogic}
+        onUpdateAdvancedLogic={vi.fn()}
+        onClose={vi.fn()}
+        nodeDisplayName="FallbackTest"
+        pages={[createPage()]}
+      />,
+    );
+
+    expect(await screen.findByTestId(`advanced-popup-panel-${node.id}`)).toBeInTheDocument();
+    expect(screen.queryAllByTestId('advanced-fallback-hue').length).toBeGreaterThanOrEqual(1);
+  });
+
   it('renders token assignment selectors for token-node advanced logic', async () => {
     const tokenNode = createColorNode({
       id: 'node-token',

@@ -21,8 +21,15 @@ const app = new Hono();
 // ---------------------------------------------------------------------------
 // Middleware
 // ---------------------------------------------------------------------------
+// CORS: restrict to known origins in production, allow all in development
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+    : ['http://localhost:3000', 'http://localhost:5173'];
+
 app.use('/*', cors({
-    origin: '*',
+    origin: process.env.NODE_ENV === 'production'
+        ? (origin) => ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+        : '*',
     allowHeaders: ['Content-Type', 'Authorization', 'X-User-Token', 'X-Webhook-Secret'],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));

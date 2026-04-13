@@ -12,11 +12,60 @@
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useStore } from '../store';
+import { useReadOnlyState } from './useReadOnlyState';
 import { useNavigate } from 'react-router';
-import { getBuiltInTemplates, type SampleTemplate } from '../utils/sample-templates';
+import { type SampleTemplate } from '../utils/sample-templates';
 import { getAutoAssignSuffixValue } from '../components/canvas/AutoAssignTokenMenu';
 import { slugify } from '../utils/slugify';
 import { toast } from 'sonner';
+import type { CanvasState } from '../types';
+
+/**
+ * Pre-calculate the zoom-to-fit canvasState from node positions.
+ * This is set as the initial canvasState so when nodes paint,
+ * they're already visible in the correct viewport — no animation needed.
+ *
+ * Replicates the same math as ColorCanvas.handleFitAll but runs before render.
+ */
+function calculateFitAllCanvasState(
+  nodes: { position: { x: number; y: number }; width?: number }[],
+  pageId: string,
+  projectId: string,
+): CanvasState {
+  // Estimate viewport dimensions (canvas area = window minus sidebar ~136px)
+  const viewportW = (typeof window !== 'undefined' ? window.innerWidth : 1400) - 136;
+  const viewportH = typeof window !== 'undefined' ? window.innerHeight : 900;
+  const centerX = viewportW / 2;
+  const centerY = viewportH / 2;
+
+  if (nodes.length === 0) {
+    return { projectId, pageId, pan: { x: 0, y: 0 }, zoom: 1 };
+  }
+
+  const nodeHeight = 280;
+  let mnX = Infinity, mnY = Infinity, mxX = -Infinity, mxY = -Infinity;
+  nodes.forEach(n => {
+    const w = n.width || 240;
+    mnX = Math.min(mnX, n.position.x);
+    mnY = Math.min(mnY, n.position.y);
+    mxX = Math.max(mxX, n.position.x + w);
+    mxY = Math.max(mxY, n.position.y + nodeHeight);
+  });
+
+  const pad = 300;
+  const pw = (mxX - mnX) + pad * 2;
+  const ph = (mxY - mnY) + pad * 2;
+  const zoom = Math.min(Math.max(Math.min(viewportW / pw, viewportH / ph), 0.1), 3);
+  const ncx = (mnX + mxX) / 2;
+  const ncy = (mnY + mxY) / 2;
+
+  return {
+    projectId,
+    pageId,
+    pan: { x: centerX - ncx * zoom, y: centerY - ncy * zoom },
+    zoom,
+  };
+}
 
 /**
  * Reconstruct missing auto-assigned tokens from node metadata.
@@ -166,8 +215,8 @@ export function useSampleTemplates(lastSyncedPathnameRef: React.MutableRefObject
   const setSelectedNodeId = useStore(s => s.setSelectedNodeId);
   const setSelectedNodeIds = useStore(s => s.setSelectedNodeIds);
 
-  // ── Sample mode: derived from active project's isSample flag ──
-  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
+  // ── Sample mode (centralized via useReadOnlyState) ──
+  const { isSampleMode } = useReadOnlyState();
   const isSampleModeRef = useRef(isSampleMode);
   isSampleModeRef.current = isSampleMode;
 
@@ -225,12 +274,10 @@ export function useSampleTemplates(lastSyncedPathnameRef: React.MutableRefObject
           };
         });
     }
-    // Fallback to built-in templates
-    return getBuiltInTemplates().map((t, idx) => ({
-      ...t,
-      _origIdx: idx,
-      projectId: t.project.id,
-    }));
+    // No cloud templates available — return empty (no hardcoded fallbacks).
+    // The cloud templates should always load from the backend. If they fail,
+    // the sample projects section will be empty, which is correct.
+    return [];
   }, [cloudTemplates, cloudTemplatesLoaded]);
 
   const filteredSampleTemplates = useMemo(() => {
@@ -245,48 +292,52 @@ export function useSampleTemplates(lastSyncedPathnameRef: React.MutableRefObject
     return sampleTemplates.findIndex(t => t.id === activeSampleTemplateId);
   }, [sampleTemplates, activeSampleTemplateId]);
 
-  // Switch the active sample template — swaps nodes/tokens/groups/pages/themes for the sample project
+  // Switch the active sample template — swaps ALL data in ONE atomic setState.
+  // Previously this was 8+ separate setState calls, causing a window where
+  // activePageId pointed to a cloud project's page while nodes were being swapped.
+  // The canvas would then render cloud project nodes in the sample project view.
   const handleSwitchSampleTemplate = useCallback((idx: number) => {
     const template = sampleTemplates[idx];
     if (!template) return;
     const pid = 'sample-project';
 
-    // ── Diagnostic logging ──
-    console.log(`📋 Switching to template: "${template.name}" (${template.id}) — ${template.nodes.length} nodes, ${template.tokens.length} tokens, ${template.groups.length} groups`);
+    // Pre-calculate zoom-to-fit canvasState from node positions
+    const pageId = template.pages[0]?.id || 'page-1';
+    const fitCanvasState = calculateFitAllCanvasState(template.nodes, pageId, pid);
 
-    // Remove old sample data, then insert new template data
-    setAllNodes(prev => [...prev.filter(n => n.projectId !== pid), ...template.nodes]);
-    setTokens(prev => [...prev.filter(t => t.projectId !== pid), ...template.tokens]);
-    setGroups(prev => [...prev.filter(g => g.projectId !== pid), ...template.groups]);
-    setPages(prev => [...prev.filter(p => p.projectId !== pid), ...template.pages]);
-    setThemes(prev => [...prev.filter(t => t.projectId !== pid), ...template.themes]);
-    setCanvasStates(prev => [...prev.filter(cs => cs.projectId !== pid), ...template.canvasStates]);
-
-    // Update the project entry
-    setProjects(prev => prev.map(p =>
-      p.id === pid
-        ? { ...p, name: template.project.name, folderColor: template.project.folderColor ?? 145 }
-        : p
-    ));
-
-    // Set active page/theme from template
-    if (template.pages.length > 0) setActivePageId(template.pages[0].id);
-    if (template.themes.length > 0) setActiveThemeId(template.themes[0].id);
-
-    setActiveSampleTemplateId(template.id);
-    setSelectedNodeId(null);
-    setSelectedNodeIds([]);
-    setSampleTemplateSearch('');
+    // ── SINGLE ATOMIC STATE UPDATE ──
+    // All entity arrays + active IDs + UI state updated in one call.
+    // This prevents any intermediate render where activePageId doesn't
+    // match the nodes, which was causing the cloud-data-leak bug.
+    const s = useStore.getState();
+    useStore.setState({
+      // Entity data: swap sample project data with template data
+      allNodes: [...s.allNodes.filter(n => n.projectId !== pid), ...template.nodes],
+      tokens: [...s.tokens.filter(t => t.projectId !== pid), ...template.tokens],
+      groups: [...s.groups.filter(g => g.projectId !== pid), ...template.groups],
+      pages: [...s.pages.filter(p => p.projectId !== pid), ...template.pages],
+      themes: [...s.themes.filter(t => t.projectId !== pid), ...template.themes],
+      canvasStates: [...s.canvasStates.filter(cs => cs.projectId !== pid), fitCanvasState],
+      projects: s.projects.map(p =>
+        p.id === pid
+          ? { ...p, name: template.project.name, folderColor: template.project.folderColor ?? 145 }
+          : p
+      ),
+      // Active IDs: ALL set atomically to prevent any render with mismatched IDs
+      activeProjectId: pid,
+      activePageId: template.pages[0]?.id || s.activePageId,
+      activeThemeId: template.themes[0]?.id || s.activeThemeId,
+      activeSampleTemplateId: template.id,
+      // UI reset
+      selectedNodeId: null,
+      selectedNodeIds: [],
+      sampleTemplateSearch: '',
+    });
 
     // Update URL to reflect the active template
     const templateSlug = slugify(template.name || 'untitled');
     navigate(`/sample-project/${templateSlug}`, { replace: true });
     lastSyncedPathnameRef.current = `/sample-project/${templateSlug}`;
-
-    // After React renders the new nodes, center the canvas on them
-    setTimeout(() => {
-      window.dispatchEvent(new Event('canvasFitAll'));
-    }, 150);
   }, [sampleTemplates, navigate]);
 
   // Auto-switch to correct cloud template when templates arrive.

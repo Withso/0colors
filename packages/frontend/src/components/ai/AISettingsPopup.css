@@ -21,7 +21,7 @@
 }
 
 .ai-settings-toggle-icon-off {
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
 }
 
 .ai-settings-toggle-btn:hover .ai-settings-toggle-icon-off {
@@ -103,7 +103,7 @@
 
 .ai-settings-service-description {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-4);
   line-height: 1.625;
 }
 
@@ -111,7 +111,7 @@
 
 .ai-settings-key-label {
   font-size: 10px;
-  color: var(--on-surface-4);
+  color: var(--on-surface-3);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: block;
@@ -298,13 +298,13 @@
 
 .ai-settings-header-subtitle {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-4);
   margin-top: 2px;
 }
 
 .ai-settings-header-subtitle--inline {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-4);
   margin-bottom: 12px;
 }
 
@@ -458,7 +458,7 @@
   align-items: center;
   justify-content: space-between;
   font-size: 10px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   margin-bottom: 4px;
 }
 
@@ -540,7 +540,7 @@
 
 .ai-settings-tier-detail {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   margin-top: 8px;
   line-height: 1.625;
   padding: 0 2px;
@@ -613,7 +613,7 @@
 
 .ai-settings-source-desc {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   margin-top: 2px;
 }
 
@@ -644,7 +644,7 @@
 
 .ai-settings-total-detail {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   margin-top: 2px;
 }
 
@@ -729,7 +729,7 @@
 
 .ai-settings-how-it-works-text {
   font-size: 11px;
-  color: color-mix(in srgb, var(--accent-primary) 70%, transparent);
+  color: var(--on-surface-4);
   line-height: 1.625;
 }
 
@@ -749,7 +749,7 @@
 
 .ai-settings-footer-text {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
 }
 
 .ai-settings-footer-status {
