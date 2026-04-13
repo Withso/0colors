@@ -171,6 +171,9 @@ export function useCloudSyncAuth() {
   // ────────────────────────────────────────────────────
   useEffect(() => {
     if (isInitialLoad) return;
+    // Skip if no real projects loaded yet (only default sample-project in store)
+    const realProjects = projects.filter(p => !p.isSample);
+    if (realProjects.length === 0) return;
 
     const timeoutId = setTimeout(() => {
       try {
