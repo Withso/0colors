@@ -11,7 +11,7 @@
 import type { StoreApi } from 'zustand';
 import type { StoreState } from '../types';
 import { saveGroupExpandStates } from '../../utils/app-helpers';
-import { syncProject } from '../../sync/write-through';
+import { syncProject, syncProjectNow } from '../../sync/write-through';
 
 // Global flag: set to true when cloud data is being merged into the store.
 // Prevents the middleware from re-syncing data that was just loaded from cloud.
@@ -57,7 +57,21 @@ export function setupPersistenceMiddleware(
     const activeProject = state.projects.find(p => p.id === activeProjectId);
 
     if (activeProject && !activeProject.isSample) {
-      syncProject(activeProjectId);
+      // Detect discrete actions (create/delete nodes/tokens/groups) → sync immediately
+      // Continuous actions (drag, slider scrub) → debounced sync
+      const isDiscreteChange =
+        state.allNodes.length !== prevState.allNodes.length ||  // Node created/deleted
+        state.tokens.length !== prevState.tokens.length ||      // Token created/deleted
+        state.groups.length !== prevState.groups.length ||      // Group created/deleted
+        state.pages.length !== prevState.pages.length ||        // Page created/deleted
+        state.themes.length !== prevState.themes.length ||      // Theme created/deleted
+        state.projects.length !== prevState.projects.length;    // Project created/deleted
+
+      if (isDiscreteChange) {
+        syncProjectNow(activeProjectId); // Instant — no debounce
+      } else {
+        syncProject(activeProjectId); // 500ms debounce for continuous changes
+      }
     }
 
     // If projects array itself changed (rename, delete, etc.), sync affected

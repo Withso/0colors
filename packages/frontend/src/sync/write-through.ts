@@ -85,7 +85,15 @@ export function initWriteThrough(config: {
 
 /**
  * Called when a project's data changes.
- * Debounces per-project, then saves to IndexedDB + cloud in parallel.
+ * Debounces per-project to collapse rapid edits (dragging, slider scrubbing).
+ *
+ * The debounce resets on each call. If no new calls come within DEBOUNCE_MS,
+ * the sync fires. This means:
+ * - Dragging a node: many calls, only one sync after dragging stops (500ms)
+ * - Deleting a node: one call, sync fires after 500ms
+ *
+ * For the best UX, the 500ms is short enough to feel instant for discrete
+ * actions while preventing server hammering during continuous ones.
  */
 export function syncProject(projectId: string) {
   // Cancel existing debounce for this project
@@ -97,6 +105,19 @@ export function syncProject(projectId: string) {
     _debounceTimers.delete(projectId);
     executeSyncForProject(projectId);
   }, DEBOUNCE_MS));
+}
+
+/**
+ * Sync immediately with no debounce. For discrete actions (delete, create, rename)
+ * where the user expects instant feedback.
+ */
+export function syncProjectNow(projectId: string) {
+  const existing = _debounceTimers.get(projectId);
+  if (existing) {
+    clearTimeout(existing);
+    _debounceTimers.delete(projectId);
+  }
+  executeSyncForProject(projectId);
 }
 
 /**
