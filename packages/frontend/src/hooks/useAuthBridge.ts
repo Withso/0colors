@@ -35,14 +35,15 @@ export function useAuthBridge() {
     if (session && isAuthenticated) {
       const newToken = session.accessToken;
 
-      setAuthSession({
+      setAuthSession(prev => ({
         accessToken: newToken,
         userId: session.userId,
         email: session.email,
         name: session.name,
         isAdmin: session.isAdmin || user?.isAdmin,
-        // isTemplateAdmin is fetched separately from 0colors backend in useCloudSyncAuth
-      });
+        // Preserve isTemplateAdmin from previous state (set by getCloudMeta)
+        isTemplateAdmin: prev?.isTemplateAdmin,
+      }));
 
       // Update cloud-sync module's token if it changed
       if (newToken !== prevTokenRef.current) {
