@@ -636,9 +636,9 @@ export function useProjectOperations({
 
     setActiveProjectId(projectId);
 
-    // ── Session lock: acquire lock for cloud projects immediately ──
+    // ── Session lock: acquire lock for all non-sample projects ──
     const projectForLock = projects.find(p => p.id === projectId);
-    if (projectForLock?.isCloud && !projectForLock?.isSample) {
+    if (!projectForLock?.isSample) {
       lockManager.setActiveProject(projectId, true);
     } else {
       lockManager.setActiveProject(null, false);

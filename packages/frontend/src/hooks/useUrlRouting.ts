@@ -207,11 +207,12 @@ export function useUrlRouting({
       const project = findProjectBySlug(useStore.getState().projects, slug);
       if (project) {
         // Block sample/template projects from being accessed via /project/ path
-        if ((project as any).isSample || (project as any).isTemplate) {
-          console.log(`🚫 /project/${slug} is a sample/template — redirecting to /projects`);
+        if ((project as any).isSample) {
+          console.log(`🚫 /project/${slug} is a sample — redirecting to /projects`);
           navigate('/projects', { replace: true });
           return;
         }
+        // Templates are treated as normal projects — no redirect
         if (viewingProjectsRef.current) {
           _setViewingProjects(false);
           viewingProjectsRef.current = false;

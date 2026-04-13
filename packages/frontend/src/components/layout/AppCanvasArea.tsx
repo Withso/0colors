@@ -521,11 +521,9 @@ export function AppCanvasArea({
                 data-testid="ai-chat-toolbar-button"
                 onClick={() => {
                   const activeProject = projects.find(p => p.id === activeProjectId);
-                  const isCloud = !!activeProject?.isCloud;
-                  const isTemplate = !!activeProject?.isTemplate;
-                  if (!isCloud && !isTemplate) {
-                    toast('Ask AI is available for Cloud and Template projects only', {
-                      description: 'Switch to a Cloud project or open a Template to use Ask AI.',
+                  if (activeProject?.isSample) {
+                    toast('Ask AI is not available for sample projects', {
+                      description: 'Duplicate the project to use Ask AI.',
                     });
                     return;
                   }
@@ -730,11 +728,9 @@ export function AppCanvasArea({
                 data-testid="ai-chat-float-button"
                 onClick={() => {
                   const activeProject = projects.find(p => p.id === activeProjectId);
-                  const isCloud = !!activeProject?.isCloud;
-                  const isTemplate = !!activeProject?.isTemplate;
-                  if (!isCloud && !isTemplate) {
-                    toast('Ask AI is available for Cloud and Template projects only', {
-                      description: 'Switch to a Cloud project or open a Template to use Ask AI.',
+                  if (activeProject?.isSample) {
+                    toast('Ask AI is not available for sample projects', {
+                      description: 'Duplicate the project to use Ask AI.',
                     });
                     return;
                   }
