@@ -161,6 +161,14 @@ async function executeSyncForProject(projectId: string): Promise<boolean> {
   const snapshot = _getSnapshot(projectId);
   if (!snapshot) return false;
 
+  // SAFETY: Never save an empty snapshot (0 nodes AND 0 tokens AND 0 groups).
+  // This prevents data loss when the store is in a transitional state
+  // (e.g., during template switch or reconciliation).
+  if (snapshot.nodes.length === 0 && snapshot.tokens.length === 0 && snapshot.groups.length === 0) {
+    console.warn(`[Sync] BLOCKED: refusing to save empty snapshot for ${projectId} (${snapshot.project?.name})`);
+    return false;
+  }
+
   _onSyncStatusChange?.('syncing');
 
   // Save to IndexedDB (always — even if cloud fails)

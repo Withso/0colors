@@ -286,27 +286,21 @@ export function useProjectOperations({
     const timestamp = Date.now();
     const newProjectId = `project-${timestamp}`;
 
-    // ── Determine if duplicate should be cloud ──
-    // Cloud projects duplicate as cloud by default; fall back to local only when limit is reached.
-    let duplicateAsCloud = false;
-    if (projectToDuplicate.isCloud && !projectToDuplicate.isTemplate) {
-      const isAdmin = authSessionRef.current?.isAdmin;
-      const existingCloudCount = projects.filter(p => p.isCloud && !p.isTemplate).length;
-      if (isAdmin || existingCloudCount < 20) {
-        duplicateAsCloud = true;
-      } else {
-        toast.info('Cloud project limit reached (max 20) — duplicating as local project instead');
-      }
+    // All duplicated projects are cloud-backed (no local projects)
+    const isAdmin = authSessionRef.current?.isAdmin;
+    const existingCount = projects.filter(p => !p.isTemplate && !p.isSample).length;
+    if (!isAdmin && existingCount >= 20) {
+      toast.error('Project limit reached (max 20)');
+      return;
     }
 
-    // Create new project
     const newProject: TokenProject = {
       id: newProjectId,
       name: `${projectToDuplicate.name} (Copy)`,
       isExpanded: true,
       isSample: false,
       folderColor: Math.floor(Math.random() * 360),
-      isCloud: duplicateAsCloud,
+      isCloud: true, // All projects are cloud-backed
     };
 
     // ── Build ALL ID remapping tables ──
@@ -510,16 +504,12 @@ export function useProjectOperations({
     setHighlightedProjectId(newProjectId);
     setTimeout(() => setHighlightedProjectId(null), 3000);
 
-    // ── Register with cloud backend if duplicating as cloud ──
-    if (duplicateAsCloud && authSessionRef.current) {
+    // ── Register with cloud backend (all projects are cloud-backed) ──
+    if (authSessionRef.current) {
       registerCloudProject(newProjectId, authSessionRef.current.accessToken).then(result => {
         if (!result.ok) {
           console.log(`☁️ Cloud registration failed for duplicate: ${result.error}`);
-          toast.error(`Failed to register cloud project: ${result.error}`);
-          // Fall back to local on server-side rejection
-          setProjects(prev => prev.map(p => p.id === newProjectId ? { ...p, isCloud: false } : p));
-        } else {
-          // Write-through handles sync via persistence middleware
+          toast.error(`Failed to register project: ${result.error}`);
         }
       });
     }
