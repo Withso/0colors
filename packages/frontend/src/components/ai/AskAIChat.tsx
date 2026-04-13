@@ -851,7 +851,8 @@ export function AskAIChat({
   }, [sendMessage, sendBuildMessage, aiMode]);
 
   // ── Access check ──────────────────────────────────────────────
-  const hasAccess = isCloudProject || isTemplate;
+  // All projects have AI access (templates are just projects with isTemplate flag)
+  const hasAccess = !useStore.getState().projects.find(p => p.id === useStore.getState().activeProjectId)?.isSample;
 
   if (!isOpen) return null;
 

@@ -568,7 +568,8 @@ export function ProjectsPage({
 
   // Split projects into template, cloud, sample, and local
   const templateProjects = useMemo(() => projects.filter(p => p.isTemplate), [projects]);
-  const cloudProjects = useMemo(() => projects.filter(p => p.isCloud && !p.isTemplate), [projects]);
+  // Regular projects = all non-template, non-sample projects
+  const cloudProjects = useMemo(() => projects.filter(p => !p.isTemplate && !p.isSample), [projects]);
   const sampleProjects = useMemo(() => projects.filter(p => p.isSample), [projects]);
   // Local projects removed — all projects are cloud-backed
   const localProjects = useMemo(() => [] as Project[], []);
