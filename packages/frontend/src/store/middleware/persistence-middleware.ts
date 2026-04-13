@@ -33,46 +33,31 @@ export function setupPersistenceMiddleware(
     const isSampleMode = state.projects.find(p => p.id === state.activeProjectId)?.isSample === true;
     if (isSampleMode) return;
 
-    // Check if entity state actually changed (by reference)
-    const entityChanged =
+    // Check if actual content changed (by reference).
+    // Excludes projects array — project metadata changes (lastSyncedAt, name)
+    // don't need to trigger sync and would cause an infinite loop:
+    //   save → onProjectSynced → setProjects → middleware → save → repeat
+    const contentChanged =
       state.allNodes !== prevState.allNodes ||
       state.tokens !== prevState.tokens ||
       state.groups !== prevState.groups ||
-      state.projects !== prevState.projects ||
       state.pages !== prevState.pages ||
       state.themes !== prevState.themes ||
       state.canvasStates !== prevState.canvasStates;
 
-    // Don't sync on activeProjectId/activePageId/activeThemeId changes alone
-    // (navigating between projects shouldn't trigger a save)
-    if (!entityChanged) return;
+    if (!contentChanged) return;
 
     // Immediately persist group expand states (no debounce)
     if (state.groups !== prevState.groups) {
       saveGroupExpandStates(state.groups);
     }
 
-    // Identify which project(s) changed and sync them
+    // Sync the active project (content changed)
     const activeProjectId = state.activeProjectId;
     const activeProject = state.projects.find(p => p.id === activeProjectId);
 
     if (activeProject && !activeProject.isSample) {
-      // All changes go through debounced sync (500ms).
-      // This is fast enough to feel instant while preventing
-      // rapid saves from corrupting state during editing.
       syncProject(activeProjectId);
-    }
-
-    // If projects array itself changed (rename, delete, etc.), sync affected
-    if (state.projects !== prevState.projects) {
-      const changedProjects = state.projects.filter(p => {
-        if (p.isSample) return false;
-        const prev = prevState.projects.find(pp => pp.id === p.id);
-        return !prev || prev.name !== p.name || prev.folderColor !== p.folderColor;
-      });
-      for (const p of changedProjects) {
-        if (p.id !== activeProjectId) syncProject(p.id);
-      }
     }
   });
 }
