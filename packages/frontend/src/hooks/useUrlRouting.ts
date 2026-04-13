@@ -225,7 +225,7 @@ export function useUrlRouting({
           if (primaryTheme) setActiveThemeId(primaryTheme.id);
         }
         // ── Session lock: acquire immediately for cloud projects ──
-        if ((project as any).isCloud) {
+        if (!(project as any).isSample) {
           lockManager.setActiveProject(project.id, true);
         }
         const newMode = view === 'code' ? 'code' : view === 'export' ? 'export' : 'canvas';
@@ -257,8 +257,9 @@ export function useUrlRouting({
     if (authSession) {
       navigate('/projects', { replace: true });
     } else {
-      const localProjects = projects.filter(p => !p.isCloud && !p.isTemplate && !p.isSample);
-      if (localProjects.length > 0) {
+      // All projects are cloud-backed now. Check if user has any non-sample projects.
+      const userProjects = projects.filter(p => !p.isTemplate && !p.isSample);
+      if (userProjects.length > 0) {
         navigate('/projects', { replace: true });
       } else {
         // Wait for cloud templates to load before redirecting to sample project

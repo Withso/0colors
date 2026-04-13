@@ -88,20 +88,19 @@ export function useProjectOperations({
     });
   }, []);
 
-  const addProject = useCallback((type: 'local' | 'cloud' | 'template' = 'local'): boolean => {
+  const addProject = useCallback((type: 'cloud' | 'template' = 'cloud'): boolean => {
     // Block creating projects while *editing* a sample canvas, but allow from the
     // projects dashboard even if activeProjectId still points at the sample project.
     if (isSampleMode && !viewingProjectsRef.current) {
       sampleModeToast('Creating projects');
       return false;
     }
-    const isCloud = type === 'cloud' || type === 'template';
     const isTemplate = type === 'template';
 
-    // Enforce 20-cloud-project limit for regular cloud projects (admins are exempt)
+    // Enforce 20-project limit for regular projects (admins are exempt)
     const isAdmin = authSessionRef.current?.isAdmin;
-    if (type === 'cloud' && !isAdmin && projects.filter(p => p.isCloud && !p.isTemplate && !p.isSample).length >= 20) {
-      toast.error('Cloud project limit reached (max 20)');
+    if (!isAdmin && !isTemplate && projects.filter(p => !p.isTemplate && !p.isSample).length >= 20) {
+      toast.error('Project limit reached (max 20)');
       return false;
     }
 
@@ -123,18 +122,17 @@ export function useProjectOperations({
       isExpanded: true,
       isSample: false,
       folderColor: Math.floor(Math.random() * 360),
-      isCloud,
+      isCloud: true, // All projects are cloud-backed
       isTemplate,
     };
     setProjects(prev => [...prev, newProject]);
 
-    // Register cloud project with backend (both regular cloud and template projects)
-    if (isCloud && authSessionRef.current) {
+    // Register project with backend
+    if (authSessionRef.current) {
       registerCloudProject(newProjectId, authSessionRef.current.accessToken).then(result => {
         if (!result.ok) {
           console.log(`☁️ Cloud registration failed: ${result.error}`);
-          toast.error(`Failed to register ${isTemplate ? 'template' : 'cloud'} project: ${result.error}`);
-          setProjects(prev => prev.map(p => p.id === newProjectId ? { ...p, isCloud: false, isTemplate: false } : p));
+          toast.error(`Failed to register ${isTemplate ? 'template' : ''} project: ${result.error}`);
         } else {
           markDirty(newProjectId);
         }
@@ -527,39 +525,33 @@ export function useProjectOperations({
     }
   }, [projects, allNodes, groups, tokens, themes, canvasStates, pages, advancedLogic]);
 
-  const handleDuplicateSampleProject = useCallback((type: 'local' | 'cloud') => {
+  const handleDuplicateSampleProject = useCallback(() => {
     if (!activeProjectId) return;
     const proj = projects.find(p => p.id === activeProjectId);
     if (!proj?.isSample) return;
 
-    // Check cloud eligibility
-    let finalType = type;
-    if (finalType === 'cloud') {
-      if (!authSessionRef.current) {
-        toast.error('Sign in to create cloud projects');
-        return;
-      }
-      const isAdminUser = authSessionRef.current?.isAdmin;
-      const existingCloudCount = projects.filter(p => p.isCloud && !p.isTemplate).length;
-      if (!isAdminUser && existingCloudCount >= 20) {
-        toast.info('Cloud project limit reached — duplicating as local project instead');
-        finalType = 'local';
-      }
+    if (!authSessionRef.current) {
+      toast.error('Sign in to create projects');
+      return;
+    }
+    const isAdminUser = authSessionRef.current?.isAdmin;
+    const existingCount = projects.filter(p => !p.isTemplate && !p.isSample).length;
+    if (!isAdminUser && existingCount >= 20) {
+      toast.error('Project limit reached (max 20)');
+      return;
     }
 
     // Call existing duplicateProject (handles all ID remapping)
     duplicateProject(activeProjectId);
 
-    // After duplicate, update the newest project's cloud status and navigate to it
-    const asCloud = finalType === 'cloud';
+    // After duplicate, navigate to the new project
     setTimeout(() => {
       const currentProjects = useStore.getState().projects;
       const newest = currentProjects[currentProjects.length - 1];
       if (newest && newest.name.includes('(Copy)')) {
-        // Update cloud status
-        setProjects(prev => prev.map(p => p.id === newest.id ? { ...p, isCloud: asCloud } : p));
+        // All projects are cloud-backed
+        setProjects(prev => prev.map(p => p.id === newest.id ? { ...p, isCloud: true } : p));
 
-        // Navigate to the new project by setting it active and pushing the URL
         setActiveProjectId(newest.id);
         const newPages = pages.filter(p => p.projectId === newest.id).sort((a, b) => a.createdAt - b.createdAt);
         if (newPages.length > 0) setActivePageId(newPages[0].id);
@@ -575,7 +567,7 @@ export function useProjectOperations({
         navigate(`/project/${slug}`);
         lastSyncedPathnameRef.current = `/project/${slug}`;
 
-        toast.success(`Sample project duplicated as ${asCloud ? 'cloud' : 'local'} project`);
+        toast.success('Project created');
       }
     }, 100);
   }, [activeProjectId, projects, pages, themes, duplicateProject, navigate]);
@@ -594,7 +586,7 @@ export function useProjectOperations({
   const handleRemixCommunityProject = useCallback((slug: string) => {
     // If viewing the project, use the existing sample-project duplication flow
     if (isCommunityMode && activeProjectId?.startsWith('community-')) {
-      handleDuplicateSampleProject('local');
+      handleDuplicateSampleProject();
       return;
     }
     // Otherwise, navigate to the project first, then user can remix from there
@@ -710,7 +702,7 @@ export function useProjectOperations({
     }
   }, [pages, themes, projects, navigate, sampleTemplates, activeSampleTemplateId]);
 
-  const handleCreateProject = useCallback((type: 'local' | 'cloud' | 'template' = 'local') => {
+  const handleCreateProject = useCallback((type: 'cloud' | 'template' = 'cloud') => {
     const created = addProject(type);
     if (!created) return;
     _setViewingProjects(false);

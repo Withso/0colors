@@ -226,7 +226,7 @@ export function useCloudSyncAuth() {
   // ────────────────────────────────────────────────────
   getProjectSnapshotRef.current = (projectId: string): ProjectSnapshot | null => {
     const project = useStore.getState().projects.find(p => p.id === projectId);
-    if (!project || !(project.isCloud || project.isTemplate) || project.isSample) return null;
+    if (!project || project.isSample) return null;
 
     const curNodes = useStore.getState().allNodes;
     const projectNodes = curNodes.filter(n => n.projectId === projectId);
@@ -367,7 +367,7 @@ export function useCloudSyncAuth() {
         if (!token) return;
         const currentActiveId = useStore.getState().activeProjectId;
         const currentProject = useStore.getState().projects.find(p => p.id === currentActiveId);
-        if (!currentProject?.isCloud) return; // Only refetch cloud projects
+        if (currentProject?.isSample) return; // Don't refetch sample projects
 
         console.log(`☁️ [VisibilityResume] Refetching active project "${currentProject.name}" from cloud`);
         // Use loadCloudProjects to get all projects, then reconcile
@@ -531,7 +531,7 @@ export function useCloudSyncAuth() {
         }
 
         // ── Enhanced diagnostic logging ──
-        const localCloudProjects = useStore.getState().projects.filter(p => p.isCloud || p.isTemplate);
+        const localCloudProjects = useStore.getState().projects.filter(p => !p.isSample);
         console.log(`☁️ ═══ CLOUD LOAD DIAGNOSTIC ═══`);
         console.log(`☁️ Server returned ${cloudData.length} project(s)`);
         console.log(`☁️ Server project IDs: ${cloudData.map((e: any) => e.projectId).join(', ') || '(none)'}`);
@@ -648,7 +648,7 @@ export function useCloudSyncAuth() {
 
           const staleIds: string[] = [];
           for (const p of useStore.getState().projects) {
-            if ((p.isCloud || p.isTemplate) && !serverProjectIds.has(p.id)) {
+            if (!p.isSample && !serverProjectIds.has(p.id)) {
               staleIds.push(p.id);
             }
           }
@@ -741,7 +741,7 @@ export function useCloudSyncAuth() {
         // Suppress markDirty AFTER fetch, right before state mutations begin
         isLoadingCloudDataRef.current = true;
         const serverIds = new Set(meta.cloudProjectIds as string[]);
-        const localCloudCount = useStore.getState().projects.filter(p => p.isCloud || p.isTemplate).length;
+        const localCloudCount = useStore.getState().projects.filter(p => !p.isSample).length;
         console.log(`☁️ [Reconcile] Server has ${serverIds.size} project(s), local has ${localCloudCount} cloud/template project(s)`);
 
         // ── Part A: ADD or UPDATE projects from cloud ──
@@ -838,7 +838,7 @@ export function useCloudSyncAuth() {
         // ── Part B: REMOVE local cloud/template projects not on server ──
         const staleIds: string[] = [];
         for (const p of useStore.getState().projects) {
-          if ((p.isCloud || p.isTemplate) && !serverIds.has(p.id)) {
+          if (!p.isSample && !serverIds.has(p.id)) {
             staleIds.push(p.id);
           }
         }
@@ -912,7 +912,7 @@ export function useCloudSyncAuth() {
     // Genuine change detected — update baseline and mark dirty.
     knownEntitiesRef.current = current;
 
-    const cloudProjectIds = projects.filter(p => (p.isCloud || p.isTemplate) && !p.isSample).map(p => p.id);
+    const cloudProjectIds = projects.filter(p => !p.isSample).map(p => p.id);
     for (const pid of cloudProjectIds) {
       markDirty(pid);
     }
@@ -954,7 +954,7 @@ export function useCloudSyncAuth() {
       lastSyncedAtMapRef.current = {};
 
       // 2. Also clear lastSyncedAt on all local projects
-      setProjects(prev => prev.map(p => (p.isCloud || p.isTemplate) ? { ...p, lastSyncedAt: 0 } : p));
+      setProjects(prev => prev.map(p => !p.isSample ? { ...p, lastSyncedAt: 0 } : p));
 
       // 3. Fetch fresh data from server
       isLoadingCloudDataRef.current = true;
@@ -1034,7 +1034,7 @@ export function useCloudSyncAuth() {
         const serverIds = new Set(meta.cloudProjectIds as string[]);
         for (const e of cloudData) if (e.projectId) serverIds.add(e.projectId);
         const staleIds = useStore.getState().projects
-          .filter(p => (p.isCloud || p.isTemplate) && !serverIds.has(p.id))
+          .filter(p => !p.isSample && !serverIds.has(p.id))
           .map(p => p.id);
         if (staleIds.length > 0) {
           console.log(`☁️ [ForceRefresh] Removing ${staleIds.length} stale project(s):`, staleIds);
@@ -1148,7 +1148,7 @@ export function useCloudSyncAuth() {
     // ── 1. Explicitly mark ALL cloud/template projects dirty ──
     const curProjects = useStore.getState().projects;
     for (const p of curProjects) {
-      if (p.isCloud || p.isTemplate) markDirty(p.id);
+      if (!p.isSample) markDirty(p.id);
     }
 
     // ── 2. Recompute computed tokens from REFS (always latest) ──
@@ -1206,8 +1206,7 @@ export function useCloudSyncAuth() {
   const effectiveCloudSyncStatus = useMemo(() => {
     const activeProject = projects.find(p => p.id === activeProjectId);
     if (!activeProject) return 'local' as const;
-    const isCloud = activeProject.isCloud || activeProject.isTemplate;
-    if (!isCloud) return 'local' as const;
+    if (activeProject.isSample) return 'local' as const;
     if (!isOnline) return 'offline' as const;
     // Use tracked status
     return cloudSyncStatus;
