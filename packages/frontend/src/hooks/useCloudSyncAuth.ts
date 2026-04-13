@@ -280,6 +280,12 @@ export function useCloudSyncAuth() {
         else if (status === 'error') setCloudSyncStatus('error');
         else if (status === 'offline') setCloudSyncStatus('offline');
       },
+      onReconnected: () => {
+        // After flushing local queue on reconnect, pull latest from cloud
+        // (another device may have edited while we were offline)
+        console.log('☁️ [Reconnect] Pulling latest from cloud after queue flush');
+        loadCloudData();
+      },
     });
 
     // Cloud sync still handles initial data load, reconciliation, and batch operations
@@ -601,8 +607,9 @@ export function useCloudSyncAuth() {
               || existingProject?.lastSyncedAt || 0;
             const remoteSyncedAt = (snapshot as any)._syncedAt || 0;
 
-            // ── Cloud is source of truth: always merge if project is new or cloud is newer ──
-            const shouldMerge = !existingProject || remoteSyncedAt > localSyncedAt;
+            // ── Cloud is source of truth: ALWAYS merge on initial load ──
+            // Cloud data wins regardless of timestamps. IndexedDB is just a cache.
+            const shouldMerge = true;
 
             if (shouldMerge) {
               console.log(`☁️ ${existingProject ? 'Updating' : 'Adding NEW'} cloud project "${snapshot.project?.name}" (${projectId}) — remote=${remoteSyncedAt}, local=${localSyncedAt}`);

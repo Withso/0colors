@@ -50,12 +50,17 @@ function makeHeaders(token: string): Record<string, string> {
   };
 }
 
+// Callback invoked after online queue flush completes — triggers cloud data pull
+let _onReconnected: (() => void) | null = null;
+
 // ── Online/Offline detection ──
 if (typeof window !== 'undefined') {
-  window.addEventListener('online', () => {
+  window.addEventListener('online', async () => {
     _isOnline = true;
-    console.log('[Sync] Back online — flushing queue');
-    flushQueue();
+    console.log('[Sync] Back online — flushing queue then pulling latest from cloud');
+    await flushQueue();
+    // After flushing local changes, pull latest from cloud (another device may have edited)
+    _onReconnected?.();
   });
   window.addEventListener('offline', () => {
     _isOnline = false;
@@ -70,10 +75,12 @@ export function initWriteThrough(config: {
   getToken: () => string | null;
   getSnapshot: (projectId: string) => ProjectSnapshot | null;
   onSyncStatusChange?: (status: 'syncing' | 'synced' | 'error' | 'offline') => void;
+  onReconnected?: () => void;
 }) {
   _getToken = config.getToken;
   _getSnapshot = config.getSnapshot;
   _onSyncStatusChange = config.onSyncStatusChange || null;
+  _onReconnected = config.onReconnected || null;
 }
 
 /**
