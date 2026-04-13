@@ -162,39 +162,25 @@ export function initCloudSync(config: {
   onVisibilityResume = config.onVisibilityResume || null;
   onRemotePoll = config.onRemotePoll || null;
 
-  // Load any pending dirty state from localStorage (e.g., from a previous session that didn't flush)
-  loadDirtyState();
+  // ── DISABLED: Write-through sync (write-through.ts) handles all saves now ──
+  // The old periodic interval, dirty tracking, idle save, and beforeunload flush
+  // are no longer needed. Write-through saves to IndexedDB + cloud on every action.
+  //
+  // What's still active from initCloudSync:
+  // - onTokenExpired callback (for 401 handling)
+  // - onVisibilityResume callback (for tab focus refetch)
+  // - online/offline listeners (for status tracking)
 
-  // Start periodic sync — only the leader tab runs the interval to prevent
-  // duplicate syncs from multiple tabs.
-  if (state.intervalId) clearInterval(state.intervalId);
-  state.intervalId = setInterval(() => {
-    if (isTabLeader()) {
-      flushDirtyProjects();
-    }
-  }, SYNC_INTERVAL_MS);
-
-  // NOTE: Remote polling disabled — it causes conflicts when two browsers
-  // edit the same project (one overwrites the other's changes).
-  // Real-time sync via WebSockets or session locking will replace this.
-  // The visibility-based sync (onVisibilityResume) still works for tab-switch scenarios.
-
-  // Listen for online/offline
+  // Listen for online/offline (still needed for status)
   if (typeof window !== 'undefined') {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    window.addEventListener('beforeunload', handleBeforeUnload);
   }
 
-  // If there are dirty projects from a previous session, sync them now
-  if (state.dirtyProjectIds.size > 0) {
-    setTimeout(() => flushDirtyProjects(), 3000); // Small delay to let app fully initialize
-  }
+  // Clear any stale dirty state from localStorage
+  try { localStorage.removeItem('0colors-cloud-dirty-projects'); } catch {}
 
-  // Start idle & visibility tracking for auto-save
-  startIdleTracking();
-
-  console.log('☁️ Cloud sync initialized');
+  console.log('☁️ Cloud sync initialized (write-through mode)');
 }
 
 export function destroyCloudSync() {
