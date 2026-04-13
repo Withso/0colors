@@ -5,7 +5,7 @@ import { slugify } from '../utils/slugify';
 import { toast } from 'sonner';
 import {
   registerCloudProject, unregisterCloudProject,
-  markDirty, removeDirty, forceSyncNow, hasDirtyProjects,
+  removeDirty,
 } from '../utils/supabase/cloud-sync';
 import type { SampleTemplate } from '../utils/sample-templates';
 import { useStore } from './index';
@@ -134,7 +134,7 @@ export function useProjectOperations({
           console.log(`☁️ Cloud registration failed: ${result.error}`);
           toast.error(`Failed to register ${isTemplate ? 'template' : ''} project: ${result.error}`);
         } else {
-          markDirty(newProjectId);
+          // Write-through handles sync via persistence middleware
         }
       });
     }
@@ -519,7 +519,7 @@ export function useProjectOperations({
           // Fall back to local on server-side rejection
           setProjects(prev => prev.map(p => p.id === newProjectId ? { ...p, isCloud: false } : p));
         } else {
-          markDirty(newProjectId);
+          // Write-through handles sync via persistence middleware
         }
       });
     }
@@ -631,10 +631,8 @@ export function useProjectOperations({
 
     // ── CRITICAL: Flush dirty projects to cloud before switching ──
     // Prevents data loss when the user switches between projects.
-    if (hasDirtyProjects() && authSessionRef.current) {
-      console.log('☁️ [SelectProject] Flushing dirty projects before switching…');
-      forceSyncNow().catch((e) => console.log('☁️ [SelectProject] Flush failed (will retry):', e));
-    }
+    // Write-through handles sync — flush any pending debounced syncs
+    import('../sync/write-through').then(m => m.forceSyncAll().catch(() => {}));
 
     setActiveProjectId(projectId);
 
@@ -723,10 +721,8 @@ export function useProjectOperations({
     // ── CRITICAL: Flush dirty cloud projects to server before leaving the project ──
     // This ensures the user's local changes are uploaded to cloud immediately
     // when they navigate away, preventing data loss on subsequent reconcile.
-    if (hasDirtyProjects() && authSessionRef.current) {
-      console.log('☁️ [BackToProjects] Flushing dirty projects before navigating away…');
-      forceSyncNow().catch((e) => console.log('☁️ [BackToProjects] Flush failed (will retry):', e));
-    }
+    // Write-through handles sync — flush any pending debounced syncs
+    import('../sync/write-through').then(m => m.forceSyncAll().catch(() => {}));
 
     // If viewing a community project, go back to community section in dashboard
     if (isCommunityMode || activeProjectId?.startsWith('community-')) {
