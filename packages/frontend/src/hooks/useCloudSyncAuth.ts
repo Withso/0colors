@@ -1218,10 +1218,11 @@ export function useCloudSyncAuth() {
   // Compute effective cloud sync status for active project
   const effectiveCloudSyncStatus = useMemo(() => {
     const activeProject = projects.find(p => p.id === activeProjectId);
-    if (!activeProject) return 'local' as const;
-    if (activeProject.isSample) return 'local' as const;
+    if (!activeProject || activeProject.isSample) return 'idle' as const;
     if (!isOnline) return 'offline' as const;
-    // Use tracked status
+    // Write-through status: idle, syncing, synced, error
+    if (cloudSyncStatus === 'dirty') return 'idle' as const; // 'dirty' deprecated
+    if (cloudSyncStatus === 'local') return 'idle' as const; // 'local' deprecated
     return cloudSyncStatus;
   }, [projects, activeProjectId, isOnline, cloudSyncStatus]);
 

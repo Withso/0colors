@@ -957,7 +957,6 @@ export function AppShell() {
         lastSyncedAt={activeProjectLastSyncedAt}
         lastSyncError={lastSyncError}
         onManualSync={handleManualSync}
-        dirtyCount={cloudDirtyCount}
       />
 
       {/* Right Column - Header + Canvas as separate islands */}
