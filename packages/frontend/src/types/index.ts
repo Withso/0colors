@@ -252,7 +252,7 @@ export interface TokenProject {
   isExpanded: boolean;
   isSample?: boolean; // True for the default "Sample Project" that cannot be renamed/deleted
   folderColor?: number; // Random hue (0-360) assigned at creation, used for folder card color
-  isCloud?: boolean; // True for projects synced to Supabase cloud (max 20 per user)
+  isCloud?: boolean; // DEPRECATED — all projects are cloud-backed. Kept for backward compat with stored data.
   isTemplate?: boolean; // True for template projects (template admin only, cloud-backed, no limit)
   lastSyncedAt?: number; // Timestamp of last successful cloud sync
 

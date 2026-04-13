@@ -74,7 +74,7 @@ interface ProjectsPageProps {
   collections: TokenCollection[];
   groups: TokenGroup[];
   onSelectProject: (projectId: string) => void;
-  onCreateProject: (type: 'local' | 'cloud' | 'template') => void;
+  onCreateProject: (type: 'cloud' | 'template') => void;
   onDuplicateProject: (projectId: string) => void;
   onDeleteProject: (projectId: string) => void;
   onImportProject: () => void;
@@ -304,7 +304,7 @@ function ProjectList({
   publishedProjectIds?: Set<string>;
   projectRefs: React.MutableRefObject<Map<string, HTMLDivElement>>;
   onSelectProject: (projectId: string) => void;
-  onCreateProject: (type: 'local' | 'cloud' | 'template') => void;
+  onCreateProject: (type: 'cloud' | 'template') => void;
   onImportProject: () => void;
   onExportProject: (projectId: string) => void;
   onDuplicateProject: (projectId: string) => void;
@@ -319,7 +319,7 @@ function ProjectList({
   const renderSection = (
     label: string,
     projectList: Project[],
-    createType: 'local' | 'cloud' | 'template',
+    createType: 'cloud' | 'template',
     showCreate: boolean,
     createLabel: string = 'New project',
   ) => {
@@ -456,15 +456,6 @@ function ProjectList({
         )
       )}
 
-      {/* Local section */}
-      {renderSection(
-        'Local Projects',
-        localProjects,
-        'local',
-        true,
-        'New local project',
-      )}
-
       {/* Sample Projects section — row layout matching other sections */}
       {!sampleTemplates && (
         <div className="projects-section" data-testid="projects-sample-section">
@@ -592,10 +583,12 @@ export function ProjectsPage({
   const templateProjects = useMemo(() => projects.filter(p => p.isTemplate), [projects]);
   const cloudProjects = useMemo(() => projects.filter(p => p.isCloud && !p.isTemplate), [projects]);
   const sampleProjects = useMemo(() => projects.filter(p => p.isSample), [projects]);
-  const localProjects = useMemo(() => projects.filter(p => !p.isCloud && !p.isTemplate && !p.isSample), [projects]);
+  // Local projects removed — all projects are cloud-backed
+  const localProjects = useMemo(() => [] as Project[], []);
   // Cloud section shows only actual cloud projects (not samples)
   const cloudSectionProjects = useMemo(() => cloudProjects, [cloudProjects]);
   const canCreateCloudProject = isAuthenticated && (isAdmin || cloudProjects.length < 20);
+  // Note: "Cloud Projects" label will be renamed to "Projects" in a future update
 
   return (
     <div className="projects-page" data-testid="page-projects">

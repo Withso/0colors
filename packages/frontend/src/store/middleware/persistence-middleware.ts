@@ -69,21 +69,7 @@ export function setupPersistenceMiddleware(
         console.error('[Persistence] IndexedDB save failed, falling back to localStorage:', err);
       });
 
-      // Fallback: synchronous localStorage write (will be removed after migration period)
-      saveToLocalStorage({
-        nodes: s.allNodes,
-        tokens: s.tokens,
-        groups: s.groups,
-        projects: s.projects,
-        pages: s.pages,
-        themes: s.themes,
-        canvasStates: s.canvasStates,
-        activeProjectId: s.activeProjectId,
-        activePageId: s.activePageId,
-        activeThemeId: s.activeThemeId,
-        computedTokens: getComputedTokens(),
-        schemaVersion: CURRENT_SCHEMA_VERSION,
-      });
+      // localStorage fallback removed — IndexedDB is the primary local storage
     }, 1000);
   });
 }
