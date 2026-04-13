@@ -1,16 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Cloud, CloudOff, Check, AlertTriangle, WifiOff, Loader2 } from 'lucide-react';
+import { Cloud, Check, AlertTriangle, WifiOff, Loader2 } from 'lucide-react';
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import './CloudSyncIndicator.css';
 
-export type CloudSyncStatus = 'local' | 'idle' | 'dirty' | 'syncing' | 'synced' | 'error' | 'offline';
+export type CloudSyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
 interface CloudSyncIndicatorProps {
   status: CloudSyncStatus;
   lastSyncedAt?: number;
   lastError?: string;
   onManualSync?: () => void;
-  dirtyCount?: number;
 }
 
 function formatSyncTime(timestamp: number): string {
@@ -33,17 +32,16 @@ export function CloudSyncIndicator({
   lastSyncedAt,
   lastError,
   onManualSync,
-  dirtyCount = 0,
 }: CloudSyncIndicatorProps) {
   const [showSynced, setShowSynced] = useState(false);
   const prevStatusRef = useRef(status);
   const [timeStr, setTimeStr] = useState(() => lastSyncedAt ? formatSyncTime(lastSyncedAt) : '');
 
-  // When status transitions to 'synced', show checkmark for 3s then go idle
+  // When status transitions to 'synced', show checkmark briefly then go idle
   useEffect(() => {
     if (status === 'synced' && prevStatusRef.current === 'syncing') {
       setShowSynced(true);
-      const t = setTimeout(() => setShowSynced(false), 3000);
+      const t = setTimeout(() => setShowSynced(false), 2000);
       return () => clearTimeout(t);
     }
     if (status !== 'synced') {
@@ -61,76 +59,40 @@ export function CloudSyncIndicator({
   }, [lastSyncedAt]);
 
   const handleClick = useCallback(() => {
-    if (status === 'local') return;
+    if (status === 'syncing') return;
     onManualSync?.();
   }, [status, onManualSync]);
 
-  // Not a cloud project — show cloud-off
-  if (status === 'local') {
-    return (
-      <TooltipPrimitive.Provider delayDuration={300}>
-        <TooltipPrimitive.Root>
-          <TooltipPrimitive.Trigger asChild>
-            <div className="sync-local">
-              <CloudOff size={16} />
-            </div>
-          </TooltipPrimitive.Trigger>
-          <TooltipPrimitive.Portal>
-            <TooltipPrimitive.Content
-              side="bottom"
-              sideOffset={6}
-              className="sync-tooltip-local"
-            >
-              <div className="sync-tooltip-local-body">
-                <span className="sync-local-title">Local project</span>
-                <span className="sync-local-subtitle">Not synced to cloud</span>
-              </div>
-            </TooltipPrimitive.Content>
-          </TooltipPrimitive.Portal>
-        </TooltipPrimitive.Root>
-      </TooltipPrimitive.Provider>
-    );
-  }
-
   // Derive visual state
   const effectiveStatus = showSynced ? 'synced' : status;
-  const isClickable = status !== 'syncing';
 
   const getTooltipContent = () => {
     const lines: { label: string; value: string; color?: string }[] = [];
 
     switch (effectiveStatus) {
       case 'syncing':
-        lines.push({ label: 'Status', value: 'Syncing...', color: 'var(--text-info)' });
+        lines.push({ label: 'Status', value: 'Saving...', color: 'var(--text-info)' });
         break;
       case 'synced':
         lines.push({ label: 'Status', value: 'All changes saved', color: 'var(--text-success)' });
         break;
       case 'error':
-        lines.push({ label: 'Status', value: 'Sync failed', color: 'var(--text-critical)' });
+        lines.push({ label: 'Status', value: 'Save failed — will retry', color: 'var(--text-critical)' });
         if (lastError) {
           lines.push({ label: 'Error', value: lastError.length > 50 ? lastError.slice(0, 50) + '...' : lastError, color: 'var(--text-critical)' });
         }
         break;
-      case 'dirty':
-        lines.push({ label: 'Status', value: `Unsaved changes${dirtyCount > 1 ? ` (${dirtyCount} projects)` : ''}`, color: 'var(--text-warning)' });
-        break;
       case 'offline':
-        lines.push({ label: 'Status', value: 'Offline — will sync when online', color: 'var(--text-warning)' });
+        lines.push({ label: 'Status', value: 'Offline — saved locally', color: 'var(--text-warning)' });
+        lines.push({ label: '', value: 'Will sync when online', color: 'var(--text-tertiary)' });
         break;
       default: // idle
-        lines.push({ label: 'Status', value: 'Up to date', color: 'var(--text-success)' });
+        lines.push({ label: 'Status', value: 'All changes saved', color: 'var(--text-success)' });
         break;
     }
 
     if (lastSyncedAt) {
       lines.push({ label: 'Last saved', value: timeStr });
-    } else {
-      lines.push({ label: 'Last saved', value: 'Never' });
-    }
-
-    if (isClickable && effectiveStatus !== 'synced') {
-      lines.push({ label: '', value: 'Click to sync now', color: 'var(--text-tertiary)' });
     }
 
     return lines;
@@ -165,13 +127,6 @@ export function CloudSyncIndicator({
             </div>
           </div>
         );
-      case 'dirty':
-        return (
-          <div className="sync-icon-wrap">
-            <Cloud size={16} style={{ color: 'var(--icon-primary)' }} />
-            <div className="sync-icon-badge--top sync-dirty-dot" />
-          </div>
-        );
       case 'offline':
         return (
           <div className="sync-icon-wrap">
@@ -181,18 +136,12 @@ export function CloudSyncIndicator({
             </div>
           </div>
         );
-      default: // idle
+      default: // idle — clean cloud, no badge
         return <Cloud size={16} style={{ color: 'var(--icon-primary)' }} />;
     }
   };
 
   const tooltipLines = getTooltipContent();
-
-  const buttonClasses = [
-    'sync-button',
-    isClickable ? 'sync-button--clickable' : 'sync-button--waiting',
-    effectiveStatus === 'syncing' ? 'sync-button--pulsing' : '',
-  ].filter(Boolean).join(' ');
 
   return (
     <TooltipPrimitive.Provider delayDuration={300}>
@@ -201,7 +150,7 @@ export function CloudSyncIndicator({
           <button
             onClick={handleClick}
             disabled={status === 'syncing'}
-            className={buttonClasses}
+            className={`sync-button${status === 'syncing' ? ' sync-button--pulsing' : ''}`}
             aria-label="Cloud sync status"
           >
             {renderIcon()}

@@ -2821,7 +2821,6 @@ export function TokensPanel({ onNavigateToNode, onNavigateToProjects, cloudSyncS
                 lastSyncedAt={lastSyncedAt}
                 lastError={lastSyncError}
                 onManualSync={onManualSync}
-                dirtyCount={dirtyCount}
               />
             </div>
           </div>
