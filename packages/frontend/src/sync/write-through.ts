@@ -37,6 +37,7 @@ const _debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const _syncQueue: QueueEntry[] = []; // In-memory queue for offline entries
 let _queueFlushTimer: ReturnType<typeof setTimeout> | null = null;
 let _onSyncStatusChange: ((status: 'syncing' | 'synced' | 'error' | 'offline') => void) | null = null;
+let _onProjectSynced: ((projectId: string, syncedAt: number) => void) | null = null;
 
 const DEBOUNCE_MS = 300; // 300ms per-project debounce — fast enough to feel instant
 const MAX_RETRIES = 3;
@@ -75,11 +76,13 @@ export function initWriteThrough(config: {
   getToken: () => string | null;
   getSnapshot: (projectId: string) => ProjectSnapshot | null;
   onSyncStatusChange?: (status: 'syncing' | 'synced' | 'error' | 'offline') => void;
+  onProjectSynced?: (projectId: string, syncedAt: number) => void;
   onReconnected?: () => void;
 }) {
   _getToken = config.getToken;
   _getSnapshot = config.getSnapshot;
   _onSyncStatusChange = config.onSyncStatusChange || null;
+  _onProjectSynced = config.onProjectSynced || null;
   _onReconnected = config.onReconnected || null;
 }
 
@@ -211,6 +214,8 @@ async function executeSyncForProject(projectId: string): Promise<boolean> {
     });
 
     if (res.ok) {
+      const syncedAt = Date.now();
+      _onProjectSynced?.(projectId, syncedAt);
       _onSyncStatusChange?.('synced');
       return true;
     }

@@ -278,6 +278,16 @@ export function useCloudSyncAuth() {
         else if (status === 'error') setCloudSyncStatus('error');
         else if (status === 'offline') setCloudSyncStatus('offline');
       },
+      onProjectSynced: (projectId, syncedAt) => {
+        // Update the project's lastSyncedAt timestamp in the store
+        // This is what the CloudSyncIndicator reads for "Last saved: Just now"
+        lastSyncedAtMapRef.current[projectId] = syncedAt;
+        setIsLoadingCloudData(true); // Prevent middleware from re-syncing this update
+        setProjects(prev => prev.map(p =>
+          p.id === projectId ? { ...p, lastSyncedAt: syncedAt } : p
+        ));
+        setTimeout(() => setIsLoadingCloudData(false), 50);
+      },
       onReconnected: () => {
         // After flushing local queue on reconnect, pull latest from cloud
         // (another device may have edited while we were offline)
