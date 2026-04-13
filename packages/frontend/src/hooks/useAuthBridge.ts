@@ -35,11 +35,9 @@ export function useAuthBridge() {
     if (session && isAuthenticated) {
       const newToken = session.accessToken;
 
-      // Restore isTemplateAdmin from prev state OR from localStorage cache
-      let cachedIsTemplateAdmin = prev?.isTemplateAdmin;
-      if (cachedIsTemplateAdmin === undefined) {
-        try { cachedIsTemplateAdmin = localStorage.getItem('0colors-isTemplateAdmin') === 'true'; } catch {}
-      }
+      // Restore isTemplateAdmin from localStorage cache (set by getCloudMeta)
+      let cachedIsTemplateAdmin = false;
+      try { cachedIsTemplateAdmin = localStorage.getItem('0colors-isTemplateAdmin') === 'true'; } catch {}
 
       setAuthSession(prev => ({
         accessToken: newToken,
@@ -47,7 +45,7 @@ export function useAuthBridge() {
         email: session.email,
         name: session.name,
         isAdmin: session.isAdmin || user?.isAdmin,
-        isTemplateAdmin: cachedIsTemplateAdmin || prev?.isTemplateAdmin,
+        isTemplateAdmin: prev?.isTemplateAdmin || cachedIsTemplateAdmin,
       }));
 
       // Update cloud-sync module's token if it changed
