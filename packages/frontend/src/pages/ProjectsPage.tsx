@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
-import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, RefreshCw, Sparkles, Eye, LogIn, Globe, Folder, User, FlaskConical } from 'lucide-react';
+import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, Sparkles, Eye, LogIn, Globe, Folder, User, FlaskConical } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -330,19 +330,6 @@ function ProjectList({
           <div className="projects-section-header-left">
             <span className="projects-section-label">{label}</span>
             <span className="projects-section-count">{projectList.length}</span>
-            {label.toLowerCase().includes('cloud') && cloudSyncStatus === 'syncing' && (
-              <span className="projects-section-syncing">Syncing...</span>
-            )}
-            {label.toLowerCase().includes('cloud') && onForceCloudRefresh && (
-              <button
-                onClick={onForceCloudRefresh}
-                className="projects-section-refresh-btn"
-                title="Force re-download all cloud projects from server"
-                data-testid="projects-cloud-refresh-button"
-              >
-                <RefreshCw className="projects-section-refresh-icon" />
-              </button>
-            )}
           </div>
           {showCreate && (
             <button
