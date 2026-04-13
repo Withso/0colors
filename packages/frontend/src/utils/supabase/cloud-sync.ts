@@ -50,13 +50,11 @@ interface SyncState {
 }
 
 // ── Constants ──
-const SYNC_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes (safety-net interval for pushing dirty projects)
-const REMOTE_POLL_MS = 30 * 1000; // 30 seconds — poll for remote changes (cross-browser sync)
-const IDLE_SAVE_MS = 30 * 1000; // 30 seconds idle → auto save
-const DEBOUNCE_SAVE_MS = 3_000; // 3 seconds debounce after any markDirty → instant save
-const DIRTY_KEY = '0colors-cloud-dirty-projects';
-const FETCH_TIMEOUT_MS = 30_000; // 30s timeout (edge functions can have cold starts + large batches)
-const MAX_RETRIES = 2; // Retry twice with exponential backoff on network failure
+// ── Legacy constants (most replaced by write-through sync) ──
+const SYNC_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes — kept for initCloudSync interval (safety net)
+const FETCH_TIMEOUT_MS = 30_000; // 30s timeout for safeFetch
+const MAX_RETRIES = 2; // safeFetch retry count
+// REMOVED: REMOTE_POLL_MS, IDLE_SAVE_MS, DEBOUNCE_SAVE_MS, DIRTY_KEY — replaced by write-through
 
 // ── Module state ──
 const state: SyncState = {

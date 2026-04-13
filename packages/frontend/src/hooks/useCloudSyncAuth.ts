@@ -727,11 +727,18 @@ export function useCloudSyncAuth() {
 
   // ────────────────────────────────────────────────────
   // FULL CLOUD RECONCILIATION (on projects page visit)
+  // Cooldown: skip if last reconciliation was less than 60s ago.
+  // This prevents wasteful repeated fetches when user switches
+  // between projects page and canvas frequently.
   // ────────────────────────────────────────────────────
+  const lastReconcileRef = useRef(0);
+
   useEffect(() => {
     if (!viewingProjects || !authSession) return;
-    // Skip reconciliation within the first 5s of mount — loadCloudData already handles the initial load.
+    // Skip within first 5s of mount — loadCloudData already handles initial load
     if (Date.now() - mountTimeRef.current < 5000) return;
+    // Skip if reconciled less than 60s ago
+    if (Date.now() - lastReconcileRef.current < 60_000) return;
 
     let cancelled = false;
     const fullReconcile = async () => {
@@ -892,6 +899,7 @@ export function useCloudSyncAuth() {
           advancedLogic: rs.advancedLogic,
         };
         setTimeout(() => { isLoadingCloudDataRef.current = false; setIsLoadingCloudData(false); }, 100);
+        lastReconcileRef.current = Date.now();
       }
     };
     fullReconcile();
