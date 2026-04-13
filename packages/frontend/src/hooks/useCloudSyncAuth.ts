@@ -15,6 +15,7 @@ import { useLocation } from 'react-router';
 
 // ── Cloud sync & auth ──
 import { getSupabaseClient } from '../utils/supabase/client';
+import { initWriteThrough, destroyWriteThrough } from '../sync/write-through';
 import {
   initCloudSync,
   destroyCloudSync,
@@ -269,6 +270,19 @@ export function useCloudSyncAuth() {
     // and wouldn't set this flag in time otherwise.
     isLoadingCloudDataRef.current = true;
 
+    // Initialize write-through sync (immediate save to IndexedDB + cloud on every action)
+    initWriteThrough({
+      getToken: () => authSessionRef.current?.accessToken || null,
+      getSnapshot: (pid) => getProjectSnapshotRef.current?.(pid) || null,
+      onSyncStatusChange: (status) => {
+        if (status === 'synced') setCloudSyncStatus('synced');
+        else if (status === 'syncing') setCloudSyncStatus('syncing');
+        else if (status === 'error') setCloudSyncStatus('error');
+        else if (status === 'offline') setCloudSyncStatus('offline');
+      },
+    });
+
+    // Cloud sync still handles initial data load, reconciliation, and batch operations
     initCloudSync({
       accessToken: authSession.accessToken,
       getSnapshot: (pid) => getProjectSnapshotRef.current?.(pid) || null,
@@ -705,7 +719,7 @@ export function useCloudSyncAuth() {
 
     loadCloudData();
 
-    return () => { loadCancelled = true; isLoadingCloudDataRef.current = false; destroyCloudSync(); };
+    return () => { loadCancelled = true; isLoadingCloudDataRef.current = false; destroyCloudSync(); destroyWriteThrough(); };
   }, [authSession?.accessToken]);
 
   // ────────────────────────────────────────────────────
