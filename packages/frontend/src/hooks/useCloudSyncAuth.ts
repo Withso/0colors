@@ -264,10 +264,14 @@ export function useCloudSyncAuth() {
                 return session;
               });
             } else {
-              console.log('🔑 Cached token is expired — waiting for SDK auto-refresh');
-              // Don't set an expired token as authSession. The SDK's autoRefreshToken
-              // will fire TOKEN_REFRESHED if the refresh token is still valid, which
-              // the onAuthStateChange handler will propagate.
+              // Both access token expired AND refresh failed.
+              // The refresh token is likely also expired — sign out cleanly
+              // so the user sees the sign-in prompt instead of a broken UI.
+              console.log('🔑 Session fully expired — signing out');
+              setAuthSession(null);
+              localStorage.removeItem(AUTH_SESSION_KEY);
+              destroyCloudSync();
+              toast.error('Session expired — please sign in again', { duration: 5000 });
             }
           } else {
             // Use the refreshed session — preserve isAdmin/isTemplateAdmin from cache to avoid blink
@@ -286,8 +290,10 @@ export function useCloudSyncAuth() {
             });
           }
         } else {
-          // No active session
-          console.log('🔑 No active Supabase session');
+          // No active Supabase session — clear any stale cached auth
+          console.log('🔑 No active Supabase session — clearing cached auth');
+          setAuthSession(null);
+          localStorage.removeItem(AUTH_SESSION_KEY);
         }
       } catch (e) {
         console.log(`Auth session check error (may be offline): ${e}`);
@@ -466,7 +472,12 @@ export function useCloudSyncAuth() {
         } catch (e) {
           console.log(`🔑 Token refresh after 401 error: ${e}`);
         }
-        toast.error('Session expired — please sign in again', { duration: 8000 });
+        // Token refresh failed completely — sign out
+        console.log('🔑 All token refresh attempts failed — signing out');
+        setAuthSession(null);
+        localStorage.removeItem(AUTH_SESSION_KEY);
+        destroyCloudSync();
+        toast.error('Session expired — please sign in again', { duration: 5000 });
         return null;
       },
       onSynced: (pids, timestamps) => {
