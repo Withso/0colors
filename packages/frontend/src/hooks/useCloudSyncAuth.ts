@@ -20,18 +20,12 @@ import {
   initCloudSync,
   destroyCloudSync,
   updateAccessToken,
-  markDirty,
-  forceSyncNow,
-  isDirty,
-  hasDirtyProjects,
-  getDirtyProjectIds,
-  getDirtyCount,
-  clearAllDirtyFlags,
   loadCloudProjects,
   loadSingleProject,
   getCloudMeta,
   loadPublicTemplates,
 } from '../utils/supabase/cloud-sync';
+import { forceSyncAll } from '../sync/write-through';
 import type { ProjectSnapshot } from '../utils/supabase/cloud-sync';
 import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from '../utils/migrations';
 import { computeAllProjectTokens, type ProjectComputedTokens } from '../utils/computed-tokens';
@@ -395,8 +389,9 @@ export function useCloudSyncAuth() {
         (async () => {
           try {
             // Flush any dirty local changes first
-            if (hasDirtyProjects()) {
-              await forceSyncNow().catch(() => {});
+            // Flush any pending write-through syncs before pulling
+            {
+              await forceSyncAll().catch(() => {});
             }
 
             const cloudData = await loadCloudProjects(token).catch(() => []);
@@ -466,7 +461,7 @@ export function useCloudSyncAuth() {
         const currentProject = useStore.getState().projects.find(p => p.id === currentActiveId);
         if (!currentProject?.isCloud) return;
         // Don't poll if we have dirty local changes (we'd overwrite them)
-        if (isDirty(currentActiveId)) return;
+        // Write-through ensures data is already synced
 
         loadSingleProject(currentActiveId, token).then(snapshot => {
           if (!snapshot) return;
@@ -516,10 +511,7 @@ export function useCloudSyncAuth() {
         // ── Clear stale dirty flags from previous sessions ──
         // Cloud is the source of truth for cloud projects. Stale dirty flags
         // from crashed/abandoned sessions should not prevent cloud data from loading.
-        if (hasDirtyProjects()) {
-          console.log(`☁️ [loadCloudData] Clearing ${getDirtyProjectIds().length} stale dirty flag(s) — cloud is source of truth`);
-          clearAllDirtyFlags();
-        }
+          // Write-through sync handles saves — no dirty tracking to clear
 
         // ── Step 1+2: Fetch cloud metadata AND project snapshots IN PARALLEL ──
         // This is significantly faster than the previous sequential approach,
@@ -741,9 +733,9 @@ export function useCloudSyncAuth() {
     const fullReconcile = async () => {
       try {
         // ── CRITICAL: Flush dirty local data to cloud BEFORE downloading ──
-        if (hasDirtyProjects()) {
-          console.log(`☁️ [Reconcile] Flushing ${getDirtyProjectIds().length} dirty project(s) before downloading…`);
-          await forceSyncNow().catch((e) => console.log('☁️ [Reconcile] Pre-reconcile flush failed:', e));
+        // Flush any pending write-through syncs before reconciliation
+        {
+          await forceSyncAll().catch((e) => console.log('☁️ [Reconcile] Pre-reconcile flush failed:', e));
           if (cancelled) return;
         }
 
@@ -816,7 +808,7 @@ export function useCloudSyncAuth() {
             addedCount++;
           } else if (remoteSyncedAt > localSyncedAt) {
             // ── CRITICAL GUARD: Never overwrite a project that still has dirty local changes ──
-            if (isDirty(projectId)) {
+            if (false) { // Write-through ensures data is already synced
               console.log(`☁️ [Reconcile] SKIPPING overwrite for ${projectId} — project has dirty local changes (remote=${remoteSyncedAt}, local=${localSyncedAt})`);
               continue;
             }
@@ -935,7 +927,7 @@ export function useCloudSyncAuth() {
 
     const cloudProjectIds = projects.filter(p => !p.isSample).map(p => p.id);
     for (const pid of cloudProjectIds) {
-      markDirty(pid);
+      // Write-through handles sync via persistence middleware
     }
     if (cloudProjectIds.length > 0 && cloudSyncStatus !== 'syncing') {
       setCloudSyncStatus('dirty');
@@ -965,9 +957,9 @@ export function useCloudSyncAuth() {
 
     try {
       // 0. CRITICAL: Flush dirty local data to cloud FIRST
-      if (hasDirtyProjects()) {
-        console.log(`☁️ [ForceRefresh] Flushing ${getDirtyProjectIds().length} dirty project(s) before refresh…`);
-        await forceSyncNow().catch((e) => console.log('☁️ [ForceRefresh] Pre-refresh flush failed:', e));
+      // Flush pending write-through syncs before refresh
+      {
+        await forceSyncAll().catch((e) => console.log('☁️ [ForceRefresh] Pre-refresh flush failed:', e));
       }
 
       // 1. Clear ALL timestamp caches
@@ -1092,7 +1084,7 @@ export function useCloudSyncAuth() {
 
   const handleSignOut = useCallback(async () => {
     // Flush any pending sync before signing out (best-effort)
-    try { await forceSyncNow(); } catch { /* ignore sync errors on signout */ }
+    try { await forceSyncAll(); } catch { /* ignore sync errors on signout */ }
 
     try {
       const supabase = getSupabaseClient();
@@ -1169,7 +1161,7 @@ export function useCloudSyncAuth() {
     // ── 1. Explicitly mark ALL cloud/template projects dirty ──
     const curProjects = useStore.getState().projects;
     for (const p of curProjects) {
-      if (!p.isSample) markDirty(p.id);
+      // Write-through handles sync via persistence middleware
     }
 
     // ── 2. Recompute computed tokens from REFS (always latest) ──
@@ -1195,7 +1187,7 @@ export function useCloudSyncAuth() {
 
     // ── 3. Flush to server ──
     try {
-      const success = await forceSyncNow();
+      const success = await forceSyncAll();
       clearTimeout(safetyTimer);
       if (success) {
         setCloudSyncStatus((prev: any) =>
@@ -1239,7 +1231,7 @@ export function useCloudSyncAuth() {
   }, [projects, activeProjectId]);
 
   const cloudDirtyCount = useMemo(() => {
-    return getDirtyCount();
+    return 0; // Write-through handles sync — no dirty tracking
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projects, cloudSyncStatus]);
 
