@@ -539,6 +539,8 @@ export function useCloudSyncAuth() {
           const isTemplateAdmin = cloudMeta.isTemplateAdmin ?? false;
           console.log(`☁️ Admin status: isAdmin=${isAdmin}, isTemplateAdmin=${isTemplateAdmin}`);
           setAuthSession(prev => prev ? { ...prev, isAdmin, isTemplateAdmin } : prev);
+          // Cache isTemplateAdmin for instant restore on next page load
+          try { localStorage.setItem('0colors-isTemplateAdmin', String(isTemplateAdmin)); } catch {}
           const updatedSession = { ...authSession, isAdmin, isTemplateAdmin };
           // Auth persistence handled by ZerosAuthProvider
           if (isAdmin) {
