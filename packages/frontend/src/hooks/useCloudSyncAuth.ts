@@ -216,148 +216,10 @@ export function useCloudSyncAuth() {
   }, [allNodes, tokens, groups, projects, pages, themes, advancedLogic, isInitialLoad]);
 
   // ════════════════════════════════════════════════════
-  // AUTH SESSION RESTORATION & CLOUD SYNC
+  // AUTH is now handled by ZerosAuthProvider (shared @0zerosdesign/auth-client).
+  // useAuthBridge syncs ZerosAuth → Zustand store.
+  // This hook only handles cloud sync, templates, and computed tokens.
   // ════════════════════════════════════════════════════
-
-  // Restore auth session on mount
-  useEffect(() => {
-    let aborted = false; // Guard against React Strict Mode double-mount races
-
-    /** Decode a JWT and check if it expires within `marginMs` from now. */
-    const isTokenExpired = (token: string, marginMs = 30_000): boolean => {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.exp * 1000 < Date.now() + marginMs;
-      } catch { return true; }
-    };
-
-    const checkSession = async () => {
-      try {
-        const supabase = getSupabaseClient();
-
-        // First try to get the cached session
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (aborted) return;
-
-        if (sessionData?.session) {
-          // We have a cached session — refresh it to ensure the access token is fresh.
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-          if (aborted) return;
-
-          if (refreshError || !refreshData?.session?.access_token) {
-            console.log(`🔑 Session refresh failed: ${refreshError?.message || 'no session returned'}`);
-            // Only fall back to cached token if it's NOT expired.
-            // Using an expired token would cause 401s on every sync request.
-            const cachedToken = sessionData.session.access_token;
-            if (!isTokenExpired(cachedToken)) {
-              console.log('🔑 Cached token still valid — using it while SDK retries refresh');
-              setAuthSession((prev) => {
-                const session = {
-                  accessToken: cachedToken,
-                  userId: sessionData.session.user.id,
-                  email: sessionData.session.user.email || '',
-                  name: sessionData.session.user.user_metadata?.name || sessionData.session.user.email?.split('@')[0] || '',
-                  isAdmin: prev?.isAdmin,
-                  isTemplateAdmin: prev?.isTemplateAdmin,
-                };
-                persistAuthSession(session);
-                return session;
-              });
-            } else {
-              // Both access token expired AND refresh failed.
-              // The refresh token is likely also expired — sign out cleanly
-              // so the user sees the sign-in prompt instead of a broken UI.
-              console.log('🔑 Session fully expired — signing out');
-              setAuthSession(null);
-              localStorage.removeItem(AUTH_SESSION_KEY);
-              destroyCloudSync();
-              toast.error('Session expired — please sign in again', { duration: 5000 });
-            }
-          } else {
-            // Use the refreshed session — preserve isAdmin/isTemplateAdmin from cache to avoid blink
-            console.log('🔑 Session refreshed successfully');
-            setAuthSession((prev) => {
-              const session = {
-                accessToken: refreshData.session.access_token,
-                userId: refreshData.session.user.id,
-                email: refreshData.session.user.email || '',
-                name: refreshData.session.user.user_metadata?.name || refreshData.session.user.email?.split('@')[0] || '',
-                isAdmin: prev?.isAdmin,
-                isTemplateAdmin: prev?.isTemplateAdmin,
-              };
-              localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
-              return session;
-            });
-          }
-        } else {
-          // No active Supabase session — clear any stale cached auth
-          console.log('🔑 No active Supabase session — clearing cached auth');
-          setAuthSession(null);
-          localStorage.removeItem(AUTH_SESSION_KEY);
-        }
-      } catch (e) {
-        console.log(`Auth session check error (may be offline): ${e}`);
-      } finally {
-        if (!aborted) setAuthChecking(false);
-      }
-    };
-    checkSession();
-
-    // Listen for auth state changes (e.g., sign-out from another tab)
-    let subscription: { unsubscribe: () => void } | null = null;
-    try {
-      const supabase = getSupabaseClient();
-      const result = supabase.auth.onAuthStateChange((event: string, session: any) => {
-        if (event === 'TOKEN_REFRESHED' && session?.access_token) {
-          console.log('🔑 Token refreshed — updating session');
-          setAuthSession((prev: any) => {
-            if (!prev) return prev;
-            const updated = { ...prev, accessToken: session.access_token };
-            persistAuthSession(updated);
-            updateAccessToken(session.access_token);
-            return updated;
-          });
-        } else if (event === 'SIGNED_IN' && session?.access_token) {
-          // Handles: email verification callback, password reset callback,
-          // or any OAuth/magic-link redirect that lands with tokens in the URL hash.
-          console.log('🔑 SIGNED_IN event — establishing session from auth callback');
-          const newSession = {
-            accessToken: session.access_token,
-            userId: session.user?.id,
-            email: session.user?.email || '',
-            name: session.user?.user_metadata?.name || session.user?.email?.split('@')[0] || '',
-          };
-          setAuthSession(newSession);
-          setAuthSkipped(false);
-          persistAuthSession(newSession);
-          localStorage.removeItem('0colors-auth-skipped');
-          updateAccessToken(session.access_token);
-          // Clean up the URL hash so #access_token=... doesn't linger
-          if (window.location.hash && window.location.hash.includes('access_token')) {
-            window.history.replaceState(null, '', window.location.pathname + window.location.search);
-          }
-        } else if (event === 'SIGNED_OUT') {
-          console.log('🔑 Signed out via auth state change');
-          setAuthSession(null);
-          localStorage.removeItem(AUTH_SESSION_KEY);
-          updateAccessToken(null);
-          destroyCloudSync();
-        }
-      });
-      subscription = result.data?.subscription ?? null;
-    } catch (e) {
-      console.log(`Auth state listener setup error (non-fatal): ${e}`);
-    }
-
-    // Token refresh is handled by the SDK's autoRefreshToken: true.
-    // The onAuthStateChange listener above catches TOKEN_REFRESHED events
-    // and propagates the new token to state/localStorage/cloud-sync.
-
-    return () => {
-      aborted = true;
-      subscription?.unsubscribe();
-    };
-  }, []);
 
   // ────────────────────────────────────────────────────
   // getProjectSnapshot — always reads from REFS (latest state)
@@ -446,7 +308,7 @@ export function useCloudSyncAuth() {
             setAuthSession((prev: any) => {
               if (!prev) return prev;
               const updated = { ...prev, accessToken: currentToken };
-              persistAuthSession(updated);
+              // Auth persistence handled by ZerosAuthProvider
               return updated;
             });
             updateAccessToken(currentToken);
@@ -462,7 +324,7 @@ export function useCloudSyncAuth() {
             setAuthSession((prev: any) => {
               if (!prev) return prev;
               const updated = { ...prev, accessToken: newToken };
-              persistAuthSession(updated);
+              // Auth persistence handled by ZerosAuthProvider
               return updated;
             });
             updateAccessToken(newToken);
@@ -662,7 +524,7 @@ export function useCloudSyncAuth() {
           console.log(`☁️ Admin status: isAdmin=${isAdmin}, isTemplateAdmin=${isTemplateAdmin}`);
           setAuthSession(prev => prev ? { ...prev, isAdmin, isTemplateAdmin } : prev);
           const updatedSession = { ...authSession, isAdmin, isTemplateAdmin };
-          persistAuthSession(updatedSession);
+          // Auth persistence handled by ZerosAuthProvider
           if (isAdmin) {
             console.log(`[ADMIN] Logged in as admin${isTemplateAdmin ? ' + template admin' : ''} - unlimited cloud projects`);
           }
@@ -1065,7 +927,7 @@ export function useCloudSyncAuth() {
   const handleAuth = useCallback((session: { accessToken: string; userId: string; email: string; name: string }) => {
     setAuthSession(session);
     setAuthSkipped(false);
-    persistAuthSession(session);
+    // Auth persistence handled by ZerosAuthProvider
     localStorage.removeItem('0colors-auth-skipped');
     updateAccessToken(session.accessToken);
   }, []);

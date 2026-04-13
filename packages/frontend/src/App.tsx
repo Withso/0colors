@@ -26,6 +26,7 @@ import { usePageThemeOperations } from './store/usePageThemeOperations';
 import { useProjectOperations } from './store/useProjectOperations';
 import { useImportExport } from './store/useImportExport';
 import { useCloudSyncAuth } from './hooks/useCloudSyncAuth';
+import { useAuthBridge } from './hooks/useAuthBridge';
 import { useSampleTemplates } from './hooks/useSampleTemplates';
 import { useAdvancedLogicEffect } from './hooks/useAdvancedLogicEffect';
 import { useDevMode } from './hooks/useDevMode';
@@ -147,14 +148,23 @@ export function AppShell() {
   // so it's active before React mounts — no useEffect needed.
 
 
-  // ── Cloud sync & auth hook ──
+  // ── Auth bridge: ZerosAuthProvider → Zustand store ──
+  const { signOut: zerosSignOut, redirectToLogin: redirectToZerosLogin } = useAuthBridge();
+
+  // ── Cloud sync hook (reads auth from Zustand, set by bridge above) ──
   const {
-    handleAuth, handleSignOut, handleSkipAuth, handleForceCloudRefresh, handleManualSync,
+    handleAuth, handleSignOut: handleCloudSignOut, handleSkipAuth, handleForceCloudRefresh, handleManualSync,
     effectiveCloudSyncStatus, activeProjectLastSyncedAt, cloudDirtyCount,
     authSessionRef, computedTokensRef, isLoadingCloudDataRef, lastSyncedAtMapRef,
     viewingProjectsRef, communityLoadedRef, lastSyncedPathnameRef, activeProjectSlugRef,
     getProjectSnapshotRef, mountTimeRef,
   } = useCloudSyncAuth();
+
+  // Combined sign out: both shared auth + cloud sync cleanup
+  const handleSignOut = async () => {
+    handleCloudSignOut();
+    await zerosSignOut();
+  };
 
   // Wire computed tokens ref to persistence middleware
   useEffect(() => {
@@ -198,14 +208,7 @@ export function AppShell() {
   const dashboardSection = useStore(s => s.dashboardSection);
   const setDashboardSection = useStore(s => s.setDashboardSection);
 
-  // Auth: redirect to accounts.zeros.design instead of showing local AuthPage
-  const redirectToZerosLogin = useCallback(() => {
-    // IMPORTANT: Use pathname + search only — never include hash fragments.
-    // Hash may contain #access_token from a previous auth attempt.
-    // Including it in redirect_url creates an infinite loop.
-    const returnUrl = encodeURIComponent(window.location.origin + window.location.pathname + window.location.search);
-    window.location.href = `https://accounts.zeros.design/login?product_id=0colors&redirect_url=${returnUrl}`;
-  }, []);
+  // Auth redirect is now provided by useAuthBridge → ZerosAuthProvider
 
   // ── Starred template (admin selects which sample is default for first-time visitors) ──
   // Now backed by the Zustand store + backend API instead of localStorage-only
