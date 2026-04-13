@@ -37,15 +37,17 @@ export function setupPersistenceMiddleware(
     // Excludes projects array — project metadata changes (lastSyncedAt, name)
     // don't need to trigger sync and would cause an infinite loop:
     //   save → onProjectSynced → setProjects → middleware → save → repeat
+    // Only sync on actual project DATA changes, not view state.
+    // canvasStates (pan/zoom) excluded — it's per-user view state, not project content.
     const contentChanged =
       state.allNodes !== prevState.allNodes ||
       state.tokens !== prevState.tokens ||
       state.groups !== prevState.groups ||
       state.pages !== prevState.pages ||
-      state.themes !== prevState.themes ||
-      state.canvasStates !== prevState.canvasStates;
+      state.themes !== prevState.themes;
 
     if (!contentChanged) return;
+
 
     // Immediately persist group expand states (no debounce)
     if (state.groups !== prevState.groups) {
