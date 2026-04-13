@@ -57,21 +57,10 @@ export function setupPersistenceMiddleware(
     const activeProject = state.projects.find(p => p.id === activeProjectId);
 
     if (activeProject && !activeProject.isSample) {
-      // Detect discrete actions (create/delete nodes/tokens/groups) → sync immediately
-      // Continuous actions (drag, slider scrub) → debounced sync
-      const isDiscreteChange =
-        state.allNodes.length !== prevState.allNodes.length ||  // Node created/deleted
-        state.tokens.length !== prevState.tokens.length ||      // Token created/deleted
-        state.groups.length !== prevState.groups.length ||      // Group created/deleted
-        state.pages.length !== prevState.pages.length ||        // Page created/deleted
-        state.themes.length !== prevState.themes.length ||      // Theme created/deleted
-        state.projects.length !== prevState.projects.length;    // Project created/deleted
-
-      if (isDiscreteChange) {
-        syncProjectNow(activeProjectId); // Instant — no debounce
-      } else {
-        syncProject(activeProjectId); // 500ms debounce for continuous changes
-      }
+      // All changes go through debounced sync (500ms).
+      // This is fast enough to feel instant while preventing
+      // rapid saves from corrupting state during editing.
+      syncProject(activeProjectId);
     }
 
     // If projects array itself changed (rename, delete, etc.), sync affected
