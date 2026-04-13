@@ -9,6 +9,7 @@ import {
   getNodeHeight, MIN_GAP,
 } from '../utils/app-helpers';
 import { useStore } from './index';
+import { useReadOnlyState } from '../hooks/useReadOnlyState';
 
 export function useNodeCreation() {
   const allNodes = useStore(s => s.allNodes);
@@ -27,7 +28,7 @@ export function useNodeCreation() {
   const setSelectedNodeIds = useStore(s => s.setSelectedNodeIds);
 
   // Derive sample mode from store
-  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
+  const { isSampleMode } = useReadOnlyState();
   const isSampleModeRef = useRef(isSampleMode);
   isSampleModeRef.current = isSampleMode;
 

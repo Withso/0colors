@@ -2,10 +2,10 @@
   "version": 1,
   "notYetAutomatedInPlaywright": [
     {
-      "name": "Advanced Logic popup (the big “fx” / expression editor)",
-      "code": "AdvancedPopup.tsx, advanced-logic-engine.ts, useAdvancedLogicEffect",
-      "howWeTestToday": "Now covered by a dedicated **domain/property/component** stack plus one focused **Playwright** flow. The full combinatorial surface is still broader than browser automation alone, so the **Test catalog** remains the backlog for additional equivalence classes.",
-      "why": "The popup spans parser, evaluator, theme inheritance, token assignment, and dense UI editing. We automate this mostly below the browser layer for scale and determinism, then keep a smaller E2E slice for wiring confidence."
+      “name”: “Advanced Logic popup (the big fx / expression editor)”,
+      “code”: “AdvancedPopup.tsx, advanced-logic-engine.ts, useAdvancedLogicEffect”,
+      “howWeTestToday”: “Covered by 20 **domain** tests, 7 **property** suites (40 generated runs each), 6 **component** tests, 4 **integration** tests, and 7 **Playwright** E2E flows. Domain/property tests cover parser, evaluator, constraints, themes, token assignment, golden fixtures, and edge cases. Component tests verify selector rendering across multi-row, disabled-row, multi-channel, and token-node layouts. E2E tests cover save/reopen, close-without-save, row add/delete, multi-row display, play preview, fallback display, and token-node popup.”,
+      “why”: “The popup spans parser, evaluator, theme inheritance, token assignment, and dense UI editing. We automate this mostly below the browser layer for scale and determinism, then keep a smaller E2E slice for wiring confidence.”
     },
     {
       "name": "Token table popup, publish flow, cloud sync",
@@ -408,11 +408,35 @@
     "advanced-logic.spec.ts": {
       "module": "Advanced logic popup",
       "moduleOrder": 21,
-      "fileBlurb": "Real-browser coverage for opening the Advanced Popup, entering a simple hue rule, saving it, and reopening it.",
+      "fileBlurb": "Real-browser coverage for the Advanced Popup: save/reopen rules, add/delete rows, play preview, fallback display, and token-node support.",
       "plainByPhrase": [
         {
           "includes": "save and reopen a simple hue expression from the advanced popup",
           "plain": "A user can open the Advanced popup, save a simple hue rule, close it, and reopen it without losing the result."
+        },
+        {
+          "includes": "open popup and close without saving does not crash",
+          "plain": "Opening and closing the Advanced popup without saving anything does not crash the app."
+        },
+        {
+          "includes": "add and delete a condition row",
+          "plain": "A user can add a condition row to a channel and then delete it."
+        },
+        {
+          "includes": "add multiple rows and verify chaining output display",
+          "plain": "Multiple condition rows can be added and their individual outputs are displayed."
+        },
+        {
+          "includes": "play button previews channel output",
+          "plain": "The play button shows a preview of the channel logic output without persisting it."
+        },
+        {
+          "includes": "fallback section displays",
+          "plain": "The fallback value section is visible in each channel column."
+        },
+        {
+          "includes": "popup renders token assignment panel for token node",
+          "plain": "When opened for a token node, the popup shows the token assignment panel instead of channel columns."
         }
       ],
       "fallbackPlain": "Advanced popup browser-flow check."

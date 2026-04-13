@@ -1,7 +1,8 @@
 import './App.css';
-import React, { useCallback, useEffect, useRef, Suspense } from 'react';
+import React, { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import { useStore, setComputedTokensRef } from './store';
 import { ColorNode } from './types';
+import { getSupabaseClient } from './utils/supabase/client';
 
 // ── Lazy-loaded components (only downloaded when needed) ──
 const ConnectedTokensPanel = React.lazy(() => import('./components/tokens/ConnectedTokensPanel').then(m => ({ default: m.ConnectedTokensPanel })));
@@ -37,6 +38,7 @@ import { useUIEffects } from './hooks/useUIEffects';
 import { useLocalStorageRestore } from './hooks/useLocalStorageRestore';
 import { useCommunityProject } from './hooks/useCommunityProject';
 import { useCanvasEvents } from './hooks/useCanvasEvents';
+import { useSessionLock } from './hooks/useSessionLock';
 
 // ── Extracted helpers ──
 import {
@@ -46,7 +48,13 @@ import {
 // ── Routing ──
 import { RouterProvider, useNavigate, useLocation } from 'react-router';
 import { router } from './routes';
-import { slugify, findProjectBySlug } from './utils/slugify';
+import { slugify } from './utils/slugify';
+
+// ── Multi-tab coordination (must init before React mounts) ──
+import { initTabChannel } from './sync/tab-channel';
+if (typeof window !== 'undefined') {
+  initTabChannel();
+}
 
 // Auth session key moved to useLocalStorageRestore hook
 
@@ -192,9 +200,30 @@ export function AppShell() {
 
   // Auth: redirect to accounts.zeros.design instead of showing local AuthPage
   const redirectToZerosLogin = useCallback(() => {
-    const returnUrl = encodeURIComponent(window.location.href);
+    // IMPORTANT: Use pathname + search only — never include hash fragments.
+    // Hash may contain #access_token from a previous auth attempt.
+    // Including it in redirect_url creates an infinite loop.
+    const returnUrl = encodeURIComponent(window.location.origin + window.location.pathname + window.location.search);
     window.location.href = `https://accounts.zeros.design/login?product_id=0colors&redirect_url=${returnUrl}`;
   }, []);
+
+  // ── Starred template (admin selects which sample is default for first-time visitors) ──
+  // Now backed by the Zustand store + backend API instead of localStorage-only
+  const starredTemplateId = useStore(s => s.starredTemplateId);
+  const handleStarTemplate = useCallback((templateId: string) => {
+    const newValue = starredTemplateId === templateId ? null : templateId;
+    useStore.setState({ starredTemplateId: newValue });
+    // Persist to backend (async, non-blocking)
+    const token = authSession?.accessToken;
+    if (token) {
+      import('./utils/supabase/cloud-sync').then(({ setStarredTemplate }) => {
+        setStarredTemplate(newValue, token).then(ok => {
+          if (ok) console.log(`⭐ Starred template ${newValue ? 'set to ' + newValue : 'cleared'}`);
+          else console.log('⭐ Failed to persist starred template to backend');
+        });
+      });
+    }
+  }, [starredTemplateId, authSession?.accessToken]);
 
   // ── Community state ──
   const isCommunityMode = useStore(s => s.isCommunityMode);
@@ -292,177 +321,17 @@ export function AppShell() {
 
 
 
-  // ── URL → state sync (handles browser back/forward & direct URL access) ──
-  useEffect(() => {
-    const path = location.pathname;
-    if (path === lastSyncedPathnameRef.current) return;
-    lastSyncedPathnameRef.current = path;
-
-    if (path === '/projects' || path === '/projects/') {
-      if (!viewingProjectsRef.current) {
-        _setViewingProjects(true);
-        viewingProjectsRef.current = true;
-        _setViewMode('canvas');
-      }
-      setDashboardSection('projects');
-      return;
-    }
-
-    // ── /community — community listing page (now a dashboard section) ──
-    if (path === '/community' || path === '/community/') {
-      _setViewingProjects(true);
-      viewingProjectsRef.current = true;
-      setDashboardSection('community');
-      setIsCommunityMode(false);
-      setCommunitySlug(null);
-      return;
-    }
-
-    // ── /settings — AI settings dashboard section ──
-    if (path === '/settings') {
-      _setViewingProjects(true);
-      viewingProjectsRef.current = true;
-      setDashboardSection('ai-settings');
-      return;
-    }
-
-    // ── /profile — profile dashboard section ──
-    if (path === '/profile') {
-      _setViewingProjects(true);
-      viewingProjectsRef.current = true;
-      setDashboardSection('profile');
-      return;
-    }
-
-    // ── /community/:slug — view a community project (read-only) ──
-    const communityMatch = path.match(/^\/community\/([^/]+)$/);
-    if (communityMatch) {
-      const slug = communityMatch[1];
-      _setViewingProjects(false);
-      viewingProjectsRef.current = false;
-      setIsCommunityMode(true);
-      setCommunitySlug(slug);
-      _setViewMode('canvas');
-      return;
-    }
-
-    // If navigating away from community, clear community state
-    if (isCommunityMode) { setIsCommunityMode(false); setCommunitySlug(null); }
-
-    // ── /sample-project/:templateSlug — sample mode with specific template ──
-    const sampleMatch = path.match(/^\/sample-project(?:\/([^/]+))?$/);
-    if (sampleMatch) {
-      const templateSlug = sampleMatch[1];
-      // Ensure we're in project view (not projects list)
-      if (viewingProjectsRef.current) {
-        _setViewingProjects(false);
-        viewingProjectsRef.current = false;
-      }
-      // Activate the sample project
-      const sampleProject = useStore.getState().projects.find(p => p.isSample);
-      if (sampleProject && sampleProject.id !== activeProjectId) {
-        setActiveProjectId(sampleProject.id);
-      }
-      // Find and activate the matching template by slug (if templates are loaded)
-      if (sampleTemplates.length > 0) {
-        if (templateSlug) {
-          const matchingIdx = sampleTemplates.findIndex(t => slugify(t.name) === templateSlug);
-          if (matchingIdx >= 0 && sampleTemplates[matchingIdx].id !== activeSampleTemplateId) {
-            handleSwitchSampleTemplate(matchingIdx);
-          } else if (matchingIdx < 0) {
-            // No matching template found — redirect to first template
-            handleSwitchSampleTemplate(0);
-          }
-        } else {
-          // Bare /sample-project — redirect to first template
-          const firstTemplate = sampleTemplates[0];
-          const firstSlug = slugify(firstTemplate?.name || 'untitled');
-          navigate(`/sample-project/${firstSlug}`, { replace: true });
-          lastSyncedPathnameRef.current = `/sample-project/${firstSlug}`;
-          handleSwitchSampleTemplate(0);
-        }
-      }
-      _setViewMode('canvas');
-      return;
-    }
-
-    const match = path.match(/^\/project\/([^/]+)(?:\/([^/]+))?$/);
-    if (match) {
-      const slug = match[1];
-      const view = match[2] as 'code' | 'export' | undefined;
-      const project = findProjectBySlug(useStore.getState().projects, slug);
-      if (project) {
-        if (viewingProjectsRef.current) {
-          _setViewingProjects(false);
-          viewingProjectsRef.current = false;
-        }
-        if (project.id !== activeProjectId) {
-          setActiveProjectId(project.id);
-          const projectPages = useStore.getState().pages.filter(p => p.projectId === project.id).sort((a, b) => a.createdAt - b.createdAt);
-          if (projectPages.length > 0) setActivePageId(projectPages[0].id);
-          const projectThemes = useStore.getState().themes.filter(t => t.projectId === project.id).sort((a, b) => a.createdAt - b.createdAt);
-          const primaryTheme = projectThemes.find(t => t.isPrimary) || projectThemes[0];
-          if (primaryTheme) setActiveThemeId(primaryTheme.id);
-        }
-        const newMode = view === 'code' ? 'code' : view === 'export' ? 'export' : 'canvas';
-        _setViewMode(newMode);
-      }
-      return;
-    }
-  }, [location.pathname, sampleTemplates, activeSampleTemplateId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Home redirect logic (runs after localStorage restore) ──
-  useEffect(() => {
-    if (isInitialLoad) return;
-    const path = location.pathname;
-    if (path !== '/' && path !== '') return;
-
-    if (authSession) {
-      navigate('/projects', { replace: true });
-    } else {
-      const localProjects = projects.filter(p => !p.isCloud && !p.isTemplate && !p.isSample);
-      if (localProjects.length > 0) {
-        navigate('/projects', { replace: true });
-      } else {
-        // Wait for cloud templates to load before redirecting to sample project
-        // to prevent a flash of hardcoded data → then template data shift
-        if (!cloudTemplatesLoaded) return; // Will re-run when cloudTemplatesLoaded changes
-
-        const firstTemplate = sampleTemplates[0];
-        const templateSlug = slugify(firstTemplate?.name || 'starter');
-        navigate(`/sample-project/${templateSlug}`, { replace: true });
-        lastSyncedPathnameRef.current = `/sample-project/${templateSlug}`;
-        const sampleProject = projects.find(p => p.isSample);
-        if (sampleProject) {
-          setActiveProjectId(sampleProject.id);
-        }
-        _setViewingProjects(false);
-        viewingProjectsRef.current = false;
-
-        // If cloud templates are loaded, switch to the first one
-        if (firstTemplate) {
-          handleSwitchSampleTemplate(0);
-        }
-        setTimeout(() => window.dispatchEvent(new Event('canvasFitAll')), 200);
-      }
-    }
-  }, [isInitialLoad, location.pathname, cloudTemplatesLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+  // ── URL routing is handled entirely by useUrlRouting hook ──
+  // All URL→state sync, home redirect, and URL-on-rename effects live in
+  // useUrlRouting.ts (the single source of truth). Previously this logic was
+  // duplicated here, causing redirect bugs when fixes were applied to one
+  // copy but not the other.
 
   // ── Community project loading (extracted to useCommunityProject hook) ──
   useCommunityProject({ communityLoadedRef });
 
-  // ── Sync URL when active project is renamed ──
-  useEffect(() => {
-    if (viewingProjectsRef.current) return;
-    const project = projects.find(p => p.id === activeProjectId);
-    if (!project) return;
-    const newSlug = slugify(project.name);
-    const parts = location.pathname.split('/').filter(Boolean);
-    if (parts[0] === 'project' && parts[1] && parts[1] !== newSlug) {
-      const viewSuffix = parts[2] ? `/${parts[2]}` : '';
-      navigate(`/project/${newSlug}${viewSuffix}`, { replace: true });
-    }
-  }, [projects, activeProjectId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // ── Session locking (multi-tab/browser restriction) ──
+  const { lockState, forceTakeLock, dismissLockState } = useSessionLock();
 
 
 
@@ -889,19 +758,17 @@ export function AppShell() {
     );
   }
 
-  // Sample-project loading gate: show loading while cloud templates are being fetched
-  // to prevent the flash of hardcoded fallback data before cloud templates arrive.
-  // Covers two scenarios:
-  // 1. Direct visit to /sample-project/* — always wait for templates
-  // 2. Home page (/) for non-auth users with no local projects — they'll be redirected to sample mode
-  if (!cloudTemplatesLoaded && !authSession) {
+  // Sample-project loading gate: show loading until cloud templates are fetched AND ready.
+  // Blocks rendering for ALL users on /sample-project/ paths until templates are loaded.
+  // Also gates on sampleTemplates.length to prevent one frame of stale data between
+  // cloudTemplatesLoaded=true and the auto-switch effect completing.
+  {
     const isSampleProjectPath = location.pathname.startsWith('/sample-project');
     const isHomePath = location.pathname === '/' || location.pathname === '';
-    // During initial load we don't know the real project list yet — keep loading.
-    // Once localStorage restores, check if user actually has local projects.
     const hasNoLocalProjects = isInitialLoad || projects.filter(p => !p.isCloud && !p.isTemplate && !p.isSample).length === 0;
+    const templatesReady = cloudTemplatesLoaded && sampleTemplates.length > 0;
 
-    if (isSampleProjectPath || (isHomePath && hasNoLocalProjects)) {
+    if (isSampleProjectPath && !templatesReady) {
       return (
         <div className="app-shell-loading" data-testid="app-loading-templates">
           <div className="app-shell-loading-col">
@@ -911,10 +778,76 @@ export function AppShell() {
         </div>
       );
     }
+    if (isHomePath && !authSession && hasNoLocalProjects && !cloudTemplatesLoaded) {
+      return (
+        <div className="app-shell-loading" data-testid="app-loading-templates">
+          <div className="app-shell-loading-col">
+            <div className="app-shell-loading-brand">0<span className="app-shell-loading-brand-dim">colors</span></div>
+            <div className="app-shell-loading-text">Loading…</div>
+          </div>
+        </div>
+      );
+    }
   }
 
   // Auth gate removed: auto-skip is handled by the effect below.
   // The full-screen AuthPage is now shown as a modal via showAuthModal.
+
+  // ── Session lock dialogs ──
+  // "conflict": New session trying to open a project locked by another session
+  // "taken-over": Old session that lost its lock to another session
+  if (lockState?.type === 'conflict') {
+    return (
+      <div className="app-shell-loading" data-testid="session-lock-conflict">
+        <div style={{ textAlign: 'center', maxWidth: 420, padding: '0 24px' }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: 'var(--on-surface-0, #fff)' }}>
+            Project open elsewhere
+          </h2>
+          <p style={{ fontSize: 14, color: 'var(--on-surface-2, #999)', marginBottom: 24, lineHeight: 1.5 }}>
+            This project is currently being edited in another tab or browser.
+            Would you like to continue editing here instead?
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <button
+              onClick={() => { dismissLockState(); handleBackToProjects(); }}
+              style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid var(--border-1, #333)', background: 'transparent', color: 'var(--on-surface-1, #ccc)', cursor: 'pointer', fontSize: 13 }}
+            >
+              Go to Projects
+            </button>
+            <button
+              onClick={forceTakeLock}
+              style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'var(--brand, #f0c000)', color: '#000', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+            >
+              Continue here
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (lockState?.type === 'taken-over') {
+    return (
+      <div className="app-shell-loading" data-testid="session-lock-taken-over">
+        <div style={{ textAlign: 'center', maxWidth: 420, padding: '0 24px' }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: 'var(--on-surface-0, #fff)' }}>
+            Session moved
+          </h2>
+          <p style={{ fontSize: 14, color: 'var(--on-surface-2, #999)', marginBottom: 24, lineHeight: 1.5 }}>
+            This project is now being edited in another session. Your changes have been saved.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <button
+              onClick={() => { dismissLockState(); handleBackToProjects(); }}
+              style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'var(--brand, #f0c000)', color: '#000', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+            >
+              Go to Projects
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // If viewing projects page (includes dashboard sections: projects, community, ai-settings, profile)
   if (viewingProjects) {
@@ -963,6 +896,20 @@ export function AppShell() {
           onRemixCommunityProject={(slug) => {
             handleRemixCommunityProject(slug);
           }}
+          sampleTemplates={cloudTemplatesLoaded ? sampleTemplates : undefined}
+          onSelectSampleProject={(idx) => {
+            handleSwitchSampleTemplate(idx);
+            const tmpl = sampleTemplates[idx];
+            if (tmpl) {
+              const slug = slugify(tmpl.name || 'starter');
+              navigate(`/sample-project/${slug}`);
+              _setViewingProjects(false);
+              viewingProjectsRef.current = false;
+              // Zoom-to-fit is handled by handleSwitchSampleTemplate setting canvasState directly
+            }
+          }}
+          starredTemplateId={starredTemplateId}
+          onStarTemplate={handleStarTemplate}
         />
         {/* Auth is now handled by accounts.zeros.design — redirect via redirectToZerosLogin */}
       </Suspense>
@@ -1121,7 +1068,109 @@ export function AppShell() {
   );
 }
 
+// ── OAuth callback handler ──
+// Handles the redirect back from accounts.zeros.design.
+// Instead of relying on Supabase's detectSessionInUrl (which fails silently),
+// we parse the hash ourselves and call setSession() directly.
+// Same pattern as 0research.
+
+function parseHashTokens(): { access_token: string; refresh_token: string } | null {
+  if (typeof window === 'undefined') return null;
+  const hash = window.location.hash;
+  if (!hash || !hash.includes('access_token')) return null;
+
+  const params = new URLSearchParams(hash.substring(1));
+  const access_token = params.get('access_token');
+  const refresh_token = params.get('refresh_token');
+
+  if (!access_token || !refresh_token) {
+    console.warn('[auth] Hash has access_token but missing refresh_token', {
+      hasAccess: !!access_token,
+      hasRefresh: !!refresh_token,
+      hash: hash.substring(0, 100),
+    });
+    return null;
+  }
+
+  return { access_token, refresh_token };
+}
+
+function useOAuthCallback() {
+  const [ready, setReady] = useState(() => {
+    return typeof window === 'undefined' || !window.location.hash.includes('access_token');
+  });
+
+  useEffect(() => {
+    if (ready) return;
+
+    const tokens = parseHashTokens();
+    if (!tokens) {
+      console.error('[auth] Cannot establish session — missing refresh_token in hash');
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      setReady(true);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function establishSession() {
+      console.log('[auth] Tokens found in URL hash, establishing session...');
+
+      const supabase = getSupabaseClient();
+
+      const { data, error } = await supabase.auth.setSession({
+        access_token: tokens!.access_token,
+        refresh_token: tokens!.refresh_token,
+      });
+
+      // Clean up the URL hash regardless of outcome
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+
+      if (error) {
+        console.error('[auth] setSession failed:', error.message);
+      } else if (data.session) {
+        console.log('[auth] Session established!', {
+          userId: data.session.user?.id,
+          email: data.session.user?.email,
+        });
+      } else {
+        console.warn('[auth] setSession returned no error but no session either');
+      }
+
+      if (!cancelled) {
+        setReady(true);
+      }
+    }
+
+    establishSession();
+    return () => { cancelled = true; };
+  }, [ready]);
+
+  return ready;
+}
+
 // ── Root component with RouterProvider ──
 export default function App() {
+  const ready = useOAuthCallback();
+
+  if (!ready) {
+    return (
+      <div
+        data-testid="app-loading-auth"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          background: 'var(--surface-0)',
+          color: 'var(--text-secondary)',
+          fontFamily: 'var(--font-sans)',
+        }}
+      >
+        Signing in...
+      </div>
+    );
+  }
+
   return <RouterProvider router={router} />;
 }

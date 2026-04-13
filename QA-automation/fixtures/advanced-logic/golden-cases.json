@@ -26,6 +26,178 @@
         ]
       },
       "expected": { "value": 150, "source": "logic" }
+    },
+    {
+      "name": "self_saturation_literal",
+      "channelKey": "saturation",
+      "baseValue": 50,
+      "context": {
+        "self": { "saturation": 50, "s": 50 },
+        "parent": null,
+        "allNodes": []
+      },
+      "logic": {
+        "fallbackMode": "default",
+        "rows": [
+          {
+            "id": "row-sat-literal",
+            "enabled": true,
+            "outputName": "out_1",
+            "tokens": [
+              { "id": "literal-75", "type": "literal", "value": "75" }
+            ]
+          }
+        ]
+      },
+      "expected": { "value": 75, "source": "logic" }
+    },
+    {
+      "name": "multi_row_local_chain",
+      "channelKey": "hue",
+      "baseValue": 0,
+      "context": {
+        "self": { "hue": 0, "h": 0 },
+        "parent": null,
+        "allNodes": []
+      },
+      "logic": {
+        "fallbackMode": "default",
+        "rows": [
+          {
+            "id": "row-seed",
+            "enabled": true,
+            "outputName": "seed",
+            "tokens": [
+              { "id": "literal-50", "type": "literal", "value": "50" }
+            ]
+          },
+          {
+            "id": "row-shift",
+            "enabled": true,
+            "outputName": "shifted",
+            "tokens": [
+              { "id": "local-seed", "type": "local", "value": "seed", "displayLabel": "$seed" },
+              { "id": "plus", "type": "operator", "value": "+", "displayLabel": "+" },
+              { "id": "literal-100", "type": "literal", "value": "100" }
+            ]
+          }
+        ]
+      },
+      "expected": { "value": 150, "source": "logic" }
+    },
+    {
+      "name": "conditional_with_else",
+      "channelKey": "hue",
+      "baseValue": 30,
+      "context": {
+        "self": { "hue": 200, "h": 200 },
+        "parent": null,
+        "allNodes": []
+      },
+      "logic": {
+        "fallbackMode": "default",
+        "rows": [
+          {
+            "id": "row-cond",
+            "enabled": true,
+            "outputName": "out_1",
+            "tokens": [
+              { "id": "kw-if", "type": "keyword", "value": "if" },
+              { "id": "ref-self", "type": "reference", "value": "@Self", "displayLabel": "@Self" },
+              { "id": "prop-hue", "type": "property", "value": ".hue", "displayLabel": ".hue", "refProperty": "hue" },
+              { "id": "gt", "type": "operator", "value": ">", "displayLabel": ">" },
+              { "id": "literal-180", "type": "literal", "value": "180" },
+              { "id": "kw-then", "type": "keyword", "value": "then" },
+              { "id": "literal-350", "type": "literal", "value": "350" },
+              { "id": "kw-else", "type": "keyword", "value": "else" },
+              { "id": "literal-10", "type": "literal", "value": "10" }
+            ]
+          }
+        ]
+      },
+      "expected": { "value": 350, "source": "logic" }
+    },
+    {
+      "name": "conditional_without_else_fallback",
+      "channelKey": "hue",
+      "baseValue": 30,
+      "context": {
+        "self": { "hue": 100, "h": 100 },
+        "parent": null,
+        "allNodes": []
+      },
+      "logic": {
+        "fallbackMode": "default",
+        "rows": [
+          {
+            "id": "row-cond-no-else",
+            "enabled": true,
+            "outputName": "out_1",
+            "tokens": [
+              { "id": "kw-if", "type": "keyword", "value": "if" },
+              { "id": "ref-self", "type": "reference", "value": "@Self", "displayLabel": "@Self" },
+              { "id": "prop-hue", "type": "property", "value": ".hue", "displayLabel": ".hue", "refProperty": "hue" },
+              { "id": "gt", "type": "operator", "value": ">", "displayLabel": ">" },
+              { "id": "literal-180", "type": "literal", "value": "180" },
+              { "id": "kw-then", "type": "keyword", "value": "then" },
+              { "id": "literal-350", "type": "literal", "value": "350" }
+            ]
+          }
+        ]
+      },
+      "expected": { "value": 30, "source": "fallback" }
+    },
+    {
+      "name": "locked_keyword_usage",
+      "channelKey": "hue",
+      "baseValue": 25,
+      "context": {
+        "self": { "hue": 90, "h": 90 },
+        "parent": null,
+        "allNodes": [],
+        "lockedValues": { "hue": 25, "h": 25 }
+      },
+      "logic": {
+        "fallbackMode": "default",
+        "rows": [
+          {
+            "id": "row-locked",
+            "enabled": true,
+            "outputName": "out_1",
+            "tokens": [
+              { "id": "kw-locked", "type": "keyword", "value": "locked", "displayLabel": "locked" },
+              { "id": "plus", "type": "operator", "value": "+", "displayLabel": "+" },
+              { "id": "literal-15", "type": "literal", "value": "15" }
+            ]
+          }
+        ]
+      },
+      "expected": { "value": 40, "source": "logic" }
+    },
+    {
+      "name": "saturation_clamp_over_100",
+      "channelKey": "saturation",
+      "baseValue": 0,
+      "context": {
+        "self": { "saturation": 80, "s": 80 },
+        "parent": null,
+        "allNodes": []
+      },
+      "logic": {
+        "fallbackMode": "default",
+        "autoConstrain": true,
+        "rows": [
+          {
+            "id": "row-over",
+            "enabled": true,
+            "outputName": "out_1",
+            "tokens": [
+              { "id": "literal-140", "type": "literal", "value": "140" }
+            ]
+          }
+        ]
+      },
+      "expected": { "value": 100, "source": "logic" }
     }
   ],
   "tokenCases": [

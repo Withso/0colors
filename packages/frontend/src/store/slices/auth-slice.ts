@@ -40,6 +40,7 @@ export interface AuthState {
   sampleTemplateSearch: string;
   cloudTemplates: { templateId: string; snapshot: any; name: string; description: string }[];
   cloudTemplatesLoaded: boolean;
+  starredTemplateId: string | null; // Backend-persisted: determines default sample for first-time users
 
   // Share dialog
   shareDialogOpen: boolean;
@@ -119,6 +120,7 @@ export const createAuthSlice: StateCreator<any, [], [], AuthSlice> = (set) => ({
   sampleTemplateSearch: '',
   cloudTemplates: [],
   cloudTemplatesLoaded: false,
+  starredTemplateId: null,
 
   // Share dialog
   shareDialogOpen: false,

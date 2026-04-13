@@ -53,9 +53,12 @@ export function getSupabaseClient(): SupabaseClient {
   if (!_client) {
     _client = createClient(supabaseUrl, publicAnonKey, {
       auth: {
-        autoRefreshToken: false, // We handle refresh manually in App.tsx checkSession + onAuthStateChange
+        autoRefreshToken: true, // SDK auto-refreshes; no-op lock below prevents Strict Mode double-mount conflicts
         persistSession: true,
-        detectSessionInUrl: true, // Required for email verification & password reset redirect flows
+        // We handle URL hash tokens manually via useOAuthCallback() in App.tsx.
+        // detectSessionInUrl is disabled because Supabase's auto-detection fails
+        // silently and causes race conditions (same pattern as 0research).
+        detectSessionInUrl: false,
         // Use a stable storage key so double-mount in React Strict Mode
         // doesn't create competing lock scopes.
         storageKey: `sb-${projectId}-auth-token`,
@@ -80,9 +83,6 @@ export function getSupabaseClient(): SupabaseClient {
   return _client;
 }
 
-// Server base URL for API calls
-// Production: https://api-server-production-0064.up.railway.app/api
-// Local dev:  http://localhost:4455/api
-export const SERVER_BASE = import.meta.env.DEV
-    ? `http://localhost:4455/api`
-    : `https://api-server-production-0064.up.railway.app/api`;
+// Server base URL for API calls — reads from env var, falls back to sensible defaults
+export const SERVER_BASE = import.meta.env.VITE_API_BASE_URL
+    || (import.meta.env.DEV ? 'http://localhost:4455/api' : 'https://api-server-production-0064.up.railway.app/api');

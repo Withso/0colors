@@ -123,11 +123,33 @@
   margin-bottom: var(--little, 16px);
 }
 
+.admin-qa-copy-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  margin-left: 8px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm, 4px);
+  cursor: pointer;
+  vertical-align: middle;
+}
+.admin-qa-copy-inline:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
 .admin-qa-bug-id {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semi-bold);
   color: var(--red-400, #f87171);
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .admin-qa-bug-title {

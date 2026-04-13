@@ -47,6 +47,7 @@ import { CloudSyncIndicator, type CloudSyncStatus } from '../CloudSyncIndicator'
 import { isNodeHiddenInTheme, isTokenExplicitlyHidden, isTokenForcedHiddenByNodes, isTokenHiddenInTheme, toggleVisibilityMap } from '../../utils/visibility';
 import { TokenSearchBar, TokenSearchFilters, DEFAULT_FILTERS, hasActiveFilters, smartSearchTokens, applyTokenFilters } from './TokenSearchBar';
 import { useStore } from '../../store';
+import { useReadOnlyState } from '../../hooks/useReadOnlyState';
 import { useTokenOperations } from '../../store/useTokenOperations';
 import { useNodeUpdate } from '../../store/useNodeUpdate';
 import { useNodeMutations } from '../../store/useNodeMutations';
@@ -369,17 +370,16 @@ export function TokensPanel({ onNavigateToNode, onNavigateToProjects, cloudSyncS
   const primaryTheme = themes.find(t => t.projectId === activeProjectId && t.isPrimary);
   const isPrimaryTheme = primaryTheme?.id === activeThemeId;
   const primaryThemeId = primaryTheme?.id;
-  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
-  const readOnly = isSampleMode;
+
+  // ── Read-only state (centralized) ──
+  const { isSampleMode, canEdit, isThemeReadOnly } = useReadOnlyState();
+  const readOnly = !canEdit;
+  const isReadOnly = isThemeReadOnly; // !canEdit || !isPrimaryTheme
 
   // ── Callback aliases ──
   const onUpdateProjects = setProjects;
   const onUpdatePages = setPages;
   const onUpdateGroups = setGroups;
-
-  // Non-primary themes are read-only in the tokens panel:
-  // the only allowed action is clicking a token to navigate to its node.
-  const isReadOnly = readOnly || !isPrimaryTheme;
 
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -2961,22 +2961,24 @@ export function TokensPanel({ onNavigateToNode, onNavigateToProjects, cloudSyncS
                             </span>
                           </div>
                         )}
-                        {isPrimaryTheme && !isReadOnly && viewFilter === 'tokens' && (
+                        {isPrimaryTheme && viewFilter === 'tokens' && (
                           <>
-                            <Tip label="New Group" side="bottom">
+                            <Tip label={isReadOnly ? "New Group (read-only)" : "New Group"} side="bottom">
                               <button
-                                onClick={() => addGroup(activeProjectId)}
-                                className="tokens-panel-header-action-btn tokens-panel-header-action-btn-ml"
+                                onClick={isReadOnly ? undefined : () => addGroup(activeProjectId)}
+                                className={`tokens-panel-header-action-btn tokens-panel-header-action-btn-ml${isReadOnly ? ' tokens-panel-header-action-btn-disabled' : ''}`}
                                 data-testid="tokens-panel-add-group-button"
+                                disabled={isReadOnly}
                               >
                                 <Folder className="tokens-panel-header-action-icon" />
                               </button>
                             </Tip>
-                            <Tip label="New Variable" side="bottom">
+                            <Tip label={isReadOnly ? "New Variable (read-only)" : "New Variable"} side="bottom">
                               <button
-                                onClick={() => onAddToken(undefined, null, activeProjectId)}
-                                className="tokens-panel-header-action-btn"
+                                onClick={isReadOnly ? undefined : () => onAddToken(undefined, null, activeProjectId)}
+                                className={`tokens-panel-header-action-btn${isReadOnly ? ' tokens-panel-header-action-btn-disabled' : ''}`}
                                 data-testid="tokens-panel-add-variable-button"
+                                disabled={isReadOnly}
                               >
                                 <Plus className="tokens-panel-header-action-icon" />
                               </button>
@@ -3108,25 +3110,24 @@ export function TokensPanel({ onNavigateToNode, onNavigateToProjects, cloudSyncS
                                                 <EyeOff className="tp-icon-2\.5 tp-icon-dim tp-eyeoff-icon" />
                                               )}
                                             </div>
-                                            {!isReadOnly && (
-                                              <Tip label={paletteNode.paletteNameLocked ? "Unlock Palette Name" : "Lock Palette Name"} side="bottom">
-                                                <button
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (onUpdateNode) {
-                                                      onUpdateNode(paletteNode.id, { paletteNameLocked: !paletteNode.paletteNameLocked });
-                                                    }
-                                                  }}
-                                                  className="tp-palette-action-btn"
-                                                >
-                                                  {paletteNode.paletteNameLocked ? (
-                                                    <Lock className="tp-icon-3 tp-icon-brand" />
-                                                  ) : (
-                                                    <Unlock className="tp-icon-3 tp-icon-dim" />
-                                                  )}
-                                                </button>
-                                              </Tip>
-                                            )}
+                                            <Tip label={isReadOnly ? "Lock (read-only)" : paletteNode.paletteNameLocked ? "Unlock Palette Name" : "Lock Palette Name"} side="bottom">
+                                              <button
+                                                onClick={isReadOnly ? undefined : (e) => {
+                                                  e.stopPropagation();
+                                                  if (onUpdateNode) {
+                                                    onUpdateNode(paletteNode.id, { paletteNameLocked: !paletteNode.paletteNameLocked });
+                                                  }
+                                                }}
+                                                className={`tp-palette-action-btn${isReadOnly ? ' tokens-panel-header-action-btn-disabled' : ''}`}
+                                                disabled={isReadOnly}
+                                              >
+                                                {paletteNode.paletteNameLocked ? (
+                                                  <Lock className="tp-icon-3 tp-icon-brand" />
+                                                ) : (
+                                                  <Unlock className="tp-icon-3 tp-icon-dim" />
+                                                )}
+                                              </button>
+                                            </Tip>
                                             {!isReadOnly && (
                                               <Tip label="Delete Palette" side="bottom">
                                                 <button

@@ -150,7 +150,7 @@
 }
 
 .ai-chat-drag-icon {
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   margin-right: 2px;
 }
 
@@ -282,7 +282,7 @@
 
 .ai-chat-convos-empty-desc {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
 }
 
 .ai-chat-convos-items {
@@ -379,7 +379,7 @@
 
 .ai-chat-convo-item-time {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
 }
 
 /* ═══════════════════════════════════════════
@@ -407,7 +407,7 @@
 }
 
 .ai-chat-no-access-icon {
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   margin-bottom: 12px;
 }
 
@@ -419,7 +419,7 @@
 
 .ai-chat-no-access-desc {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
 }
 
 .ai-chat-empty-state {
@@ -446,13 +446,13 @@
 
 .ai-chat-empty-desc {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   line-height: 1.625;
 }
 
 .ai-chat-empty-context {
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   margin-top: 12px;
   line-height: 1.625;
   max-width: 260px;
@@ -715,7 +715,7 @@
 }
 
 .ai-chat-textarea::placeholder {
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
 }
 
 .ai-chat-input-footer {
@@ -766,7 +766,7 @@
 }
 
 .ai-chat-mode-btn.is-inactive {
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
 }
 
 /* ── Model picker ── */
@@ -803,7 +803,7 @@
   background: var(--surface-3);
   border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
   box-shadow: 0 8px 32px color-mix(in srgb, var(--surface-2) 50%, transparent);
-  z-index: 999999;
+  z-index: var(--z-ai-chat);
 }
 
 .ai-chat-model-group-label {
@@ -814,7 +814,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
 }
 
 .ai-chat-model-free-tag {
@@ -861,7 +861,7 @@
 .ai-chat-model-empty {
   padding: 12px;
   font-size: 11px;
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
   text-align: center;
 }
 
@@ -876,7 +876,7 @@
 }
 
 .ai-chat-char-count.is-normal {
-  color: var(--border-on-surface-0);
+  color: var(--on-surface-5);
 }
 
 /* ── Stop button ── */

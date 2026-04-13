@@ -49,7 +49,7 @@
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   user-select: none;
   position: sticky;
   top: 0;
@@ -86,7 +86,7 @@
 
 .advanced-dropdown-item-desc {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -94,7 +94,7 @@
 
 .advanced-dropdown-item-chevron {
   margin-left: auto;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .advanced-dropdown-item:hover {
@@ -181,7 +181,7 @@
 }
 
 .advanced-row-copy-btn {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   cursor: pointer;
   background: none;
   border: none;
@@ -193,7 +193,7 @@
 }
 
 .advanced-row-delete-btn {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   cursor: pointer;
   background: none;
   border: none;
@@ -208,7 +208,7 @@
 
 .advanced-ctx-menu {
   position: fixed;
-  z-index: 9999;
+  z-index: var(--z-popup);
   min-width: 120px;
   padding: 4px 0;
   border-radius: var(--radius-md);
@@ -465,7 +465,7 @@
 
 .advanced-row-output-dollar {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   user-select: none;
   flex-shrink: 0;
 }
@@ -486,7 +486,7 @@
   gap: 6px;
   padding: 6px 8px;
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   border-radius: var(--radius-md);
   transition: all 150ms;
   cursor: pointer;
@@ -654,7 +654,7 @@
 }
 
 .advanced-final-output-fallback {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   margin-left: 4px;
 }
 
@@ -674,14 +674,14 @@
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   user-select: none;
 }
 
 .advanced-fallback-value {
   font-size: 11px;
   font-family: var(--font-mono);
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   user-select: none;
 }
 
@@ -714,7 +714,7 @@
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   margin-bottom: 8px;
   user-select: none;
 }
@@ -819,7 +819,7 @@
   justify-content: center;
   height: 100%;
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   user-select: none;
 }
 
@@ -900,7 +900,7 @@
 }
 
 .advanced-token-final-fallback-note {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 /* ── Token constraint bar ── */
@@ -1426,7 +1426,7 @@
 }
 
 .advanced-info-help-icon {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   transition: color 150ms;
 }
 
@@ -1436,7 +1436,7 @@
 
 .advanced-info-help-text {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   user-select: none;
   transition: color 150ms;
 }
@@ -1455,7 +1455,7 @@
 
 .advanced-empty-text {
   font-size: 13px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   user-select: none;
   text-align: center;
   margin-top: 48px;

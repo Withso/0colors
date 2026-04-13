@@ -102,7 +102,7 @@
 }
 
 .search-bar-filter-btn {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   padding: 2px;
   background: none;
   border: none;
@@ -155,7 +155,7 @@
 
 .search-bar-hint {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   line-height: 1.625;
 }
 

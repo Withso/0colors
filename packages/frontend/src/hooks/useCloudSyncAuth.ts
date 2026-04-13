@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { toast } from 'sonner';
 import { useStore } from '../store';
 import { useLocation } from 'react-router';
 
@@ -23,7 +24,10 @@ import {
   isDirty,
   hasDirtyProjects,
   getDirtyProjectIds,
+  getDirtyCount,
+  clearAllDirtyFlags,
   loadCloudProjects,
+  loadSingleProject,
   getCloudMeta,
   loadPublicTemplates,
 } from '../utils/supabase/cloud-sync';
@@ -34,6 +38,21 @@ import { slugify } from '../utils/slugify';
 
 // Auth session key (same as in App.tsx)
 const AUTH_SESSION_KEY = '0colors-auth-session';
+
+/**
+ * Persist auth session to localStorage WITHOUT the access token.
+ * The access token is kept only in-memory (Zustand store) to reduce XSS risk.
+ * On page reload, the Supabase SDK refreshes the session from its own refresh token.
+ * The cached session provides instant UI display (email, admin status, etc.).
+ */
+function persistAuthSession(session: any) {
+  if (!session) {
+    localStorage.removeItem(AUTH_SESSION_KEY);
+    return;
+  }
+  const { accessToken: _stripped, ...safeSession } = session;
+  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(safeSession));
+}
 
 export function useCloudSyncAuth() {
   // ────────────────────────────────────────────────────
@@ -111,6 +130,15 @@ export function useCloudSyncAuth() {
   // server data into local state.
   const isLoadingCloudDataRef = useRef(false);
 
+  // Tracks the entity array references that the sync system "knows about".
+  // The markDirty effect only marks projects dirty when entities change
+  // relative to this baseline — preventing sync-triggered changes from
+  // being treated as user edits.
+  const knownEntitiesRef = useRef<{
+    allNodes: any; tokens: any; groups: any; pages: any;
+    themes: any; canvasStates: any; advancedLogic: any;
+  } | null>(null);
+
   const lastSyncedPathnameRef = useRef(location.pathname);
 
   const mountTimeRef = useRef(Date.now());
@@ -130,12 +158,16 @@ export function useCloudSyncAuth() {
         setCloudTemplatesLoaded(true);
       }
     }, 4000);
-    loadPublicTemplates().then(templates => {
+    loadPublicTemplates().then(result => {
       if (cancelled) return;
       clearTimeout(timeout);
-      console.log(`📋 Loaded ${templates.length} cloud template(s) from backend`);
-      setCloudTemplates(templates);
+      console.log(`📋 Loaded ${result.templates.length} cloud template(s) from backend`);
+      setCloudTemplates(result.templates);
       setCloudTemplatesLoaded(true);
+      // Store the backend-persisted starred template ID in Zustand
+      if (result.starredTemplateId) {
+        useStore.setState({ starredTemplateId: result.starredTemplateId });
+      }
     });
     return () => { cancelled = true; clearTimeout(timeout); };
   }, []);
@@ -193,6 +225,14 @@ export function useCloudSyncAuth() {
   useEffect(() => {
     let aborted = false; // Guard against React Strict Mode double-mount races
 
+    /** Decode a JWT and check if it expires within `marginMs` from now. */
+    const isTokenExpired = (token: string, marginMs = 30_000): boolean => {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.exp * 1000 < Date.now() + marginMs;
+      } catch { return true; }
+    };
+
     const checkSession = async () => {
       try {
         const supabase = getSupabaseClient();
@@ -208,19 +248,29 @@ export function useCloudSyncAuth() {
 
           if (refreshError || !refreshData?.session?.access_token) {
             console.log(`🔑 Session refresh failed: ${refreshError?.message || 'no session returned'}`);
-            // Fall back to cached session — preserve isAdmin/isTemplateAdmin from previous load to avoid blink
-            setAuthSession((prev) => {
-              const session = {
-                accessToken: sessionData.session.access_token,
-                userId: sessionData.session.user.id,
-                email: sessionData.session.user.email || '',
-                name: sessionData.session.user.user_metadata?.name || sessionData.session.user.email?.split('@')[0] || '',
-                isAdmin: prev?.isAdmin,
-                isTemplateAdmin: prev?.isTemplateAdmin,
-              };
-              localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
-              return session;
-            });
+            // Only fall back to cached token if it's NOT expired.
+            // Using an expired token would cause 401s on every sync request.
+            const cachedToken = sessionData.session.access_token;
+            if (!isTokenExpired(cachedToken)) {
+              console.log('🔑 Cached token still valid — using it while SDK retries refresh');
+              setAuthSession((prev) => {
+                const session = {
+                  accessToken: cachedToken,
+                  userId: sessionData.session.user.id,
+                  email: sessionData.session.user.email || '',
+                  name: sessionData.session.user.user_metadata?.name || sessionData.session.user.email?.split('@')[0] || '',
+                  isAdmin: prev?.isAdmin,
+                  isTemplateAdmin: prev?.isTemplateAdmin,
+                };
+                persistAuthSession(session);
+                return session;
+              });
+            } else {
+              console.log('🔑 Cached token is expired — waiting for SDK auto-refresh');
+              // Don't set an expired token as authSession. The SDK's autoRefreshToken
+              // will fire TOKEN_REFRESHED if the refresh token is still valid, which
+              // the onAuthStateChange handler will propagate.
+            }
           } else {
             // Use the refreshed session — preserve isAdmin/isTemplateAdmin from cache to avoid blink
             console.log('🔑 Session refreshed successfully');
@@ -259,7 +309,7 @@ export function useCloudSyncAuth() {
           setAuthSession((prev: any) => {
             if (!prev) return prev;
             const updated = { ...prev, accessToken: session.access_token };
-            localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(updated));
+            persistAuthSession(updated);
             updateAccessToken(session.access_token);
             return updated;
           });
@@ -275,7 +325,7 @@ export function useCloudSyncAuth() {
           };
           setAuthSession(newSession);
           setAuthSkipped(false);
-          localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(newSession));
+          persistAuthSession(newSession);
           localStorage.removeItem('0colors-auth-skipped');
           updateAccessToken(session.access_token);
           // Clean up the URL hash so #access_token=... doesn't linger
@@ -295,37 +345,13 @@ export function useCloudSyncAuth() {
       console.log(`Auth state listener setup error (non-fatal): ${e}`);
     }
 
-    // Manual token refresh timer (since autoRefreshToken is disabled to prevent
-    // unhandled rejections from the SDK's internal refresh mechanism).
-    // Refresh every 10 minutes — Supabase JWTs typically last 1 hour.
-    const REFRESH_INTERVAL_MS = 10 * 60 * 1000;
-    const refreshTimer = setInterval(async () => {
-      if (aborted) return;
-      try {
-        const sb = getSupabaseClient();
-        const { data, error } = await sb.auth.refreshSession();
-        if (aborted) return;
-        if (data?.session?.access_token) {
-          setAuthSession((prev: any) => {
-            if (!prev) return prev;
-            const updated = { ...prev, accessToken: data.session!.access_token };
-            localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(updated));
-            updateAccessToken(data.session!.access_token);
-            return updated;
-          });
-          console.log('🔑 Manual token refresh succeeded');
-        } else if (error) {
-          console.log(`🔑 Manual token refresh failed (non-fatal): ${error.message}`);
-        }
-      } catch (e) {
-        console.log(`🔑 Manual token refresh error (non-fatal): ${e}`);
-      }
-    }, REFRESH_INTERVAL_MS);
+    // Token refresh is handled by the SDK's autoRefreshToken: true.
+    // The onAuthStateChange listener above catches TOKEN_REFRESHED events
+    // and propagates the new token to state/localStorage/cloud-sync.
 
     return () => {
       aborted = true;
       subscription?.unsubscribe();
-      clearInterval(refreshTimer);
     };
   }, []);
 
@@ -334,7 +360,7 @@ export function useCloudSyncAuth() {
   // ────────────────────────────────────────────────────
   getProjectSnapshotRef.current = (projectId: string): ProjectSnapshot | null => {
     const project = useStore.getState().projects.find(p => p.id === projectId);
-    if (!project || !(project.isCloud || project.isTemplate)) return null;
+    if (!project || !(project.isCloud || project.isTemplate) || project.isSample) return null;
 
     const curNodes = useStore.getState().allNodes;
     const projectNodes = curNodes.filter(n => n.projectId === projectId);
@@ -372,6 +398,11 @@ export function useCloudSyncAuth() {
 
     let loadCancelled = false; // Cancellation flag — prevents stale loadCloudData from modifying state when token refreshes
 
+    // Set the loading guard SYNCHRONOUSLY so the markDirty effect (which runs
+    // later in the same render cycle) sees it and skips. loadCloudData is async
+    // and wouldn't set this flag in time otherwise.
+    isLoadingCloudDataRef.current = true;
+
     initCloudSync({
       accessToken: authSession.accessToken,
       getSnapshot: (pid) => getProjectSnapshotRef.current?.(pid) || null,
@@ -391,6 +422,54 @@ export function useCloudSyncAuth() {
         setCloudSyncStatus('error');
         setLastSyncError(String(err));
         console.log(`☁️ Cloud sync error: ${err}`);
+        // Show the actual error reason so the user can diagnose
+        const reason = String(err).replace(/^Sync (failed|error):?\s*/i, '');
+        toast.error(`Cloud sync failed — ${reason}`, { duration: 6000 });
+      },
+      onTokenExpired: async () => {
+        // Sync got 401 — the access token is expired. Try to recover.
+        try {
+          const sb = getSupabaseClient();
+
+          // Step 1: Check if the SDK's auto-refresh already obtained a fresh token.
+          // (autoRefreshToken: true may have fired between the failed sync and now.)
+          const { data: currentSession } = await sb.auth.getSession();
+          const currentToken = currentSession?.session?.access_token;
+          const staleToken = authSessionRef.current?.accessToken;
+
+          if (currentToken && currentToken !== staleToken) {
+            console.log('🔑 SDK already has a fresh token — using it');
+            setAuthSession((prev: any) => {
+              if (!prev) return prev;
+              const updated = { ...prev, accessToken: currentToken };
+              persistAuthSession(updated);
+              return updated;
+            });
+            updateAccessToken(currentToken);
+            return currentToken;
+          }
+
+          // Step 2: Explicitly request a refresh.
+          console.log('🔑 Requesting explicit token refresh after sync 401…');
+          const { data, error } = await sb.auth.refreshSession();
+          if (data?.session?.access_token) {
+            console.log('🔑 Token refreshed after sync 401');
+            const newToken = data.session.access_token;
+            setAuthSession((prev: any) => {
+              if (!prev) return prev;
+              const updated = { ...prev, accessToken: newToken };
+              persistAuthSession(updated);
+              return updated;
+            });
+            updateAccessToken(newToken);
+            return newToken;
+          }
+          if (error) console.log(`🔑 Token refresh after 401 failed: ${error.message}`);
+        } catch (e) {
+          console.log(`🔑 Token refresh after 401 error: ${e}`);
+        }
+        toast.error('Session expired — please sign in again', { duration: 8000 });
+        return null;
       },
       onSynced: (pids, timestamps) => {
         // Update synchronous ref IMMEDIATELY — this ensures loadCloudData
@@ -409,24 +488,164 @@ export function useCloudSyncAuth() {
           return p;
         }));
       },
+      onVisibilityResume: () => {
+        // Tab regained focus — refetch active project from cloud to pick up
+        // changes made in other browsers/devices. This is the ONLY mechanism
+        // for cross-browser sync (BroadcastChannel only works same-browser).
+        const token = authSessionRef.current?.accessToken;
+        if (!token) return;
+        const currentActiveId = useStore.getState().activeProjectId;
+        const currentProject = useStore.getState().projects.find(p => p.id === currentActiveId);
+        if (!currentProject?.isCloud) return; // Only refetch cloud projects
+
+        console.log(`☁️ [VisibilityResume] Refetching active project "${currentProject.name}" from cloud`);
+        // Use loadCloudProjects to get all projects, then reconcile
+        // We need to use the loadCloudProjects function with the current token
+        (async () => {
+          try {
+            // Flush any dirty local changes first
+            if (hasDirtyProjects()) {
+              await forceSyncNow().catch(() => {});
+            }
+
+            const cloudData = await loadCloudProjects(token).catch(() => []);
+            if (cloudData.length === 0) return;
+
+            // Find the active project in the cloud data
+            const remoteEntry = cloudData.find((e: any) => e.projectId === currentActiveId);
+            if (!remoteEntry?.snapshot) return;
+
+            const remoteSyncedAt = (remoteEntry.snapshot as any)?._syncedAt || 0;
+            const localSyncedAt = lastSyncedAtMapRef.current[currentActiveId] || currentProject.lastSyncedAt || 0;
+
+            if (remoteSyncedAt <= localSyncedAt) {
+              console.log(`☁️ [VisibilityResume] Active project is up-to-date (remote=${remoteSyncedAt}, local=${localSyncedAt})`);
+              return;
+            }
+
+            // Remote is newer — merge it
+            console.log(`☁️ [VisibilityResume] Remote is newer (remote=${remoteSyncedAt} > local=${localSyncedAt}) — merging`);
+            isLoadingCloudDataRef.current = true;
+
+            let snapshot = remoteEntry.snapshot;
+            const migResult = migrateSnapshot(snapshot);
+            if (migResult.migrated) snapshot = migResult.snapshot as ProjectSnapshot;
+
+            lastSyncedAtMapRef.current[currentActiveId] = remoteSyncedAt;
+
+            const s = useStore.getState();
+            const projectNodeIds = new Set((snapshot.nodes || []).map((n: any) => n.id));
+            useStore.setState({
+              projects: s.projects.map(p => p.id === currentActiveId ? { ...snapshot.project, isCloud: true, lastSyncedAt: remoteSyncedAt } : p),
+              allNodes: [...s.allNodes.filter(n => n.projectId !== currentActiveId), ...(snapshot.nodes || [])],
+              tokens: [...s.tokens.filter(t => t.projectId !== currentActiveId), ...(snapshot.tokens || [])],
+              groups: [...s.groups.filter(g => g.projectId !== currentActiveId), ...(snapshot.groups || [])],
+              pages: [...s.pages.filter(p => p.projectId !== currentActiveId), ...(snapshot.pages || [])],
+              themes: [...s.themes.filter(t => t.projectId !== currentActiveId), ...(snapshot.themes || [])],
+              canvasStates: [...s.canvasStates.filter(cs => cs.projectId !== currentActiveId), ...(snapshot.canvasStates || [])],
+              advancedLogic: snapshot.advancedLogic?.length
+                ? [...s.advancedLogic.filter(l => !projectNodeIds.has(l.nodeId)), ...snapshot.advancedLogic]
+                : s.advancedLogic,
+            });
+
+            // Update known entities baseline to prevent markDirty false positive
+            const ns = useStore.getState();
+            knownEntitiesRef.current = {
+              allNodes: ns.allNodes, tokens: ns.tokens, groups: ns.groups,
+              pages: ns.pages, themes: ns.themes, canvasStates: ns.canvasStates,
+              advancedLogic: ns.advancedLogic,
+            };
+
+            console.log(`☁️ [VisibilityResume] Merged remote changes for "${currentProject.name}"`);
+          } catch (e) {
+            console.log(`☁️ [VisibilityResume] Error: ${e}`);
+          } finally {
+            setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
+          }
+        })();
+      },
+      onRemotePoll: () => {
+        // Lightweight poll: fetch ONLY the active project from the server every 30s.
+        // This is the primary mechanism for cross-browser sync — BroadcastChannel
+        // only works within the same browser, and visibilitychange only fires on
+        // tab switch. Polling catches changes from other browsers/devices.
+        const token = authSessionRef.current?.accessToken;
+        if (!token) return;
+        const currentActiveId = useStore.getState().activeProjectId;
+        const currentProject = useStore.getState().projects.find(p => p.id === currentActiveId);
+        if (!currentProject?.isCloud) return;
+        // Don't poll if we have dirty local changes (we'd overwrite them)
+        if (isDirty(currentActiveId)) return;
+
+        loadSingleProject(currentActiveId, token).then(snapshot => {
+          if (!snapshot) return;
+          const remoteSyncedAt = (snapshot as any)?._syncedAt || 0;
+          const localSyncedAt = lastSyncedAtMapRef.current[currentActiveId] || currentProject.lastSyncedAt || 0;
+          if (remoteSyncedAt <= localSyncedAt) return; // No changes
+
+          console.log(`☁️ [RemotePoll] Remote is newer for "${currentProject.name}" (remote=${remoteSyncedAt} > local=${localSyncedAt}) — merging`);
+          isLoadingCloudDataRef.current = true;
+
+          const migResult = migrateSnapshot(snapshot);
+          const merged = migResult.migrated ? migResult.snapshot as ProjectSnapshot : snapshot;
+          lastSyncedAtMapRef.current[currentActiveId] = remoteSyncedAt;
+
+          const s = useStore.getState();
+          const projectNodeIds = new Set((merged.nodes || []).map((n: any) => n.id));
+          useStore.setState({
+            projects: s.projects.map(p => p.id === currentActiveId ? { ...merged.project, isCloud: true, lastSyncedAt: remoteSyncedAt } : p),
+            allNodes: [...s.allNodes.filter(n => n.projectId !== currentActiveId), ...(merged.nodes || [])],
+            tokens: [...s.tokens.filter(t => t.projectId !== currentActiveId), ...(merged.tokens || [])],
+            groups: [...s.groups.filter(g => g.projectId !== currentActiveId), ...(merged.groups || [])],
+            pages: [...s.pages.filter(p => p.projectId !== currentActiveId), ...(merged.pages || [])],
+            themes: [...s.themes.filter(t => t.projectId !== currentActiveId), ...(merged.themes || [])],
+            canvasStates: [...s.canvasStates.filter(cs => cs.projectId !== currentActiveId), ...(merged.canvasStates || [])],
+            advancedLogic: merged.advancedLogic?.length
+              ? [...s.advancedLogic.filter(l => !projectNodeIds.has(l.nodeId)), ...merged.advancedLogic]
+              : s.advancedLogic,
+          });
+
+          const ns = useStore.getState();
+          knownEntitiesRef.current = {
+            allNodes: ns.allNodes, tokens: ns.tokens, groups: ns.groups,
+            pages: ns.pages, themes: ns.themes, canvasStates: ns.canvasStates,
+            advancedLogic: ns.advancedLogic,
+          };
+          setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
+          console.log(`☁️ [RemotePoll] Merged remote changes`);
+        }).catch(e => {
+          console.log(`☁️ [RemotePoll] Error: ${e}`);
+        });
+      },
     });
 
     // Load cloud project data on first auth
     const loadCloudData = async () => {
       try {
-        // ── CRITICAL: Flush dirty local data before fetching cloud state ──
+        // ── Clear stale dirty flags from previous sessions ──
+        // Cloud is the source of truth for cloud projects. Stale dirty flags
+        // from crashed/abandoned sessions should not prevent cloud data from loading.
         if (hasDirtyProjects()) {
-          console.log(`☁️ [loadCloudData] Flushing ${getDirtyProjectIds().length} dirty project(s) before fetching cloud data…`);
-          await forceSyncNow().catch((e) => console.log('☁️ [loadCloudData] Pre-load flush failed:', e));
-          if (loadCancelled) return;
+          console.log(`☁️ [loadCloudData] Clearing ${getDirtyProjectIds().length} stale dirty flag(s) — cloud is source of truth`);
+          clearAllDirtyFlags();
         }
 
-        // ── Step 1: Fetch cloud metadata (includes admin & template admin status) ──
-        const cloudMeta = await getCloudMeta(authSession.accessToken).catch((e: any) => {
-          console.log(`☁️ getCloudMeta failed: ${e}`);
-          return null;
-        });
+        // ── Step 1+2: Fetch cloud metadata AND project snapshots IN PARALLEL ──
+        // This is significantly faster than the previous sequential approach,
+        // reducing post-login delay by ~50% (one RTT instead of two).
+        const [cloudMeta, cloudData] = await Promise.all([
+          getCloudMeta(authSession.accessToken).catch((e: any) => {
+            console.log(`☁️ getCloudMeta failed: ${e}`);
+            return null;
+          }),
+          loadCloudProjects(authSession.accessToken).catch((e: any) => {
+            console.log(`☁️ loadCloudProjects FAILED: ${e}`);
+            return [] as any[];
+          }),
+        ]);
         if (loadCancelled) return;
+
+        // Apply cloud meta (admin status)
         console.log(`☁️ Cloud meta result:`, JSON.stringify(cloudMeta));
         if (cloudMeta) {
           const isAdmin = cloudMeta.isAdmin ?? false;
@@ -434,18 +653,11 @@ export function useCloudSyncAuth() {
           console.log(`☁️ Admin status: isAdmin=${isAdmin}, isTemplateAdmin=${isTemplateAdmin}`);
           setAuthSession(prev => prev ? { ...prev, isAdmin, isTemplateAdmin } : prev);
           const updatedSession = { ...authSession, isAdmin, isTemplateAdmin };
-          localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(updatedSession));
+          persistAuthSession(updatedSession);
           if (isAdmin) {
             console.log(`[ADMIN] Logged in as admin${isTemplateAdmin ? ' + template admin' : ''} - unlimited cloud projects`);
           }
         }
-
-        // ── Step 2: Load cloud project snapshots ──
-        const cloudData = await loadCloudProjects(authSession.accessToken).catch((e: any) => {
-          console.log(`☁️ loadCloudProjects FAILED: ${e}`);
-          return [] as any[];
-        });
-        if (loadCancelled) return;
 
         // ── Enhanced diagnostic logging ──
         const localCloudProjects = useStore.getState().projects.filter(p => p.isCloud || p.isTemplate);
@@ -504,13 +716,8 @@ export function useCloudSyncAuth() {
               || existingProject?.lastSyncedAt || 0;
             const remoteSyncedAt = (snapshot as any)._syncedAt || 0;
 
-            // ── KEY FIX: Always merge if project doesn't exist locally ──
-            const projectIsDirty = existingProject && isDirty(projectId);
-            const shouldMerge = !existingProject || (remoteSyncedAt > localSyncedAt && !projectIsDirty);
-
-            if (projectIsDirty && remoteSyncedAt > localSyncedAt) {
-              console.log(`☁️ SKIPPING cloud overwrite for dirty project ${projectId} — local has unsaved changes (remote=${remoteSyncedAt}, local=${localSyncedAt})`);
-            }
+            // ── Cloud is source of truth: always merge if project is new or cloud is newer ──
+            const shouldMerge = !existingProject || remoteSyncedAt > localSyncedAt;
 
             if (shouldMerge) {
               console.log(`☁️ ${existingProject ? 'Updating' : 'Adding NEW'} cloud project "${snapshot.project?.name}" (${projectId}) — remote=${remoteSyncedAt}, local=${localSyncedAt}`);
@@ -611,8 +818,16 @@ export function useCloudSyncAuth() {
       } catch (e) {
         console.log(`☁️ Failed to load cloud data: ${e}`);
       } finally {
-        // Defer the reset so the flag is still true when React processes the
-        // batched state updates and fires the markDirty effect.
+        // Snapshot current entities as the baseline so the markDirty effect
+        // doesn't treat cloud-loaded data as user edits.
+        const s = useStore.getState();
+        knownEntitiesRef.current = {
+          allNodes: s.allNodes, tokens: s.tokens, groups: s.groups,
+          pages: s.pages, themes: s.themes, canvasStates: s.canvasStates,
+          advancedLogic: s.advancedLogic,
+        };
+        // Defer the loading flag reset so it's still true when React processes
+        // the batched state updates and fires the markDirty effect.
         setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
       }
     };
@@ -782,6 +997,12 @@ export function useCloudSyncAuth() {
       } catch (e) {
         console.log(`☁️ [Reconcile] Error: ${e}`);
       } finally {
+        const rs = useStore.getState();
+        knownEntitiesRef.current = {
+          allNodes: rs.allNodes, tokens: rs.tokens, groups: rs.groups,
+          pages: rs.pages, themes: rs.themes, canvasStates: rs.canvasStates,
+          advancedLogic: rs.advancedLogic,
+        };
         setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
       }
     };
@@ -792,20 +1013,42 @@ export function useCloudSyncAuth() {
   // ────────────────────────────────────────────────────
   // MARK DIRTY — track cloud projects with local changes
   // ────────────────────────────────────────────────────
+  // This effect must distinguish USER edits from SYNC-triggered state changes.
+  // It uses knownEntitiesRef as a baseline: only changes relative to the
+  // baseline are treated as user edits that need syncing.
+  const isAuthenticated = !!authSession;
   useEffect(() => {
-    if (isInitialLoad || isImporting || !authSession) return;
-    // ── KEY FIX: Skip markDirty while merging cloud data into local state ──
-    if (isLoadingCloudDataRef.current) return;
+    if (isInitialLoad || isImporting || !isAuthenticated) return;
 
-    const cloudProjectIds = projects.filter(p => p.isCloud || p.isTemplate).map(p => p.id);
+    const current = { allNodes, tokens, groups, pages, themes, canvasStates, advancedLogic };
+
+    // While cloud data is loading (or on first auth), just snapshot the
+    // current entity references as the baseline — don't mark dirty.
+    if (isLoadingCloudDataRef.current || !knownEntitiesRef.current) {
+      knownEntitiesRef.current = current;
+      return;
+    }
+
+    // Compare against the baseline — if nothing changed, skip.
+    const known = knownEntitiesRef.current;
+    if (
+      known.allNodes === allNodes && known.tokens === tokens &&
+      known.groups === groups && known.pages === pages &&
+      known.themes === themes && known.canvasStates === canvasStates &&
+      known.advancedLogic === advancedLogic
+    ) return;
+
+    // Genuine change detected — update baseline and mark dirty.
+    knownEntitiesRef.current = current;
+
+    const cloudProjectIds = projects.filter(p => (p.isCloud || p.isTemplate) && !p.isSample).map(p => p.id);
     for (const pid of cloudProjectIds) {
       markDirty(pid);
     }
-    // Update status to show unsaved changes (only if not currently syncing)
     if (cloudProjectIds.length > 0 && cloudSyncStatus !== 'syncing') {
       setCloudSyncStatus('dirty');
     }
-  }, [allNodes, tokens, groups, pages, themes, canvasStates, advancedLogic, isInitialLoad, isImporting, authSession]);
+  }, [allNodes, tokens, groups, pages, themes, canvasStates, advancedLogic, isInitialLoad, isImporting, isAuthenticated]);
 
   // ────────────────────────────────────────────────────
   // AUTH CALLBACKS
@@ -813,7 +1056,7 @@ export function useCloudSyncAuth() {
   const handleAuth = useCallback((session: { accessToken: string; userId: string; email: string; name: string }) => {
     setAuthSession(session);
     setAuthSkipped(false);
-    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+    persistAuthSession(session);
     localStorage.removeItem('0colors-auth-skipped');
     updateAccessToken(session.accessToken);
   }, []);
@@ -945,6 +1188,12 @@ export function useCloudSyncAuth() {
       console.log(`☁️ [ForceRefresh] ERROR: ${e}`);
       setCloudSyncStatus('error');
     } finally {
+      const frs = useStore.getState();
+      knownEntitiesRef.current = {
+        allNodes: frs.allNodes, tokens: frs.tokens, groups: frs.groups,
+        pages: frs.pages, themes: frs.themes, canvasStates: frs.canvasStates,
+        advancedLogic: frs.advancedLogic,
+      };
       setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
     }
   }, []);
@@ -955,14 +1204,29 @@ export function useCloudSyncAuth() {
 
     try {
       const supabase = getSupabaseClient();
-      await supabase.auth.signOut();
+      // Use { scope: 'local' } to clear only THIS domain's session.
+      // The accounts.zeros.design login page independently handles stale
+      // sessions by clearing them when redirect_url is present.
+      await supabase.auth.signOut({ scope: 'local' });
     } catch (e) {
       console.log(`Sign out network error (continuing): ${e}`);
     }
+
+    // Clear ALL auth-related state and storage
     setAuthSession(null);
     localStorage.removeItem(AUTH_SESSION_KEY);
+    localStorage.removeItem('0colors-auth-skipped');
     updateAccessToken(null);
     destroyCloudSync();
+
+    // Clear Supabase session storage key explicitly
+    // (signOut should do this, but be defensive)
+    try {
+      const sbKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+      if (sbKey) localStorage.removeItem(sbKey);
+    } catch { /* ignore */ }
+
+    console.log('🔑 Signed out — all sessions revoked, storage cleared');
   }, []);
 
   const handleSkipAuth = useCallback(() => {
@@ -974,11 +1238,9 @@ export function useCloudSyncAuth() {
 
   // ── Auto-skip auth gate for first-time users ──
   useEffect(() => {
-    // Don't auto-skip if Supabase is still processing tokens from the URL hash
-    // (redirect back from accounts.zeros.design). The SIGNED_IN event will fire shortly.
-    const hashHasTokens =
-      window.location.hash && window.location.hash.includes("access_token");
-    if (!authChecking && !authSession && !authSkipped && !hashHasTokens) {
+    // The URL hash tokens are already processed and cleaned up by useOAuthCallback
+    // in App.tsx before this hook runs. If no session was established, auto-skip.
+    if (!authChecking && !authSession && !authSkipped) {
       handleSkipAuth();
     }
   }, [authChecking, authSession, authSkipped, handleSkipAuth]);
@@ -1086,16 +1348,9 @@ export function useCloudSyncAuth() {
   }, [projects, activeProjectId]);
 
   const cloudDirtyCount = useMemo(() => {
-    return projects.filter(p => (p.isCloud || p.isTemplate)).length;
-  }, [projects]);
-
-  // Auto-transition from 'synced' → 'idle' after 3 seconds
-  useEffect(() => {
-    if (cloudSyncStatus === 'synced') {
-      const t = setTimeout(() => setCloudSyncStatus('idle'), 3500);
-      return () => clearTimeout(t);
-    }
-  }, [cloudSyncStatus]);
+    return getDirtyCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projects, cloudSyncStatus]);
 
   // Auto-transition from 'synced' → 'idle' after 3 seconds
   useEffect(() => {

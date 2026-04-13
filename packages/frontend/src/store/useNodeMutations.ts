@@ -7,6 +7,7 @@ import { getUniqueTokenName, getUniqueNodeName } from '../utils/nameValidation';
 import { computeTokenPath } from '../utils/app-helpers';
 import { toast } from 'sonner';
 import { useStore } from './index';
+import { useReadOnlyState } from '../hooks/useReadOnlyState';
 
 export function useNodeMutations() {
   // Read state from store
@@ -37,7 +38,7 @@ export function useNodeMutations() {
   const setMultiSelectBarDelay = useStore(s => s.setMultiSelectBarDelay);
 
   // Derive sample mode from store state
-  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
+  const { isSampleMode } = useReadOnlyState();
   const isSampleModeRef = useRef(isSampleMode);
   isSampleModeRef.current = isSampleMode;
 

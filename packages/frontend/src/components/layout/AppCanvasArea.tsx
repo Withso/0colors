@@ -115,7 +115,7 @@ export function AppCanvasArea({
   const autoAssignTriggerNodeId = useStore(s => s.autoAssignTriggerNodeId);
   // Auth: redirect to accounts.zeros.design
   const redirectToZerosLogin = () => {
-    const returnUrl = encodeURIComponent(window.location.href);
+    const returnUrl = encodeURIComponent(window.location.origin + window.location.pathname + window.location.search);
     window.location.href = `https://accounts.zeros.design/login?product_id=0colors&redirect_url=${returnUrl}`;
   };
 
@@ -152,97 +152,22 @@ export function AppCanvasArea({
   return (
     <div className="app-canvas" data-testid="canvas-area-container">
 
-      {/* Top-right canvas area: Sign In button + Template Switcher */}
-      {(isSampleMode || !authSession) && (
-        <div className="app-canvas-top-right" style={{ zIndex: 100001 }} data-testid="canvas-top-right-actions">
-          {/* Sign In / Sign Up -- shown for non-authenticated users on ANY project type */}
-          {!authSession && (
-            <button
-              className="app-canvas-signin-btn"
-              onClick={redirectToZerosLogin}
-              data-testid="auth-canvas-signin-button"
-            >
-              <LogIn className="app-icon-3-5" />
-              <span className="app-canvas-signin-label">Sign In</span>
-            </button>
-          )}
-          {/* Template Switcher Dropdown -- only in sample mode, NOT for community projects */}
-          {isSampleMode && !isCommunityMode && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="app-canvas-template-btn" data-testid="canvas-template-dropdown-trigger">
-                  <BookOpen className="app-icon-3-5 app-icon-brand" />
-                  <span className="app-canvas-template-name">
-                    {sampleTemplates[activeSampleIdx]?.name || 'Template'}
-                  </span>
-                  {sampleTemplates.length > 1 && (
-                    <span className="app-canvas-template-count">{activeSampleIdx + 1}/{sampleTemplates.length}</span>
-                  )}
-                  <ChevronDown className="app-icon-3 app-icon-faint" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" sideOffset={8} className="app-canvas-template-dropdown" style={{ zIndex: 100002 }} data-testid="canvas-template-dropdown-content">
-                <div className="app-canvas-template-dropdown-header">
-                  <span className="app-canvas-template-dropdown-title">Templates</span>
-                  <span className="app-canvas-template-dropdown-count">{sampleTemplates.length} template{sampleTemplates.length !== 1 ? 's' : ''}</span>
-                </div>
-                {sampleTemplates.length >= 5 && (
-                  <div className="app-canvas-template-search-wrap">
-                    <div className="app-canvas-template-search-inner">
-                      <Search className="app-canvas-template-search-icon app-icon-3 app-icon-dim" />
-                      <input
-                        className="app-canvas-template-search-input"
-                        placeholder="Search templates…"
-                        value={sampleTemplateSearch}
-                        onChange={(e) => setSampleTemplateSearch(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => e.stopPropagation()}
-                        autoFocus
-                        data-testid="canvas-template-search-input"
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="app-canvas-template-scroll" style={{ maxHeight: '280px' }}>
-                  {filteredSampleTemplates.length === 0 ? (
-                    <div className="app-canvas-template-empty">No templates match &quot;{sampleTemplateSearch}&quot;</div>
-                  ) : (
-                    filteredSampleTemplates.map((t) => (
-                      <DropdownMenuItem
-                        key={`${t.projectId}-${t._origIdx}`}
-                        onClick={() => handleSwitchSampleTemplate(t._origIdx)}
-                        className={`app-canvas-template-item ${activeSampleIdx === t._origIdx
-                            ? 'app-canvas-template-item-active'
-                            : 'app-canvas-template-item-inactive'
-                          }`}
-                        data-testid={`canvas-template-item-${t.projectId}-${t._origIdx}`}
-                      >
-                        <div
-                          className="app-canvas-template-swatch"
-                          style={{
-                            background: `hsl(${t.folderColor}, 60%, 45%)`,
-                            borderColor: activeSampleIdx === t._origIdx ? 'var(--accent-primary)' : 'transparent',
-                          }}
-                        />
-                        <div className="app-canvas-template-item-info">
-                          <span className="app-canvas-template-item-name">{t.name}</span>
-                          <span className="app-canvas-template-item-desc">{t.description}</span>
-                        </div>
-                        {activeSampleIdx === t._origIdx && (
-                          <span className="app-canvas-template-item-active-label">Active</span>
-                        )}
-                      </DropdownMenuItem>
-                    ))
-                  )}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+      {/* Top-right canvas area: Sign In button only (no template name) */}
+      {!authSession && (
+        <div className="app-canvas-top-right" data-testid="canvas-top-right-actions">
+          <button
+            className="app-canvas-signin-btn"
+            onClick={redirectToZerosLogin}
+            data-testid="auth-canvas-signin-button"
+          >
+            <LogIn className="app-icon-3-5" />
+            <span className="app-canvas-signin-label">Sign In</span>
+          </button>
         </div>
       )}
 
       {isSampleMode && (
-        <div className="app-sample-bar-wrap" style={{ zIndex: 100000, bottom: viewMode === 'canvas' && isViewingPrimaryTheme ? '5rem' : '24px' }} data-testid="canvas-sample-bar-wrap">
+        <div className="app-sample-bar-wrap" style={{ bottom: viewMode === 'canvas' && isViewingPrimaryTheme ? '5rem' : '24px' }} data-testid="canvas-sample-bar-wrap">
           <div className="app-sample-bar" data-testid="canvas-sample-bar">
             <div className="app-sample-bar-info">
               <div className="app-sample-bar-icon">
@@ -265,7 +190,7 @@ export function AppCanvasArea({
                     <ChevronDown className="app-icon-3 app-icon-opacity-60" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={8} className="app-sample-bar-dropdown" style={{ zIndex: 100001 }} data-testid="canvas-sample-duplicate-menu">
+                <DropdownMenuContent align="end" sideOffset={8} className="app-sample-bar-dropdown" data-testid="canvas-sample-duplicate-menu">
                   <div className="app-sample-bar-dropdown-header">
                     {isCommunityMode ? 'Remix as' : 'Duplicate as'}
                   </div>

@@ -9,6 +9,7 @@ import {
 } from '../utils/supabase/cloud-sync';
 import type { SampleTemplate } from '../utils/sample-templates';
 import { useStore } from './index';
+import { useReadOnlyState } from '../hooks/useReadOnlyState';
 
 interface UseProjectOperationsParams {
   // Refs that live in App.tsx — cannot be read from the store
@@ -78,7 +79,7 @@ export function useProjectOperations({
   const setHighlightedProjectId = useStore(s => s.setHighlightedProjectId);
 
   // ── Local sample-mode guard (derived from store) ──
-  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
+  const { isSampleMode } = useReadOnlyState();
   const sampleModeToast = useCallback((action?: string) => {
     toast('Duplicate this project to make changes', {
       description: action ? `${action} is not available in sample mode` : undefined,
@@ -548,19 +549,35 @@ export function useProjectOperations({
     // Call existing duplicateProject (handles all ID remapping)
     duplicateProject(activeProjectId);
 
-    // After duplicate, update the newest project's cloud status
+    // After duplicate, update the newest project's cloud status and navigate to it
     const asCloud = finalType === 'cloud';
     setTimeout(() => {
-      setProjects(prev => {
-        const newest = prev[prev.length - 1];
-        if (newest && newest.name.includes('(Copy)')) {
-          return prev.map(p => p.id === newest.id ? { ...p, isCloud: asCloud } : p);
-        }
-        return prev;
-      });
-      toast.success(`Sample project duplicated as ${asCloud ? 'cloud' : 'local'} project`);
-    }, 50);
-  }, [activeProjectId, projects, duplicateProject]);
+      const currentProjects = useStore.getState().projects;
+      const newest = currentProjects[currentProjects.length - 1];
+      if (newest && newest.name.includes('(Copy)')) {
+        // Update cloud status
+        setProjects(prev => prev.map(p => p.id === newest.id ? { ...p, isCloud: asCloud } : p));
+
+        // Navigate to the new project by setting it active and pushing the URL
+        setActiveProjectId(newest.id);
+        const newPages = pages.filter(p => p.projectId === newest.id).sort((a, b) => a.createdAt - b.createdAt);
+        if (newPages.length > 0) setActivePageId(newPages[0].id);
+        const newThemes = themes.filter(t => t.projectId === newest.id).sort((a, b) => a.createdAt - b.createdAt);
+        const primaryTheme = newThemes.find(t => t.isPrimary) || newThemes[0];
+        if (primaryTheme) setActiveThemeId(primaryTheme.id);
+        setSelectedNodeId(null);
+        setSelectedNodeIds([]);
+        _setViewingProjects(false);
+        viewingProjectsRef.current = false;
+
+        const slug = slugify(newest.name || 'untitled');
+        navigate(`/project/${slug}`);
+        lastSyncedPathnameRef.current = `/project/${slug}`;
+
+        toast.success(`Sample project duplicated as ${asCloud ? 'cloud' : 'local'} project`);
+      }
+    }, 100);
+  }, [activeProjectId, projects, pages, themes, duplicateProject, navigate]);
 
   const handleOpenCommunityProject = useCallback((slug: string) => {
     // Reset community loaded ref so the load effect fires for the new slug

@@ -4,6 +4,7 @@ import type { CanvasState, Theme } from '../types';
 import { getNodeEffectiveHSL } from '../utils/app-helpers';
 import { toast } from 'sonner';
 import { useStore } from './index';
+import { useReadOnlyState } from '../hooks/useReadOnlyState';
 
 export function usePageThemeOperations() {
   // ── Read from Zustand store ──
@@ -24,7 +25,7 @@ export function usePageThemeOperations() {
   const setSelectedNodeIds = useStore(s => s.setSelectedNodeIds);
 
   // ── Sample mode guard (local, like useNodeCreation) ──
-  const isSampleMode = projects.find(p => p.id === activeProjectId)?.isSample === true;
+  const { isSampleMode } = useReadOnlyState();
   const isSampleModeRef = useRef(isSampleMode);
   isSampleModeRef.current = isSampleMode;
 

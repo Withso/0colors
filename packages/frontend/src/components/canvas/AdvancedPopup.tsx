@@ -1031,7 +1031,7 @@ function DropdownPortal({
         top: finalTop,
         left: pos.left,
         width: pos.width,
-        zIndex: 99999,
+        zIndex: 'var(--z-advanced-popup)' as any,
         pointerEvents: 'auto',
       }}
     >

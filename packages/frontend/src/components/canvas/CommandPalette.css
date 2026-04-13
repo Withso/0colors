@@ -9,7 +9,7 @@
 .cmd-palette-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,7 +64,7 @@
 
 .cmd-palette-result-count {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -91,17 +91,17 @@
 .cmd-palette-empty-icon {
   width: 24px;
   height: 24px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
 }
 
 .cmd-palette-empty-text {
   font-size: 13px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .cmd-palette-empty-hint {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 /* ── Category group ── */
@@ -121,12 +121,12 @@
 .cmd-palette-group-icon {
   width: 10px;
   height: 10px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .cmd-palette-group-label {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   font-weight: 500;
 }
 
@@ -138,13 +138,13 @@
 
 .cmd-palette-group-count {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   font-variant-numeric: tabular-nums;
 }
 
 .cmd-palette-clear-recent {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   background: none;
   border: none;
   cursor: pointer;
@@ -225,7 +225,7 @@
 
 .cmd-palette-row-cs-badge {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   padding: 1px 4px;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
@@ -234,7 +234,7 @@
 
 .cmd-palette-row-subtitle {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -249,7 +249,7 @@
 
 .cmd-palette-location-hint {
   font-size: 11px;
-  color: var(--surface-3);
+  color: var(--on-surface-5);
   width: 76px;
   text-align: right;
   overflow: hidden;
@@ -283,7 +283,7 @@
 }
 
 .cmd-palette-pin-btn-selected {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   opacity: 1;
 }
 
@@ -292,7 +292,7 @@
 }
 
 .cmd-palette-pin-btn-default {
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   opacity: 0;
 }
 
@@ -342,12 +342,12 @@
   border-radius: var(--radius-sm);
   background: var(--surface-3);
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
 }
 
 .cmd-palette-shortcut-label {
   font-size: 11px;
-  color: var(--surface-4);
+  color: var(--on-surface-5);
   margin-left: 2px;
 }
 

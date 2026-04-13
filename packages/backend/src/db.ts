@@ -100,6 +100,14 @@ export async function initSchema(): Promise<void> {
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
     `);
+
+    // ── Session locking columns (added post-initial schema) ──
+    await pool.query(`
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS locked_by TEXT;
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS locked_at TIMESTAMPTZ;
+        ALTER TABLE projects ADD COLUMN IF NOT EXISTS lock_session TEXT;
+    `).catch(() => {}); // Ignore if columns already exist
+
     console.log('[db] Schema initialized (9 tables)');
 }
 
@@ -682,6 +690,92 @@ export async function setAppSetting(key: string, value: any): Promise<void> {
     } catch (err) {
         console.error(`[db] setAppSetting failed for key="${key}":`, err);
         throw err;
+    }
+}
+
+// ===========================================================================
+//  Session Locking
+// ===========================================================================
+
+const LOCK_STALE_MS = 30 * 1000; // Lock expires after 30s without heartbeat (heartbeat is 15s)
+
+/** Attempt to lock a project for a session. Returns { locked, lockedBy, lockSession } */
+export async function lockProject(projectId: string, userId: string, sessionId: string): Promise<{
+    locked: boolean;
+    lockedBy?: string;
+    lockSession?: string;
+}> {
+    try {
+        // Check for existing lock
+        const { rows } = await pool.query(
+            'SELECT locked_by, locked_at, lock_session FROM projects WHERE id = $1',
+            [projectId]
+        );
+        if (rows.length === 0) return { locked: false };
+
+        const existing = rows[0];
+        const now = Date.now();
+        const lockAge = existing.locked_at ? now - new Date(existing.locked_at).getTime() : Infinity;
+
+        // Can take the lock if:
+        // 1. No existing lock
+        // 2. Lock is stale (no heartbeat for 30s)
+        // 3. Same session (re-acquire after reconnect)
+        // 4. Same user — a user can always take their own lock. The "conflict" dialog
+        //    is for DIFFERENT users (future multi-user). For single-user, the new session
+        //    replaces the old one and the old session detects this via heartbeat failure.
+        if (!existing.locked_by || lockAge > LOCK_STALE_MS || existing.lock_session === sessionId || existing.locked_by === userId) {
+            await pool.query(
+                'UPDATE projects SET locked_by = $1, locked_at = NOW(), lock_session = $2 WHERE id = $3',
+                [userId, sessionId, projectId]
+            );
+            return { locked: true };
+        }
+
+        // Locked by another session
+        return { locked: false, lockedBy: existing.locked_by, lockSession: existing.lock_session };
+    } catch (err) {
+        console.error(`[db] lockProject failed for ${projectId}:`, err);
+        return { locked: false };
+    }
+}
+
+/** Refresh lock heartbeat */
+export async function refreshLock(projectId: string, sessionId: string): Promise<boolean> {
+    try {
+        const { rowCount } = await pool.query(
+            'UPDATE projects SET locked_at = NOW() WHERE id = $1 AND lock_session = $2',
+            [projectId, sessionId]
+        );
+        return (rowCount ?? 0) > 0;
+    } catch {
+        return false;
+    }
+}
+
+/** Release lock */
+export async function unlockProject(projectId: string, sessionId: string): Promise<boolean> {
+    try {
+        const { rowCount } = await pool.query(
+            'UPDATE projects SET locked_by = NULL, locked_at = NULL, lock_session = NULL WHERE id = $1 AND lock_session = $2',
+            [projectId, sessionId]
+        );
+        return (rowCount ?? 0) > 0;
+    } catch {
+        return false;
+    }
+}
+
+/** Force-take a lock (when user confirms "continue here") */
+export async function forceLockProject(projectId: string, userId: string, sessionId: string): Promise<boolean> {
+    try {
+        await pool.query(
+            'UPDATE projects SET locked_by = $1, locked_at = NOW(), lock_session = $2 WHERE id = $3',
+            [userId, sessionId, projectId]
+        );
+        return true;
+    } catch {
+        return false;
     }
 }
 

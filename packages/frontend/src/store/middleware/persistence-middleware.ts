@@ -1,12 +1,15 @@
-// Persistence middleware — debounced localStorage save via store subscription
-// Replaces the debounced useEffect in App.tsx
+// Persistence middleware — debounced save via store subscription
+// Writes to IndexedDB (async, non-blocking) as primary storage.
+// Falls back to localStorage for backward compatibility during migration period.
 import type { StoreApi } from 'zustand';
 import type { StoreState } from '../types';
-import { saveToLocalStorage, saveGroupExpandStates } from '../../utils/app-helpers';
+import { saveGroupExpandStates, saveToLocalStorage } from '../../utils/app-helpers';
 import { CURRENT_SCHEMA_VERSION } from '../../utils/migrations';
+import { db, saveAllToDB } from '../../db';
 
 /**
- * Sets up debounced localStorage persistence via store subscription.
+ * Sets up debounced persistence via store subscription.
+ * Writes to both IndexedDB (primary) and localStorage (fallback).
  * Call once after store creation.
  *
  * Reads isInitialLoad, isImporting, and isSampleMode directly from the store.
@@ -50,6 +53,23 @@ export function setupPersistenceMiddleware(
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       const s = store.getState();
+
+      // Primary: async write to IndexedDB (non-blocking)
+      saveAllToDB({
+        projects: s.projects,
+        allNodes: s.allNodes,
+        tokens: s.tokens,
+        groups: s.groups,
+        pages: s.pages,
+        themes: s.themes,
+        canvasStates: s.canvasStates,
+        advancedLogic: s.advancedLogic,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+      }).catch((err) => {
+        console.error('[Persistence] IndexedDB save failed, falling back to localStorage:', err);
+      });
+
+      // Fallback: synchronous localStorage write (will be removed after migration period)
       saveToLocalStorage({
         nodes: s.allNodes,
         tokens: s.tokens,
