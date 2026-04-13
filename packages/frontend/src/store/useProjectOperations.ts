@@ -10,6 +10,7 @@ import {
 import type { SampleTemplate } from '../utils/sample-templates';
 import { useStore } from './index';
 import { useReadOnlyState } from '../hooks/useReadOnlyState';
+import { lockManager } from '../sync/session-lock';
 
 interface UseProjectOperationsParams {
   // Refs that live in App.tsx — cannot be read from the store
@@ -644,6 +645,14 @@ export function useProjectOperations({
     }
 
     setActiveProjectId(projectId);
+
+    // ── Session lock: acquire lock for cloud projects immediately ──
+    const projectForLock = projects.find(p => p.id === projectId);
+    if (projectForLock?.isCloud && !projectForLock?.isSample) {
+      lockManager.setActiveProject(projectId, true);
+    } else {
+      lockManager.setActiveProject(null, false);
+    }
 
     // Switch to the first page of the selected project
     const projectPages = pages.filter(p => p.projectId === projectId).sort((a, b) => a.createdAt - b.createdAt);

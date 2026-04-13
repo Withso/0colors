@@ -14,6 +14,7 @@ import { useNavigate, useLocation } from 'react-router';
 import { useStore } from '../store';
 import { slugify, findProjectBySlug } from '../utils/slugify';
 import type { SampleTemplate } from '../utils/sample-templates';
+import { lockManager } from '../sync/session-lock';
 
 export interface UseUrlRoutingParams {
   /** Ref tracking whether the projects list is showing (from useCloudSyncAuth) */
@@ -222,6 +223,10 @@ export function useUrlRouting({
           const projectThemes = useStore.getState().themes.filter(t => t.projectId === project.id).sort((a, b) => a.createdAt - b.createdAt);
           const primaryTheme = projectThemes.find(t => t.isPrimary) || projectThemes[0];
           if (primaryTheme) setActiveThemeId(primaryTheme.id);
+        }
+        // ── Session lock: acquire immediately for cloud projects ──
+        if ((project as any).isCloud) {
+          lockManager.setActiveProject(project.id, true);
         }
         const newMode = view === 'code' ? 'code' : view === 'export' ? 'export' : 'canvas';
         _setViewMode(newMode);

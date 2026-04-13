@@ -818,7 +818,7 @@ export function AppShell() {
               onClick={forceTakeLock}
               style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'var(--brand, #f0c000)', color: '#000', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
             >
-              Continue here
+              Open here
             </button>
           </div>
         </div>
@@ -834,14 +834,20 @@ export function AppShell() {
             Session moved
           </h2>
           <p style={{ fontSize: 14, color: 'var(--on-surface-2, #999)', marginBottom: 24, lineHeight: 1.5 }}>
-            This project is now being edited in another session. Your changes have been saved.
+            This project is now being edited in another session.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
             <button
               onClick={() => { dismissLockState(); handleBackToProjects(); }}
-              style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'var(--brand, #f0c000)', color: '#000', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+              style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid var(--border-1, #333)', background: 'transparent', color: 'var(--on-surface-1, #ccc)', cursor: 'pointer', fontSize: 13 }}
             >
               Go to Projects
+            </button>
+            <button
+              onClick={forceTakeLock}
+              style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'var(--brand, #f0c000)', color: '#000', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+            >
+              Open here
             </button>
           </div>
         </div>

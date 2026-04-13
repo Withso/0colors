@@ -719,12 +719,11 @@ export async function lockProject(projectId: string, userId: string, sessionId: 
 
         // Can take the lock if:
         // 1. No existing lock
-        // 2. Lock is stale (no heartbeat for 30s)
-        // 3. Same session (re-acquire after reconnect)
-        // 4. Same user — a user can always take their own lock. The "conflict" dialog
-        //    is for DIFFERENT users (future multi-user). For single-user, the new session
-        //    replaces the old one and the old session detects this via heartbeat failure.
-        if (!existing.locked_by || lockAge > LOCK_STALE_MS || existing.lock_session === sessionId || existing.locked_by === userId) {
+        // 2. Lock is stale (no heartbeat for 30s — old session died without releasing)
+        // 3. Same session (re-acquire after reconnect within same tab)
+        // Otherwise: show conflict dialog. User clicks "Open here" to force-take.
+        console.log(`[lock] Project ${projectId}: locked_by=${existing.locked_by}, lock_session=${existing.lock_session}, lockAge=${Math.round(lockAge/1000)}s, requesting=${sessionId}`);
+        if (!existing.locked_by || lockAge > LOCK_STALE_MS || existing.lock_session === sessionId) {
             await pool.query(
                 'UPDATE projects SET locked_by = $1, locked_at = NOW(), lock_session = $2 WHERE id = $3',
                 [userId, sessionId, projectId]
