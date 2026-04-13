@@ -818,7 +818,11 @@ export function AppShell() {
               Go to Projects
             </button>
             <button
-              onClick={forceTakeLock}
+              onClick={async () => {
+                await forceTakeLock();
+                // Fetch latest data from cloud — the other session may have made changes
+                handleForceCloudRefresh();
+              }}
               style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'var(--brand, #f0c000)', color: '#000', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
             >
               Open here
@@ -847,7 +851,11 @@ export function AppShell() {
               Go to Projects
             </button>
             <button
-              onClick={forceTakeLock}
+              onClick={async () => {
+                await forceTakeLock();
+                // Fetch latest data from cloud — the other session may have made changes
+                handleForceCloudRefresh();
+              }}
               style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'var(--brand, #f0c000)', color: '#000', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
             >
               Open here
