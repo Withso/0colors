@@ -50,11 +50,12 @@ interface SyncState {
 }
 
 // ── Constants ──
-// ── Legacy constants (most replaced by write-through sync) ──
-const SYNC_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes — kept for initCloudSync interval (safety net)
+// ── Constants ──
+const SYNC_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes — safety-net interval
+const IDLE_SAVE_MS = 30 * 1000; // 30 seconds idle → auto save (still used by idle tracking)
 const FETCH_TIMEOUT_MS = 30_000; // 30s timeout for safeFetch
 const MAX_RETRIES = 2; // safeFetch retry count
-// REMOVED: REMOTE_POLL_MS, IDLE_SAVE_MS, DEBOUNCE_SAVE_MS, DIRTY_KEY — replaced by write-through
+const DIRTY_KEY = '0colors-cloud-dirty-projects'; // still referenced by saveDirtyState/loadDirtyState
 
 // ── Module state ──
 const state: SyncState = {
