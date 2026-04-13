@@ -1,26 +1,34 @@
 /**
  * Persistence middleware — write-through sync on every state change.
  *
- * When entity state changes:
+ * When entity state changes from USER ACTIONS:
  * 1. Identifies which project(s) changed
  * 2. Calls syncProject() for each — saves to IndexedDB + cloud (500ms debounce)
  *
- * This replaces the old flow of:
- *   1s debounce → IndexedDB only
- *   3s debounce → markDirty → 2min timer → cloud
+ * SKIPS during cloud data loading (reconciliation) to prevent infinite loops:
+ * cloud loads → store updates → middleware fires → re-syncs same data → loop
  */
 import type { StoreApi } from 'zustand';
 import type { StoreState } from '../types';
 import { saveGroupExpandStates } from '../../utils/app-helpers';
 import { syncProject } from '../../sync/write-through';
 
+// Global flag: set to true when cloud data is being merged into the store.
+// Prevents the middleware from re-syncing data that was just loaded from cloud.
+let _isLoadingCloudData = false;
+
+export function setIsLoadingCloudData(loading: boolean) {
+  _isLoadingCloudData = loading;
+}
+
 export function setupPersistenceMiddleware(
   store: StoreApi<StoreState>,
   _getComputedTokens: () => any,
 ) {
   store.subscribe((state, prevState) => {
-    // Guard: skip during initial load, import, or sample mode
+    // Guard: skip during initial load, import, sample mode, or cloud data loading
     if (state.isInitialLoad || state.isImporting) return;
+    if (_isLoadingCloudData) return;
 
     const isSampleMode = state.projects.find(p => p.id === state.activeProjectId)?.isSample === true;
     if (isSampleMode) return;
@@ -33,11 +41,10 @@ export function setupPersistenceMiddleware(
       state.projects !== prevState.projects ||
       state.pages !== prevState.pages ||
       state.themes !== prevState.themes ||
-      state.canvasStates !== prevState.canvasStates ||
-      state.activeProjectId !== prevState.activeProjectId ||
-      state.activePageId !== prevState.activePageId ||
-      state.activeThemeId !== prevState.activeThemeId;
+      state.canvasStates !== prevState.canvasStates;
 
+    // Don't sync on activeProjectId/activePageId/activeThemeId changes alone
+    // (navigating between projects shouldn't trigger a save)
     if (!entityChanged) return;
 
     // Immediately persist group expand states (no debounce)
@@ -46,7 +53,6 @@ export function setupPersistenceMiddleware(
     }
 
     // Identify which project(s) changed and sync them
-    // Most changes affect the active project only
     const activeProjectId = state.activeProjectId;
     const activeProject = state.projects.find(p => p.id === activeProjectId);
 
@@ -54,7 +60,7 @@ export function setupPersistenceMiddleware(
       syncProject(activeProjectId);
     }
 
-    // If projects array itself changed (rename, delete, etc.), sync all affected
+    // If projects array itself changed (rename, delete, etc.), sync affected
     if (state.projects !== prevState.projects) {
       const changedProjects = state.projects.filter(p => {
         if (p.isSample) return false;

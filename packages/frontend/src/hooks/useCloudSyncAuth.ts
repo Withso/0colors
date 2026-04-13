@@ -16,6 +16,7 @@ import { useLocation } from 'react-router';
 // ── Cloud sync & auth ──
 import { getSupabaseClient } from '../utils/supabase/client';
 import { initWriteThrough, destroyWriteThrough } from '../sync/write-through';
+import { setIsLoadingCloudData } from '../store/middleware/persistence-middleware';
 import {
   initCloudSync,
   destroyCloudSync,
@@ -262,7 +263,7 @@ export function useCloudSyncAuth() {
     // Set the loading guard SYNCHRONOUSLY so the markDirty effect (which runs
     // later in the same render cycle) sees it and skips. loadCloudData is async
     // and wouldn't set this flag in time otherwise.
-    isLoadingCloudDataRef.current = true;
+    isLoadingCloudDataRef.current = true; setIsLoadingCloudData(true);
 
     // Initialize write-through sync (immediate save to IndexedDB + cloud on every action)
     initWriteThrough({
@@ -411,7 +412,7 @@ export function useCloudSyncAuth() {
 
             // Remote is newer — merge it
             console.log(`☁️ [VisibilityResume] Remote is newer (remote=${remoteSyncedAt} > local=${localSyncedAt}) — merging`);
-            isLoadingCloudDataRef.current = true;
+            isLoadingCloudDataRef.current = true; setIsLoadingCloudData(true);
 
             let snapshot = remoteEntry.snapshot;
             const migResult = migrateSnapshot(snapshot);
@@ -446,7 +447,7 @@ export function useCloudSyncAuth() {
           } catch (e) {
             console.log(`☁️ [VisibilityResume] Error: ${e}`);
           } finally {
-            setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
+            setTimeout(() => { isLoadingCloudDataRef.current = false; setIsLoadingCloudData(false); }, 100);
           }
         })();
       },
@@ -470,7 +471,7 @@ export function useCloudSyncAuth() {
           if (remoteSyncedAt <= localSyncedAt) return; // No changes
 
           console.log(`☁️ [RemotePoll] Remote is newer for "${currentProject.name}" (remote=${remoteSyncedAt} > local=${localSyncedAt}) — merging`);
-          isLoadingCloudDataRef.current = true;
+          isLoadingCloudDataRef.current = true; setIsLoadingCloudData(true);
 
           const migResult = migrateSnapshot(snapshot);
           const merged = migResult.migrated ? migResult.snapshot as ProjectSnapshot : snapshot;
@@ -497,7 +498,7 @@ export function useCloudSyncAuth() {
             pages: ns.pages, themes: ns.themes, canvasStates: ns.canvasStates,
             advancedLogic: ns.advancedLogic,
           };
-          setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
+          setTimeout(() => { isLoadingCloudDataRef.current = false; setIsLoadingCloudData(false); }, 100);
           console.log(`☁️ [RemotePoll] Merged remote changes`);
         }).catch(e => {
           console.log(`☁️ [RemotePoll] Error: ${e}`);
@@ -563,7 +564,7 @@ export function useCloudSyncAuth() {
 
         if (cloudData.length > 0) {
           // Suppress markDirty during merge — prevents wasteful re-upload cycle
-          isLoadingCloudDataRef.current = true;
+          isLoadingCloudDataRef.current = true; setIsLoadingCloudData(true);
 
           // Accumulate ALL changes across ALL projects, then apply in one setState
           const s = useStore.getState();
@@ -712,13 +713,13 @@ export function useCloudSyncAuth() {
         };
         // Defer the loading flag reset so it's still true when React processes
         // the batched state updates and fires the markDirty effect.
-        setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
+        setTimeout(() => { isLoadingCloudDataRef.current = false; setIsLoadingCloudData(false); }, 100);
       }
     };
 
     loadCloudData();
 
-    return () => { loadCancelled = true; isLoadingCloudDataRef.current = false; destroyCloudSync(); destroyWriteThrough(); };
+    return () => { loadCancelled = true; isLoadingCloudDataRef.current = false; setIsLoadingCloudData(false); destroyCloudSync(); destroyWriteThrough(); };
   }, [authSession?.accessToken]);
 
   // ────────────────────────────────────────────────────
@@ -752,7 +753,7 @@ export function useCloudSyncAuth() {
         }
 
         // Suppress markDirty AFTER fetch, right before state mutations begin
-        isLoadingCloudDataRef.current = true;
+        isLoadingCloudDataRef.current = true; setIsLoadingCloudData(true);
         const serverIds = new Set(meta.cloudProjectIds as string[]);
         const localCloudCount = useStore.getState().projects.filter(p => !p.isSample).length;
         console.log(`☁️ [Reconcile] Server has ${serverIds.size} project(s), local has ${localCloudCount} cloud/template project(s)`);
@@ -887,11 +888,11 @@ export function useCloudSyncAuth() {
           pages: rs.pages, themes: rs.themes, canvasStates: rs.canvasStates,
           advancedLogic: rs.advancedLogic,
         };
-        setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
+        setTimeout(() => { isLoadingCloudDataRef.current = false; setIsLoadingCloudData(false); }, 100);
       }
     };
     fullReconcile();
-    return () => { cancelled = true; isLoadingCloudDataRef.current = false; };
+    return () => { cancelled = true; isLoadingCloudDataRef.current = false; setIsLoadingCloudData(false); };
   }, [viewingProjects, authSession]);
 
   // ────────────────────────────────────────────────────
@@ -970,7 +971,7 @@ export function useCloudSyncAuth() {
       setProjects(prev => prev.map(p => !p.isSample ? { ...p, lastSyncedAt: 0 } : p));
 
       // 3. Fetch fresh data from server
-      isLoadingCloudDataRef.current = true;
+      isLoadingCloudDataRef.current = true; setIsLoadingCloudData(true);
       const [meta, cloudData] = await Promise.all([
         getCloudMeta(token).catch((e: any) => { console.log(`☁️ [ForceRefresh] getCloudMeta FAILED: ${e}`); return null; }),
         loadCloudProjects(token).catch((e: any) => { console.log(`☁️ [ForceRefresh] loadCloudProjects FAILED: ${e}`); return [] as any[]; }),
@@ -1078,7 +1079,7 @@ export function useCloudSyncAuth() {
         pages: frs.pages, themes: frs.themes, canvasStates: frs.canvasStates,
         advancedLogic: frs.advancedLogic,
       };
-      setTimeout(() => { isLoadingCloudDataRef.current = false; }, 100);
+      setTimeout(() => { isLoadingCloudDataRef.current = false; setIsLoadingCloudData(false); }, 100);
     }
   }, []);
 
