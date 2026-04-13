@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { streamSSE } from 'hono/streaming';
 import {
     getUser, updateUser, getProjectOwner, getProjectSnapshot,
     upsertProject, deleteProject, deleteTokenOutputs,
@@ -12,6 +13,40 @@ import { requireAuth, getUserRole, normalizeUserToMeta } from '../middleware/aut
 import { invalidateCommunityListCache } from './community.js';
 
 const router = new Hono();
+
+// ── SSE lock notification registry ──
+// Maps projectId → Set of { sessionId, writer } for connected SSE clients.
+// When a lock changes, we push an event to all connected clients for that project.
+interface LockSSEClient {
+    sessionId: string;
+    write: (event: string, data: string) => Promise<void>;
+    close: () => void;
+}
+const lockClients = new Map<string, Set<LockSSEClient>>();
+
+function addLockClient(projectId: string, client: LockSSEClient) {
+    if (!lockClients.has(projectId)) lockClients.set(projectId, new Set());
+    lockClients.get(projectId)!.add(client);
+}
+
+function removeLockClient(projectId: string, client: LockSSEClient) {
+    lockClients.get(projectId)?.delete(client);
+    if (lockClients.get(projectId)?.size === 0) lockClients.delete(projectId);
+}
+
+/** Push a lock event to all connected SSE clients for a project, except the sender */
+function notifyLockChange(projectId: string, event: string, data: any, excludeSessionId?: string) {
+    const clients = lockClients.get(projectId);
+    if (!clients) return;
+    const payload = JSON.stringify(data);
+    for (const client of clients) {
+        if (client.sessionId === excludeSessionId) continue;
+        client.write(event, payload).catch(() => {
+            // Client disconnected — remove it
+            removeLockClient(projectId, client);
+        });
+    }
+}
 
 // ---------------------------------------------------------------------------
 // POST /api/cloud-register
@@ -247,7 +282,53 @@ router.post('/sync-batch', async (c) => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/project-lock — Acquire lock on a project (session locking)
+// GET /api/project-lock-stream/:projectId — SSE stream for instant lock notifications
+// Client connects when viewing a cloud project. Server pushes events when lock changes.
+// ---------------------------------------------------------------------------
+router.get('/project-lock-stream/:projectId', async (c) => {
+    const projectId = c.req.param('projectId');
+    const sessionId = c.req.query('sessionId') || '';
+    if (!projectId || !sessionId) return c.json({ error: 'Missing projectId or sessionId' }, 400);
+
+    return streamSSE(c, async (stream) => {
+        const client: LockSSEClient = {
+            sessionId,
+            write: async (event: string, data: string) => {
+                await stream.writeSSE({ event, data, id: String(Date.now()) });
+            },
+            close: () => stream.close(),
+        };
+
+        addLockClient(projectId, client);
+        console.log(`[SSE] Client ${sessionId} connected for project ${projectId} (${lockClients.get(projectId)?.size || 0} total)`);
+
+        // Send initial ping to confirm connection
+        await stream.writeSSE({ event: 'connected', data: JSON.stringify({ sessionId, projectId }), id: '0' });
+
+        // Keep connection alive with periodic pings (every 25s)
+        const pingInterval = setInterval(async () => {
+            try {
+                await stream.writeSSE({ event: 'ping', data: '', id: String(Date.now()) });
+            } catch {
+                clearInterval(pingInterval);
+                removeLockClient(projectId, client);
+            }
+        }, 25_000);
+
+        // Wait until the client disconnects
+        stream.onAbort(() => {
+            clearInterval(pingInterval);
+            removeLockClient(projectId, client);
+            console.log(`[SSE] Client ${sessionId} disconnected from project ${projectId}`);
+        });
+
+        // Keep the stream open indefinitely — the onAbort handler cleans up
+        await new Promise(() => {}); // Never resolves — stream stays open
+    });
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/project-lock — Acquire lock on a project
 // ---------------------------------------------------------------------------
 router.post('/project-lock', async (c) => {
     try {
@@ -256,6 +337,10 @@ router.post('/project-lock', async (c) => {
         const { projectId, sessionId } = await c.req.json();
         if (!projectId || !sessionId) return c.json({ error: 'Missing projectId or sessionId' }, 400);
         const result = await lockProject(projectId, userId, sessionId);
+        if (result.locked) {
+            // Notify other connected clients that this session acquired the lock
+            notifyLockChange(projectId, 'lock-acquired', { sessionId, userId }, sessionId);
+        }
         return c.json(result);
     } catch (err: any) {
         return c.json({ error: err.message || 'Internal server error' }, 500);
@@ -287,7 +372,12 @@ router.post('/project-unlock', async (c) => {
         if (!userId) return c.json({ error: 'Unauthorized' }, 401);
         const { projectId, sessionId } = await c.req.json();
         if (!projectId || !sessionId) return c.json({ error: 'Missing projectId or sessionId' }, 400);
+        console.log(`[unlock] Project ${projectId} by session ${sessionId}`);
         const ok = await unlockProject(projectId, sessionId);
+        console.log(`[unlock] Result: ok=${ok}`);
+        if (ok) {
+            notifyLockChange(projectId, 'lock-released', { sessionId }, sessionId);
+        }
         return c.json({ ok });
     } catch (err: any) {
         return c.json({ error: err.message || 'Internal server error' }, 500);
@@ -295,7 +385,8 @@ router.post('/project-unlock', async (c) => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/project-lock-force — Force-take lock (user chose "continue here")
+// POST /api/project-lock-force — Force-take lock (user chose "Open here")
+// Instantly notifies the old session via SSE
 // ---------------------------------------------------------------------------
 router.post('/project-lock-force', async (c) => {
     try {
@@ -304,6 +395,11 @@ router.post('/project-lock-force', async (c) => {
         const { projectId, sessionId } = await c.req.json();
         if (!projectId || !sessionId) return c.json({ error: 'Missing projectId or sessionId' }, 400);
         const ok = await forceLockProject(projectId, userId, sessionId);
+        if (ok) {
+            // INSTANT notification to old session: "lock-taken-over"
+            // This pushes via SSE to all OTHER connected clients for this project
+            notifyLockChange(projectId, 'lock-taken-over', { newSessionId: sessionId, userId }, sessionId);
+        }
         return c.json({ ok });
     } catch (err: any) {
         return c.json({ error: err.message || 'Internal server error' }, 500);

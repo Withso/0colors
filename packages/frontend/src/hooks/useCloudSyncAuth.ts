@@ -40,18 +40,16 @@ import { slugify } from '../utils/slugify';
 const AUTH_SESSION_KEY = '0colors-auth-session';
 
 /**
- * Persist auth session to localStorage WITHOUT the access token.
- * The access token is kept only in-memory (Zustand store) to reduce XSS risk.
- * On page reload, the Supabase SDK refreshes the session from its own refresh token.
- * The cached session provides instant UI display (email, admin status, etc.).
+ * Persist auth session to localStorage (including access token).
+ * The access token is needed on page load for instant lock acquisition
+ * and cloud sync — waiting for Supabase SDK refresh causes race conditions.
  */
 function persistAuthSession(session: any) {
   if (!session) {
     localStorage.removeItem(AUTH_SESSION_KEY);
     return;
   }
-  const { accessToken: _stripped, ...safeSession } = session;
-  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(safeSession));
+  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
 }
 
 export function useCloudSyncAuth() {
