@@ -423,19 +423,19 @@ function ProjectList({
         ) : null
       )}
 
-      {/* Cloud section (authenticated) */}
+      {/* Projects section (authenticated) */}
       {isAuthenticated && (
         cloudSectionProjects.length > 0 || !!canCreateCloudProject ? renderSection(
-          'Cloud Projects',
+          'Projects',
           cloudSectionProjects,
           'cloud',
           !!canCreateCloudProject,
-          'New cloud project',
+          'New project',
         ) : (
           <div className="projects-section">
             <div className="projects-section-header">
               <div className="projects-section-header-left">
-                <span className="projects-section-label">Cloud Projects</span>
+                <span className="projects-section-label">Projects</span>
               </div>
             </div>
             {renderSkeleton(2)}
