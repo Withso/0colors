@@ -31,6 +31,11 @@
         "qa:runner": "node scripts/qa-local-runner.mjs",
         "test:e2e:report": "npm run test:e2e && npm run qa:sync-report",
         "test:unit": "node scripts/qa-vitest-layer.mjs unit",
+        "test:qa:unit": "npx vitest run --config QA-automation/vitest.config.ts --project unit",
+        "test:qa:domain": "npx vitest run --config QA-automation/vitest.config.ts --project domain",
+        "test:qa:integration": "npx vitest run --config QA-automation/vitest.config.ts --project integration",
+        "test:qa:e2e": "cd QA-automation && QA_PLAYWRIGHT_REPORT_FILE=reports/qa-e2e-results.json npx playwright test -c playwright.config.ts --project=0colors",
+        "test:qa:smoke": "cd QA-automation && QA_PLAYWRIGHT_REPORT_FILE=reports/qa-smoke-results.json npx playwright test -c playwright.config.ts --project=0colors-smoke",
         "test:mutation": "stryker run"
     },
     "devDependencies": {

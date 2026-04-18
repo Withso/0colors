@@ -26,7 +26,20 @@ const catalogOutDir = path.join(root, 'packages/frontend/public/qa-docs');
 const catalogOutFile = path.join(catalogOutDir, 'TEST-CATALOG.md');
 const overlaysPath = path.join(root, 'QA-automation/automation-overlays.json');
 const manifestPath = path.join(root, 'QA-automation/automated-case-manifest.json');
-const layerOrder = ['unit', 'domain', 'property', 'component', 'integration', 'e2e'];
+const layerOrder = [
+  'unit',
+  'domain',
+  'property',
+  'component',
+  'integration',
+  'qa-unit',
+  'qa-domain',
+  'qa-integration',
+  'e2e',
+  'qa-e2e',
+  'qa-smoke',
+];
+const playwrightLayers = new Set(['e2e', 'qa-e2e', 'qa-smoke']);
 
 function loadOverlays() {
   return (
@@ -62,14 +75,26 @@ function walkDirFiles(dir) {
   return acc;
 }
 
+function reportPathLabel(filePath) {
+  if (!filePath) return '';
+  return path.isAbsolute(filePath) ? toRootRelative(filePath) : String(filePath).split(path.sep).join('/');
+}
+
+function stripAnsi(value) {
+  return String(value || '').replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, '');
+}
+
 function repoTestInventory() {
   const frontendSrc = path.join(root, 'packages/frontend/src');
   const e2eDir = path.join(root, 'packages/frontend/tests/e2e');
+  const qaTestsDir = path.join(root, 'QA-automation/projects/0colors/tests');
   const files = walkDirFiles(frontendSrc);
+  const qaFiles = walkDirFiles(qaTestsDir);
   const countByPattern = (suffix) => files.filter((p) => p.endsWith(suffix));
   const e2eSpecs = fs.existsSync(e2eDir)
     ? fs.readdirSync(e2eDir).filter((f) => f.endsWith('.spec.ts'))
     : [];
+  const qaSpecs = qaFiles.filter((p) => p.endsWith('.spec.ts'));
   return {
     unitFiles: countByPattern('.unit.test.ts'),
     domainFiles: countByPattern('.domain.test.ts'),
@@ -77,11 +102,21 @@ function repoTestInventory() {
     componentFiles: files.filter((p) => p.endsWith('.component.test.ts') || p.endsWith('.component.test.tsx')),
     integrationFiles: files.filter((p) => p.endsWith('.integration.test.ts') || p.endsWith('.integration.test.tsx')),
     e2eSpecs,
+    qaUnitFiles: qaFiles.filter((p) => p.endsWith('.unit.test.ts')),
+    qaDomainFiles: qaFiles.filter((p) => p.endsWith('.domain.test.ts')),
+    qaIntegrationFiles: qaFiles.filter((p) => p.endsWith('.integration.test.ts') || p.endsWith('.integration.test.tsx')),
+    qaE2eSpecs: qaSpecs.filter((p) => p.includes(`${path.sep}e2e${path.sep}`)),
+    qaSmokeSpecs: qaSpecs.filter((p) => !p.includes(`${path.sep}e2e${path.sep}`)),
   };
 }
 
-function findManifestCase(baseFile, title, manifest) {
-  const fileEntry = manifest.files?.[baseFile];
+function findManifestCase(fileName, title, manifest) {
+  const baseFile = path.basename(fileName || '');
+  const normalizedFile = String(fileName || '').split(path.sep).join('/');
+  const qaNormalizedFile = normalizedFile.startsWith('QA-automation/')
+    ? normalizedFile
+    : `QA-automation/${normalizedFile}`;
+  const fileEntry = manifest.files?.[normalizedFile] || manifest.files?.[qaNormalizedFile] || manifest.files?.[baseFile];
   if (!fileEntry) return null;
   const exact = (fileEntry.cases || []).find((entry) => entry.exactTitle === title);
   if (exact) return { fileEntry, caseEntry: exact };
@@ -93,7 +128,7 @@ function inferCaseKind(layer, manifestFile, manifestCase) {
   return (
     manifestCase?.kind ||
     manifestFile?.kind ||
-    (layer === 'e2e' ? 'workflow' : layer === 'property' ? 'generated-matrix' : 'check')
+    (playwrightLayers.has(layer) ? 'workflow' : layer === 'property' ? 'generated-matrix' : 'check')
   );
 }
 
@@ -101,7 +136,7 @@ function inferSurfaces(layer, row, manifestFile, manifestCase) {
   if (Array.isArray(manifestCase?.surfacesChecked) && manifestCase.surfacesChecked.length) return manifestCase.surfacesChecked;
   if (Array.isArray(manifestFile?.surfacesChecked) && manifestFile.surfacesChecked.length) return manifestFile.surfacesChecked;
 
-  if (layer === 'e2e') {
+  if (playwrightLayers.has(layer)) {
     const title = String(row.title || '').toLowerCase();
     const surfaces = ['browser'];
     if (title.includes('token')) surfaces.push('token-table');
@@ -119,7 +154,7 @@ function inferSurfaces(layer, row, manifestFile, manifestCase) {
 function enrichTestRow(row, overlays, manifest) {
   const base = path.basename(row.file || '');
   const overlayEntry = overlays.files?.[base];
-  const manifestMatch = findManifestCase(base, String(row.title || ''), manifest);
+  const manifestMatch = findManifestCase(row.file || base, String(row.title || ''), manifest);
   const manifestFile = manifestMatch?.fileEntry;
   const manifestCase = manifestMatch?.caseEntry;
   const normalizedTitle = String(row.title || '').replace(/^\[[^\]]+\]\s*/g, '');
@@ -134,7 +169,7 @@ function enrichTestRow(row, overlays, manifest) {
       }
     }
   }
-  if (!plainDescription) plainDescription = overlayEntry?.fallbackPlain || manifestCase?.plainDescription || '';
+  if (!plainDescription) plainDescription = overlayEntry?.fallbackPlain || manifestCase?.plainDescription || `Checks: ${normalizedTitle}`;
 
   const moduleName =
     overlayEntry?.module ||
@@ -203,10 +238,10 @@ function parseVitestLayer(layer, reportPath, overlays, manifest) {
       const row = enrichTestRow(
         {
           title: assertion.fullName || assertion.title || 'Unnamed test',
-          file: path.basename(file.name || ''),
+          file: reportPathLabel(file.name),
           status,
           durationMs: Math.round(Number(assertion.duration) || 0),
-          errorMessage: (assertion.failureMessages || []).join('\n'),
+          errorMessage: stripAnsi((assertion.failureMessages || []).join('\n')),
           layer,
           retries: 0,
           artifacts: [],
@@ -236,7 +271,7 @@ function parseVitestLayer(layer, reportPath, overlays, manifest) {
   };
 }
 
-function pushPlaywrightSpecs(suite, prefix, rows, overlays, manifest) {
+function pushPlaywrightSpecs(layer, suite, prefix, rows, overlays, manifest) {
   const segment = suite.title ? `${suite.title} › ` : '';
   const nextPrefix = prefix + segment;
 
@@ -247,11 +282,11 @@ function pushPlaywrightSpecs(suite, prefix, rows, overlays, manifest) {
       const finalResult = results[results.length - 1] || {};
       const errors = finalResult.errors || [];
       const errorMessage = errors
-        .map((e) => (typeof e === 'string' ? e : e?.message || JSON.stringify(e)))
+        .map((e) => stripAnsi(typeof e === 'string' ? e : e?.message || JSON.stringify(e)))
         .filter(Boolean)
         .join('\n');
       const errorStack = errors
-        .map((e) => (e && typeof e === 'object' ? e.stack : ''))
+        .map((e) => stripAnsi(e && typeof e === 'object' ? e.stack : ''))
         .filter(Boolean)
         .join('\n');
       const attachments = results
@@ -270,13 +305,13 @@ function pushPlaywrightSpecs(suite, prefix, rows, overlays, manifest) {
         enrichTestRow(
           {
             title: nextPrefix + specTitle,
-            file: spec.file || suite.file || '',
+            file: reportPathLabel(spec.file || suite.file || ''),
             status,
             playwrightTestStatus: test.status,
             durationMs: finalResult.duration ?? 0,
             errorMessage,
             errorStack,
-            layer: 'e2e',
+            layer,
             retries: Math.max(0, results.length - 1),
             artifacts: attachments,
           },
@@ -288,19 +323,19 @@ function pushPlaywrightSpecs(suite, prefix, rows, overlays, manifest) {
   }
 
   for (const child of suite.suites || []) {
-    pushPlaywrightSpecs(child, nextPrefix, rows, overlays, manifest);
+    pushPlaywrightSpecs(layer, child, nextPrefix, rows, overlays, manifest);
   }
 }
 
-function parseE2eLayer(reportPath, overlays, manifest) {
+function parsePlaywrightLayer(layer, reportPath, overlays, manifest) {
   const raw = readJsonSafe(reportPath, null);
   if (!raw) return null;
   const rows = [];
   for (const suite of raw.suites || []) {
-    pushPlaywrightSpecs(suite, '', rows, overlays, manifest);
+    pushPlaywrightSpecs(layer, suite, '', rows, overlays, manifest);
   }
   return {
-    layer: 'e2e',
+    layer,
     tool: 'playwright',
     summary: {
       passed: rows.filter((r) => r.status === 'passed').length,
@@ -421,8 +456,9 @@ function resolveRunMeta() {
 }
 
 function buildIntegrity(meta, layers, inventory) {
-  const missingLayers = layerOrder.filter((layer) => !layers[layer]);
-  const failedLayers = layerOrder.filter((layer) => layers[layer]?.summary?.failed > 0);
+  const expectedLayers = meta?.source === 'qa:full' ? layerOrder : Object.keys(meta?.layers || {});
+  const missingLayers = expectedLayers.filter((layer) => !layers[layer]);
+  const failedLayers = expectedLayers.filter((layer) => layers[layer]?.summary?.failed > 0);
   const details = [];
 
   if (missingLayers.length) details.push(`missing layer data: ${missingLayers.join(', ')}`);
@@ -431,11 +467,15 @@ function buildIntegrity(meta, layers, inventory) {
   if ((layers.e2e?.summary?.total || 0) > 0 && (layers.e2e?.summary?.total || 0) < Math.min(inventory.e2eSpecs.length, 5)) {
     details.push('browser test count is unexpectedly low for this repo');
   }
+  if (meta?.source === 'qa:full' && !layers['qa-e2e']) details.push('QA auth/cloud browser layer was not reported');
+  if (meta?.source === 'qa:full' && !layers['qa-smoke']) details.push('QA smoke browser layer was not reported');
 
   if (!details.length) return null;
+  const hasCompletenessProblem = missingLayers.length > 0 || details.some((detail) => detail.includes('not reported') || detail.includes('unexpectedly low') || detail.startsWith('run status:'));
+  const prefix = hasCompletenessProblem ? 'This run looks incomplete or partial' : 'This run completed with test failures';
   return {
     level: failedLayers.length ? 'warning' : 'info',
-    message: `This run looks incomplete or partial: ${details.join('; ')}.`,
+    message: `${prefix}: ${details.join('; ')}.`,
     details,
   };
 }
@@ -458,8 +498,8 @@ function main() {
         ? layerMeta.reportPath
         : path.join(root, layerMeta.reportPath);
       const parsed =
-        layerName === 'e2e'
-          ? parseE2eLayer(reportPath, overlays, manifest)
+        playwrightLayers.has(layerName)
+          ? parsePlaywrightLayer(layerName, reportPath, overlays, manifest)
           : parseVitestLayer(layerName, reportPath, overlays, manifest);
       if (parsed) layers[layerName] = parsed;
     }
@@ -468,7 +508,7 @@ function main() {
     const legacyUnit = path.join(root, 'QA-automation/reports/unit-results.json');
     const legacyE2e = path.join(root, 'QA-automation/reports/e2e-results.json');
     const parsedUnit = parseVitestLayer('unit', legacyUnit, overlays, manifest);
-    const parsedE2e = parseE2eLayer(legacyE2e, overlays, manifest);
+    const parsedE2e = parsePlaywrightLayer('e2e', legacyE2e, overlays, manifest);
     if (parsedUnit) layers.unit = parsedUnit;
     if (parsedE2e) layers.e2e = parsedE2e;
   }
@@ -485,9 +525,9 @@ function main() {
       title: row.title,
       file: row.file,
       plainDescription: row.plainDescription,
-      summary: row.errorMessage?.split('\n')[0] || 'Failed',
-      detail: row.errorMessage,
-      stack: row.errorStack || '',
+      summary: stripAnsi(row.errorMessage?.split('\n')[0] || 'Failed'),
+      detail: stripAnsi(row.errorMessage),
+      stack: stripAnsi(row.errorStack || ''),
       caseId: row.caseId || null,
       fixture: row.fixture || null,
       seed: row.seed ?? null,
@@ -526,12 +566,22 @@ function main() {
       componentTestFiles: inventory.componentFiles.length,
       integrationTestFiles: inventory.integrationFiles.length,
       e2eSpecFiles: inventory.e2eSpecs.length,
+      qaUnitTestFiles: inventory.qaUnitFiles.length,
+      qaDomainTestFiles: inventory.qaDomainFiles.length,
+      qaIntegrationTestFiles: inventory.qaIntegrationFiles.length,
+      qaE2eSpecFiles: inventory.qaE2eSpecs.length,
+      qaSmokeSpecFiles: inventory.qaSmokeSpecs.length,
       unitTestPaths: inventory.unitFiles.map((filePath) => toRootRelative(filePath)),
       domainTestPaths: inventory.domainFiles.map((filePath) => toRootRelative(filePath)),
       propertyTestPaths: inventory.propertyFiles.map((filePath) => toRootRelative(filePath)),
       componentTestPaths: inventory.componentFiles.map((filePath) => toRootRelative(filePath)),
       integrationTestPaths: inventory.integrationFiles.map((filePath) => toRootRelative(filePath)),
       e2eSpecNames: inventory.e2eSpecs,
+      qaUnitTestPaths: inventory.qaUnitFiles.map((filePath) => toRootRelative(filePath)),
+      qaDomainTestPaths: inventory.qaDomainFiles.map((filePath) => toRootRelative(filePath)),
+      qaIntegrationTestPaths: inventory.qaIntegrationFiles.map((filePath) => toRootRelative(filePath)),
+      qaE2eSpecNames: inventory.qaE2eSpecs.map((filePath) => toRootRelative(filePath)),
+      qaSmokeSpecNames: inventory.qaSmokeSpecs.map((filePath) => toRootRelative(filePath)),
     },
     thisRun: {
       combinedCases: combined.total,

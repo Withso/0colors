@@ -2,10 +2,10 @@
   "version": 1,
   "notYetAutomatedInPlaywright": [
     {
-      “name”: “Advanced Logic popup (the big fx / expression editor)”,
-      “code”: “AdvancedPopup.tsx, advanced-logic-engine.ts, useAdvancedLogicEffect”,
-      “howWeTestToday”: “Covered by 20 **domain** tests, 7 **property** suites (40 generated runs each), 6 **component** tests, 4 **integration** tests, and 7 **Playwright** E2E flows. Domain/property tests cover parser, evaluator, constraints, themes, token assignment, golden fixtures, and edge cases. Component tests verify selector rendering across multi-row, disabled-row, multi-channel, and token-node layouts. E2E tests cover save/reopen, close-without-save, row add/delete, multi-row display, play preview, fallback display, and token-node popup.”,
-      “why”: “The popup spans parser, evaluator, theme inheritance, token assignment, and dense UI editing. We automate this mostly below the browser layer for scale and determinism, then keep a smaller E2E slice for wiring confidence.”
+      "name": "Advanced Logic popup (the big fx / expression editor)",
+      "code": "AdvancedPopup.tsx, advanced-logic-engine.ts, useAdvancedLogicEffect",
+      "howWeTestToday": "Covered by 20 **domain** tests, 7 **property** suites (40 generated runs each), 6 **component** tests, 4 **integration** tests, and 7 **Playwright** E2E flows. Domain/property tests cover parser, evaluator, constraints, themes, token assignment, golden fixtures, and edge cases. Component tests verify selector rendering across multi-row, disabled-row, multi-channel, and token-node layouts. E2E tests cover save/reopen, close-without-save, row add/delete, multi-row display, play preview, fallback display, and token-node popup.",
+      "why": "The popup spans parser, evaluator, theme inheritance, token assignment, and dense UI editing. We automate this mostly below the browser layer for scale and determinism, then keep a smaller E2E slice for wiring confidence."
     },
     {
       "name": "Token table popup, publish flow, cloud sync",
@@ -440,6 +440,132 @@
         }
       ],
       "fallbackPlain": "Advanced popup browser-flow check."
+    },
+
+    "auth.unit.test.ts": {
+      "module": "Auth & session (backend)",
+      "moduleOrder": 30,
+      "fileBlurb": "Validates backend auth header extraction and error resilience when verifying JWT tokens.",
+      "plainByPhrase": [
+        { "includes": "returns null when no token headers", "plain": "Requests with no auth headers are correctly rejected as unauthenticated." },
+        { "includes": "returns null on Supabase SDK failure", "plain": "If the Supabase service is down, auth fails gracefully without crashing." }
+      ],
+      "fallbackPlain": "Backend auth utility check."
+    },
+    "auth-middleware.unit.test.ts": {
+      "module": "Auth & session (backend)",
+      "moduleOrder": 31,
+      "fileBlurb": "Validates auth middleware: route protection (401/403), admin detection, template admin detection, and user metadata normalization.",
+      "plainByPhrase": [
+        { "includes": "returns userId when getAuthUser succeeds", "plain": "Authenticated requests pass through and the user ID is available to the handler." },
+        { "includes": "returns null and sets 401", "plain": "Unauthenticated requests are rejected with a 401 Unauthorized status." },
+        { "includes": "isTemplateAdmin: admin + matching ID", "plain": "The template admin check requires both admin role and matching user ID." },
+        { "includes": "normalizeUserToMeta: null", "plain": "When no user data exists, the metadata defaults to an empty project list." }
+      ],
+      "fallbackPlain": "Auth middleware check."
+    },
+    "auth-slice.unit.test.ts": {
+      "module": "Auth & session (frontend)",
+      "moduleOrder": 32,
+      "fileBlurb": "Validates the Zustand auth state store: session management, sync status transitions, and all toggle setters.",
+      "plainByPhrase": [
+        { "includes": "initial authSession is null", "plain": "The app starts with no active session until the user signs in." },
+        { "includes": "setAuthSession sets a new session", "plain": "Signing in populates the session with token, email, and user info." },
+        { "includes": "setCloudSyncStatus transitions", "plain": "The sync status indicator can show all valid states: local, idle, syncing, synced, error, offline." }
+      ],
+      "fallbackPlain": "Auth state management check."
+    },
+    "session-lock.unit.test.ts": {
+      "module": "Session management",
+      "moduleOrder": 33,
+      "fileBlurb": "Validates the SSE-based session lock manager: lock acquire/release, force-take, heartbeat keepalive, and conflict detection across tabs/devices.",
+      "plainByPhrase": [
+        { "includes": "sessionId has correct format", "plain": "Each browser tab gets a unique session identifier for lock ownership." },
+        { "includes": "emits cleared when lock acquired", "plain": "When a tab successfully acquires the editing lock, the conflict banner is cleared." },
+        { "includes": "emits conflict when lock denied", "plain": "When another session already holds the lock, a conflict banner is shown." },
+        { "includes": "SSE lock-taken-over emits", "plain": "When another device force-takes the lock, the current tab instantly shows a 'taken over' banner via SSE." },
+        { "includes": "heartbeat POST every 15s", "plain": "The lock stays alive by sending a heartbeat to the server every 15 seconds." }
+      ],
+      "fallbackPlain": "Session lock manager check."
+    },
+    "tab-channel.unit.test.ts": {
+      "module": "Session management",
+      "moduleOrder": 34,
+      "fileBlurb": "Validates multi-tab coordination via BroadcastChannel: leader election, state change notifications, and cleanup.",
+      "plainByPhrase": [
+        { "includes": "broadcastChange sends STATE_CHANGED", "plain": "When one tab edits a project, other tabs are notified to refresh their data." },
+        { "includes": "LEADER_ELECTED from other tab", "plain": "Only one tab acts as the sync leader; if another tab claims leadership, the current tab defers." },
+        { "includes": "destroyTabChannel closes", "plain": "When a tab closes, it properly cleans up its broadcast channel connection." }
+      ],
+      "fallbackPlain": "Multi-tab coordination check."
+    },
+    "write-through.unit.test.ts": {
+      "module": "Cloud sync",
+      "moduleOrder": 35,
+      "fileBlurb": "Validates the write-through sync engine: debounce, empty snapshot safety, error handling (401/500/network), and lifecycle cleanup.",
+      "plainByPhrase": [
+        { "includes": "blocks sync when snapshot has 0 nodes", "plain": "The sync engine refuses to save an empty project to prevent accidental data loss." },
+        { "includes": "forceSyncProject saves to IndexedDB", "plain": "Force sync always saves locally first, regardless of cloud sync outcome." },
+        { "includes": "401 response returns false", "plain": "When the auth token expires mid-sync, the project is queued for retry after token refresh." },
+        { "includes": "destroyWriteThrough clears", "plain": "Cleanup properly cancels all pending sync timers." }
+      ],
+      "fallbackPlain": "Write-through sync check."
+    },
+    "cloud-sync.unit.test.ts": {
+      "module": "Cloud sync",
+      "moduleOrder": 36,
+      "fileBlurb": "Validates the cloud sync service lifecycle: token management, init/destroy, and cloud metadata fetch.",
+      "fallbackPlain": "Cloud sync service check."
+    },
+    "sample-templates.domain.test.ts": {
+      "module": "Templates & projects",
+      "moduleOrder": 37,
+      "fileBlurb": "Validates all built-in sample templates: required fields, unique IDs, cross-reference integrity between nodes/tokens/groups/pages/themes, and color value ranges.",
+      "plainByPhrase": [
+        { "includes": "has at least 6 built-in templates", "plain": "The app ships with at least 6 sample templates for new users." },
+        { "includes": "each template has a unique id", "plain": "No two templates share the same identifier." },
+        { "includes": "all tokens reference valid groupId", "plain": "Every design token in every template correctly references an existing group." },
+        { "includes": "token themeValues have hue in 0-360", "plain": "All color values in templates are within valid CSS ranges." }
+      ],
+      "fallbackPlain": "Template structure validation check."
+    },
+    "db-operations.integration.test.ts": {
+      "module": "Database (IndexedDB)",
+      "moduleOrder": 38,
+      "fileBlurb": "Validates all IndexedDB/Dexie operations: atomic save/load, project isolation, cascade delete, orphan cleanup, sync log, and compound key queries.",
+      "plainByPhrase": [
+        { "includes": "saves and loads all entity types", "plain": "All project data (nodes, tokens, groups, pages, themes, canvas states) is stored and retrieved correctly." },
+        { "includes": "does not affect other projects", "plain": "Saving one project does not modify or corrupt another project's data." },
+        { "includes": "removes all project entities", "plain": "Deleting a project cleans up all associated data across all tables." },
+        { "includes": "compound key", "plain": "Canvas states use a compound key (projectId + pageId) for efficient per-page queries." }
+      ],
+      "fallbackPlain": "IndexedDB operation check."
+    },
+    "auth-routes.integration.test.ts": {
+      "module": "Auth & session (backend routes)",
+      "moduleOrder": 39,
+      "fileBlurb": "Validates backend auth API endpoints: /signup validation, /cloud-meta auth and role checks, admin unlimited limits.",
+      "plainByPhrase": [
+        { "includes": "returns 400 when email is missing", "plain": "The signup endpoint rejects requests without an email address." },
+        { "includes": "returns success with userId", "plain": "Valid signup creates a user and returns their ID." },
+        { "includes": "returns 401 when unauthenticated", "plain": "The cloud-meta endpoint requires authentication." },
+        { "includes": "returns null cloudProjectLimit for admin", "plain": "Admin users have no limit on cloud projects." }
+      ],
+      "fallbackPlain": "Auth route endpoint check."
+    },
+    "project-routes.integration.test.ts": {
+      "module": "Cloud sync (backend routes)",
+      "moduleOrder": 40,
+      "fileBlurb": "Validates all backend sync and lock endpoints: cloud-register with limits, sync ownership verification, batch upsert, and session lock CRUD with auth checks.",
+      "plainByPhrase": [
+        { "includes": "succeeds for valid user", "plain": "A user can register a new cloud project." },
+        { "includes": "returns 403 when limit reached", "plain": "Non-admin users cannot exceed the 20-project cloud limit." },
+        { "includes": "upserts snapshot with _syncedAt", "plain": "Syncing a project stores the snapshot with a sync timestamp and user ID." },
+        { "includes": "batch upserts multiple projects", "plain": "Multiple projects can be synced in a single batch request." },
+        { "includes": "acquires lock", "plain": "A session can acquire an editing lock on a cloud project." },
+        { "includes": "lock endpoints return 401", "plain": "All lock operations require authentication." }
+      ],
+      "fallbackPlain": "Project route endpoint check."
     }
   }
 }

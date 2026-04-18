@@ -62,7 +62,12 @@ const PHASE_LABELS: Record<string, string> = {
   property: 'Running property tests — seeded generated combinations',
   component: 'Running component tests — isolated UI coverage',
   integration: 'Running integration tests — store/effect wiring checks',
+  'qa-unit': 'Running QA unit tests — auth, cloud sync, sessions, and multi-tab code',
+  'qa-domain': 'Running QA domain tests — template and data-structure validation',
+  'qa-integration': 'Running QA integration tests — IndexedDB, auth routes, cloud sync routes, and locks',
   e2e: 'Running browser tests (Playwright) — often several minutes; log updates below',
+  'qa-e2e': 'Running QA browser tests — auth and cloud-sync user flows',
+  'qa-smoke': 'Running QA smoke browser tests — reusable app shell, routing, and command palette checks',
   sync: 'Writing merged report for this hub…',
   done: 'Pipeline finished',
   error: 'Pipeline stopped with an error',
@@ -74,7 +79,12 @@ const LAYER_LABELS: Record<string, string> = {
   property: 'Property',
   component: 'Component',
   integration: 'Integration',
+  'qa-unit': 'QA Unit',
+  'qa-domain': 'QA Domain',
+  'qa-integration': 'QA Integration',
   e2e: 'Browser',
+  'qa-e2e': 'QA Browser',
+  'qa-smoke': 'QA Smoke',
 };
 
 const isViteDev = import.meta.env.DEV;
@@ -100,12 +110,22 @@ export interface QaCoverage {
     componentTestFiles?: number;
     integrationTestFiles?: number;
     e2eSpecFiles: number;
+    qaUnitTestFiles?: number;
+    qaDomainTestFiles?: number;
+    qaIntegrationTestFiles?: number;
+    qaE2eSpecFiles?: number;
+    qaSmokeSpecFiles?: number;
     unitTestPaths: string[];
     domainTestPaths?: string[];
     propertyTestPaths?: string[];
     componentTestPaths?: string[];
     integrationTestPaths?: string[];
     e2eSpecNames: string[];
+    qaUnitTestPaths?: string[];
+    qaDomainTestPaths?: string[];
+    qaIntegrationTestPaths?: string[];
+    qaE2eSpecNames?: string[];
+    qaSmokeSpecNames?: string[];
   };
   thisRun?: {
     combinedCases: number;
@@ -338,6 +358,13 @@ function CoveragePanel({ coverage, compact }: { coverage: QaCoverage; compact?: 
               {repo.componentTestFiles || 0} component, {repo.integrationTestFiles || 0} integration, {repo.e2eSpecFiles} browser file(s)
             </span>
           </div>
+          <div className="admin-qa-coverage-stat">
+            <span className="admin-qa-coverage-label">QA automation harness</span>
+            <span className="admin-qa-coverage-value">
+              {repo.qaUnitTestFiles || 0} unit, {repo.qaDomainTestFiles || 0} domain, {repo.qaIntegrationTestFiles || 0}{' '}
+              integration, {repo.qaE2eSpecFiles || 0} browser, {repo.qaSmokeSpecFiles || 0} smoke file(s)
+            </span>
+          </div>
         </div>
       )}
       {thisRun?.layerCounts ? (
@@ -377,6 +404,42 @@ function CoveragePanel({ coverage, compact }: { coverage: QaCoverage; compact?: 
           <summary>Unit test files ({repo.unitTestPaths.length})</summary>
           <ul className="admin-qa-coverage-list">
             {repo.unitTestPaths.map((p) => (
+              <li key={p} className="admin-qa-mono">
+                {p}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+      {!compact && repo?.qaUnitTestPaths?.length ? (
+        <details className="admin-qa-coverage-details">
+          <summary>QA automation unit files ({repo.qaUnitTestPaths.length})</summary>
+          <ul className="admin-qa-coverage-list">
+            {repo.qaUnitTestPaths.map((p) => (
+              <li key={p} className="admin-qa-mono">
+                {p}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+      {!compact && repo?.qaIntegrationTestPaths?.length ? (
+        <details className="admin-qa-coverage-details">
+          <summary>QA automation integration files ({repo.qaIntegrationTestPaths.length})</summary>
+          <ul className="admin-qa-coverage-list">
+            {repo.qaIntegrationTestPaths.map((p) => (
+              <li key={p} className="admin-qa-mono">
+                {p}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+      {!compact && (repo?.qaE2eSpecNames?.length || repo?.qaSmokeSpecNames?.length) ? (
+        <details className="admin-qa-coverage-details">
+          <summary>QA automation browser files ({(repo.qaE2eSpecNames?.length || 0) + (repo.qaSmokeSpecNames?.length || 0)})</summary>
+          <ul className="admin-qa-coverage-list">
+            {[...(repo.qaE2eSpecNames || []), ...(repo.qaSmokeSpecNames || [])].map((p) => (
               <li key={p} className="admin-qa-mono">
                 {p}
               </li>
@@ -680,7 +743,7 @@ export function AdminQaDashboard() {
 
   const copyCli = () => {
     const cmd =
-      'Option A (one terminal): npm run dev:qa\nOption B: Terminal 1: npm run dev  |  Terminal 2: npm run qa:runner\nThen QA hub → Run all tests (or: npm run test:e2e:report)';
+      'Option A (one terminal): npm run dev:qa\nOption B: Terminal 1: npm run dev  |  Terminal 2: npm run qa:runner\nThen QA hub → Run all QA tests (or CLI: npm run qa:full)';
     void navigator.clipboard.writeText(cmd);
   };
 
@@ -700,7 +763,7 @@ export function AdminQaDashboard() {
     setRunnerPhase('starting');
 
     let completionHandled = false;
-    const finishPoll = async (st: { phase: string; runId?: string | null; lastExitCodes?: { unit: number | null; e2e: number | null } }) => {
+    const finishPoll = async (st: { phase: string; runId?: string | null; lastExitCodes?: { qaFull?: number | null } }) => {
       if (completionHandled) return;
       completionHandled = true;
       if (runnerPollRef.current) {
@@ -709,14 +772,13 @@ export function AdminQaDashboard() {
       }
       setRunnerRunning(false);
       setRunnerPhase(st.phase);
-      const u = st.lastExitCodes?.unit;
-      const e = st.lastExitCodes?.e2e;
+      const qaFull = st.lastExitCodes?.qaFull;
       if (st.phase === 'done') {
         setRunnerFinishedHint(
-          `Run ${st.runId ? `${st.runId.slice(0, 8)}… ` : ''}finished. Unit exit ${u ?? '—'}, E2E exit ${e ?? '—'}. Scroll down for the latest summary or open the full report.`,
+          `Run ${st.runId ? `${st.runId.slice(0, 8)}… ` : ''}finished. QA pipeline exit ${qaFull ?? '—'}. Scroll down for the latest summary or open the full report.`,
         );
       } else {
-        setRunnerFinishedHint(`Run stopped (${st.phase}). Check the log below and terminal output. Unit exit ${u ?? '—'}, E2E exit ${e ?? '—'}.`);
+        setRunnerFinishedHint(`Run stopped (${st.phase}). Check the log below and terminal output. QA pipeline exit ${qaFull ?? '—'}.`);
       }
       await refreshReports();
     };
@@ -754,7 +816,7 @@ export function AdminQaDashboard() {
           phase: string;
           log: { t: number; line: string }[];
           runId?: string | null;
-          lastExitCodes?: { unit: number | null; e2e: number | null };
+          lastExitCodes?: { qaFull?: number | null };
         }>(`${RUNNER_PREFIX}/status`);
         if (!st) {
           setRunnerStatusMessage('Cannot read runner status (network or proxy). Check: npm run qa:runner');
@@ -888,7 +950,7 @@ export function AdminQaDashboard() {
 
         {detailPayload.skippedTests && detailPayload.skippedTests.length > 0 && (
           <>
-            <h2 className="admin-qa-section-title">Skipped browser cases</h2>
+            <h2 className="admin-qa-section-title">Skipped cases</h2>
             <p className="admin-qa-meta">These did not execute in this run (intentionally skipped or not reached).</p>
             <ul className="admin-qa-skipped-list">
               {detailPayload.skippedTests.map((s, i) => (
@@ -1028,12 +1090,12 @@ export function AdminQaDashboard() {
                 title={
                   runnerUp === false
                     ? 'Runner offline — click anyway to try, or start: npm run qa:runner'
-                    : 'Runs Vitest, then Playwright, then refreshes reports for this hub'
+                    : 'Runs frontend Vitest, QA Vitest, frontend Playwright, QA Playwright, then refreshes reports for this hub'
                 }
                 data-testid="admin-qa-run-all"
               >
                 {runnerRunning ? <Loader2 size={16} className="admin-qa-spin" /> : <Play size={16} />}
-                Run all tests (unit + E2E)
+                Run all QA tests
               </button>
             )}
             <button type="button" className="admin-qa-btn admin-qa-btn--ghost" onClick={refreshReports} data-testid="admin-qa-refresh">

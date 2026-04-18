@@ -45,6 +45,12 @@ QA-automation/reports/unit-results.json
 QA-automation/reports/latest-raw-run.json
 QA-automation/reports/runs/
 QA-automation/reports/scratch/
+QA-automation/reports/html/
+QA-automation/test-results/
+
+# Stale legacy report locations (now consolidated under QA-automation/)
+packages/frontend/tests/e2e/playwright-report/
+packages/frontend/tests/e2e/test-results/
 
 # QA hub run history (local machine)
 packages/frontend/public/qa-reports/runs-history.json
