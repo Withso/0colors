@@ -11,7 +11,8 @@ Single source for **what** to verify across the product. Automated suites (Playw
 | ---------------------------------------------------------- | ---------------------------------------------------------------- |
 | `packages/frontend/tests/e2e/*.spec.ts`                    | Implemented browser (E2E) tests                                  |
 | `packages/frontend/src/**/*.unit.test.ts`                  | Fast unit tests (Vitest)                                         |
-| `QA-automation/reports/e2e-results.json`                   | Raw Playwright JSON (generated)                                  |
+| `QA-automation/projects/0colors/tests/**/*`                | QA harness tests for auth, cloud sync, DB, route, smoke, and browser flows |
+| `QA-automation/reports/runs/<run-id>/*.json`               | Raw Vitest / Playwright JSON reports (generated per run)          |
 | `packages/frontend/public/qa-reports/latest-run.json`      | Dashboard payload (**gitignored**; run `npm run qa:sync-report`) |
 | Admin **QA hub** (signed-in admin → Projects → **QA hub**) | View last ingested run, upload JSON, CLI hint                    |
 
@@ -26,9 +27,9 @@ Single source for **what** to verify across the product. Automated suites (Playw
 | Layer                 | Best for                                              | Speed | This repo                                                    |
 | --------------------- | ----------------------------------------------------- | ----- | ------------------------------------------------------------ |
 | **Unit**              | Pure functions, URL helpers, math, parsers without UI | ms    | `npm run test:unit` — `slugify` today; expand `utils/pure/`* |
-| **Component**         | Isolated React + store stubs                          | s     | *Not wired* — optional React Testing Library later           |
-| **E2E (Playwright)**  | Full flows, routing, real Zustand + canvas            | min   | `npm run test:e2e`                                           |
-| **Contract / API**    | Hono/Supabase shapes                                  | s–min | *Backlog* — mock fetch or test backend                       |
+| **Component**         | Isolated React + store stubs                          | s     | `npm run test:component`                                     |
+| **E2E (Playwright)**  | Full flows, routing, real Zustand + canvas            | min   | `npm run test:e2e`; QA harness browser flows run in `npm run qa:full` |
+| **Contract / API**    | Hono/Supabase shapes                                  | s–min | QA integration layer in `QA-automation/projects/0colors/tests/integration` |
 | **Visual regression** | Pixel-stable layouts                                  | min   | *Backlog* — snapshots + baselines                            |
 
 
@@ -76,6 +77,17 @@ Selectors: `data-testid` only (project convention).
 | `computed-tokens.domain.test.ts`               | domain      | Token export, alias chains, hidden propagation   |
 | `AdvancedPopup.component.test.tsx`             | component   | Popup selectors: multi-row, disabled, multi-channel, fallback, token |
 | `useAdvancedLogicEffect.integration.test.tsx`  | integration | Store/effect: recompute, siblings, multi-channel, literal |
+
+
+### 2.3 QA automation harness (`QA-automation/projects/0colors/tests/`)
+
+| Area | Files | Scope |
+| ---- | ----- | ----- |
+| `tests/unit/*.unit.test.ts` | 7 files / 92 checks | Backend auth helpers, auth middleware, frontend auth slice, cloud sync service, write-through sync, session lock, tab channel |
+| `tests/domain/*.domain.test.ts` | 1 | Built-in sample/template structure and cross-reference validation |
+| `tests/integration/*.integration.test.ts` | 3 | IndexedDB operations, auth routes, project/cloud-sync routes, lock endpoints |
+| `tests/e2e/*.spec.ts` | 2 | Auth flow and cloud-sync browser workflows |
+| root `tests/*.spec.ts` | 4 | App shell, routing, command palette, optional credential-backed cloud auth smoke |
 
 
 ---
@@ -241,7 +253,9 @@ Convention: **TC-****-**** — priority ****P0** (ship blocker) … **P3** (nice
 | TC-M12-001 | Manual   | P0       | Sign in / sign out           |
 | TC-M12-002 | Manual   | P1       | Cloud sync indicators        |
 | TC-M12-003 | Manual   | P2       | 20-project limit (non-admin) |
-| TC-M12-004 | Contract | P3       | Mocked API error paths       |
+| TC-M12-004 | QA integration | P1 | Mocked auth/cloud route success and failure paths |
+| TC-M12-005 | QA unit | P1 | Session lock, tab channel, write-through sync, and cloud metadata helpers |
+| TC-M12-006 | QA E2E | P1 | Auth route/session browser flow and cloud-sync/local persistence browser flow |
 
 
 ### M13 — AI (`AskAIChat.tsx`, AI settings)
@@ -307,24 +321,24 @@ npm run test:unit
 # E2E (starts dev servers per playwright.config unless SKIP)
 npm run test:e2e
 
-# Refresh dashboard JSON for local dev (merges Vitest + Playwright, text report, history, copies this catalog to /qa-docs/)
+# Refresh dashboard JSON for local dev (merges all run-scoped Vitest + Playwright layers, text report, history, copies this catalog to /qa-docs/)
 npm run qa:sync-report
 
-# One shot (E2E then sync)
-npm run test:e2e:report
+# Full local pipeline: frontend Vitest, QA Vitest, frontend Playwright, QA Playwright, sync report
+npm run qa:full
 ```
 
 ### In-browser “Run all tests” (localhost only)
 
 1. Terminal A: `npm run dev` (Vite on :3000).
 2. Terminal B: `npm run qa:runner` (binds **127.0.0.1:47841** only).
-3. Sign in as **admin** → **Projects → QA hub** → **Run all tests (unit + E2E)**.
+3. Sign in as **admin** → **Projects → QA hub** → **Run all QA tests**.
 
-The runner executes Vitest (JSON report) → Playwright with `PLAYWRIGHT_SKIP_WEB_SERVER=1` and your current app URL → `qa:sync-report`. The hub reloads `latest-run.json` and `runs-history.json` when the pipeline finishes.
+The runner executes frontend Vitest layers → QA harness Vitest layers → frontend Playwright → QA harness Playwright (`qa-e2e` and `qa-smoke`) with `PLAYWRIGHT_SKIP_WEB_SERVER=1` and your current app URL → `qa:sync-report`. The hub reloads `latest-run.json` and `runs-history.json` when the pipeline finishes.
 
 Vite proxies `/__qa-runner/`* to the runner so the browser stays same-origin (no CORS).
 
-Then open the app as **admin**, go to **Projects → QA hub**, and use **Reload reports** if needed. If `latest-run.json` is missing, use **Run all tests** or `npm run qa:sync-report` after a local test run.
+Then open the app as **admin**, go to **Projects → QA hub**, and use **Reload reports** if needed. If `latest-run.json` is missing, use **Run all QA tests** or `npm run qa:full`.
 
 ---
 

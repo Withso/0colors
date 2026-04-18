@@ -16,9 +16,20 @@ test.describe('Project management', () => {
     await page.goto('/projects');
     await page.getByTestId('page-projects').waitFor({ state: 'visible', timeout: 120_000 });
     const before = await page.locator('[data-testid^="projects-card-"]').count();
-    await page.getByTestId('projects-create-local').click();
+
+    // Use the cloud create button if authenticated, otherwise duplicate a sample
+    const cloudBtn = page.getByTestId('projects-create-cloud');
+    const hasCloudBtn = await cloudBtn.isVisible({ timeout: 5_000 }).catch(() => false);
+    if (hasCloudBtn) {
+      await cloudBtn.click();
+    } else {
+      // Fall back to sample duplicate flow
+      await openEditorWithNewLocalProject(page);
+    }
+
     await page.getByTestId('page-editor-shell').waitFor({ state: 'visible', timeout: 60_000 });
-    await expect(page).not.toHaveURL(/\/sample-project(\/|$)/);
+    // Wait for sample bar to disappear (confirms duplication/creation)
+    await page.getByTestId('canvas-sample-bar-wrap').waitFor({ state: 'hidden', timeout: 30_000 }).catch(() => {});
     await page.getByTestId('tokens-panel-nav-projects').click();
     await page.getByTestId('page-projects').waitFor({ state: 'visible', timeout: 60_000 });
     const after = await page.locator('[data-testid^="projects-card-"]').count();

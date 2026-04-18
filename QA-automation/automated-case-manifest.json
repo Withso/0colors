@@ -6,7 +6,12 @@
     "property": "Seeded generated checks that explore many valid combinations.",
     "component": "React/UI tests in isolation with stable selectors.",
     "integration": "Cross-store and effect wiring tests without a real browser.",
-    "e2e": "Real-browser user workflow coverage."
+    "e2e": "Real-browser user workflow coverage.",
+    "qa-unit": "Auth, sync, and session unit tests (QA-automation harness).",
+    "qa-domain": "Template and data structure validation tests (QA-automation harness).",
+    "qa-integration": "Database, route, and cross-module integration tests (QA-automation harness).",
+    "qa-e2e": "Auth and cloud sync browser workflows (QA-automation harness).",
+    "qa-smoke": "Reusable app shell, routing, and command-palette browser smoke checks (QA-automation harness)."
   },
   "files": {
     "slugify.unit.test.ts": {
@@ -347,6 +352,241 @@
         { "match": "play button previews channel output without saving", "caseId": "AUTO-E2E-M05-005", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "play-preview" },
         { "match": "fallback section displays in the hue channel", "caseId": "AUTO-E2E-M05-006", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "fallback-display" },
         { "match": "popup renders token assignment panel for token node", "caseId": "AUTO-E2E-M05-007", "parentScenario": "advanced-popup-browser-flow", "equivalenceClass": "token-node-popup" }
+      ]
+    },
+
+    "auth.unit.test.ts": {
+      "layer": "qa-unit",
+      "profile": "full",
+      "module": "Auth & session (backend)",
+      "moduleOrder": 30,
+      "tags": ["auth", "backend", "jwt"],
+      "fileBlurb": "Backend auth utility contract tests: header extraction, null-path handling, error resilience.",
+      "cases": [
+        { "match": "returns null when no token headers present", "caseId": "AUTO-QA-UNIT-AUTH-001", "parentScenario": "backend-auth-utilities", "equivalenceClass": "no-headers" },
+        { "match": "returns null on Supabase SDK failure", "caseId": "AUTO-QA-UNIT-AUTH-002", "parentScenario": "backend-auth-utilities", "equivalenceClass": "sdk-failure" }
+      ]
+    },
+    "auth-middleware.unit.test.ts": {
+      "layer": "qa-unit",
+      "profile": "full",
+      "module": "Auth & session (backend)",
+      "moduleOrder": 31,
+      "tags": ["auth", "middleware", "rbac"],
+      "fileBlurb": "Auth middleware: requireAuth/requireAdmin 401/403 flows, isAdmin, isTemplateAdmin, normalizeUserToMeta.",
+      "cases": [
+        { "match": "returns userId when getAuthUser succeeds", "caseId": "AUTO-QA-UNIT-MDLW-001", "parentScenario": "auth-middleware", "equivalenceClass": "auth-success" },
+        { "match": "returns null and sets 401", "caseId": "AUTO-QA-UNIT-MDLW-002", "parentScenario": "auth-middleware", "equivalenceClass": "auth-failure-401" },
+        { "match": "isTemplateAdmin: admin + matching ID", "caseId": "AUTO-QA-UNIT-MDLW-003", "parentScenario": "auth-middleware", "equivalenceClass": "template-admin" },
+        { "match": "normalizeUserToMeta: null", "caseId": "AUTO-QA-UNIT-MDLW-004", "parentScenario": "auth-middleware", "equivalenceClass": "meta-null" }
+      ]
+    },
+    "auth-slice.unit.test.ts": {
+      "layer": "qa-unit",
+      "profile": "full",
+      "module": "Auth & session (frontend)",
+      "moduleOrder": 32,
+      "tags": ["auth", "zustand", "state"],
+      "fileBlurb": "Zustand auth slice: initial state, session CRUD, CloudSyncStatus transitions, all toggle setters.",
+      "cases": [
+        { "match": "initial authSession is null", "caseId": "AUTO-QA-UNIT-SLICE-001", "parentScenario": "auth-slice-state", "equivalenceClass": "initial-null" },
+        { "match": "setAuthSession sets a new session", "caseId": "AUTO-QA-UNIT-SLICE-002", "parentScenario": "auth-slice-state", "equivalenceClass": "set-session" },
+        { "match": "setCloudSyncStatus transitions", "caseId": "AUTO-QA-UNIT-SLICE-003", "parentScenario": "auth-slice-state", "equivalenceClass": "sync-status" }
+      ]
+    },
+    "session-lock.unit.test.ts": {
+      "layer": "qa-unit",
+      "profile": "full",
+      "module": "Session management",
+      "moduleOrder": 33,
+      "tags": ["session", "lock", "sse", "multi-tab"],
+      "fileBlurb": "SSE-based session lock manager: acquire, release, force-take, heartbeat, conflict/taken-over events.",
+      "cases": [
+        { "match": "sessionId has correct format", "caseId": "AUTO-QA-UNIT-LOCK-001", "parentScenario": "session-lock", "equivalenceClass": "session-id-format" },
+        { "match": "emits cleared when lock acquired", "caseId": "AUTO-QA-UNIT-LOCK-002", "parentScenario": "session-lock", "equivalenceClass": "lock-acquired" },
+        { "match": "emits conflict when lock denied", "caseId": "AUTO-QA-UNIT-LOCK-003", "parentScenario": "session-lock", "equivalenceClass": "lock-conflict" },
+        { "match": "SSE lock-taken-over emits", "caseId": "AUTO-QA-UNIT-LOCK-004", "parentScenario": "session-lock", "equivalenceClass": "sse-takeover" },
+        { "match": "heartbeat POST every 15s", "caseId": "AUTO-QA-UNIT-LOCK-005", "parentScenario": "session-lock", "equivalenceClass": "heartbeat" }
+      ]
+    },
+    "tab-channel.unit.test.ts": {
+      "layer": "qa-unit",
+      "profile": "full",
+      "module": "Session management",
+      "moduleOrder": 34,
+      "tags": ["multi-tab", "broadcast-channel", "leader-election"],
+      "fileBlurb": "BroadcastChannel multi-tab coordination: leader election, heartbeat, message handling, cleanup.",
+      "cases": [
+        { "match": "getTabId returns identifier", "caseId": "AUTO-QA-UNIT-TAB-001", "parentScenario": "tab-channel", "equivalenceClass": "tab-id" },
+        { "match": "broadcastChange sends STATE_CHANGED", "caseId": "AUTO-QA-UNIT-TAB-002", "parentScenario": "tab-channel", "equivalenceClass": "state-changed" },
+        { "match": "LEADER_ELECTED from other tab", "caseId": "AUTO-QA-UNIT-TAB-003", "parentScenario": "tab-channel", "equivalenceClass": "leader-election" },
+        { "match": "destroyTabChannel closes", "caseId": "AUTO-QA-UNIT-TAB-004", "parentScenario": "tab-channel", "equivalenceClass": "cleanup" }
+      ]
+    },
+    "write-through.unit.test.ts": {
+      "layer": "qa-unit",
+      "profile": "full",
+      "module": "Cloud sync",
+      "moduleOrder": 35,
+      "tags": ["sync", "write-through", "offline", "queue"],
+      "fileBlurb": "Write-through sync: debounce, empty snapshot blocking, error handling, offline queue, lifecycle.",
+      "cases": [
+        { "match": "blocks sync when snapshot has 0 nodes", "caseId": "AUTO-QA-UNIT-WT-001", "parentScenario": "write-through-sync", "equivalenceClass": "empty-snapshot-block" },
+        { "match": "forceSyncProject saves to IndexedDB", "caseId": "AUTO-QA-UNIT-WT-002", "parentScenario": "write-through-sync", "equivalenceClass": "force-sync" },
+        { "match": "401 response returns false", "caseId": "AUTO-QA-UNIT-WT-003", "parentScenario": "write-through-sync", "equivalenceClass": "token-expired" },
+        { "match": "destroyWriteThrough clears", "caseId": "AUTO-QA-UNIT-WT-004", "parentScenario": "write-through-sync", "equivalenceClass": "lifecycle" }
+      ]
+    },
+    "cloud-sync.unit.test.ts": {
+      "layer": "qa-unit",
+      "profile": "full",
+      "module": "Cloud sync",
+      "moduleOrder": 36,
+      "tags": ["sync", "cloud", "supabase"],
+      "fileBlurb": "Cloud sync service: updateAccessToken, init/destroy lifecycle, getCloudMeta auth integration.",
+      "cases": [
+        { "match": "accepts a string token", "caseId": "AUTO-QA-UNIT-CS-001", "parentScenario": "cloud-sync-service", "equivalenceClass": "token-set" },
+        { "match": "initCloudSync sets up", "caseId": "AUTO-QA-UNIT-CS-002", "parentScenario": "cloud-sync-service", "equivalenceClass": "init" },
+        { "match": "returns metadata on successful auth", "caseId": "AUTO-QA-UNIT-CS-003", "parentScenario": "cloud-sync-service", "equivalenceClass": "cloud-meta" }
+      ]
+    },
+    "sample-templates.domain.test.ts": {
+      "layer": "qa-domain",
+      "profile": "full",
+      "module": "Templates & projects",
+      "moduleOrder": 37,
+      "tags": ["templates", "data-validation", "cross-reference"],
+      "fileBlurb": "Built-in template structure validation: required fields, unique IDs, cross-reference integrity, value ranges.",
+      "cases": [
+        { "match": "has at least 6 built-in templates", "caseId": "AUTO-QA-DOM-TPL-001", "parentScenario": "template-validation", "equivalenceClass": "template-count" },
+        { "match": "each template has a unique id", "caseId": "AUTO-QA-DOM-TPL-002", "parentScenario": "template-validation", "equivalenceClass": "unique-ids" },
+        { "match": "all tokens reference valid groupId", "caseId": "AUTO-QA-DOM-TPL-003", "parentScenario": "template-validation", "equivalenceClass": "token-group-fk" },
+        { "match": "token themeValues have hue in 0-360", "caseId": "AUTO-QA-DOM-TPL-004", "parentScenario": "template-validation", "equivalenceClass": "value-ranges" }
+      ]
+    },
+    "db-operations.integration.test.ts": {
+      "layer": "qa-integration",
+      "profile": "full",
+      "module": "Database (IndexedDB)",
+      "moduleOrder": 38,
+      "tags": ["database", "indexeddb", "dexie", "persistence"],
+      "fileBlurb": "Dexie IndexedDB operations with fake-indexeddb: save/load/delete atomicity, sync log, migration, compound keys.",
+      "cases": [
+        { "match": "saves and loads all entity types", "caseId": "AUTO-QA-INT-DB-001", "parentScenario": "db-crud", "equivalenceClass": "save-load" },
+        { "match": "does not affect other projects", "caseId": "AUTO-QA-INT-DB-002", "parentScenario": "db-crud", "equivalenceClass": "isolation" },
+        { "match": "removes all project entities", "caseId": "AUTO-QA-INT-DB-003", "parentScenario": "db-crud", "equivalenceClass": "cascade-delete" },
+        { "match": "orphan cleanup removes records", "caseId": "AUTO-QA-INT-DB-004", "parentScenario": "db-crud", "equivalenceClass": "orphan-cleanup" },
+        { "match": "compound key \\[projectId\\+pageId\\]", "caseId": "AUTO-QA-INT-DB-005", "parentScenario": "db-crud", "equivalenceClass": "compound-key" }
+      ]
+    },
+    "auth-routes.integration.test.ts": {
+      "layer": "qa-integration",
+      "profile": "full",
+      "module": "Auth & session (backend routes)",
+      "moduleOrder": 39,
+      "tags": ["auth", "routes", "hono", "signup", "cloud-meta"],
+      "fileBlurb": "Backend auth route endpoints via Hono test client: /signup validation, /cloud-meta auth + role checks.",
+      "cases": [
+        { "match": "returns 400 when email is missing", "caseId": "AUTO-QA-INT-AR-001", "parentScenario": "auth-routes", "equivalenceClass": "signup-validation" },
+        { "match": "returns success with userId", "caseId": "AUTO-QA-INT-AR-002", "parentScenario": "auth-routes", "equivalenceClass": "signup-success" },
+        { "match": "returns 401 when unauthenticated", "caseId": "AUTO-QA-INT-AR-003", "parentScenario": "auth-routes", "equivalenceClass": "cloud-meta-auth" },
+        { "match": "returns null cloudProjectLimit for admin", "caseId": "AUTO-QA-INT-AR-004", "parentScenario": "auth-routes", "equivalenceClass": "admin-unlimited" }
+      ]
+    },
+    "project-routes.integration.test.ts": {
+      "layer": "qa-integration",
+      "profile": "full",
+      "module": "Cloud sync (backend routes)",
+      "moduleOrder": 40,
+      "tags": ["sync", "routes", "hono", "lock", "register"],
+      "fileBlurb": "Backend sync/lock endpoints via Hono test client: cloud-register limits, sync ownership, batch upsert, session lock CRUD.",
+      "cases": [
+        { "match": "succeeds for valid user", "caseId": "AUTO-QA-INT-PR-001", "parentScenario": "project-routes", "equivalenceClass": "register-success" },
+        { "match": "returns 403 when limit reached", "caseId": "AUTO-QA-INT-PR-002", "parentScenario": "project-routes", "equivalenceClass": "register-limit" },
+        { "match": "upserts snapshot with _syncedAt", "caseId": "AUTO-QA-INT-PR-003", "parentScenario": "project-routes", "equivalenceClass": "sync-upsert" },
+        { "match": "batch upserts multiple projects", "caseId": "AUTO-QA-INT-PR-004", "parentScenario": "project-routes", "equivalenceClass": "batch-sync" },
+        { "match": "acquires lock", "caseId": "AUTO-QA-INT-PR-005", "parentScenario": "project-routes", "equivalenceClass": "lock-acquire" },
+        { "match": "lock endpoints return 401", "caseId": "AUTO-QA-INT-PR-006", "parentScenario": "project-routes", "equivalenceClass": "lock-auth" }
+      ]
+    },
+    "QA-automation/projects/0colors/tests/e2e/auth-flow.spec.ts": {
+      "layer": "qa-e2e",
+      "profile": "full",
+      "module": "Auth flow (browser)",
+      "moduleOrder": 41,
+      "tags": ["auth", "browser", "session"],
+      "fileBlurb": "Browser coverage for unauthenticated access, local-only mode, auth route reachability, session storage shape, and optional credential-backed sign-in.",
+      "cases": [
+        { "match": "unauthenticated user can access local mode or sees auth", "caseId": "AUTO-QA-E2E-AUTH-001", "parentScenario": "auth-browser-flow", "equivalenceClass": "unauthenticated-entry" },
+        { "match": "skip auth enables local-only mode", "caseId": "AUTO-QA-E2E-AUTH-002", "parentScenario": "auth-browser-flow", "equivalenceClass": "local-only-entry" },
+        { "match": "sign-in page is reachable", "caseId": "AUTO-QA-E2E-AUTH-003", "parentScenario": "auth-browser-flow", "equivalenceClass": "auth-route" },
+        { "match": "auth session key exists in localStorage format", "caseId": "AUTO-QA-E2E-AUTH-004", "parentScenario": "auth-browser-flow", "equivalenceClass": "session-key" },
+        { "match": "sign-in with test credentials succeeds", "caseId": "AUTO-QA-E2E-AUTH-005", "parentScenario": "auth-browser-flow", "equivalenceClass": "credential-sign-in" },
+        { "match": "auth state survives page reload", "caseId": "AUTO-QA-E2E-AUTH-006", "parentScenario": "auth-browser-flow", "equivalenceClass": "reload-persistence" }
+      ]
+    },
+    "QA-automation/projects/0colors/tests/e2e/cloud-sync.spec.ts": {
+      "layer": "qa-e2e",
+      "profile": "full",
+      "module": "Cloud sync (browser)",
+      "moduleOrder": 42,
+      "tags": ["sync", "browser", "indexeddb", "offline"],
+      "fileBlurb": "Browser coverage for local persistence, sample/template loading, offline resilience, and sync request header shape.",
+      "cases": [
+        { "match": "project creation persists data in IndexedDB across reload", "caseId": "AUTO-QA-E2E-SYNC-001", "parentScenario": "cloud-sync-browser-flow", "equivalenceClass": "indexeddb-reload" },
+        { "match": "sample template loads with editor shell", "caseId": "AUTO-QA-E2E-SYNC-002", "parentScenario": "cloud-sync-browser-flow", "equivalenceClass": "sample-shell" },
+        { "match": "sample project loads canvas with nodes", "caseId": "AUTO-QA-E2E-SYNC-003", "parentScenario": "cloud-sync-browser-flow", "equivalenceClass": "sample-nodes" },
+        { "match": "duplicate sample to local creates a new project", "caseId": "AUTO-QA-E2E-SYNC-004", "parentScenario": "cloud-sync-browser-flow", "equivalenceClass": "sample-duplicate-local" },
+        { "match": "app handles offline mode gracefully", "caseId": "AUTO-QA-E2E-SYNC-005", "parentScenario": "cloud-sync-browser-flow", "equivalenceClass": "offline-resilience" },
+        { "match": "sync requests include correct auth headers", "caseId": "AUTO-QA-E2E-SYNC-006", "parentScenario": "cloud-sync-browser-flow", "equivalenceClass": "sync-auth-headers" }
+      ]
+    },
+    "QA-automation/projects/0colors/tests/app-shell.spec.ts": {
+      "layer": "qa-smoke",
+      "profile": "smoke",
+      "module": "App shell smoke",
+      "moduleOrder": 43,
+      "tags": ["smoke", "browser", "app-shell"],
+      "fileBlurb": "Reusable browser smoke checks for root rendering, title, toolbar, and canvas-view affordance.",
+      "cases": [
+        { "match": "document title and root render", "caseId": "AUTO-QA-SMOKE-SHELL-001", "parentScenario": "qa-smoke-shell", "equivalenceClass": "root-render" },
+        { "match": "main toolbar is visible", "caseId": "AUTO-QA-SMOKE-SHELL-002", "parentScenario": "qa-smoke-shell", "equivalenceClass": "toolbar-visible" },
+        { "match": "canvas view toggle is present", "caseId": "AUTO-QA-SMOKE-SHELL-003", "parentScenario": "qa-smoke-shell", "equivalenceClass": "view-toggle" }
+      ]
+    },
+    "QA-automation/projects/0colors/tests/smoke-routing.spec.ts": {
+      "layer": "qa-smoke",
+      "profile": "smoke",
+      "module": "Routing smoke",
+      "moduleOrder": 44,
+      "tags": ["smoke", "browser", "routing"],
+      "fileBlurb": "Reusable smoke checks for the home route response and absence of uncaught JavaScript errors on load.",
+      "cases": [
+        { "match": "home route responds", "caseId": "AUTO-QA-SMOKE-ROUTE-001", "parentScenario": "qa-smoke-routing", "equivalenceClass": "home-response" },
+        { "match": "SPA loads without uncaught page errors", "caseId": "AUTO-QA-SMOKE-ROUTE-002", "parentScenario": "qa-smoke-routing", "equivalenceClass": "no-page-errors" }
+      ]
+    },
+    "QA-automation/projects/0colors/tests/command-palette.spec.ts": {
+      "layer": "qa-smoke",
+      "profile": "smoke",
+      "module": "Command palette smoke",
+      "moduleOrder": 45,
+      "tags": ["smoke", "browser", "command-palette"],
+      "fileBlurb": "Reusable command-palette smoke checks for keyboard open and Escape close behavior.",
+      "cases": [
+        { "match": "Cmd/Ctrl+K opens palette with search input", "caseId": "AUTO-QA-SMOKE-CMD-001", "parentScenario": "qa-smoke-command-palette", "equivalenceClass": "keyboard-open" },
+        { "match": "Escape closes palette", "caseId": "AUTO-QA-SMOKE-CMD-002", "parentScenario": "qa-smoke-command-palette", "equivalenceClass": "escape-close" }
+      ]
+    },
+    "QA-automation/projects/0colors/tests/cloud-auth.optional.spec.ts": {
+      "layer": "qa-smoke",
+      "profile": "optional",
+      "module": "Cloud auth optional smoke",
+      "moduleOrder": 46,
+      "tags": ["smoke", "browser", "auth", "optional-credentials"],
+      "fileBlurb": "Optional credential-backed cloud/auth smoke check, skipped unless QA_TEST_EMAIL and QA_TEST_PASSWORD are present.",
+      "cases": [
+        { "match": "sign-in control reachable after load", "caseId": "AUTO-QA-SMOKE-AUTH-001", "parentScenario": "qa-smoke-cloud-auth", "equivalenceClass": "credential-gated-smoke" }
       ]
     }
   }

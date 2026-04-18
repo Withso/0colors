@@ -23,10 +23,10 @@ export default defineConfig({
   },
   reporter: [
     ['list'],
-    ['html', { open: 'never', outputFolder: 'packages/frontend/tests/e2e/playwright-report' }],
+    ['html', { open: 'never', outputFolder: 'QA-automation/reports/html' }],
     ...(shouldEmitJson ? [['json', { outputFile: e2eJsonOutput }]] : []),
   ],
-  outputDir: 'packages/frontend/tests/e2e/test-results',
+  outputDir: 'QA-automation/test-results/artifacts',
   webServer:
     process.env.PLAYWRIGHT_SKIP_WEB_SERVER === '1'
       ? undefined

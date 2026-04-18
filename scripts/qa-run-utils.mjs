@@ -42,6 +42,11 @@ export function getRunContext(runIdInput) {
       component: path.join(runDir, 'component-results.json'),
       integration: path.join(runDir, 'integration-results.json'),
       e2e: path.join(runDir, 'e2e-results.json'),
+      'qa-unit': path.join(runDir, 'qa-unit-results.json'),
+      'qa-domain': path.join(runDir, 'qa-domain-results.json'),
+      'qa-integration': path.join(runDir, 'qa-integration-results.json'),
+      'qa-e2e': path.join(runDir, 'qa-e2e-results.json'),
+      'qa-smoke': path.join(runDir, 'qa-smoke-results.json'),
     },
   };
 }
