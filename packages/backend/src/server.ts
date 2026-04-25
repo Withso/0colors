@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { csp } from './middleware/csp.js';
 import { initSchema } from './db.js';
 
 // Route imports
@@ -33,6 +34,7 @@ app.use('/*', cors({
     allowHeaders: ['Content-Type', 'Authorization', 'X-User-Token', 'X-Webhook-Secret'],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
+app.use('/*', csp());
 
 // ---------------------------------------------------------------------------
 // Mount Routes — order matters for webhook specificity

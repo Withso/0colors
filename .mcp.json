@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "Zeros": {
+      "type": "http",
+      "url": "http://localhost:24193/mcp"
+    }
+  }
+}
