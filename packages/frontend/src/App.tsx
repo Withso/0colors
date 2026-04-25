@@ -1,8 +1,8 @@
 import './App.css';
 import React, { useCallback, useEffect, useRef, useState, Suspense } from 'react';
+import { useOAuthCallback } from '@0zerosdesign/auth-client/react';
 import { useStore, setComputedTokensRef } from './store';
 import { ColorNode } from './types';
-import { getSupabaseClient } from './utils/supabase/client';
 
 // ── Lazy-loaded components (only downloaded when needed) ──
 const ConnectedTokensPanel = React.lazy(() => import('./components/tokens/ConnectedTokensPanel').then(m => ({ default: m.ConnectedTokensPanel })));
@@ -1082,87 +1082,6 @@ export function AppShell() {
     </div>
     </Suspense>
   );
-}
-
-// ── OAuth callback handler ──
-// Handles the redirect back from accounts.zeros.design.
-// Instead of relying on Supabase's detectSessionInUrl (which fails silently),
-// we parse the hash ourselves and call setSession() directly.
-// Same pattern as 0research.
-
-function parseHashTokens(): { access_token: string; refresh_token: string } | null {
-  if (typeof window === 'undefined') return null;
-  const hash = window.location.hash;
-  if (!hash || !hash.includes('access_token')) return null;
-
-  const params = new URLSearchParams(hash.substring(1));
-  const access_token = params.get('access_token');
-  const refresh_token = params.get('refresh_token');
-
-  if (!access_token || !refresh_token) {
-    console.warn('[auth] Hash has access_token but missing refresh_token', {
-      hasAccess: !!access_token,
-      hasRefresh: !!refresh_token,
-      hash: hash.substring(0, 100),
-    });
-    return null;
-  }
-
-  return { access_token, refresh_token };
-}
-
-function useOAuthCallback() {
-  const [ready, setReady] = useState(() => {
-    return typeof window === 'undefined' || !window.location.hash.includes('access_token');
-  });
-
-  useEffect(() => {
-    if (ready) return;
-
-    const tokens = parseHashTokens();
-    if (!tokens) {
-      console.error('[auth] Cannot establish session — missing refresh_token in hash');
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      setReady(true);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function establishSession() {
-      console.log('[auth] Tokens found in URL hash, establishing session...');
-
-      const supabase = getSupabaseClient();
-
-      const { data, error } = await supabase.auth.setSession({
-        access_token: tokens!.access_token,
-        refresh_token: tokens!.refresh_token,
-      });
-
-      // Clean up the URL hash regardless of outcome
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
-
-      if (error) {
-        console.error('[auth] setSession failed:', error.message);
-      } else if (data.session) {
-        console.log('[auth] Session established!', {
-          userId: data.session.user?.id,
-          email: data.session.user?.email,
-        });
-      } else {
-        console.warn('[auth] setSession returned no error but no session either');
-      }
-
-      if (!cancelled) {
-        setReady(true);
-      }
-    }
-
-    establishSession();
-    return () => { cancelled = true; };
-  }, [ready]);
-
-  return ready;
 }
 
 // ── Root component with RouterProvider ──

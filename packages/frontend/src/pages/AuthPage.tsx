@@ -1,6 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Mail, Lock, User, ArrowRight, Loader2, X, KeyRound, CheckCircle2, MailCheck, RefreshCw } from 'lucide-react';
-import { getSupabaseClient } from '../utils/supabase/client';
+import {
+  signInWithEmail,
+  signUpWithEmail,
+  resetPassword,
+  resendVerification,
+} from '@0zerosdesign/auth-client';
+import { logger } from '../utils/logger';
 import './AuthPage.css';
 
 interface AuthPageProps {
@@ -71,67 +77,55 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
     setError('');
 
     try {
-      // Use supabase.auth.signUp() directly — this triggers Supabase's
-      // built-in email verification flow via the configured SMTP (ZeptoMail).
-      // The old approach used admin.createUser() on the backend, which
-      // creates users silently without sending verification emails.
-      const supabase = getSupabaseClient();
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
+      const result = await signUpWithEmail(
+        email.trim(),
         password,
-        options: {
-          data: { name: name.trim() || email.split('@')[0] },
-          emailRedirectTo: window.location.origin,
-        },
-      });
+        name.trim() || undefined,
+        window.location.origin,
+      );
 
-      if (signUpError) {
-        setError(signUpError.message || 'Sign up failed');
+      if (result.error) {
+        setError(result.error || 'Sign up failed');
         setLoading(false);
         return;
       }
 
-      // Detect "user already exists" — Supabase returns a fake success with
-      // an empty identities array to prevent email enumeration. In that case,
-      // signUp() does NOT send a verification email, so we must call resend().
-      const userAlreadyExists = data.user && (!data.user.identities || data.user.identities.length === 0);
-
-      if (userAlreadyExists) {
-        console.log('[Auth] User already exists — calling resend() to trigger verification email');
-        const { error: resendErr } = await supabase.auth.resend({
-          type: 'signup',
-          email: email.trim(),
-          options: { emailRedirectTo: window.location.origin },
-        });
+      // Supabase returns a fake success with an empty identities array for
+      // already-registered emails. auth-client surfaces this as
+      // userAlreadyExists and does NOT send a verification email on signup,
+      // so we trigger resendVerification() explicitly.
+      if (result.userAlreadyExists) {
+        logger.debug('[Auth] User already exists — calling resendVerification()');
+        const { error: resendErr } = await resendVerification(
+          email.trim(),
+          window.location.origin,
+        );
         if (resendErr) {
-          console.log(`[Auth] resend() error: ${resendErr.message}`);
-          // Don't block — still show verify screen, user can manually resend
-        } else {
-          console.log('[Auth] resend() succeeded — verification email should be sent via SMTP');
+          logger.debug(`[Auth] resendVerification error: ${resendErr}`);
+          // Don't block — user can manually resend from the verify screen
         }
         setMode('verify-email');
         setLoading(false);
         return;
       }
 
-      // If email confirmation is enabled, signUp returns a user but no session.
-      // The user needs to click the verification link in their email first.
-      if (!data?.session) {
+      // Email confirmation enabled → go wait for the verification email.
+      if (result.requiresVerification || !result.session) {
         setMode('verify-email');
         setLoading(false);
         return;
       }
 
-      // If email confirmation is disabled (auto-confirmed), we get a session immediately
+      // Email confirmation disabled → session is already established.
       onAuth({
-        accessToken: data.session.access_token,
-        userId: data.session.user.id,
-        email: email.trim(),
-        name: name.trim() || email.split('@')[0],
+        accessToken: result.session.accessToken,
+        userId: result.session.userId,
+        email: result.session.email || email.trim(),
+        name: result.session.name || name.trim() || email.split('@')[0],
       });
     } catch (e) {
       setError(`Network error during sign up: ${e}`);
-      console.log(`Sign up error: ${e}`);
+      logger.debug(`Sign up error: ${e}`);
     } finally {
       setLoading(false);
     }
@@ -148,45 +142,35 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
     setError('');
 
     try {
-      const supabase = getSupabaseClient();
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+      const { session, error: signInError } = await signInWithEmail(
+        email.trim(),
         password,
-      });
+      );
 
-      if (signInError || !data?.session) {
-        const msg = signInError?.message?.toLowerCase() || '';
+      if (signInError || !session) {
+        const msg = signInError?.toLowerCase() || '';
         if (msg.includes('email not confirmed') || msg.includes('not confirmed') || msg.includes('confirm')) {
           // User exists but isn't verified — trigger a resend so they get an email
-          console.log('[Auth] Sign in rejected: email not confirmed — auto-triggering resend()');
-          const { error: resendErr } = await supabase.auth.resend({
-            type: 'signup',
-            email: email.trim(),
-            options: { emailRedirectTo: window.location.origin },
-          });
-          if (resendErr) {
-            console.log(`[Auth] resend() during sign-in error: ${resendErr.message}`);
-          } else {
-            console.log('[Auth] resend() during sign-in succeeded');
-          }
+          logger.debug('[Auth] Sign in rejected: email not confirmed — auto-triggering resendVerification()');
+          await resendVerification(email.trim(), window.location.origin);
           setMode('verify-email');
           setLoading(false);
           return;
         }
-        setError(signInError?.message || 'Sign in failed');
+        setError(signInError || 'Sign in failed');
         setLoading(false);
         return;
       }
 
       onAuth({
-        accessToken: data.session.access_token,
-        userId: data.session.user.id,
-        email: email.trim(),
-        name: data.session.user.user_metadata?.name || email.split('@')[0],
+        accessToken: session.accessToken,
+        userId: session.userId,
+        email: session.email || email.trim(),
+        name: session.name || email.split('@')[0],
       });
     } catch (e) {
       setError(`Network error during sign in: ${e}`);
-      console.log(`Sign in error: ${e}`);
+      logger.debug(`Sign in error: ${e}`);
     } finally {
       setLoading(false);
     }
@@ -203,13 +187,13 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
     setError('');
 
     try {
-      const supabase = getSupabaseClient();
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: window.location.origin,
-      });
+      const { error: resetError } = await resetPassword(
+        email.trim(),
+        window.location.origin,
+      );
 
       if (resetError) {
-        setError(resetError.message || 'Failed to send reset email');
+        setError(resetError || 'Failed to send reset email');
         setLoading(false);
         return;
       }
@@ -217,7 +201,7 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
       setMode('reset-sent');
     } catch (e) {
       setError(`Network error: ${e}`);
-      console.log(`Forgot password error: ${e}`);
+      logger.debug(`Forgot password error: ${e}`);
     } finally {
       setLoading(false);
     }
@@ -240,35 +224,31 @@ export function AuthPage({ onAuth, onSkip }: AuthPageProps) {
     setError('');
 
     try {
-      const supabase = getSupabaseClient();
-      console.log(`[Auth] Calling resend({ type: 'signup', email: '${email.trim()}' })`);
-      const { error: resendError } = await supabase.auth.resend({
-        type: 'signup',
-        email: email.trim(),
-        options: {
-          emailRedirectTo: window.location.origin,
-        },
-      });
+      logger.debug(`[Auth] Calling resendVerification for ${email.trim()}`);
+      const { error: resendError } = await resendVerification(
+        email.trim(),
+        window.location.origin,
+      );
 
       if (resendError) {
-        console.log(`[Auth] resend error: ${resendError.message} (status: ${(resendError as any)?.status})`);
-        // Supabase returns 429 for rate limiting
-        if (resendError.message?.includes('rate') || resendError.message?.includes('429') || (resendError as any)?.status === 429) {
+        logger.debug(`[Auth] resendVerification error: ${resendError}`);
+        // Supabase returns "rate" / 429 for rate limiting
+        if (resendError.includes('rate') || resendError.includes('429')) {
           setError('Please wait before requesting another email.');
           startCooldown();
         } else {
-          setError(resendError.message || 'Failed to resend verification email');
+          setError(resendError || 'Failed to resend verification email');
         }
         setResending(false);
         return;
       }
 
-      console.log('[Auth] resend() returned success');
+      logger.debug('[Auth] resendVerification succeeded');
       setResendSuccess(true);
       startCooldown(); // Start cooldown on success too
     } catch (e) {
       setError(`Network error: ${e}`);
-      console.log(`Resend verification email error: ${e}`);
+      logger.debug(`Resend verification email error: ${e}`);
     } finally {
       setResending(false);
     }

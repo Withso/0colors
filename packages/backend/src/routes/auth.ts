@@ -20,8 +20,12 @@ router.post('/signup', async (c) => {
 
         const { data, error } = await supabaseCreateUser(email, password, name ?? '');
         if (error) {
+            // Log the real error server-side for debugging, but return a
+            // generic message to the client. Supabase's raw messages leak
+            // information useful for account enumeration ("already registered"
+            // vs "weak password" vs "invalid email").
             console.error('[signup] Supabase createUser error:', error.message);
-            return c.json({ error: error.message }, 400);
+            return c.json({ error: 'Signup failed. Please check your input and try again.' }, 400);
         }
 
         const userId = data.user?.id;
@@ -37,7 +41,7 @@ router.post('/signup', async (c) => {
         return c.json({ success: true, userId, role: 'user' });
     } catch (err: any) {
         console.error('[signup] Unexpected error:', err);
-        return c.json({ error: err.message || 'Internal server error' }, 500);
+        return c.json({ error: 'Internal server error' }, 500);
     }
 });
 

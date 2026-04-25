@@ -83,7 +83,7 @@ This is the **single Supabase project** that handles authentication for the enti
 
 ### 2. 0accounts (`accounts.zeros.design`)
 
-**Repo:** `github.com/0zerosdesign/0accounts`
+**Repo:** `github.com/Withso/0accounts`
 **Stack:** React frontend + Hono backend on Railway
 **Database:** Supabase Auth Project (migrated from Railway Postgres, April 2026)
 **Connection:** Hono backend on Railway → Supabase session pooler (`aws-1-ap-southeast-2.pooler.supabase.com:6543`)
@@ -166,7 +166,7 @@ zeros_audit_log (
 
 ### 3. 0shared (`@0zerosdesign/auth-client`)
 
-**Repo:** `github.com/0zerosdesign/0shared`
+**Repo:** `github.com/Withso/0shared`
 **Package:** `@0zerosdesign/auth-client` (published to GitHub Packages)
 **Structure:** pnpm monorepo → `packages/auth-client/`
 

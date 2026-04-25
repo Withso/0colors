@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@0zerosdesign/auth-client": "file:../../../0shared/packages/auth-client",
+    "@0zerosdesign/auth-client": "^0.2.0",
     "@material/material-color-utilities": "*",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",

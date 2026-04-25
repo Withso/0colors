@@ -20,6 +20,7 @@
 
 import { SERVER_BASE } from './client';
 import { publicAnonKey } from './info';
+import { logger } from '../logger';
 import type { ColorNode, DesignToken, TokenProject, TokenGroup, Page, Theme, CanvasState, NodeAdvancedLogic } from '../../types';
 import type { ProjectComputedTokens } from '../computed-tokens';
 import { isTabLeader, broadcastChange, requestSync } from '../../sync/tab-channel';
@@ -127,7 +128,7 @@ async function safeFetch(
       clearTimeout(timeout);
       const isAbort = err?.name === 'AbortError';
       const label = isAbort ? 'timeout' : 'network error';
-      console.log(`☁️ safeFetch ${label} (attempt ${attempt + 1}/${retries + 1}) — ${url}: ${err?.message || err}`);
+      logger.debug(`☁️ safeFetch ${label} (attempt ${attempt + 1}/${retries + 1}) — ${url}: ${err?.message || err}`);
       if (attempt < retries) {
         // Wait before retrying (1s, 2s, ...)
         await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
@@ -180,7 +181,7 @@ export function initCloudSync(config: {
   // Clear any stale dirty state from localStorage
   try { localStorage.removeItem('0colors-cloud-dirty-projects'); } catch {}
 
-  console.log('☁️ Cloud sync initialized (write-through mode)');
+  logger.debug('☁️ Cloud sync initialized (write-through mode)');
 }
 
 export function destroyCloudSync() {
@@ -204,7 +205,7 @@ export function destroyCloudSync() {
     window.removeEventListener('offline', handleOffline);
     window.removeEventListener('beforeunload', handleBeforeUnload);
   }
-  console.log('☁️ Cloud sync destroyed');
+  logger.debug('☁️ Cloud sync destroyed');
 }
 
 export function updateAccessToken(token: string | null) {
@@ -236,7 +237,7 @@ function _scheduleDebouncedFlush() {
   _debounceSaveTimerId = setTimeout(() => {
     _debounceSaveTimerId = null;
     if (state.dirtyProjectIds.size > 0 && state.accessToken && state.isOnline) {
-      console.log('☁️ Debounced auto-save triggered (3 s after last change)');
+      logger.debug('☁️ Debounced auto-save triggered (3 s after last change)');
       flushDirtyProjects();
     }
   }, DEBOUNCE_SAVE_MS);
@@ -272,7 +273,7 @@ export async function forceSyncNow(): Promise<boolean> {
   // wait for it to complete, then flush again so the caller's
   // freshly-updated data is guaranteed to be sent.
   if (state.isSyncing) {
-    console.log('☁️ Sync already in progress — waiting for it to finish…');
+    logger.debug('☁️ Sync already in progress — waiting for it to finish…');
     await waitForSyncIdle();
     // After the previous sync completes, re-flush any still-dirty projects
     return flushDirtyProjects();
@@ -311,7 +312,7 @@ export async function syncProject(projectId: string): Promise<boolean> {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-      console.log(`☁️ Sync failed for ${projectId}: ${err.error}`);
+      logger.debug(`☁️ Sync failed for ${projectId}: ${err.error}`);
       return false;
     }
 
@@ -325,7 +326,7 @@ export async function syncProject(projectId: string): Promise<boolean> {
 
     return true;
   } catch (e) {
-    console.log(`☁️ Sync error for ${projectId}: ${e}`);
+    logger.debug(`☁️ Sync error for ${projectId}: ${e}`);
     return false;
   }
 }
@@ -359,14 +360,14 @@ export async function loadCloudProjects(accessToken: string): Promise<{
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-      console.log(`☁️ Load-all failed (${res.status}): ${err.error}`);
+      logger.debug(`☁️ Load-all failed (${res.status}): ${err.error}`);
       return [];
     }
 
     const data = await res.json();
     return data.projects || [];
   } catch (e) {
-    console.log(`☁️ Load-all error: ${e}`);
+    logger.debug(`☁️ Load-all error: ${e}`);
     return [];
   }
 }
@@ -399,7 +400,7 @@ export async function loadPublicTemplates(): Promise<{
 
     if (!res.ok) {
       // Expected to fail until backend endpoint is deployed
-      console.log(`☁️ Load public templates failed (${res.status}) — using built-in templates`);
+      logger.debug(`☁️ Load public templates failed (${res.status}) — using built-in templates`);
       return { templates: [], starredTemplateId: null };
     }
 
@@ -413,7 +414,7 @@ export async function loadPublicTemplates(): Promise<{
     }));
     return { templates, starredTemplateId: data.starredTemplateId || null };
   } catch (e) {
-    console.log(`☁️ Load public templates error: ${e} — using built-in templates`);
+    logger.debug(`☁️ Load public templates error: ${e} — using built-in templates`);
     return { templates: [], starredTemplateId: null };
   }
 }
@@ -443,13 +444,13 @@ export async function registerCloudProject(projectId: string, accessToken: strin
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-      console.log(`☁️ Register failed (${res.status}): ${err.error}`);
+      logger.debug(`☁️ Register failed (${res.status}): ${err.error}`);
       return { ok: false, error: err.error || `HTTP ${res.status}` };
     }
 
     return { ok: true };
   } catch (e) {
-    console.log(`☁️ Register error: ${e}`);
+    logger.debug(`☁️ Register error: ${e}`);
     return { ok: false, error: `Network error: ${e}` };
   }
 }
@@ -465,13 +466,13 @@ export async function unregisterCloudProject(projectId: string, accessToken: str
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-      console.log(`☁️ Unregister failed (${res.status}): ${err.error}`);
+      logger.debug(`☁️ Unregister failed (${res.status}): ${err.error}`);
       return false;
     }
 
     return true;
   } catch (e) {
-    console.log(`☁️ Unregister error: ${e}`);
+    logger.debug(`☁️ Unregister error: ${e}`);
     return false;
   }
 }
@@ -491,7 +492,7 @@ export async function getCloudMeta(accessToken: string): Promise<{
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-      console.log(`☁️ Cloud meta failed (${res.status}): ${err.error}`);
+      logger.debug(`☁️ Cloud meta failed (${res.status}): ${err.error}`);
       return null;
     }
     const data = await res.json();
@@ -506,7 +507,7 @@ export async function getCloudMeta(accessToken: string): Promise<{
       cloudProjectLimit: data.cloudProjectLimit !== undefined ? data.cloudProjectLimit : 20,
     };
   } catch (e) {
-    console.log(`Cloud meta error: ${e}`);
+    logger.debug(`Cloud meta error: ${e}`);
     return null;
   }
 }
@@ -518,7 +519,7 @@ async function flushDirtyProjects(): Promise<boolean> {
   if (!state.accessToken || !getProjectSnapshot) return false;
   if (state.dirtyProjectIds.size === 0) return true;
   if (!state.isOnline) {
-    console.log('☁️ Offline — skipping sync');
+    logger.debug('☁️ Offline — skipping sync');
     return false;
   }
 
@@ -545,7 +546,7 @@ async function flushDirtyProjects(): Promise<boolean> {
     for (const pid of staleIds) {
       state.dirtyProjectIds.delete(pid);
     }
-    console.log(`☁️ Removed ${staleIds.length} stale project(s) from dirty set`);
+    logger.debug(`☁️ Removed ${staleIds.length} stale project(s) from dirty set`);
   }
 
   if (snapshots.length === 0) {
@@ -566,7 +567,7 @@ async function flushDirtyProjects(): Promise<boolean> {
 
     // ── 401 Unauthorized: attempt token refresh and retry once ──
     if (res.status === 401 && onTokenExpired) {
-      console.log('☁️ Sync got 401 — attempting token refresh…');
+      logger.debug('☁️ Sync got 401 — attempting token refresh…');
       const newToken = await onTokenExpired();
       if (newToken) {
         state.accessToken = newToken;
@@ -583,7 +584,7 @@ async function flushDirtyProjects(): Promise<boolean> {
     // so retry each project individually to save the ones that work.
     if (res.status === 403 && snapshots.length > 1) {
       const err403 = await res.json().catch(() => ({ error: 'Unknown' }));
-      console.log(`☁️ Batch sync 403 — falling back to individual syncs: ${err403.error}`);
+      logger.debug(`☁️ Batch sync 403 — falling back to individual syncs: ${err403.error}`);
       let anySuccess = false;
       const successPids: string[] = [];
       const timestamps: Record<string, number> = {};
@@ -602,16 +603,16 @@ async function flushDirtyProjects(): Promise<boolean> {
             if (indResult.syncedAt) timestamps[pid] = indResult.syncedAt;
           } else {
             const indErr = await indRes.json().catch(() => ({ error: 'Unknown' }));
-            console.log(`☁️ Individual sync failed for ${pid} (${indRes.status}): ${indErr.error}`);
+            logger.debug(`☁️ Individual sync failed for ${pid} (${indRes.status}): ${indErr.error}`);
             // If 403 for this specific project, remove it from dirty set
             // to prevent it from blocking future batch syncs
             if (indRes.status === 403) {
               state.dirtyProjectIds.delete(pid);
-              console.log(`☁️ Removed unregistered project ${pid} from dirty set`);
+              logger.debug(`☁️ Removed unregistered project ${pid} from dirty set`);
             }
           }
         } catch (indE) {
-          console.log(`☁️ Individual sync error for ${pid}: ${indE}`);
+          logger.debug(`☁️ Individual sync error for ${pid}: ${indE}`);
         }
       }
       saveDirtyState();
@@ -619,7 +620,7 @@ async function flushDirtyProjects(): Promise<boolean> {
         onProjectsSynced(successPids, timestamps);
       }
       if (anySuccess) {
-        console.log(`☁️ Individual sync: ${successPids.length}/${snapshots.length} succeeded`);
+        logger.debug(`☁️ Individual sync: ${successPids.length}/${snapshots.length} succeeded`);
         onSyncComplete?.(state.dirtyProjectIds.size === 0, projectIds);
       } else {
         onSyncError?.(`Sync failed: ${err403.error}`);
@@ -631,7 +632,7 @@ async function flushDirtyProjects(): Promise<boolean> {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-      console.log(`☁️ Batch sync failed (${res.status}): ${err.error}`);
+      logger.debug(`☁️ Batch sync failed (${res.status}): ${err.error}`);
       onSyncError?.(`Sync failed (${res.status}): ${err.error}`);
       state.isSyncing = false;
       onSyncComplete?.(false, projectIds);
@@ -655,12 +656,12 @@ async function flushDirtyProjects(): Promise<boolean> {
       onProjectsSynced(projectIds, timestamps);
     }
 
-    console.log(`☁️ Batch sync complete: ${projectIds.length} projects`);
+    logger.debug(`☁️ Batch sync complete: ${projectIds.length} projects`);
     onSyncComplete?.(true, projectIds);
     state.isSyncing = false;
     return true;
   } catch (e) {
-    console.log(`☁️ Batch sync error: ${e}`);
+    logger.debug(`☁️ Batch sync error: ${e}`);
     onSyncError?.(`Sync error: ${e}`);
     state.isSyncing = false;
     onSyncComplete?.(false, projectIds);
@@ -670,14 +671,14 @@ async function flushDirtyProjects(): Promise<boolean> {
 
 function handleOnline() {
   state.isOnline = true;
-  console.log('☁️ Back online — will sync on next interval');
+  logger.debug('☁️ Back online — will sync on next interval');
   // Sync soon after coming back online
   setTimeout(() => flushDirtyProjects(), 5000);
 }
 
 function handleOffline() {
   state.isOnline = false;
-  console.log('☁️ Offline — sync paused');
+  logger.debug('☁️ Offline — sync paused');
 }
 
 function handleBeforeUnload() {
@@ -715,7 +716,7 @@ function handleBeforeUnload() {
     // and will be synced on next app load — no sendBeacon (lacks auth headers).
   } catch {
     // Dirty state is already saved in localStorage; will be retried on next app load
-    console.log('☁️ beforeunload sync failed — will retry on next load');
+    logger.debug('☁️ beforeunload sync failed — will retry on next load');
   }
 }
 
@@ -748,7 +749,7 @@ function _resetIdleTimer() {
 function _onIdleTick() {
   _idleTimerId = null;
   if (state.dirtyProjectIds.size > 0 && state.accessToken && state.isOnline) {
-    console.log('☁️ User idle for 30 s — auto-saving dirty projects to cloud');
+    logger.debug('☁️ User idle for 30 s — auto-saving dirty projects to cloud');
     flushDirtyProjects();
   }
 }
@@ -765,7 +766,7 @@ function _handleVisibilityChange() {
       if (_idleTimerId) clearTimeout(_idleTimerId);
       _idleTimerId = setTimeout(() => {
         if (state.dirtyProjectIds.size > 0 && state.accessToken && state.isOnline) {
-          console.log('☁️ Tab hidden for 30 s — auto-saving dirty projects to cloud');
+          logger.debug('☁️ Tab hidden for 30 s — auto-saving dirty projects to cloud');
           flushDirtyProjects();
         }
       }, IDLE_SAVE_MS);
@@ -778,7 +779,7 @@ function _handleVisibilityChange() {
     // This handles the "edited on laptop, now on desktop" scenario:
     // the server may have newer data from another device/browser.
     if (state.accessToken && state.isOnline && isTabLeader()) {
-      console.log('☁️ Tab visible — checking for remote changes');
+      logger.debug('☁️ Tab visible — checking for remote changes');
       onVisibilityResume?.();
     }
   }
@@ -797,7 +798,7 @@ export function startIdleTracking() {
 
   // Kick off the first idle timer
   _resetIdleTimer();
-  console.log('☁️ Idle tracking started (30 s threshold)');
+  logger.debug('☁️ Idle tracking started (30 s threshold)');
 }
 
 /** Stop idle & visibility tracking. Called from destroyCloudSync or cleanup. */
@@ -815,7 +816,7 @@ export function stopIdleTracking() {
     clearTimeout(_idleTimerId);
     _idleTimerId = null;
   }
-  console.log('☁️ Idle tracking stopped');
+  logger.debug('☁️ Idle tracking stopped');
 }
 
 /** Check if any cloud project has unsaved local changes (dirty flag set). */
