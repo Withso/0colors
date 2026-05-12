@@ -8,6 +8,7 @@
     "start": "node dist/server.js",
     "build": "tsc && npm run bundle:spa",
     "bundle:spa": "node -e \"const fs=require('fs');const p=require('path');const src=p.resolve(__dirname,'..','frontend','build');const dst=p.resolve(__dirname,'dist','public');if(!fs.existsSync(src)){console.log('[bundle:spa] no frontend build at',src,'\\u2014 skipping');process.exit(0);}fs.rmSync(dst,{recursive:true,force:true});fs.cpSync(src,dst,{recursive:true});console.log('[bundle:spa] copied',src,'->',dst);\"",
+    "db:migrate": "node dist/cli/migrate.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
