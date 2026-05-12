@@ -1,69 +1,81 @@
-# Security notes — 0colors
+# Security — 0colors
 
-## Content Security Policy (not yet enforced)
+This document covers the security model of the self-hosted Railway template
+and lists the known hardenings and gaps you should be aware of before
+running 0colors in production.
 
-CSP should be delivered as an HTTP header on the HTML root document by
-whatever serves the frontend (Railway static, `npx serve`, reverse proxy).
-Because there is no staging environment, roll out in two stages.
+## Threat model in scope
 
-### Recommended directives
+0colors is designed for **small-team self-hosting** — one admin, a handful of
+invited collaborators, deployed behind Railway's TLS termination on a domain
+you control. It is *not* designed to be a public multi-tenant SaaS.
 
-```
-default-src 'self';
-script-src 'self' 'unsafe-inline' 'unsafe-eval';
-style-src 'self' 'unsafe-inline';
-font-src 'self' data:;
-img-src 'self' data: blob: https:;
-connect-src 'self'
-  https://qvayepdjxvkdeiczjzfj.supabase.co
-  wss://qvayepdjxvkdeiczjzfj.supabase.co
-  https://accounts-api.zeros.design
-  https://accounts.zeros.design
-  https://api-server-production-0064.up.railway.app;
-object-src 'none';
-base-uri 'self';
-form-action 'self';
-frame-ancestors 'none';
-```
+## Authentication
 
-`'unsafe-inline' 'unsafe-eval'` on `script-src` are Vite's build output
-requirements; tighten once you've verified with hashes/nonces.
+- **Local users only.** No third-party identity provider, no email/password
+  reset by email (admin can reissue an invite instead). Email + bcrypt
+  password is the only auth path.
+- **Passwords** are hashed with bcrypt (cost factor 10). Hashes are never
+  returned by any API.
+- **Sessions** are random 32-byte URL-safe ids stored in a dedicated
+  `auth_sessions` table with `expires_at` (30 days, rolling on activity).
+  Logout removes the row server-side; "log out everywhere" is a single
+  DELETE on `auth_sessions WHERE user_id = …` (used internally by the
+  password-change path).
+- **Session cookie** is `HttpOnly`, `SameSite=Lax`, `Secure` whenever the
+  request arrives over HTTPS (Railway's `x-forwarded-proto` header is
+  trusted). Path is `/`.
+- **Setup wizard** is gated on `countActivatedUsers() === 0`. Any subsequent
+  `POST /api/auth/setup` returns 409, so an attacker can't re-trigger first-
+  run flow even if they discover the endpoint.
+- **Invite tokens** are random 24-byte URL-safe ids with a 7-day expiry.
+  Tokens are cleared on first acceptance — replaying a used invite returns
+  `valid: false`.
 
-### Rollout
+## CSRF
 
-1. Deploy with header name `Content-Security-Policy-Report-Only` instead
-   of `Content-Security-Policy`. This flags violations without blocking.
-2. Exercise every user flow (sign-in, sign-up, forgot password, cloud
-   sync, canvas editing, AI chat, exports). Watch the browser console
-   for "Refused to…" messages.
-3. Update directives to accommodate any legitimate third-party resources
-   that appear.
-4. After 48 hours with a clean report, flip the header name to
-   `Content-Security-Policy` to enforce.
+Cookies are `SameSite=Lax`, which blocks cross-site `POST` forms by default.
+In the single-service deployment (the default), the SPA and API share an
+origin so the cookie travels naturally on same-origin requests and no
+explicit CSRF token is needed. If you put the SPA on a separate origin from
+the API, you'll need to add a CSRF token layer — `SameSite=Lax` is no longer
+sufficient for cross-origin POSTs.
 
-## Auth flow
+## CSP
 
-Authentication is handled by [`@0zerosdesign/auth-client`](https://github.com/Withso/0shared)
-against the shared Supabase project + `accounts.zeros.design`. See the
-auth-client [README](https://github.com/Withso/0shared/blob/main/packages/auth-client/README.md)
-for architecture and the `signOut` local-scope trade-off.
+The backend ships a Content-Security-Policy in **report-only** mode by
+default. Flip it to enforcement by setting `CSP_ENFORCE=1`. The current
+directives are tight — no `*.supabase.co` or `accounts.zeros.design` leftovers
+from the pre-OSS cloud era. If you add a new third-party service (Sentry,
+PostHog, etc.), extend `packages/backend/src/middleware/csp.ts` accordingly.
 
-## Known hardenings
+## Multi-user / authorization
 
-- Backend validates every JWT via `supabase.auth.getUser()` on every request
-  (see `middleware/auth.ts`); no trusted-client paths.
-- Project ownership enforced at the application layer: `owner.user_id ===
-  userId` checked on every read/write.
-- Signup endpoint returns generic errors to prevent account enumeration.
-- Auth tokens never leave the `Authorization` / `X-User-Token` headers
-  (never query strings).
-- OAuth callback hash is stripped immediately after `setSession()`.
-- Production builds gate debug logs behind `import.meta.env.DEV` via
-  `src/utils/logger.ts`.
+- `users.is_admin` gates admin-only routes (`/api/auth/invite`, template
+  feature toggles, admin debug endpoints).
+- Project ownership is enforced at the application layer: every read/write
+  checks `owner_id === userId`.
+- The session lock subsystem prevents two browser tabs from clobbering each
+  other's edits.
 
-## Known gaps
+## Known gaps (acceptable for v1, worth knowing)
 
-- Supabase RLS policies are not codified in `supabase/migrations/`.
-  Backend uses the service role key which bypasses RLS anyway, but adding
-  RLS would provide defense-in-depth against a compromised backend.
-- CSP headers (above) are not yet enforced.
+- **No rate limiting on `/api/auth/login`.** A determined attacker can
+  enumerate passwords. If you expose your instance publicly, put it behind
+  Cloudflare or set up Railway's edge rate limits. We may add an in-app
+  limiter later.
+- **No email verification.** Admins create users via invite; we trust the
+  admin to send the link only to the intended recipient.
+- **No password-reset flow.** If a user forgets their password, the admin
+  reissues an invite (`POST /api/auth/invite` with the same email) — this
+  works because the row's `password_hash` only gets overwritten on accept,
+  and the new invite supersedes any existing one.
+- **No SCIM / SSO.** Out of scope for v1.
+- **`vite build` outputs require `'unsafe-inline' 'unsafe-eval'` in
+  `script-src`.** Tighten with hashes/nonces if your threat model demands it.
+
+## Reporting a vulnerability
+
+Please **do not** open a public GitHub issue for security-impacting bugs.
+Email <nisha.krishnan@zohocorp.com> with details and we'll coordinate a fix
+and disclosure. A maintainer reply within 7 days is expected.
