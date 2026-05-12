@@ -1,0 +1,144 @@
+/* Local auth screens — shared layout */
+
+.auth-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--surface-0, #0a0a0b);
+  color: var(--text-primary, #f4f4f5);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface-1, #141417);
+  border: 1px solid var(--border-1, #232328);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.auth-brand {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 24px;
+}
+
+.auth-brand-dim {
+  color: var(--text-secondary, #999);
+}
+
+.auth-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
+}
+
+.auth-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary, #999);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary, #aaa);
+}
+
+.auth-input {
+  width: 100%;
+  background: var(--surface-2, #1c1c20);
+  border: 1px solid var(--border-1, #2c2c33);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text-primary, #f4f4f5);
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--brand, #f0c000);
+}
+
+.auth-field-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.auth-field-row .auth-input {
+  flex: 1;
+}
+
+.auth-input-toggle {
+  background: transparent;
+  border: 1px solid var(--border-1, #2c2c33);
+  color: var(--text-secondary, #aaa);
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.auth-input-toggle:hover {
+  color: var(--text-primary, #f4f4f5);
+}
+
+.auth-error {
+  background: rgba(255, 80, 80, 0.08);
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  color: #ff7676;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.auth-submit {
+  background: var(--brand, #f0c000);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 6px;
+}
+
+.auth-submit:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-loading {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary, #999);
+  padding: 24px 0;
+}
