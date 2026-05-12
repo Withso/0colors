@@ -93,6 +93,19 @@ The full env-var reference lives in [.env.example](.env.example). Highlights:
 - The repo-root `Dockerfile` is a single-stage `node:20-alpine` image: `COPY .`, `npm ci --include=dev`, `npm run build`, `node packages/backend/dist/server.js`.
 - The build pipeline runs `vite build` first, then the backend's `tsc + bundle:spa` step copies `packages/frontend/build/` into `packages/backend/dist/public/`. The Hono server mounts that directory for static asset serving and falls back to `index.html` for any unmatched non-`/api` route (so client-side routes survive hard refresh).
 
+## Upgrading
+
+0colors uses [semantic versioning](https://semver.org/). The current release is **[v1.1.0](https://github.com/Withso/0colors/releases/tag/v1.1.0)** — see the full history in [CHANGELOG.md](CHANGELOG.md) or on the [Releases](https://github.com/Withso/0colors/releases) page.
+
+When a new version ships, two paths to receive it:
+
+| Update model | Setup | Behavior |
+|---|---|---|
+| **Track `main`** *(default)* | Nothing — this is what the Deploy on Railway button gives you | New commits to `main` trigger a Railway rebuild automatically. Idempotent schema migrations run as `preDeployCommand` between build and start, so a broken migration aborts the deploy without taking the running version down. |
+| **Pin to a tag** | In Railway, open the service → **Settings → Source → Branch** and set it to a tag (e.g. `v1.1.0`). | You stay on that tag until you change it. Manual control over when updates apply. Good if you'd rather review each release before taking it. |
+
+Either way, **all releases promise idempotent migrations** — you should never have to run anything by hand. If something does go wrong on deploy, the Railway log shows the `[db:migrate]` output for the failing step.
+
 ## API documentation
 
 Most endpoints are gated by the session cookie set during sign-in. Highlights, including how to script invites without the UI, are in [docs/api.md](docs/api.md).
