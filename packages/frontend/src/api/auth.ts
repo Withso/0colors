@@ -136,6 +136,36 @@ export async function acceptInvite(token: string, password: string): Promise<Aut
   return data.user;
 }
 
+// ── Sessions (self-service) ──────────────────────────────────────────────────
+
+export interface AuthSession {
+  id: string;
+  isCurrent: boolean;
+  userAgent: string | null;
+  createdAt: string;
+  lastSeenAt: string;
+  expiresAt: string;
+}
+
+export async function listSessions(): Promise<AuthSession[]> {
+  const res = await authFetch('/auth/sessions');
+  if (!res.ok) throw new Error('Failed to load sessions');
+  const data = await res.json();
+  return data.sessions ?? [];
+}
+
+export async function revokeSession(id: string): Promise<void> {
+  const res = await authFetch(`/auth/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error || 'Failed to revoke session');
+}
+
+export async function revokeAllOtherSessions(): Promise<number> {
+  const res = await authFetch('/auth/sessions', { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to revoke other sessions');
+  const data = await res.json();
+  return data.revoked ?? 0;
+}
+
 export async function createInvite(input: {
   email: string;
   name: string;

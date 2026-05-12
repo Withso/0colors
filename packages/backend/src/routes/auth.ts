@@ -18,6 +18,7 @@ import {
     countActivatedUsers, createUser, createInvitedUser, getUser, getUserByEmail,
     getUserByInviteToken, setUserPassword, createAuthSession, deleteAuthSession,
     purgeExpiredAuthSessions, getAppSetting,
+    listAuthSessionsForUser, deleteAuthSessionsForUserExcept,
 } from '../db.js';
 import { getAuthUser } from '../auth.js';
 import { requireAdmin, normalizeUserToMeta } from '../middleware/auth.js';
@@ -26,6 +27,20 @@ import {
     writeSessionCookie, clearSessionCookie, getUserAgent,
     SESSION_TTL_MS, INVITE_TTL_MS,
 } from '../auth-helpers.js';
+import { checkRateLimit, getClientIp } from '../helpers/rate-limit.js';
+import { AUTH_RATE_LIMIT_MAX, AUTH_RATE_LIMIT_WINDOW_MS } from '../constants.js';
+
+// Auth-endpoint rate limit: 5 attempts per 15 minutes per IP+identifier.
+function gateAuthEndpoint(c: any, action: string, identifier: string) {
+    const key = `auth:${action}:${getClientIp(c)}:${identifier.toLowerCase()}`;
+    const result = checkRateLimit(key, { max: AUTH_RATE_LIMIT_MAX, windowMs: AUTH_RATE_LIMIT_WINDOW_MS });
+    if (!result.allowed) {
+        const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);
+        c.header('Retry-After', String(retryAfter));
+        return c.json({ error: 'Too many attempts. Try again in a few minutes.' }, 429);
+    }
+    return null;
+}
 
 const router = new Hono();
 const MIN_PASSWORD_LENGTH = 8;
@@ -148,6 +163,9 @@ router.post('/auth/signup', async (c) => {
         }
         if (!name) return c.json({ error: 'Name is required' }, 400);
 
+        const limited = gateAuthEndpoint(c, 'signup', email);
+        if (limited) return limited;
+
         const existing = await getUserByEmail(email);
         if (existing) {
             // If the user exists but hasn't activated (pending invite), treat the
@@ -199,6 +217,9 @@ router.post('/auth/login', async (c) => {
         if (!email || !password) {
             return c.json({ error: 'Email and password are required' }, 400);
         }
+
+        const limited = gateAuthEndpoint(c, 'login', email);
+        if (limited) return limited;
 
         const user = await getUserByEmail(email);
         // Constant-ish failure response: same message regardless of which side
@@ -263,6 +284,69 @@ router.get('/auth/me', async (c) => {
         });
     } catch (err) {
         console.error('[auth/me] error:', err);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
+});
+
+// ── GET /api/auth/sessions ───────────────────────────────────────────────────
+// Returns the signed-in user's active sessions across devices.
+
+router.get('/auth/sessions', async (c) => {
+    try {
+        const auth = await getAuthUser(c);
+        if (!auth) return c.json({ error: 'Unauthorized' }, 401);
+        const currentId = readSessionCookie(c);
+        const rows = await listAuthSessionsForUser(auth.userId);
+        return c.json({
+            sessions: rows.map(r => ({
+                id: r.id,
+                isCurrent: r.id === currentId,
+                userAgent: r.user_agent,
+                createdAt: r.created_at,
+                lastSeenAt: r.last_seen_at,
+                expiresAt: r.expires_at,
+            })),
+        });
+    } catch (err) {
+        console.error('[auth/sessions GET] error:', err);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
+});
+
+// ── DELETE /api/auth/sessions/:id — revoke a specific other session ──────────
+
+router.delete('/auth/sessions/:id', async (c) => {
+    try {
+        const auth = await getAuthUser(c);
+        if (!auth) return c.json({ error: 'Unauthorized' }, 401);
+        const targetId = c.req.param('id');
+        const currentId = readSessionCookie(c);
+        if (targetId === currentId) {
+            return c.json({ error: 'Use POST /api/auth/logout to end the current session' }, 400);
+        }
+        // Verify the session belongs to the requester before deleting.
+        const rows = await listAuthSessionsForUser(auth.userId);
+        if (!rows.find(r => r.id === targetId)) return c.json({ error: 'Session not found' }, 404);
+        await deleteAuthSession(targetId);
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('[auth/sessions DELETE one] error:', err);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
+});
+
+// ── DELETE /api/auth/sessions — revoke all other sessions ────────────────────
+
+router.delete('/auth/sessions', async (c) => {
+    try {
+        const auth = await getAuthUser(c);
+        if (!auth) return c.json({ error: 'Unauthorized' }, 401);
+        const currentId = readSessionCookie(c);
+        if (!currentId) return c.json({ error: 'No current session' }, 400);
+        const count = await deleteAuthSessionsForUserExcept(auth.userId, currentId);
+        return c.json({ success: true, revoked: count });
+    } catch (err) {
+        console.error('[auth/sessions DELETE all] error:', err);
         return c.json({ error: 'Internal server error' }, 500);
     }
 });
@@ -379,6 +463,9 @@ router.post('/auth/accept-invite', async (c) => {
         if (!isValidPassword(password)) {
             return c.json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` }, 400);
         }
+
+        const limited = gateAuthEndpoint(c, 'accept-invite', token.slice(0, 12));
+        if (limited) return limited;
 
         const user = await getUserByInviteToken(token);
         if (!user || !user.invite_token || !user.invite_expires_at) {
