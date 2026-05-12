@@ -99,10 +99,22 @@ export interface AuthActions {
 
 export type AuthSlice = AuthState & AuthActions;
 
+// Phase 1 placeholder: every visitor is the local admin until Phase 2 wires
+// real cookie-resolved auth. Keep this in sync with PLACEHOLDER_ADMIN_USER_ID
+// on the backend (packages/backend/src/auth.ts).
+const PLACEHOLDER_ADMIN_SESSION: AuthSession = {
+  accessToken: '',
+  userId: '00000000-0000-0000-0000-000000000001',
+  email: 'admin@local',
+  name: 'Local Admin',
+  isAdmin: true,
+  isTemplateAdmin: true,
+};
+
 export const createAuthSlice: StateCreator<any, [], [], AuthSlice> = (set) => ({
   // Auth
-  authSession: null,
-  authChecking: true,
+  authSession: PLACEHOLDER_ADMIN_SESSION,
+  authChecking: false,
   authSkipped: false,
   cloudSyncStatus: 'local' as CloudSyncStatus,
   lastSyncError: undefined,

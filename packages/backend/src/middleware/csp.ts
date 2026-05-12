@@ -17,7 +17,7 @@ const directives = [
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://accounts-api.zeros.design https://accounts.zeros.design https://api-server-production-0064.up.railway.app https://api.anthropic.com https://api.openai.com https://openrouter.ai",
+    "connect-src 'self' https://api.anthropic.com https://api.openai.com https://openrouter.ai",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
