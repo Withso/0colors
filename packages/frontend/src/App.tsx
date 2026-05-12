@@ -14,7 +14,6 @@ const ProjectsPage = React.lazy(() => import('./pages/ProjectsPage').then(m => (
 const ConnectedCommandPalette = React.lazy(() => import('./components/canvas/ConnectedCommandPalette').then(m => ({ default: m.ConnectedCommandPalette })));
 const AskAIChat = React.lazy(() => import('./components/ai/AskAIChat').then(m => ({ default: m.AskAIChat })));
 const ConnectedPublishPopup = React.lazy(() => import('./pages/ConnectedPublishPopup').then(m => ({ default: m.ConnectedPublishPopup })));
-const AuthPage = React.lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })));
 // AISettingsPopup import removed — AI settings now rendered inline in ProjectsPage
 // The showAISettingsPopup state remains for potential canvas-mode AI chat use
 import { useTokenOperations } from './store/useTokenOperations';

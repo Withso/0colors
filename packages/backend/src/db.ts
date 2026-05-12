@@ -108,7 +108,33 @@ export async function initSchema(): Promise<void> {
         ALTER TABLE projects ADD COLUMN IF NOT EXISTS lock_session TEXT;
     `).catch(() => {}); // Ignore if columns already exist
 
-    console.log('[db] Schema initialized (9 tables)');
+    // ── Local auth columns + auth_sessions table (Phase 2 of OSS pivot) ──
+    // Replaces the centralized Supabase/Zeros accounts service: passwords now
+    // live in users.password_hash, invites are token-on-row, and cookie
+    // sessions live in their own table so logout / "log out everywhere" /
+    // expiry cleanup are first-class operations.
+    await pool.query(`
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_token TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_expires_at TIMESTAMPTZ;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS invited_by TEXT;
+
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_lower ON users(LOWER(email));
+        CREATE INDEX IF NOT EXISTS idx_users_invite_token ON users(invite_token) WHERE invite_token IS NOT NULL;
+
+        CREATE TABLE IF NOT EXISTS auth_sessions (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            expires_at TIMESTAMPTZ NOT NULL,
+            user_agent TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(user_id);
+        CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires ON auth_sessions(expires_at);
+    `);
+
+    console.log('[db] Schema initialized (10 tables)');
 }
 
 // ===========================================================================
@@ -122,6 +148,10 @@ export interface UserRow {
     role: string;
     is_admin: boolean;
     cloud_project_ids: string[];
+    password_hash: string | null;
+    invite_token: string | null;
+    invite_expires_at: Date | null;
+    invited_by: string | null;
     created_at: Date;
     updated_at: Date;
 }
@@ -183,6 +213,179 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
     } catch (err) {
         console.error(`[db] isUserAdmin failed for id="${userId}":`, err);
         throw err;
+    }
+}
+
+// ===========================================================================
+//  Local Auth — user lookups & password / invite operations
+// ===========================================================================
+
+/** Find a user by email (case-insensitive). Returns null if no match. */
+export async function getUserByEmail(email: string): Promise<UserRow | null> {
+    try {
+        const { rows } = await pool.query('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+        return rows[0] ?? null;
+    } catch (err) {
+        console.error(`[db] getUserByEmail failed for email="${email}":`, err);
+        throw err;
+    }
+}
+
+/** Find a user by their pending invite token. Returns null if no match. */
+export async function getUserByInviteToken(token: string): Promise<UserRow | null> {
+    try {
+        const { rows } = await pool.query('SELECT * FROM users WHERE invite_token = $1', [token]);
+        return rows[0] ?? null;
+    } catch (err) {
+        console.error('[db] getUserByInviteToken failed:', err);
+        throw err;
+    }
+}
+
+/** Set or replace a user's bcrypt password hash. Also clears any pending invite. */
+export async function setUserPassword(userId: string, passwordHash: string): Promise<void> {
+    try {
+        await pool.query(
+            `UPDATE users SET password_hash = $1, invite_token = NULL, invite_expires_at = NULL, updated_at = NOW() WHERE id = $2`,
+            [passwordHash, userId]
+        );
+    } catch (err) {
+        console.error(`[db] setUserPassword failed for id="${userId}":`, err);
+        throw err;
+    }
+}
+
+/** Create a pending-invite user row (no password yet). Returns the created row. */
+export async function createInvitedUser(data: {
+    id: string;
+    email: string;
+    name: string;
+    inviteToken: string;
+    inviteExpiresAt: Date;
+    invitedBy: string;
+    is_admin?: boolean;
+}): Promise<void> {
+    try {
+        await pool.query(
+            `INSERT INTO users (id, email, name, role, is_admin, cloud_project_ids,
+                                invite_token, invite_expires_at, invited_by, created_at)
+             VALUES ($1, $2, $3, $4, $5, '[]'::jsonb, $6, $7, $8, NOW())`,
+            [data.id, data.email, data.name, data.is_admin ? 'admin' : 'user',
+             data.is_admin ?? false, data.inviteToken, data.inviteExpiresAt, data.invitedBy]
+        );
+    } catch (err) {
+        console.error(`[db] createInvitedUser failed for email="${data.email}":`, err);
+        throw err;
+    }
+}
+
+/** Count users with a password set (used by setup-status to detect first run). */
+export async function countActivatedUsers(): Promise<number> {
+    try {
+        const { rows } = await pool.query(`SELECT COUNT(*)::int AS n FROM users WHERE password_hash IS NOT NULL`);
+        return rows[0]?.n ?? 0;
+    } catch (err) {
+        console.error('[db] countActivatedUsers failed:', err);
+        throw err;
+    }
+}
+
+/** List all users (admin operation). */
+export async function listUsers(): Promise<UserRow[]> {
+    try {
+        const { rows } = await pool.query('SELECT * FROM users ORDER BY created_at ASC');
+        return rows;
+    } catch (err) {
+        console.error('[db] listUsers failed:', err);
+        throw err;
+    }
+}
+
+// ===========================================================================
+//  Local Auth — cookie-backed sessions
+// ===========================================================================
+
+export interface AuthSessionRow {
+    id: string;
+    user_id: string;
+    created_at: Date;
+    last_seen_at: Date;
+    expires_at: Date;
+    user_agent: string | null;
+}
+
+/** Create a new auth session row. Caller supplies the random session id. */
+export async function createAuthSession(data: {
+    id: string;
+    userId: string;
+    expiresAt: Date;
+    userAgent: string | null;
+}): Promise<void> {
+    try {
+        await pool.query(
+            `INSERT INTO auth_sessions (id, user_id, expires_at, user_agent) VALUES ($1, $2, $3, $4)`,
+            [data.id, data.userId, data.expiresAt, data.userAgent]
+        );
+    } catch (err) {
+        console.error('[db] createAuthSession failed:', err);
+        throw err;
+    }
+}
+
+/** Look up a session by id. Returns null if not found OR expired. */
+export async function getAuthSession(sessionId: string): Promise<AuthSessionRow | null> {
+    try {
+        const { rows } = await pool.query(
+            `SELECT * FROM auth_sessions WHERE id = $1 AND expires_at > NOW()`,
+            [sessionId]
+        );
+        return rows[0] ?? null;
+    } catch (err) {
+        console.error('[db] getAuthSession failed:', err);
+        throw err;
+    }
+}
+
+/** Update last_seen_at for a session — called on every authenticated request. */
+export async function touchAuthSession(sessionId: string): Promise<void> {
+    try {
+        await pool.query(`UPDATE auth_sessions SET last_seen_at = NOW() WHERE id = $1`, [sessionId]);
+    } catch (err) {
+        // Non-fatal — a missed touch just means a slightly stale last_seen_at.
+        console.warn('[db] touchAuthSession failed (non-fatal):', err);
+    }
+}
+
+/** Delete a single session (logout). Returns true if it existed. */
+export async function deleteAuthSession(sessionId: string): Promise<boolean> {
+    try {
+        const { rowCount } = await pool.query('DELETE FROM auth_sessions WHERE id = $1', [sessionId]);
+        return (rowCount ?? 0) > 0;
+    } catch (err) {
+        console.error('[db] deleteAuthSession failed:', err);
+        return false;
+    }
+}
+
+/** Delete every session for a user (log out everywhere — password change, admin revoke). */
+export async function deleteAuthSessionsForUser(userId: string): Promise<number> {
+    try {
+        const { rowCount } = await pool.query('DELETE FROM auth_sessions WHERE user_id = $1', [userId]);
+        return rowCount ?? 0;
+    } catch (err) {
+        console.error('[db] deleteAuthSessionsForUser failed:', err);
+        return 0;
+    }
+}
+
+/** Purge expired sessions. Called opportunistically (no scheduled cron needed). */
+export async function purgeExpiredAuthSessions(): Promise<number> {
+    try {
+        const { rowCount } = await pool.query('DELETE FROM auth_sessions WHERE expires_at < NOW()');
+        return rowCount ?? 0;
+    } catch (err) {
+        console.error('[db] purgeExpiredAuthSessions failed:', err);
+        return 0;
     }
 }
 

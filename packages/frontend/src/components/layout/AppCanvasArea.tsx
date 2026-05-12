@@ -16,6 +16,7 @@
  *  - Visibility toggle hint
  */
 
+import { useNavigate } from 'react-router';
 import { useStore } from '../../store';
 import { ConnectedColorCanvas } from '../canvas/ConnectedColorCanvas';
 import { ConnectedCodePreview } from '../../pages/ConnectedCodePreview';
@@ -113,8 +114,8 @@ export function AppCanvasArea({
   const setShowCommandPalette = useStore(s => s.setShowCommandPalette);
   const showAllVisible = useStore(s => s.showAllVisible);
   const autoAssignTriggerNodeId = useStore(s => s.autoAssignTriggerNodeId);
-  // Phase 1 stub. Phase 2: navigate to local /login.
-  const redirectToZerosLogin = () => {};
+  const navigate = useNavigate();
+  const redirectToZerosLogin = () => navigate('/login');
 
   const viewMode = useStore(s => s.viewMode);
   const authSession = useStore(s => s.authSession);

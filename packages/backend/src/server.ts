@@ -4,9 +4,11 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { csp } from './middleware/csp.js';
 import { initSchema } from './db.js';
+import { maybeSeedAdminFromEnv } from './auth-seed.js';
 
 // Route imports
 import healthRouter from './routes/health.js';
+import authRouter from './routes/auth.js';
 import projectsRouter from './routes/projects.js';
 import templatesRouter from './routes/templates.js';
 import figmaRouter from './routes/figma.js';
@@ -39,6 +41,7 @@ app.use('/*', csp());
 // Mount Routes — order matters for webhook specificity
 // ---------------------------------------------------------------------------
 app.route('/api', healthRouter);
+app.route('/api', authRouter);
 app.route('/api', projectsRouter);
 app.route('/api', templatesRouter);
 app.route('/api', figmaRouter);
@@ -55,8 +58,9 @@ const port = parseInt(process.env.PORT || '4455', 10);
 
 console.log(`[server] Starting 0colors API server on port ${port}...`);
 
-// Initialize database schema, then start server
+// Initialize database schema, optionally seed admin from env, then start server
 initSchema()
+    .then(() => maybeSeedAdminFromEnv())
     .then(() => {
         serve({
             fetch: app.fetch,
@@ -66,6 +70,6 @@ initSchema()
         });
     })
     .catch((err) => {
-        console.error('[server] Failed to initialize database schema:', err);
+        console.error('[server] Failed to initialize:', err);
         process.exit(1);
     });

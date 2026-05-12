@@ -1,24 +1,36 @@
 // ============================================================================
-// Auth contract — Phase 1 placeholder.
+// Request-level auth contract.
 //
-// Until Phase 2 lands real local auth (setup wizard, bcrypt passwords, session
-// cookies), every request resolves to a fixed local admin. This preserves the
-// `requireAuth` contract so all routes keep working end-to-end during the
-// transition. Phase 2 replaces the body of getAuthUser() with real cookie /
-// JWT verification against the local users table.
+// Resolves the signed-in user from the session cookie (set by routes/auth.ts).
+// Routes call requireAuth/requireAdmin (in middleware/auth.ts) which delegate
+// here. Returning null means "no valid session" — middleware turns that into
+// a 401.
 // ============================================================================
 
 import type { Context } from 'hono';
+import { getUser, getAuthSession, touchAuthSession } from './db.js';
+import { readSessionCookie } from './auth-helpers.js';
 
-export const PLACEHOLDER_ADMIN_USER_ID = '00000000-0000-0000-0000-000000000001';
-const PLACEHOLDER_ADMIN_NAME = 'Local Admin';
+/** Resolve { userId } from the session cookie, or null if not authenticated. */
+export async function getAuthUser(c: Context): Promise<{ userId: string } | null> {
+    const sessionId = readSessionCookie(c);
+    if (!sessionId) return null;
 
-/** Extract auth context. Phase 1: always returns the placeholder admin. */
-export async function getAuthUser(_c: Context): Promise<{ userId: string } | null> {
-    return { userId: PLACEHOLDER_ADMIN_USER_ID };
+    const session = await getAuthSession(sessionId);
+    if (!session) return null;
+
+    // Update last_seen_at in the background — non-blocking, non-fatal.
+    touchAuthSession(sessionId).catch(() => {});
+
+    return { userId: session.user_id };
 }
 
-/** Same as getAuthUser, with display name. Phase 1: always placeholder admin. */
-export async function getAuthUserWithName(_c: Context): Promise<{ userId: string; userName: string } | null> {
-    return { userId: PLACEHOLDER_ADMIN_USER_ID, userName: PLACEHOLDER_ADMIN_NAME };
+/** Same as getAuthUser, with display name. Used by routes that stamp user_name on rows. */
+export async function getAuthUserWithName(c: Context): Promise<{ userId: string; userName: string } | null> {
+    const auth = await getAuthUser(c);
+    if (!auth) return null;
+
+    const user = await getUser(auth.userId);
+    const userName = user?.name || user?.email || 'User';
+    return { userId: auth.userId, userName };
 }
