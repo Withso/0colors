@@ -2,12 +2,7 @@
 
 > A self-hosted, open-source design-tokens canvas. Build a color system on an infinite canvas, derive themes and tokens automatically, export to CSS / Tailwind / DTCG / Figma — all on your own Railway instance, no cloud account required.
 
-<!--
-TODO before publishing the Railway template:
-  Replace YOUR_TEMPLATE_ID below with the real id from railway.com/templates.
--->
-
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/YOUR_TEMPLATE_ID)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/0colors)
 
 ## What you get
 
