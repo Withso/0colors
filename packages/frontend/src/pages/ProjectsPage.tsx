@@ -530,50 +530,9 @@ function ProjectList({
         )
       )}
 
-      {/* Sample Projects section — row layout matching other sections */}
-      {!sampleTemplates && (
-        <div className="projects-section" data-testid="projects-sample-section">
-          <div className="projects-section-header">
-            <div className="projects-section-header-left">
-              <span className="projects-section-label">Sample Projects</span>
-            </div>
-          </div>
-          {renderSkeleton(2)}
-        </div>
-      )}
-      {sampleTemplates && sampleTemplates.length > 0 && (
-        <div className="projects-section" data-testid="projects-sample-section">
-          <div className="projects-section-header">
-            <div className="projects-section-header-left">
-              <span className="projects-section-label">Sample Projects</span>
-              <span className="projects-section-count">{sampleTemplates.length}</span>
-            </div>
-          </div>
-          <div>
-            {sampleTemplates.map((tmpl, idx) => (
-              <div
-                key={tmpl.id}
-                className="projects-row"
-                data-testid={`projects-sample-card-${tmpl.id}`}
-                onClick={() => onSelectSampleProject?.(tmpl._origIdx ?? idx)}
-              >
-                <div
-                  className="projects-row-dot"
-                  style={{ background: `hsl(${tmpl.folderColor ?? 210}, 55%, 50%)` }}
-                />
-                <span className="projects-row-name">{tmpl.name}</span>
-                <span className="projects-row-badge-sample">
-                  <Eye className="projects-row-badge-sample-icon" />
-                  Read-only
-                </span>
-                <span className="projects-row-stats">
-                  {tmpl.nodes?.length ?? 0} nodes
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Sample Projects section removed in Phase 7 — self-host has no curated
+          template marketplace, so the section header + skeleton loaders that
+          used to live here are gone. */}
     </div>
   );
 }
