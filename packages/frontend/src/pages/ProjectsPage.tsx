@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, lazy, Suspense, FormEvent } from 'react';
-import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, Sparkles, Eye, LogIn, Globe, Folder, User, FlaskConical, UserPlus, Check } from 'lucide-react';
-import { createInvite } from '../api/auth';
+import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, Sparkles, Eye, LogIn, Globe, Folder, User, FlaskConical, UserPlus, Check, Settings as SettingsIcon } from 'lucide-react';
+import { getPublicSettings } from '../api/admin';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +18,11 @@ import type { DashboardSection } from '../store/slices/auth-slice';
 const AdminQaDashboard = lazy(async () => {
   const mod = await import('../components/admin/AdminQaDashboard');
   return { default: mod.AdminQaDashboard };
+});
+
+const AdminSection = lazy(async () => {
+  const mod = await import('./AdminSection');
+  return { default: mod.AdminSection };
 });
 
 interface ColorNode {
@@ -105,6 +110,8 @@ interface ProjectsPageProps {
   onSelectSampleProject?: (templateIdx: number) => void;
   starredTemplateId?: string | null;
   onStarTemplate?: (projectId: string) => void;
+  // Admin panel (Phase 8)
+  currentUserId?: string;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -223,6 +230,7 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
    ═══════════════════════════════════════════════════════════════ */
 
 function ProfileSection({ userEmail, isAdmin }: { userEmail?: string; isAdmin?: boolean }) {
+  // Invite UI moved to the Admin section (Users tab) in Phase 8.
   return (
     <div className="projects-profile">
       <h1 className="projects-section-title">Profile</h1>
@@ -241,8 +249,6 @@ function ProfileSection({ userEmail, isAdmin }: { userEmail?: string; isAdmin?: 
           </>
         )}
       </div>
-
-      {isAdmin && <InviteUserCard />}
     </div>
   );
 }
@@ -573,10 +579,20 @@ export function ProjectsPage({
   onSelectSampleProject,
   starredTemplateId,
   onStarTemplate,
+  currentUserId,
 }: ProjectsPageProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const projectRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  const [attributionEnabled, setAttributionEnabled] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    getPublicSettings()
+      .then((s) => { if (!cancelled) setAttributionEnabled(s.attributionEnabled); })
+      .catch(() => { if (!cancelled) setAttributionEnabled(true); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (highlightedProjectId) {
@@ -667,17 +683,27 @@ export function ProjectsPage({
             <NavItem icon={User} label="Profile" active={activeSection === 'profile'} onClick={() => onSectionChange?.('profile')} testId="projects-nav-profile" />
           )}
 
-          {isAdmin && import.meta.env.DEV && (
+          {isAdmin && (
             <>
               <div className="projects-sidebar-divider" />
               <NavItem
-                icon={FlaskConical}
-                label="QA hub"
-                active={activeSection === 'qa-hub'}
-                onClick={() => onSectionChange?.('qa-hub')}
-                testId="projects-nav-qa-hub"
+                icon={SettingsIcon}
+                label="Admin"
+                active={activeSection === 'admin'}
+                onClick={() => onSectionChange?.('admin')}
+                testId="projects-nav-admin"
               />
             </>
+          )}
+
+          {isAdmin && import.meta.env.DEV && (
+            <NavItem
+              icon={FlaskConical}
+              label="QA hub"
+              active={activeSection === 'qa-hub'}
+              onClick={() => onSectionChange?.('qa-hub')}
+              testId="projects-nav-qa-hub"
+            />
           )}
         </nav>
 
@@ -694,6 +720,17 @@ export function ProjectsPage({
               Sign in
             </button>
           ) : null}
+          {attributionEnabled && (
+            <a
+              href="https://github.com/Withso/0colors"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="projects-sidebar-attribution"
+              data-testid="projects-powered-by"
+            >
+              Powered by 0colors
+            </a>
+          )}
         </div>
       </div>
 
@@ -752,8 +789,12 @@ export function ProjectsPage({
           <ProfileSection
             userEmail={userEmail}
             isAdmin={isAdmin}
-            isTemplateAdmin={isTemplateAdmin}
           />
+        )}
+        {activeSection === 'admin' && isAdmin && currentUserId && (
+          <Suspense fallback={<div className="projects-section-text">Loading admin…</div>}>
+            <AdminSection currentUserId={currentUserId} />
+          </Suspense>
         )}
         {activeSection === 'qa-hub' && isAdmin && import.meta.env.DEV && (
           <Suspense fallback={<div className="projects-section-text">Loading QA hub...</div>}>

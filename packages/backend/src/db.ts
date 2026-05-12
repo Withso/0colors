@@ -118,6 +118,7 @@ export async function initSchema(): Promise<void> {
         ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_token TEXT;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_expires_at TIMESTAMPTZ;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS invited_by TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
 
         CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_lower ON users(LOWER(email));
         CREATE INDEX IF NOT EXISTS idx_users_invite_token ON users(invite_token) WHERE invite_token IS NOT NULL;
@@ -152,8 +153,24 @@ export interface UserRow {
     invite_token: string | null;
     invite_expires_at: Date | null;
     invited_by: string | null;
+    is_active: boolean;
     created_at: Date;
     updated_at: Date;
+}
+
+export type UserAdminStatus = 'active' | 'pending' | 'deactivated';
+
+export interface AdminUserRow {
+    id: string;
+    email: string;
+    name: string;
+    is_admin: boolean;
+    is_active: boolean;
+    status: UserAdminStatus;
+    invite_expires_at: Date | null;
+    invited_by: string | null;
+    last_seen_at: Date | null;
+    created_at: Date;
 }
 
 export async function getUser(userId: string): Promise<UserRow | null> {
@@ -298,6 +315,151 @@ export async function listUsers(): Promise<UserRow[]> {
     } catch (err) {
         console.error('[db] listUsers failed:', err);
         throw err;
+    }
+}
+
+/** List users with computed status and most-recent session timestamp. Admin-only consumer. */
+export async function listUsersForAdmin(): Promise<AdminUserRow[]> {
+    try {
+        const { rows } = await pool.query<{
+            id: string; email: string; name: string;
+            is_admin: boolean; is_active: boolean;
+            password_hash: string | null;
+            invite_token: string | null; invite_expires_at: Date | null;
+            invited_by: string | null;
+            last_seen_at: Date | null; created_at: Date;
+        }>(`
+            SELECT u.id, u.email, u.name, u.is_admin, u.is_active,
+                   u.password_hash, u.invite_token, u.invite_expires_at, u.invited_by,
+                   u.created_at,
+                   MAX(s.last_seen_at) AS last_seen_at
+            FROM users u
+            LEFT JOIN auth_sessions s ON s.user_id = u.id
+            GROUP BY u.id
+            ORDER BY u.created_at ASC
+        `);
+        return rows.map(r => {
+            let status: UserAdminStatus;
+            if (!r.is_active) status = 'deactivated';
+            else if (r.password_hash) status = 'active';
+            else status = 'pending';
+            return {
+                id: r.id, email: r.email, name: r.name,
+                is_admin: r.is_admin, is_active: r.is_active,
+                status,
+                invite_expires_at: r.invite_expires_at,
+                invited_by: r.invited_by,
+                last_seen_at: r.last_seen_at,
+                created_at: r.created_at,
+            };
+        });
+    } catch (err) {
+        console.error('[db] listUsersForAdmin failed:', err);
+        throw err;
+    }
+}
+
+/** Toggle admin role. */
+export async function setUserAdmin(userId: string, isAdmin: boolean): Promise<void> {
+    try {
+        await pool.query(
+            `UPDATE users SET is_admin = $1, role = $2, updated_at = NOW() WHERE id = $3`,
+            [isAdmin, isAdmin ? 'admin' : 'user', userId]
+        );
+    } catch (err) {
+        console.error(`[db] setUserAdmin failed for id="${userId}":`, err);
+        throw err;
+    }
+}
+
+/** Activate or deactivate a user. Deactivated users keep their data but can't sign in. */
+export async function setUserActive(userId: string, isActive: boolean): Promise<void> {
+    try {
+        await pool.query(
+            `UPDATE users SET is_active = $1, updated_at = NOW() WHERE id = $2`,
+            [isActive, userId]
+        );
+        // Deactivation kills all sessions so the user is signed out everywhere.
+        if (!isActive) {
+            await pool.query('DELETE FROM auth_sessions WHERE user_id = $1', [userId]);
+        }
+    } catch (err) {
+        console.error(`[db] setUserActive failed for id="${userId}":`, err);
+        throw err;
+    }
+}
+
+/**
+ * Generate a fresh password-reset link for an existing user. Clears the
+ * current password_hash and sets a new invite_token, so the user must accept
+ * the link before they can sign in again. Returns the new token.
+ */
+export async function generateResetLink(userId: string): Promise<{ token: string; expiresAt: Date }> {
+    const { randomBytes } = await import('node:crypto');
+    const token = randomBytes(24).toString('base64url');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7d
+    try {
+        await pool.query(
+            `UPDATE users SET password_hash = NULL, invite_token = $1, invite_expires_at = $2, updated_at = NOW() WHERE id = $3`,
+            [token, expiresAt, userId]
+        );
+        // Force-sign-out the user — their password is gone.
+        await pool.query('DELETE FROM auth_sessions WHERE user_id = $1', [userId]);
+        return { token, expiresAt };
+    } catch (err) {
+        console.error(`[db] generateResetLink failed for id="${userId}":`, err);
+        throw err;
+    }
+}
+
+/**
+ * Resend (regenerate) the invite token for a still-pending user. Errors if
+ * the user has already activated their account — use generateResetLink instead.
+ */
+export async function regenerateInviteToken(userId: string): Promise<{ token: string; expiresAt: Date }> {
+    const { randomBytes } = await import('node:crypto');
+    const token = randomBytes(24).toString('base64url');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    try {
+        const { rowCount } = await pool.query(
+            `UPDATE users SET invite_token = $1, invite_expires_at = $2, updated_at = NOW()
+             WHERE id = $3 AND password_hash IS NULL`,
+            [token, expiresAt, userId]
+        );
+        if ((rowCount ?? 0) === 0) {
+            throw new Error('User has already activated; use a reset link instead');
+        }
+        return { token, expiresAt };
+    } catch (err) {
+        console.error(`[db] regenerateInviteToken failed for id="${userId}":`, err);
+        throw err;
+    }
+}
+
+/**
+ * Delete a user. If transferProjectsTo is provided, their projects are
+ * reassigned to that user before deletion. Otherwise the projects are deleted.
+ */
+export async function deleteUserCascade(userId: string, transferProjectsTo?: string): Promise<void> {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        if (transferProjectsTo) {
+            await client.query('UPDATE projects SET owner_id = $1 WHERE owner_id = $2', [transferProjectsTo, userId]);
+        } else {
+            await client.query('DELETE FROM projects WHERE owner_id = $1', [userId]);
+        }
+        await client.query('DELETE FROM ai_conversations WHERE user_id = $1', [userId]);
+        await client.query('DELETE FROM ai_settings WHERE user_id = $1', [userId]);
+        await client.query('DELETE FROM auth_sessions WHERE user_id = $1', [userId]);
+        await client.query('DELETE FROM users WHERE id = $1', [userId]);
+        await client.query('COMMIT');
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(`[db] deleteUserCascade failed for id="${userId}":`, err);
+        throw err;
+    } finally {
+        client.release();
     }
 }
 

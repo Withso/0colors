@@ -139,6 +139,14 @@ export function useUrlRouting({
       return;
     }
 
+    // ── /admin — admin settings dashboard section ──
+    if (path === '/admin') {
+      _setViewingProjects(true);
+      viewingProjectsRef.current = true;
+      setDashboardSection('admin');
+      return;
+    }
+
     // ── /community/:slug — view a community project (read-only) ──
     const communityMatch = path.match(/^\/community\/([^/]+)$/);
     if (communityMatch) {

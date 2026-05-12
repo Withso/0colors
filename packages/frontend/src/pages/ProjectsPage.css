@@ -229,6 +229,26 @@
 }
 
 /* ═══════════════════════════════════════════
+   Powered by 0colors attribution (sidebar bottom)
+   ═══════════════════════════════════════════ */
+
+.projects-sidebar-attribution {
+  display: block;
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--on-surface-4);
+  text-decoration: none;
+  text-align: left;
+  padding: 4px 8px;
+  letter-spacing: 0.02em;
+  transition: color 100ms ease;
+}
+
+.projects-sidebar-attribution:hover {
+  color: var(--on-surface-2);
+}
+
+/* ═══════════════════════════════════════════
    InviteUserCard (admin-only)
    ═══════════════════════════════════════════ */
 

@@ -208,6 +208,7 @@ router.post('/auth/login', async (c) => {
         if (!user || !user.password_hash) return invalid();
         const ok = await verifyPassword(password, user.password_hash);
         if (!ok) return invalid();
+        if (!user.is_active) return c.json({ error: 'Account is deactivated. Contact an admin.' }, 403);
 
         await startSession(c, user.id);
         // Opportunistic cleanup — cheap on a small users table.
