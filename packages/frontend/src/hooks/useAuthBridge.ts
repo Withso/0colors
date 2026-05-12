@@ -20,7 +20,7 @@ import { useNavigate, useLocation } from 'react-router';
 import { useStore } from '../store';
 import { getMe, getSetupStatus, logout as logoutApi } from '../api/auth';
 
-const AUTH_FREE_PREFIXES = ['/setup', '/login', '/accept-invite'];
+const AUTH_FREE_PREFIXES = ['/setup', '/login', '/signup', '/accept-invite'];
 
 function isAuthFreePath(pathname: string): boolean {
   return AUTH_FREE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));

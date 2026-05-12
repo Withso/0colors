@@ -59,6 +59,30 @@ export async function setupAdmin(input: {
   return data.user;
 }
 
+// ── Public signup ────────────────────────────────────────────────────────────
+
+export async function getSignupStatus(): Promise<{ allowPublicSignup: boolean }> {
+  const res = await authFetch('/auth/signup-status');
+  if (!res.ok) return { allowPublicSignup: false };
+  return res.json();
+}
+
+export async function signup(input: {
+  email: string;
+  password: string;
+  name: string;
+}): Promise<AuthedUser> {
+  const res = await authFetch('/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  const data: AuthResponse = await res.json().catch(() => ({}));
+  if (!res.ok || !data.user) {
+    throw new Error(data.error || 'Signup failed');
+  }
+  return data.user;
+}
+
 // ── Login / Logout / Me ──────────────────────────────────────────────────────
 
 export async function login(email: string, password: string): Promise<AuthedUser> {

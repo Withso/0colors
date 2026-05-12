@@ -16,8 +16,8 @@ const FRONTEND_DIR = join(__dirname, 'public');
 // Route imports
 import healthRouter from './routes/health.js';
 import authRouter from './routes/auth.js';
+import brandingRouter from './routes/branding.js';
 import projectsRouter from './routes/projects.js';
-import templatesRouter from './routes/templates.js';
 import figmaRouter from './routes/figma.js';
 import aiRouter from './routes/ai.js';
 import devRouter from './routes/dev.js';
@@ -49,8 +49,8 @@ app.use('/*', csp());
 // ---------------------------------------------------------------------------
 app.route('/api', healthRouter);
 app.route('/api', authRouter);
+app.route('/api', brandingRouter);
 app.route('/api', projectsRouter);
-app.route('/api', templatesRouter);
 app.route('/api', figmaRouter);
 app.route('/api', aiRouter);
 app.route('/api', devRouter);

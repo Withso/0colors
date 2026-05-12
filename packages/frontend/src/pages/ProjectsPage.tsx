@@ -130,7 +130,7 @@ function NavItem({ icon: Icon, label, active, onClick, testId }: {
    ProjectRow — replaces FolderCard
    ═══════════════════════════════════════════════════════════════ */
 
-function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished, onClick, onExport, onDuplicate, onDelete, innerRef, isStarred, onStar }: {
+function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished, onClick, onExport, onDuplicate, onDelete, innerRef }: {
   project: Project;
   tokenCount: number;
   nodeCount: number;
@@ -141,8 +141,6 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
   onDuplicate: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
   innerRef: (el: HTMLDivElement | null) => void;
-  isStarred?: boolean;
-  onStar?: (e: React.MouseEvent) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -190,17 +188,6 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
         {tokenCount > 0 && nodeCount > 0 && ' \u00b7 '}
         {nodeCount > 0 && `${nodeCount} nodes`}
       </span>
-      {/* Star button (template admin only) */}
-      {onStar && (
-        <button
-          className={`projects-row-star-btn${isStarred ? ' is-starred' : ''}`}
-          title={isStarred ? 'Default for new visitors' : 'Set as default for new visitors'}
-          onClick={(e) => { e.stopPropagation(); onStar(e); }}
-          data-testid={`projects-star-${project.id}`}
-        >
-          ★
-        </button>
-      )}
       {/* Menu */}
       {!isSample && (
         <div className="projects-row-menu-wrapper" ref={menuRef} onClick={e => e.stopPropagation()}>
@@ -235,7 +222,7 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
    ProfileSection
    ═══════════════════════════════════════════════════════════════ */
 
-function ProfileSection({ userEmail, isAdmin, isTemplateAdmin }: { userEmail?: string; isAdmin?: boolean; isTemplateAdmin?: boolean }) {
+function ProfileSection({ userEmail, isAdmin }: { userEmail?: string; isAdmin?: boolean }) {
   return (
     <div className="projects-profile">
       <h1 className="projects-section-title">Profile</h1>
@@ -249,7 +236,7 @@ function ProfileSection({ userEmail, isAdmin, isTemplateAdmin }: { userEmail?: s
             <div className="projects-profile-divider" />
             <div className="projects-profile-row">
               <span className="projects-profile-label">Role</span>
-              <span className="projects-profile-value">Admin{isTemplateAdmin ? ' + Template Admin' : ''}</span>
+              <span className="projects-profile-value">Admin</span>
             </div>
           </>
         )}
@@ -523,17 +510,6 @@ function ProjectList({
         </div>
       </div>
 
-      {/* Templates section (if template admin) */}
-      {isAuthenticated && isTemplateAdmin && (
-        templateProjects.length > 0 || true ? renderSection(
-          'Templates',
-          templateProjects,
-          'template',
-          true,
-          'New template',
-        ) : null
-      )}
-
       {/* Projects section (authenticated) */}
       {isAuthenticated && (
         cloudSectionProjects.length > 0 || !!canCreateCloudProject ? renderSection(
@@ -732,7 +708,7 @@ export function ProjectsPage({
             <NavItem icon={User} label="Profile" active={activeSection === 'profile'} onClick={() => onSectionChange?.('profile')} testId="projects-nav-profile" />
           )}
 
-          {isAdmin && (
+          {isAdmin && import.meta.env.DEV && (
             <>
               <div className="projects-sidebar-divider" />
               <NavItem
@@ -820,7 +796,7 @@ export function ProjectsPage({
             isTemplateAdmin={isTemplateAdmin}
           />
         )}
-        {activeSection === 'qa-hub' && isAdmin && (
+        {activeSection === 'qa-hub' && isAdmin && import.meta.env.DEV && (
           <Suspense fallback={<div className="projects-section-text">Loading QA hub...</div>}>
             <AdminQaDashboard />
           </Suspense>

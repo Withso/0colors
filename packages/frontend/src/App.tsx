@@ -208,23 +208,11 @@ export function AppShell() {
 
   // Auth redirect is now provided by useAuthBridge → ZerosAuthProvider
 
-  // ── Starred template (admin selects which sample is default for first-time visitors) ──
-  // Now backed by the Zustand store + backend API instead of localStorage-only
-  const starredTemplateId = useStore(s => s.starredTemplateId);
-  const handleStarTemplate = useCallback((templateId: string) => {
-    const newValue = starredTemplateId === templateId ? null : templateId;
-    useStore.setState({ starredTemplateId: newValue });
-    // Persist to backend (async, non-blocking)
-    const token = authSession?.accessToken;
-    if (token) {
-      import('./utils/supabase/cloud-sync').then(({ setStarredTemplate }) => {
-        setStarredTemplate(newValue, token).then(ok => {
-          if (ok) console.log(`⭐ Starred template ${newValue ? 'set to ' + newValue : 'cleared'}`);
-          else console.log('⭐ Failed to persist starred template to backend');
-        });
-      });
-    }
-  }, [starredTemplateId, authSession?.accessToken]);
+  // Starred-template handler was removed with the Templates feature in Phase 7.
+  // Leaving a no-op so downstream prop wiring keeps compiling until the consumer
+  // surface (ProjectsPage "Star template" button) is fully stripped.
+  const starredTemplateId: string | null = null;
+  const handleStarTemplate = useCallback((_templateId: string) => {}, []);
 
   // ── Community state ──
   const isCommunityMode = useStore(s => s.isCommunityMode);
@@ -759,40 +747,10 @@ export function AppShell() {
     );
   }
 
-  // Sample-project loading gate: show loading until cloud templates are fetched AND ready.
-  // Blocks rendering for ALL users on /sample-project/ paths until templates are loaded.
-  // Also gates on sampleTemplates.length to prevent one frame of stale data between
-  // cloudTemplatesLoaded=true and the auto-switch effect completing.
-  {
-    const isSampleProjectPath = location.pathname.startsWith('/sample-project');
-    const isHomePath = location.pathname === '/' || location.pathname === '';
-    const hasNoLocalProjects = isInitialLoad || projects.filter(p => !p.isCloud && !p.isTemplate && !p.isSample).length === 0;
-    const templatesReady = cloudTemplatesLoaded && sampleTemplates.length > 0;
-
-    if (isSampleProjectPath && !templatesReady) {
-      return (
-        <div className="app-shell-loading" data-testid="app-loading-templates">
-          <div className="app-shell-loading-col">
-            <div className="app-shell-loading-brand">0<span className="app-shell-loading-brand-dim">colors</span></div>
-            <div className="app-shell-loading-text">Loading templates…</div>
-          </div>
-        </div>
-      );
-    }
-    if (isHomePath && !authSession && hasNoLocalProjects && !cloudTemplatesLoaded) {
-      return (
-        <div className="app-shell-loading" data-testid="app-loading-templates">
-          <div className="app-shell-loading-col">
-            <div className="app-shell-loading-brand">0<span className="app-shell-loading-brand-dim">colors</span></div>
-            <div className="app-shell-loading-text">Loading…</div>
-          </div>
-        </div>
-      );
-    }
-  }
-
-  // Auth gate removed: auto-skip is handled by the effect below.
-  // The full-screen AuthPage is now shown as a modal via showAuthModal.
+  // The Phase-7 cleanup removed the sample-project routes and the cloud-
+  // templates fetch entirely. The legacy "Loading templates…" gates that
+  // sat here are gone; first-time visitors hit /login (no auth) or the
+  // empty Projects page (no projects).
 
   // ── Session lock dialogs ──
   // "conflict": New session trying to open a project locked by another session
@@ -883,7 +841,6 @@ export function AppShell() {
           highlightedProjectId={highlightedProjectId}
           isAuthenticated={!!authSession}
           isAdmin={!!authSession?.isAdmin}
-          isTemplateAdmin={!!authSession?.isTemplateAdmin}
           userEmail={authSession?.email}
           onSignOut={handleSignOut}
           onSignIn={redirectToZerosLogin}
@@ -911,22 +868,7 @@ export function AppShell() {
           onRemixCommunityProject={(slug) => {
             handleRemixCommunityProject(slug);
           }}
-          sampleTemplates={cloudTemplatesLoaded ? sampleTemplates : undefined}
-          onSelectSampleProject={(idx) => {
-            handleSwitchSampleTemplate(idx);
-            const tmpl = sampleTemplates[idx];
-            if (tmpl) {
-              const slug = slugify(tmpl.name || 'starter');
-              navigate(`/sample-project/${slug}`);
-              _setViewingProjects(false);
-              viewingProjectsRef.current = false;
-              // Zoom-to-fit is handled by handleSwitchSampleTemplate setting canvasState directly
-            }
-          }}
-          starredTemplateId={starredTemplateId}
-          onStarTemplate={handleStarTemplate}
         />
-        {/* Auth is now handled by accounts.zeros.design — redirect via redirectToZerosLogin */}
       </Suspense>
     );
   }
