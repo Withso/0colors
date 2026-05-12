@@ -33,6 +33,7 @@ export const router = createBrowserRouter([
   { path: '/community/:slug', lazy: lazyAppShell },
   { path: '/settings', lazy: lazyAppShell },
   { path: '/profile', lazy: lazyAppShell },
+  { path: '/admin', lazy: lazyAppShell },
   { path: '/project/:slug', lazy: lazyAppShell },
   { path: '/project/:slug/code', lazy: lazyAppShell },
   { path: '/project/:slug/export', lazy: lazyAppShell },

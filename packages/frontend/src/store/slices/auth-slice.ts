@@ -18,7 +18,7 @@ export interface AuthSession {
 }
 
 export type CloudSyncStatus = 'local' | 'idle' | 'dirty' | 'syncing' | 'synced' | 'error' | 'offline';
-export type DashboardSection = 'projects' | 'community' | 'ai-settings' | 'profile' | 'qa-hub';
+export type DashboardSection = 'projects' | 'community' | 'ai-settings' | 'profile' | 'admin' | 'qa-hub';
 
 export interface AuthState {
   authSession: AuthSession | null;

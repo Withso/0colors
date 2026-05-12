@@ -854,7 +854,9 @@ export function AppShell() {
             else if (section === 'community') navigate('/community');
             else if (section === 'ai-settings') navigate('/settings');
             else if (section === 'profile') navigate('/profile');
+            else if (section === 'admin') navigate('/admin');
           }}
+          currentUserId={authSession?.userId}
           onAISettingsSaved={handleAISettingsSaved}
           aiProjectContext={aiProjectContext}
           onOpenCommunityProject={(slug) => {
