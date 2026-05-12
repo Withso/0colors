@@ -518,6 +518,34 @@ export async function touchAuthSession(sessionId: string): Promise<void> {
     }
 }
 
+/** List all live sessions for a user. Used by the "Active sessions" profile UI. */
+export async function listAuthSessionsForUser(userId: string): Promise<AuthSessionRow[]> {
+    try {
+        const { rows } = await pool.query(
+            `SELECT * FROM auth_sessions WHERE user_id = $1 AND expires_at > NOW() ORDER BY last_seen_at DESC`,
+            [userId],
+        );
+        return rows;
+    } catch (err) {
+        console.error('[db] listAuthSessionsForUser failed:', err);
+        throw err;
+    }
+}
+
+/** Delete every session for a user EXCEPT the one passed in. Used by "Sign out everywhere else". */
+export async function deleteAuthSessionsForUserExcept(userId: string, keepSessionId: string): Promise<number> {
+    try {
+        const { rowCount } = await pool.query(
+            'DELETE FROM auth_sessions WHERE user_id = $1 AND id <> $2',
+            [userId, keepSessionId],
+        );
+        return rowCount ?? 0;
+    } catch (err) {
+        console.error('[db] deleteAuthSessionsForUserExcept failed:', err);
+        return 0;
+    }
+}
+
 /** Delete a single session (logout). Returns true if it existed. */
 export async function deleteAuthSession(sessionId: string): Promise<boolean> {
     try {

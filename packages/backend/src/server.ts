@@ -6,7 +6,7 @@ import { cors } from 'hono/cors';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { csp } from './middleware/csp.js';
-import { initSchema } from './db.js';
+import { initSchema, purgeExpiredAuthSessions } from './db.js';
 import { maybeSeedAdminFromEnv } from './auth-seed.js';
 
 // In CommonJS (current backend target), __dirname is a built-in. server.js
@@ -68,17 +68,42 @@ app.route('/api', communityRouter);
 // ---------------------------------------------------------------------------
 if (existsSync(FRONTEND_DIR)) {
     const indexHtml = readFileSync(join(FRONTEND_DIR, 'index.html'), 'utf-8');
-    app.use('/*', serveStatic({ root: FRONTEND_DIR }));
+    app.use('/*', serveStatic({
+        root: FRONTEND_DIR,
+        // Vite emits hashed filenames under /assets/* so they're safe to cache
+        // for a year. index.html and other root files must always be fresh.
+        onFound: (path, c) => {
+            if (path.includes('/assets/')) {
+                c.header('Cache-Control', 'public, max-age=31536000, immutable');
+            } else if (path.endsWith('.html')) {
+                c.header('Cache-Control', 'no-cache');
+            }
+        },
+    }));
     // SPA fallback for unmatched non-/api paths. /api/* falls through to 404
     // so missing endpoints don't get masked by index.html.
     app.get('*', (c) => {
         if (c.req.path.startsWith('/api/')) return c.notFound();
+        c.header('Cache-Control', 'no-cache');
         return c.html(indexHtml);
     });
     console.log(`[server] Serving SPA from ${FRONTEND_DIR}`);
 } else {
     console.log('[server] No SPA bundle present — running API-only (use Vite dev server for the frontend)');
 }
+
+// ---------------------------------------------------------------------------
+// Periodic session-cleanup janitor: deletes expired auth_sessions rows
+// hourly. Cheap, non-fatal on errors, and keeps the table from drifting
+// large over months of small-team use. Phase 2's opportunistic cleanup on
+// login still runs in parallel.
+// ---------------------------------------------------------------------------
+const SESSION_PURGE_INTERVAL_MS = 60 * 60 * 1000;
+setInterval(() => {
+    purgeExpiredAuthSessions()
+        .then((n) => { if (n > 0) console.log(`[janitor] Purged ${n} expired auth sessions`); })
+        .catch((err) => console.warn('[janitor] purgeExpiredAuthSessions failed (non-fatal):', err));
+}, SESSION_PURGE_INTERVAL_MS).unref?.();
 
 // ---------------------------------------------------------------------------
 // Start Server

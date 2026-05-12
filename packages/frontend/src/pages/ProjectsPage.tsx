@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useMemo, lazy, Suspense, FormEvent } from 'react';
-import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, Sparkles, Eye, LogIn, Globe, Folder, User, FlaskConical, UserPlus, Check, Settings as SettingsIcon } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense, FormEvent } from 'react';
+import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, Sparkles, Eye, LogIn, Globe, Folder, User, FlaskConical, UserPlus, Check, Settings as SettingsIcon, Monitor } from 'lucide-react';
 import { getPublicSettings } from '../api/admin';
+import { listSessions, revokeSession, revokeAllOtherSessions, type AuthSession } from '../api/auth';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -229,7 +230,7 @@ function ProjectRow({ project, tokenCount, nodeCount, isHighlighted, isPublished
    ProfileSection
    ═══════════════════════════════════════════════════════════════ */
 
-function ProfileSection({ userEmail, isAdmin }: { userEmail?: string; isAdmin?: boolean }) {
+function ProfileSection({ userEmail, isAdmin, isAuthenticated }: { userEmail?: string; isAdmin?: boolean; isAuthenticated?: boolean }) {
   // Invite UI moved to the Admin section (Users tab) in Phase 8.
   return (
     <div className="projects-profile">
@@ -249,8 +250,127 @@ function ProfileSection({ userEmail, isAdmin }: { userEmail?: string; isAdmin?: 
           </>
         )}
       </div>
+
+      {isAuthenticated && <ActiveSessionsCard />}
     </div>
   );
+}
+
+function ActiveSessionsCard() {
+  const [sessions, setSessions] = useState<AuthSession[] | null>(null);
+  const [error, setError] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setError('');
+    listSessions()
+      .then((s) => { if (!cancelled) setSessions(s); })
+      .catch((e) => { if (!cancelled) setError(e?.message || 'Failed to load sessions'); });
+    return () => { cancelled = true; };
+  }, [reloadKey]);
+
+  const reload = useCallback(() => setReloadKey((k) => k + 1), []);
+
+  async function onRevoke(id: string) {
+    setBusyId(id);
+    try {
+      await revokeSession(id);
+      reload();
+    } catch (e: any) { setError(e?.message || 'Failed to revoke session'); }
+    finally { setBusyId(null); }
+  }
+
+  async function onRevokeAll() {
+    if (!window.confirm('Sign out of every other device and browser?')) return;
+    setBusyId('all');
+    try {
+      await revokeAllOtherSessions();
+      reload();
+    } catch (e: any) { setError(e?.message || 'Failed to revoke sessions'); }
+    finally { setBusyId(null); }
+  }
+
+  const others = sessions?.filter(s => !s.isCurrent) ?? [];
+
+  return (
+    <div className="projects-sessions-card" data-testid="profile-active-sessions">
+      <div className="projects-sessions-header">
+        <Monitor size={14} />
+        <span>Active sessions</span>
+        {others.length > 0 && (
+          <button className="projects-sessions-revoke-all" onClick={onRevokeAll} disabled={busyId === 'all'}>
+            Sign out everywhere else
+          </button>
+        )}
+      </div>
+      <p className="projects-sessions-hint">
+        Each browser or device you sign in from creates a session. Sessions expire after 30 days of inactivity.
+      </p>
+      {error && <div className="projects-sessions-error">{error}</div>}
+      {!sessions && !error && <div className="projects-sessions-loading">Loading…</div>}
+      {sessions && sessions.length === 0 && <div className="projects-sessions-empty">No active sessions.</div>}
+      {sessions && sessions.length > 0 && (
+        <ul className="projects-sessions-list">
+          {sessions.map((s) => (
+            <li key={s.id} className="projects-sessions-row">
+              <div className="projects-sessions-row-main">
+                <div className="projects-sessions-row-ua">
+                  {summarizeUserAgent(s.userAgent)}
+                  {s.isCurrent && <span className="projects-sessions-row-current">This session</span>}
+                </div>
+                <div className="projects-sessions-row-meta">
+                  Last active {formatRelative(s.lastSeenAt)} · started {new Date(s.createdAt).toLocaleDateString()}
+                </div>
+              </div>
+              {!s.isCurrent && (
+                <button
+                  className="projects-sessions-row-revoke"
+                  onClick={() => onRevoke(s.id)}
+                  disabled={busyId === s.id}
+                  data-testid={`profile-session-revoke-${s.id}`}
+                >
+                  {busyId === s.id ? 'Signing out…' : 'Sign out'}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function summarizeUserAgent(ua: string | null): string {
+  if (!ua) return 'Unknown device';
+  const browser =
+    /Edg\//.test(ua) ? 'Edge' :
+    /Chrome\//.test(ua) ? 'Chrome' :
+    /Firefox\//.test(ua) ? 'Firefox' :
+    /Safari\//.test(ua) ? 'Safari' :
+    'Browser';
+  const os =
+    /Windows/.test(ua) ? 'Windows' :
+    /Mac OS X|Macintosh/.test(ua) ? 'macOS' :
+    /Linux/.test(ua) ? 'Linux' :
+    /iPhone|iPad/.test(ua) ? 'iOS' :
+    /Android/.test(ua) ? 'Android' :
+    'Unknown';
+  return `${browser} on ${os}`;
+}
+
+function formatRelative(iso: string): string {
+  const then = new Date(iso).getTime();
+  const diff = Date.now() - then;
+  const minutes = Math.round(diff / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString();
 }
 
 function InviteUserCard() {
@@ -789,6 +909,7 @@ export function ProjectsPage({
           <ProfileSection
             userEmail={userEmail}
             isAdmin={isAdmin}
+            isAuthenticated={isAuthenticated}
           />
         )}
         {activeSection === 'admin' && isAdmin && currentUserId && (
