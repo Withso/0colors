@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useStore } from '../store';
 import type { DevConfig } from '../types';
 import { createDefaultDevConfig } from '../types';
-import { getSupabaseClient, SERVER_BASE } from '../utils/supabase/client';
+import { SERVER_BASE } from '../utils/supabase/client';
 import { publicAnonKey } from '../utils/supabase/info';
 import { decryptPAT } from '../utils/crypto';
 import { rgbToHsl, oklchToHsl } from '../utils/color-conversions';
@@ -54,15 +54,13 @@ export function useDevMode() {
     if (devConfigSaveTimerRef.current) clearTimeout(devConfigSaveTimerRef.current);
     devConfigSaveTimerRef.current = setTimeout(async () => {
       try {
-        const supabase = getSupabaseClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
+        const accessToken = authSession?.accessToken ?? '';
         await fetch(`${SERVER_BASE}/dev/save-config`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${publicAnonKey}`,
-            'X-User-Token': session.access_token,
+            'X-User-Token': accessToken,
           },
           body: JSON.stringify({ projectId: activeProjectId, devConfig: activeDevConfig }),
         });
@@ -84,14 +82,11 @@ export function useDevMode() {
 
     (async () => {
       try {
-        const supabase = getSupabaseClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
-
+        const accessToken = authSession?.accessToken ?? '';
         const res = await fetch(`${SERVER_BASE}/dev/load-config/${activeProjectId}`, {
           headers: {
             'Authorization': `Bearer ${publicAnonKey}`,
-            'X-User-Token': session.access_token,
+            'X-User-Token': accessToken,
           },
         });
         const data = await res.json();
@@ -123,13 +118,10 @@ export function useDevMode() {
     const pollPending = async () => {
       if (!running) return;
       try {
-        const supabase = getSupabaseClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
-
+        const accessToken = authSession?.accessToken ?? '';
         const headers = {
           'Authorization': `Bearer ${publicAnonKey}`,
-          'X-User-Token': session.access_token,
+          'X-User-Token': accessToken,
         };
 
         const res = await fetch(`${SERVER_BASE}/webhook-pending/${activeProjectId}`, { headers });
@@ -249,13 +241,7 @@ export function useDevMode() {
         ? Object.values(outputs)[0]
         : Object.entries(outputs).map(([name, out]) => `/* Theme: ${name} */\n${out}`).join('\n\n');
 
-      const supabase = getSupabaseClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token;
-      if (!authToken) {
-        toast.error('Not authenticated. Sign in to use Dev Mode.');
-        return;
-      }
+      const authToken = authSession?.accessToken ?? '';
 
       const headers = {
         'Content-Type': 'application/json',

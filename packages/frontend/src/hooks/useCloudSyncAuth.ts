@@ -14,7 +14,9 @@ import { useStore } from '../store';
 import { useLocation } from 'react-router';
 
 // ── Cloud sync & auth ──
-import { getSupabaseClient } from '../utils/supabase/client';
+// Supabase client import removed (Phase 1). Token-refresh and sign-out paths
+// that used to call the SDK now short-circuit — Phase 2 will reintroduce real
+// session refresh against the local /api/auth endpoints.
 import { initWriteThrough, destroyWriteThrough } from '../sync/write-through';
 import { setIsLoadingCloudData } from '../store/middleware/persistence-middleware';
 import {
@@ -321,54 +323,10 @@ export function useCloudSyncAuth() {
         toast.error(`Cloud sync failed — ${reason}`, { duration: 6000 });
       },
       onTokenExpired: async () => {
-        // Sync got 401 — the access token is expired. Try to recover.
-        try {
-          const sb = getSupabaseClient();
-
-          // Step 1: Check if the SDK's auto-refresh already obtained a fresh token.
-          // (autoRefreshToken: true may have fired between the failed sync and now.)
-          const { data: currentSession } = await sb.auth.getSession();
-          const currentToken = currentSession?.session?.access_token;
-          const staleToken = authSessionRef.current?.accessToken;
-
-          if (currentToken && currentToken !== staleToken) {
-            console.log('🔑 SDK already has a fresh token — using it');
-            setAuthSession((prev: any) => {
-              if (!prev) return prev;
-              const updated = { ...prev, accessToken: currentToken };
-              // Auth persistence handled by ZerosAuthProvider
-              return updated;
-            });
-            updateAccessToken(currentToken);
-            return currentToken;
-          }
-
-          // Step 2: Explicitly request a refresh.
-          console.log('🔑 Requesting explicit token refresh after sync 401…');
-          const { data, error } = await sb.auth.refreshSession();
-          if (data?.session?.access_token) {
-            console.log('🔑 Token refreshed after sync 401');
-            const newToken = data.session.access_token;
-            setAuthSession((prev: any) => {
-              if (!prev) return prev;
-              const updated = { ...prev, accessToken: newToken };
-              // Auth persistence handled by ZerosAuthProvider
-              return updated;
-            });
-            updateAccessToken(newToken);
-            return newToken;
-          }
-          if (error) console.log(`🔑 Token refresh after 401 failed: ${error.message}`);
-        } catch (e) {
-          console.log(`🔑 Token refresh after 401 error: ${e}`);
-        }
-        // Token refresh failed completely — sign out
-        console.log('🔑 All token refresh attempts failed — signing out');
-        setAuthSession(null);
-        localStorage.removeItem(AUTH_SESSION_KEY);
-        destroyCloudSync();
-        toast.error('Session expired — please sign in again', { duration: 5000 });
-        return null;
+        // Phase 1: the placeholder admin's access token never expires, so a
+        // 401 here means a real server-side problem, not an expired token.
+        // Phase 2 will replace this with a refresh against /api/auth/refresh.
+        return authSessionRef.current?.accessToken ?? null;
       },
       onSynced: (pids, timestamps) => {
         // Update synchronous ref IMMEDIATELY — this ensures loadCloudData
@@ -1110,15 +1068,7 @@ export function useCloudSyncAuth() {
     // Flush any pending sync before signing out (best-effort)
     try { await forceSyncAll(); } catch { /* ignore sync errors on signout */ }
 
-    try {
-      const supabase = getSupabaseClient();
-      // Use { scope: 'local' } to clear only THIS domain's session.
-      // The accounts.zeros.design login page independently handles stale
-      // sessions by clearing them when redirect_url is present.
-      await supabase.auth.signOut({ scope: 'local' });
-    } catch (e) {
-      console.log(`Sign out network error (continuing): ${e}`);
-    }
+    // Phase 2 will POST /api/auth/logout here to clear the session cookie.
 
     // Clear ALL auth-related state and storage
     setAuthSession(null);

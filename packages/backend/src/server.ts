@@ -7,7 +7,6 @@ import { initSchema } from './db.js';
 
 // Route imports
 import healthRouter from './routes/health.js';
-import authRouter from './routes/auth.js';
 import projectsRouter from './routes/projects.js';
 import templatesRouter from './routes/templates.js';
 import figmaRouter from './routes/figma.js';
@@ -40,7 +39,6 @@ app.use('/*', csp());
 // Mount Routes — order matters for webhook specificity
 // ---------------------------------------------------------------------------
 app.route('/api', healthRouter);
-app.route('/api', authRouter);
 app.route('/api', projectsRouter);
 app.route('/api', templatesRouter);
 app.route('/api', figmaRouter);

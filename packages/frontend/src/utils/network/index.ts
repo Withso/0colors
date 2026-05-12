@@ -20,8 +20,8 @@ export {
 } from '../community-api';
 export type { CommunityProjectDetail } from '../community-api';
 
-// Supabase client
-export { getSupabaseClient, SERVER_BASE } from '../supabase/client';
+// API base URL (Supabase client export was removed when the SDK was dropped)
+export { SERVER_BASE } from '../supabase/client';
 
 // Encryption (GitHub PAT)
 export { decryptPAT } from '../crypto';

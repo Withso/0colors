@@ -1,67 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+// ============================================================================
+// Auth contract — Phase 1 placeholder.
+//
+// Until Phase 2 lands real local auth (setup wizard, bcrypt passwords, session
+// cookies), every request resolves to a fixed local admin. This preserves the
+// `requireAuth` contract so all routes keep working end-to-end during the
+// transition. Phase 2 replaces the body of getAuthUser() with real cookie /
+// JWT verification against the local users table.
+// ============================================================================
+
 import type { Context } from 'hono';
 
-const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
+export const PLACEHOLDER_ADMIN_USER_ID = '00000000-0000-0000-0000-000000000001';
+const PLACEHOLDER_ADMIN_NAME = 'Local Admin';
 
-/** Extract and verify JWT from request headers */
-export async function getAuthUser(c: Context): Promise<{ userId: string } | null> {
-    try {
-        const userToken = c.req.header('X-User-Token');
-        const authHeader = c.req.header('Authorization');
-        const accessToken = userToken || authHeader?.split(' ')[1];
-
-        if (!accessToken) return null;
-
-        const { data, error } = await supabase.auth.getUser(accessToken);
-        if (error || !data?.user?.id) {
-            if (error) console.error('[auth] Token verification failed:', error.message);
-            return null;
-        }
-
-        return { userId: data.user.id };
-    } catch (err) {
-        console.error('[auth] getAuthUser unexpected error:', err);
-        return null;
-    }
+/** Extract auth context. Phase 1: always returns the placeholder admin. */
+export async function getAuthUser(_c: Context): Promise<{ userId: string } | null> {
+    return { userId: PLACEHOLDER_ADMIN_USER_ID };
 }
 
-/** Extract and verify JWT, returning userId + display name */
-export async function getAuthUserWithName(c: Context): Promise<{ userId: string; userName: string } | null> {
-    try {
-        const userToken = c.req.header('X-User-Token');
-        const authHeader = c.req.header('Authorization');
-        const accessToken = userToken || authHeader?.split(' ')[1];
-
-        if (!accessToken) return null;
-
-        const { data, error } = await supabase.auth.getUser(accessToken);
-        if (error || !data?.user?.id) {
-            if (error) console.error('[auth] Token verification failed:', error.message);
-            return null;
-        }
-
-        const userName = data.user.user_metadata?.name || data.user.email || 'Anonymous';
-        return { userId: data.user.id, userName };
-    } catch (err) {
-        console.error('[auth] getAuthUserWithName unexpected error:', err);
-        return null;
-    }
-}
-
-/** Create a new user via Supabase Admin API */
-export async function createUser(email: string, password: string, name: string) {
-    try {
-        return await supabase.auth.admin.createUser({
-            email,
-            password,
-            user_metadata: { name: name || email.split('@')[0] },
-            // email_confirm removed — verification emails are now sent via ZeptoMail SMTP
-        });
-    } catch (err) {
-        console.error(`[auth] createUser failed for email="${email}":`, err);
-        throw err;
-    }
+/** Same as getAuthUser, with display name. Phase 1: always placeholder admin. */
+export async function getAuthUserWithName(_c: Context): Promise<{ userId: string; userName: string } | null> {
+    return { userId: PLACEHOLDER_ADMIN_USER_ID, userName: PLACEHOLDER_ADMIN_NAME };
 }

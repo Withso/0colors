@@ -113,11 +113,8 @@ export function AppCanvasArea({
   const setShowCommandPalette = useStore(s => s.setShowCommandPalette);
   const showAllVisible = useStore(s => s.showAllVisible);
   const autoAssignTriggerNodeId = useStore(s => s.autoAssignTriggerNodeId);
-  // Auth: redirect to accounts.zeros.design
-  const redirectToZerosLogin = () => {
-    const returnUrl = encodeURIComponent(window.location.origin + window.location.pathname + window.location.search);
-    window.location.href = `https://accounts.zeros.design/login?product_id=0colors&redirect_url=${returnUrl}`;
-  };
+  // Phase 1 stub. Phase 2: navigate to local /login.
+  const redirectToZerosLogin = () => {};
 
   const viewMode = useStore(s => s.viewMode);
   const authSession = useStore(s => s.authSession);

@@ -1,6 +1,5 @@
 import './App.css';
 import React, { useCallback, useEffect, useRef, useState, Suspense } from 'react';
-import { useOAuthCallback } from '@0zerosdesign/auth-client/react';
 import { useStore, setComputedTokensRef } from './store';
 import { ColorNode } from './types';
 
@@ -1086,26 +1085,5 @@ export function AppShell() {
 
 // ── Root component with RouterProvider ──
 export default function App() {
-  const ready = useOAuthCallback();
-
-  if (!ready) {
-    return (
-      <div
-        data-testid="app-loading-auth"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          background: 'var(--surface-0)',
-          color: 'var(--text-secondary)',
-          fontFamily: 'var(--font-sans)',
-        }}
-      >
-        Signing in...
-      </div>
-    );
-  }
-
   return <RouterProvider router={router} />;
 }
