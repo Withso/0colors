@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 import { useStore } from '../store';
 import { useNavigate } from 'react-router';
 import { fetchCommunityProject } from '../utils/community-api';
-import { reconstructAutoAssignedTokens } from './useSampleTemplates';
+import { reconstructAutoAssignedTokens } from '../utils/auto-assign-tokens';
 import { toast } from 'sonner';
 import type { TokenProject } from '../types';
 

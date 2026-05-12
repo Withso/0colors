@@ -17,7 +17,7 @@ import { randomUUID } from 'node:crypto';
 import {
     countActivatedUsers, createUser, createInvitedUser, getUser, getUserByEmail,
     getUserByInviteToken, setUserPassword, createAuthSession, deleteAuthSession,
-    purgeExpiredAuthSessions,
+    purgeExpiredAuthSessions, getAppSetting,
 } from '../db.js';
 import { getAuthUser } from '../auth.js';
 import { requireAdmin, normalizeUserToMeta } from '../middleware/auth.js';
@@ -105,6 +105,85 @@ router.post('/auth/setup', async (c) => {
         });
     } catch (err: any) {
         console.error('[auth/setup] error:', err);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
+});
+
+// ── GET /api/auth/signup-status ──────────────────────────────────────────────
+// Public. Tells the login screen whether to render a "Sign up" link.
+
+router.get('/auth/signup-status', async (c) => {
+    try {
+        const setting = await getAppSetting('allow_public_signup');
+        // Default ON: missing setting (fresh install) treats as enabled.
+        const allowed = setting === null || setting === undefined || setting === true;
+        return c.json({ allowPublicSignup: allowed });
+    } catch (err) {
+        console.error('[auth/signup-status] error:', err);
+        return c.json({ allowPublicSignup: false }, 500);
+    }
+});
+
+// ── POST /api/auth/signup ────────────────────────────────────────────────────
+// Public — but only when allow_public_signup is true (the default).
+// First-ever signup on a fresh install routes through /api/auth/setup instead,
+// which creates an admin. This endpoint always creates a regular user.
+
+router.post('/auth/signup', async (c) => {
+    try {
+        const setting = await getAppSetting('allow_public_signup');
+        const allowed = setting === null || setting === undefined || setting === true;
+        if (!allowed) {
+            return c.json({ error: 'Public signup is disabled on this install' }, 403);
+        }
+
+        const body = await c.req.json().catch(() => ({}));
+        const email = typeof body.email === 'string' ? body.email.trim() : '';
+        const password = typeof body.password === 'string' ? body.password : '';
+        const name = typeof body.name === 'string' ? body.name.trim() : '';
+
+        if (!isValidEmail(email)) return c.json({ error: 'A valid email is required' }, 400);
+        if (!isValidPassword(password)) {
+            return c.json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` }, 400);
+        }
+        if (!name) return c.json({ error: 'Name is required' }, 400);
+
+        const existing = await getUserByEmail(email);
+        if (existing) {
+            // If the user exists but hasn't activated (pending invite), treat the
+            // signup as an accept-with-fresh-password. Otherwise reject.
+            if (existing.password_hash) {
+                return c.json({ error: 'An account with this email already exists' }, 409);
+            }
+            const passwordHash = await hashPassword(password);
+            await setUserPassword(existing.id, passwordHash);
+            await startSession(c, existing.id);
+            return c.json({
+                success: true,
+                user: { id: existing.id, email: existing.email, name: existing.name, isAdmin: existing.is_admin },
+            });
+        }
+
+        const userId = randomUUID();
+        const passwordHash = await hashPassword(password);
+
+        await createUser(userId, {
+            email,
+            name,
+            role: 'user',
+            is_admin: false,
+            cloud_project_ids: [],
+        });
+        await setUserPassword(userId, passwordHash);
+
+        await startSession(c, userId);
+
+        return c.json({
+            success: true,
+            user: { id: userId, email, name, isAdmin: false },
+        });
+    } catch (err) {
+        console.error('[auth/signup] error:', err);
         return c.json({ error: 'Internal server error' }, 500);
     }
 });

@@ -7,10 +7,10 @@
 // ============================================================================
 
 import { useEffect, useState, FormEvent } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { useStore } from '../store';
 import {
-  setupAdmin, login, lookupInvite, acceptInvite,
+  setupAdmin, login, signup, getSignupStatus, lookupInvite, acceptInvite,
   type AuthedUser, type InviteLookup,
 } from '../api/auth';
 import './auth-screens.css';
@@ -160,6 +160,15 @@ export function LoginScreen() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [signupAllowed, setSignupAllowed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getSignupStatus().then((status) => {
+      if (!cancelled) setSignupAllowed(status.allowPublicSignup);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -206,6 +215,123 @@ export function LoginScreen() {
           <button type="submit" className="auth-submit" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
+          {signupAllowed && (
+            <p className="auth-altlink">
+              Don't have an account? <Link to="/signup">Sign up</Link>
+            </p>
+          )}
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Public signup ────────────────────────────────────────────────────────────
+
+export function SignupScreen() {
+  const navigate = useNavigate();
+  const setAuthSession = useStore((s) => s.setAuthSession);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [signupAllowed, setSignupAllowed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getSignupStatus().then((status) => {
+      if (cancelled) return;
+      setSignupAllowed(status.allowPublicSignup);
+      if (!status.allowPublicSignup) {
+        navigate('/login', { replace: true });
+      }
+    });
+    return () => { cancelled = true; };
+  }, [navigate]);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError('');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    setLoading(true);
+    try {
+      const user = await signup({ email, password, name });
+      applyAuthSession(setAuthSession, user);
+      navigate('/', { replace: true });
+    } catch (err: any) {
+      setError(err?.message || 'Signup failed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (signupAllowed === null) {
+    return (
+      <div className="auth-screen">
+        <div className="auth-card"><div className="auth-loading">Loading…</div></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-screen">
+      <div className="auth-card">
+        <div className="auth-brand">0<span className="auth-brand-dim">colors</span></div>
+        <h1 className="auth-title">Create account</h1>
+        <p className="auth-subtitle">Pick a name, email, and a password of at least 8 characters.</p>
+        <form onSubmit={onSubmit} className="auth-form">
+          <label className="auth-label">
+            Your name
+            <input
+              type="text"
+              className="auth-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+              required
+              autoFocus
+            />
+          </label>
+          <label className="auth-label">
+            Email
+            <input
+              type="email"
+              className="auth-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+            />
+          </label>
+          <label className="auth-label">
+            Password
+            <PasswordField
+              value={password}
+              onChange={setPassword}
+              placeholder="At least 8 characters"
+              autoComplete="new-password"
+            />
+          </label>
+          <label className="auth-label">
+            Confirm password
+            <PasswordField
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              autoComplete="new-password"
+            />
+          </label>
+          {error && <div className="auth-error">{error}</div>}
+          <button type="submit" className="auth-submit" disabled={loading}>
+            {loading ? 'Creating account…' : 'Create account'}
+          </button>
+          <p className="auth-altlink">
+            Already have an account? <Link to="/login">Sign in</Link>
+          </p>
         </form>
       </div>
     </div>
