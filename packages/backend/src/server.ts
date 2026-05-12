@@ -1,10 +1,17 @@
 import 'dotenv/config';
 import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { csp } from './middleware/csp.js';
 import { initSchema } from './db.js';
 import { maybeSeedAdminFromEnv } from './auth-seed.js';
+
+// In CommonJS (current backend target), __dirname is a built-in. server.js
+// lives at packages/backend/dist/server.js, so dist/public/ is right next to it.
+const FRONTEND_DIR = join(__dirname, 'public');
 
 // Route imports
 import healthRouter from './routes/health.js';
@@ -50,6 +57,28 @@ app.route('/api', devRouter);
 app.route('/api', adminRouter);
 app.route('/api', cronRouter);
 app.route('/api', communityRouter);
+
+// ---------------------------------------------------------------------------
+// Static SPA serving (production only — dev runs Vite on :3000)
+//
+// The build pipeline copies packages/frontend/build/ into
+// packages/backend/dist/public/. If that directory exists, we serve it for
+// non-/api paths and fall back to index.html so client-side routes survive a
+// hard refresh.
+// ---------------------------------------------------------------------------
+if (existsSync(FRONTEND_DIR)) {
+    const indexHtml = readFileSync(join(FRONTEND_DIR, 'index.html'), 'utf-8');
+    app.use('/*', serveStatic({ root: FRONTEND_DIR }));
+    // SPA fallback for unmatched non-/api paths. /api/* falls through to 404
+    // so missing endpoints don't get masked by index.html.
+    app.get('*', (c) => {
+        if (c.req.path.startsWith('/api/')) return c.notFound();
+        return c.html(indexHtml);
+    });
+    console.log(`[server] Serving SPA from ${FRONTEND_DIR}`);
+} else {
+    console.log('[server] No SPA bundle present — running API-only (use Vite dev server for the frontend)');
+}
 
 // ---------------------------------------------------------------------------
 // Start Server

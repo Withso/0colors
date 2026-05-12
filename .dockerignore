@@ -1,0 +1,29 @@
+# Dependencies (re-installed inside the image)
+node_modules
+packages/*/node_modules
+
+# Build outputs (regenerated inside the image)
+packages/backend/dist
+packages/frontend/build
+packages/frontend/dist
+
+# Local-only state
+.git
+.env
+.env.local
+*.local
+.DS_Store
+
+# Tooling / docs that don't ship at runtime
+QA-automation
+docs
+playwright-report
+test-results
+.vscode
+.claude
+.codex
+.factory
+.zeros
+
+# Snapshots from previous deploy targets
+docs/legacy
