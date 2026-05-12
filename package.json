@@ -11,7 +11,7 @@
         "dev:qa": "concurrently --names backend,frontend,qa-runner --prefix-colors cyan,magenta,green \"npm run dev -w @0colors/backend\" \"npm run dev -w @0colors/frontend\" \"npm run qa:runner\"",
         "dev:backend": "npm run dev -w @0colors/backend",
         "dev:frontend": "npm run dev -w @0colors/frontend",
-        "build": "npm run build --workspaces --if-present",
+        "build": "npm run build:frontend && npm run build:backend",
         "build:backend": "npm run build -w @0colors/backend",
         "build:frontend": "npm run build -w @0colors/frontend",
         "typecheck": "npm run typecheck -w @0colors/backend",
