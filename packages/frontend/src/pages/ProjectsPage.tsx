@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
-import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, Sparkles, Eye, LogIn, Globe, Folder, User, FlaskConical } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo, lazy, Suspense, FormEvent } from 'react';
+import { Plus, Upload, MoreHorizontal, Download, Copy, Trash2, LogOut, Sparkles, Eye, LogIn, Globe, Folder, User, FlaskConical, UserPlus, Check } from 'lucide-react';
+import { createInvite } from '../api/auth';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -253,6 +254,116 @@ function ProfileSection({ userEmail, isAdmin, isTemplateAdmin }: { userEmail?: s
           </>
         )}
       </div>
+
+      {isAdmin && <InviteUserCard />}
+    </div>
+  );
+}
+
+function InviteUserCard() {
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [makeAdmin, setMakeAdmin] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [inviteUrl, setInviteUrl] = useState('');
+  const [expiresAt, setExpiresAt] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError('');
+    setInviteUrl('');
+    setSubmitting(true);
+    try {
+      const res = await createInvite({ email: email.trim(), name: name.trim(), isAdmin: makeAdmin });
+      setInviteUrl(`${window.location.origin}/accept-invite/${res.inviteToken}`);
+      setExpiresAt(res.expiresAt);
+      setEmail('');
+      setName('');
+      setMakeAdmin(false);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to send invite');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function copyInviteUrl() {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore — older browsers / non-secure contexts
+    }
+  }
+
+  return (
+    <div className="projects-invite-card" data-testid="invite-user-card">
+      <div className="projects-invite-header">
+        <UserPlus size={14} />
+        <span>Invite a user</span>
+      </div>
+      <p className="projects-invite-hint">
+        Share the generated link with someone you want to add. They'll set their own password
+        on first use. Invites expire after 7 days.
+      </p>
+
+      <form onSubmit={onSubmit} className="projects-invite-form">
+        <input
+          type="email"
+          className="projects-invite-input"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          className="projects-invite-input"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <label className="projects-invite-admin-toggle">
+          <input
+            type="checkbox"
+            checked={makeAdmin}
+            onChange={(e) => setMakeAdmin(e.target.checked)}
+          />
+          <span>Grant admin role</span>
+        </label>
+        {error && <div className="projects-invite-error">{error}</div>}
+        <button
+          type="submit"
+          className="projects-invite-submit"
+          disabled={submitting || !email || !name}
+          data-testid="invite-user-submit"
+        >
+          {submitting ? 'Creating invite…' : 'Create invite'}
+        </button>
+      </form>
+
+      {inviteUrl && (
+        <div className="projects-invite-result" data-testid="invite-user-result">
+          <div className="projects-invite-result-label">
+            Invite link {expiresAt && <span className="projects-invite-result-expiry">· expires {new Date(expiresAt).toLocaleDateString()}</span>}
+          </div>
+          <div className="projects-invite-result-row">
+            <code className="projects-invite-url">{inviteUrl}</code>
+            <button
+              type="button"
+              className="projects-invite-copy"
+              onClick={copyInviteUrl}
+              aria-label="Copy invite link"
+            >
+              {copied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

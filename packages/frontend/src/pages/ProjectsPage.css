@@ -229,6 +229,152 @@
 }
 
 /* ═══════════════════════════════════════════
+   InviteUserCard (admin-only)
+   ═══════════════════════════════════════════ */
+
+.projects-invite-card {
+  margin-top: 32px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+  padding: 20px;
+}
+
+.projects-invite-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--on-surface-0);
+}
+
+.projects-invite-hint {
+  font-size: 12px;
+  color: var(--on-surface-3);
+  line-height: 1.5;
+  margin: 6px 0 16px 0;
+}
+
+.projects-invite-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.projects-invite-input {
+  background: color-mix(in srgb, var(--on-surface-0) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 8%, transparent);
+  border-radius: var(--radius-md, 8px);
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--on-surface-0);
+  font-family: inherit;
+}
+
+.projects-invite-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--on-surface-0) 20%, transparent);
+}
+
+.projects-invite-admin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--on-surface-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.projects-invite-error {
+  background: color-mix(in srgb, #ff5050 10%, transparent);
+  border: 1px solid color-mix(in srgb, #ff5050 30%, transparent);
+  color: #ff7676;
+  padding: 8px 12px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.projects-invite-submit {
+  background: var(--on-surface-0);
+  color: var(--surface-0);
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: var(--font-weight-semi-bold);
+  cursor: pointer;
+  font-family: inherit;
+  align-self: flex-start;
+}
+
+.projects-invite-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.projects-invite-result {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: var(--radius-md, 8px);
+  background: color-mix(in srgb, var(--on-surface-0) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 6%, transparent);
+}
+
+.projects-invite-result-label {
+  font-size: 11px;
+  color: var(--on-surface-3);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.projects-invite-result-expiry {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.projects-invite-result-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.projects-invite-url {
+  flex: 1;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--on-surface-0);
+  background: color-mix(in srgb, var(--on-surface-0) 5%, transparent);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 6px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projects-invite-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--on-surface-0) 10%, transparent);
+  color: var(--on-surface-1);
+  padding: 7px 10px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.projects-invite-copy:hover {
+  color: var(--on-surface-0);
+  border-color: color-mix(in srgb, var(--on-surface-0) 18%, transparent);
+}
+
+/* ═══════════════════════════════════════════
    ProjectList
    ═══════════════════════════════════════════ */
 
