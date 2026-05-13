@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <title>0colors — Your design system, on an infinite canvas</title>
+  <meta name="description" content="Open-source design-tokens canvas. Build colors, tokens, and themes visually. Self-host on Railway in one click. MIT licensed." />
+  <meta name="theme-color" content="#0A0A0A" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="canonical" href="https://0colors.dev/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="0colors — Your design system, on an infinite canvas" />
+  <meta property="og:description" content="Open-source design-tokens canvas. Build colors, tokens, and themes visually. Self-host on Railway in one click." />
+  <meta property="og:image" content="assets/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="previews.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "0colors",
+    "description": "Open-source design-tokens canvas. Self-host on Railway.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Web",
+    "license": "https://opensource.org/licenses/MIT",
+    "url": "https://0colors.dev/",
+    "codeRepository": "https://github.com/Withso/0colors",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+
+<body>
+
+<!-- ─── SVG SPRITE (inline so icons cost no extra request) ─── -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M3.5 8h9m-3.5-3.5L12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5L6.5 11.5 12.5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 16 16"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 6h7v7" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.5" y="7" width="9" height="6.5" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="i-unlock" viewBox="0 0 16 16"><rect x="3.5" y="7" width="9" height="6.5" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 4.8-1" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 16 16"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8s-2.5 4.5-6.5 4.5S1.5 8 1.5 8z" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 16 16"><path d="M2 2l12 12M6 6c-2.5 1.5-4.5 4.5-4.5 4.5S4 13.5 8 13.5c1.5 0 2.8-.4 3.9-1M9.5 5.5C13 6 14.5 8 14.5 8s-.7 1.2-2 2.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-crown" viewBox="0 0 16 16"><path d="M2 5l2.5 5h7L14 5l-3 2.5L8 3 5 7.5 2 5zm2 7h8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 16 16"><path d="M9 1.5L3 9h4l-1 5.5 6-7.5H8l1-5.5z" fill="currentColor"/></symbol>
+    <symbol id="i-chev-down" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-link" viewBox="0 0 16 16"><path d="M7 9.5a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2L8 4.3M9 6.5a3 3 0 0 0-4.2 0l-2 2a3 3 0 0 0 4.2 4.2L8 11.7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 16 16"><path d="M2 8l6-6h5v5L7 13l-5-5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="10" cy="6" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-more" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="12.5" cy="8" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 16 16"><path d="M3 4h10M5.5 4V2.5h5V4M4 4l.7 9c0 .8.7 1.5 1.5 1.5h3.6c.8 0 1.5-.7 1.5-1.5L12 4M6.5 7v5M9.5 7v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-chev-ud" viewBox="0 0 16 16"><path d="M4 6L8 2.5L12 6M4 10L8 13.5L12 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-grip" viewBox="0 0 16 16"><path d="M11 5L5 11M14 8L8 14M14 11L11 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.3 10.3L13.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 16 16"><path d="M8 1.5c3.6 0 6.5 2.7 6.5 6 0 1.5-1.2 2.5-2.5 2.5h-1.5c-.8 0-1.5.7-1.5 1.5 0 .5.3.8.3 1.2 0 .6-.5 1.3-1.5 1.3-3.6 0-6.5-3-6.5-6.5S4.4 1.5 8 1.5z" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="5.5" cy="6" r=".8" fill="currentColor"/><circle cx="8" cy="4.5" r=".8" fill="currentColor"/><circle cx="10.5" cy="6" r=".8" fill="currentColor"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 16 16"><path d="M8 1l1.6 5.4L15 8l-5.4 1.6L8 15l-1.6-5.4L1 8l5.4-1.6L8 1z" fill="currentColor"/></symbol>
+    <symbol id="i-cursor" viewBox="0 0 16 16"><path d="M3 2l5 11 1.7-4.3L14 7 3 2z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pan" viewBox="0 0 16 16"><path d="M8 2v12M2 8h12M4 5l-2 3 2 3M12 5l2 3-2 3M5 4l3-2 3 2M5 12l3 2 3-2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2 8h12M8 2c2 2 2 10 0 12-2-2-2-10 0-12z" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <symbol id="i-server" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="9" width="12" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="5" cy="5" r=".7" fill="currentColor"/><circle cx="5" cy="11" r=".7" fill="currentColor"/></symbol>
+    <symbol id="i-db" viewBox="0 0 16 16"><ellipse cx="8" cy="3.5" rx="5.5" ry="2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 3.5v9c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2v-9M2.5 8c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <symbol id="i-double-arrow" viewBox="0 0 16 16"><path d="M5 4l-3 4 3 4M11 4l3 4-3 4M2 8h12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-github" viewBox="0 0 16 16"><path d="M8 .2C3.6.2 0 3.9 0 8.3c0 3.6 2.3 6.6 5.5 7.7.4.1.5-.2.5-.4v-1.4c-2.2.5-2.7-1.1-2.7-1.1-.4-.9-.9-1.2-.9-1.2-.8-.5.1-.5.1-.5.8.1 1.2.9 1.2.9.7 1.3 1.9.9 2.4.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-4 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8.6-.2 1.3-.3 2-.3.7 0 1.4.1 2 .3 1.5-1 2.2-.8 2.2-.8.4 1.1.2 1.9.1 2.1.5.5.8 1.3.8 2.1 0 3-1.8 3.7-3.6 4 .3.3.5.8.5 1.6v2.3c0 .2.1.5.5.4 3.2-1.1 5.5-4.1 5.5-7.7C16 3.9 12.4.2 8 .2z" fill="currentColor"/></symbol>
+    <symbol id="i-railway" viewBox="0 0 24 24"><path d="M1.224 9.36V7.946h21.55V9.36H1.224zm0 5.785v-1.418h21.55v1.418H1.224zM6.36 4.708V3.29H17.64v1.418H6.36zM6.36 19.802v-1.418H17.64v1.418H6.36z" fill="currentColor"/></symbol>
+    <symbol id="i-star" viewBox="0 0 16 16"><path d="M8 1.5l2 4.5L15 7l-3.5 3.5.8 5L8 13l-4.3 2.5.8-5L1 7l5-1L8 1.5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 1L2 9h5l-1 6 7-8H8l1-6z" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<!-- ─── NAV ─── -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#top">
+      <img src="assets/logo.svg" alt="0colors" />
+      <strong><span class="zero">0</span>colors</strong>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a class="nav-link" href="#features">Features</a>
+      <a class="nav-link" href="#selfhost">Self-host</a>
+      <a class="nav-link" href="#code">Export</a>
+      <a class="nav-link" href="https://github.com/Withso/0colors" target="_blank" rel="noopener">Docs</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="https://github.com/Withso/0colors" target="_blank" rel="noopener">
+        <svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>
+        Star on GitHub
+      </a>
+      <a class="btn btn-primary" href="https://railway.com/deploy/0colors" target="_blank" rel="noopener">
+        <svg class="ico" aria-hidden="true"><use href="#i-railway"/></svg>
+        Deploy on Railway
+      </a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ═══════════════════════ HERO ═══════════════════════ -->
+  <section class="hero">
+    <div class="container-wide">
+      <div class="hero-inner">
+
+        <div class="hero-copy fade-in">
+          <span class="eyebrow"><span class="dot"></span> v1.1 · Open source · MIT</span>
+          <h1>
+            Your design system,<br/>
+            <span class="accent">on an infinite canvas.</span>
+          </h1>
+          <p class="lede">
+            Build colors, tokens, and themes visually. Self-host on Railway in one click — your data, your domain, your rules.
+          </p>
+          <div class="hero-ctas">
+            <a class="btn btn-primary btn-lg" href="https://railway.com/deploy/0colors" target="_blank" rel="noopener">
+              <svg class="ico" aria-hidden="true"><use href="#i-railway"/></svg>
+              Deploy on Railway
+            </a>
+            <a class="btn btn-secondary btn-lg" href="https://github.com/Withso/0colors" target="_blank" rel="noopener">
+              <svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>
+              Deploy on your own
+            </a>
+          </div>
+          <div class="hero-meta">
+            <span class="meta-item"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> No telemetry</span>
+            <span class="meta-item"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> No cloud account</span>
+            <span class="meta-item"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> 90-second setup</span>
+          </div>
+        </div>
+
+        <div class="hero-visual fade-in delay-2">
+          <div class="hero-glow" aria-hidden="true"></div>
+
+          <!-- THE HERO PREVIEW: a tilted canvas + 3 nodes + tokens-table peek -->
+          <div class="hero-preview" role="img" aria-label="Mock-up of the 0colors canvas with three connected nodes and a tokens table peek.">
+            <div class="canvas-plane">
+
+              <div class="canvas-toolbar">
+                <span class="t-pill"><svg aria-hidden="true"><use href="#i-pan"/></svg> Pan</span>
+                <span class="t-pill"><svg aria-hidden="true"><use href="#i-grid"/></svg> Grid</span>
+                <span class="t-spacer"></span>
+                <span class="t-pill zoom">100%</span>
+              </div>
+
+              <!-- connector wires — originate from the right + button -->
+              <svg class="canvas-wires" viewBox="0 0 720 460" preserveAspectRatio="none" aria-hidden="true">
+                <path class="live" d="M 336 245 C 420 245, 400 105, 460 105" />
+                <circle class="dot-end" cx="460" cy="105" r="3"/>
+              </svg>
+
+              <!-- Color node — closed state -->
+              <div class="cv-node real-node closed-node is-active cv-color" style="--node-color:#3B82F6;">
+                <div class="rn-label">
+                  <span class="zap" aria-hidden="true"><svg><use href="#i-zap"/></svg></span>
+                  Brand · 500
+                </div>
+                <div class="rn-header" style="background:#3B82F6;">
+                  <span class="rn-hex">#3B82F6</span>
+                  <div class="rn-h-icons">
+                    <span class="rhi" aria-hidden="true"><svg><use href="#i-palette"/></svg></span>
+                    <span class="rhi" aria-hidden="true"><svg><use href="#i-chev-down"/></svg></span>
+                  </div>
+                </div>
+                <div class="rn-body">
+                  <div class="rn-vars">
+                    <div class="rn-var-row">
+                      <span class="rn-var-pill"><svg aria-hidden="true"><use href="#i-tag"/></svg> Variable&nbsp;1</span>
+                      <span class="rn-trash" aria-hidden="true"><svg><use href="#i-trash"/></svg></span>
+                    </div>
+                    <div class="rn-select">Select token… <svg aria-hidden="true"><use href="#i-chev-ud"/></svg></div>
+                  </div>
+                  <span class="rn-resize" aria-hidden="true"><svg><use href="#i-grip"/></svg></span>
+                </div>
+                <span class="rn-plus left" aria-hidden="true"><svg><use href="#i-plus"/></svg></span>
+                <span class="rn-plus right" aria-hidden="true"><svg><use href="#i-plus"/></svg></span>
+              </div>
+
+              <!-- Palette node -->
+              <div class="cv-node cv-palette">
+                <div class="head">
+                  <span class="ttl"><svg aria-hidden="true"><use href="#i-palette"/></svg> Palette · Hover</span>
+                  <span class="ct">9</span>
+                </div>
+                <div class="strip" aria-hidden="true">
+                  <span class="chip" style="background:#dbeafe"></span>
+                  <span class="chip" style="background:#bfdbfe"></span>
+                  <span class="chip" style="background:#93c5fd"></span>
+                  <span class="chip" style="background:#60a5fa"></span>
+                  <span class="chip" style="background:#3b82f6"></span>
+                  <span class="chip" style="background:#2563eb"></span>
+                  <span class="chip" style="background:#1d4ed8"></span>
+                  <span class="chip" style="background:#1e3a8a"></span>
+                  <span class="chip" style="background:#172554"></span>
+                </div>
+                <div class="labels"><span>50</span><span>900</span></div>
+                <span class="handle left"></span>
+              </div>
+
+            </div>
+
+            <!-- Foreground: tokens table peek -->
+            <div class="tokens-peek" aria-hidden="true">
+              <div class="peek-head">
+                <span class="ttl">Tokens</span>
+                <span class="fmt">CSS Variables</span>
+              </div>
+              <div class="peek-row"><span class="sw" style="background:#3b82f6"></span><span class="name">color.primary</span><span class="v">#3B82F6</span></div>
+              <div class="peek-row"><span class="sw" style="background:#60a5fa"></span><span class="name">color.hover</span><span class="v">#60A5FA</span></div>
+              <div class="peek-row"><span class="sw" style="background:#1e40af"></span><span class="name">color.deep</span><span class="v">#1E40AF</span></div>
+              <div class="peek-row"><span class="sw" style="background:#ef4444"></span><span class="name">color.danger</span><span class="v">#EF4444</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ STATS STRIP ═══════════════════════ -->
+  <section class="stats fade-in">
+    <div class="container">
+      <div class="stats-inner">
+        <span><strong>MIT</strong> licensed</span>
+        <span class="sep">·</span>
+        <span><strong>1-click</strong> Railway deploy</span>
+        <span class="sep">·</span>
+        <span><strong>Zero</strong> telemetry</span>
+        <span class="sep">·</span>
+        <span><strong>Local</strong> auth, your Postgres</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ FEATURES (6 BIG BLOCKS) ═══════════════════════ -->
+  <section id="features">
+    <div class="container-wide">
+
+      <!-- 01 — Canvas ───────────────────────────── -->
+      <article class="block">
+        <div class="block-copy fade-in">
+          <p class="chapter">01 — Canvas</p>
+          <h2>Drag colors. See the system.</h2>
+          <p class="lede">Every color is a node. Connect them, and the children update when the parent moves. No spreadsheets. No re-typing values.</p>
+          <ul>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Infinite canvas, pan and zoom like a map.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Parent-child color inheritance, live.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Multi-page projects keep things tidy.</li>
+          </ul>
+        </div>
+        <div class="block-visual fade-in delay-2">
+          <div class="preview-canvas" role="img" aria-label="A closed color node showing the colored header, Variable 1 pill, and a 'color.primary' token assignment, connected to a child 'Hover' node.">
+            <svg class="canvas-wires" viewBox="0 0 620 440" preserveAspectRatio="none" aria-hidden="true">
+              <path class="live" d="M 308 222 C 350 222, 380 214, 408 214" />
+            </svg>
+
+            <!-- Big closed-state color node -->
+            <div class="big-node real-node closed-node is-active" style="--node-color:#3B82F6;">
+              <div class="rn-label">
+                <span class="zap" aria-hidden="true"><svg><use href="#i-zap"/></svg></span>
+                Brand · 500
+              </div>
+              <div class="rn-header" style="background:#3B82F6;">
+                <span class="rn-hex">#3B82F6</span>
+                <div class="rn-h-icons">
+                  <span class="rhi" aria-hidden="true"><svg><use href="#i-palette"/></svg></span>
+                  <span class="rhi" aria-hidden="true"><svg><use href="#i-chev-down"/></svg></span>
+                </div>
+              </div>
+              <div class="rn-body">
+                <div class="rn-vars">
+                  <div class="rn-var-row">
+                    <span class="rn-var-pill"><svg aria-hidden="true"><use href="#i-tag"/></svg> Variable&nbsp;1</span>
+                    <span class="rn-trash" aria-hidden="true"><svg><use href="#i-trash"/></svg></span>
+                  </div>
+                  <div class="rn-select">color.primary <svg aria-hidden="true"><use href="#i-chev-ud"/></svg></div>
+                </div>
+                <span class="rn-resize" aria-hidden="true"><svg><use href="#i-grip"/></svg></span>
+              </div>
+              <span class="rn-plus left" aria-hidden="true"><svg><use href="#i-plus"/></svg></span>
+              <span class="rn-plus right" aria-hidden="true"><svg><use href="#i-plus"/></svg></span>
+            </div>
+
+            <!-- Closed child node (header + diff badge) -->
+            <div class="child-node">
+              <div class="rn-label">Hover</div>
+              <div class="rn-header" style="background:#60A5FA;">
+                <span class="rn-hex">#60A5FA</span>
+                <div class="rh-icons">
+                  <span class="rhi" aria-hidden="true"><svg><use href="#i-palette"/></svg></span>
+                </div>
+              </div>
+              <div class="rn-body-collapsed">
+                <span class="diff-row">Δ&nbsp;L&nbsp;+12 from parent</span>
+              </div>
+              <span class="rn-plus left" aria-hidden="true"></span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 02 — Palette generator ─────────────────── -->
+      <article class="block flip">
+        <div class="block-copy fade-in">
+          <p class="chapter">02 — Palette generator</p>
+          <h2>11 shades from one color.</h2>
+          <p class="lede">Pick a base. We draw the curve. Change the base, every shade follows. Tune lightness, saturation, and hue-shift like you would in any color picker.</p>
+          <ul>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> 50 → 950 named automatically.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Linear, ease, or material curves.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Works in HSL, RGB, OKLCH, HCT.</li>
+          </ul>
+        </div>
+        <div class="block-visual fade-in delay-2">
+          <div class="preview-palette" role="img" aria-label="A palette card with 11 red shades, a gradient strip, and a lightness range slider.">
+            <div class="ph">
+              <div class="t">
+                <span class="badge">PALETTE</span>
+                <span class="nm">Red</span>
+              </div>
+              <div class="actions">
+                <span class="i" aria-hidden="true"><svg><use href="#i-link"/></svg></span>
+                <span class="i" aria-hidden="true"><svg><use href="#i-more"/></svg></span>
+              </div>
+            </div>
+
+            <div class="gradient" aria-hidden="true"></div>
+
+            <div class="chips" aria-hidden="true">
+              <span class="c" style="background:#fef2f2">50</span>
+              <span class="c" style="background:#fee2e2">100</span>
+              <span class="c" style="background:#fecaca">200</span>
+              <span class="c" style="background:#fca5a5">300</span>
+              <span class="c" style="background:#f87171">400</span>
+              <span class="c pop dark" style="background:#ef4444">500</span>
+              <span class="c dark" style="background:#dc2626">600</span>
+              <span class="c dark" style="background:#b91c1c">700</span>
+              <span class="c dark" style="background:#991b1b">800</span>
+              <span class="c dark" style="background:#7f1d1d">900</span>
+              <span class="c dark" style="background:#450a0a">950</span>
+            </div>
+
+            <div class="controls">
+              <div class="ctl-row">
+                <span class="lbl">Curve</span>
+                <span class="dd">ease-in-out <svg aria-hidden="true"><use href="#i-chev-down"/></svg></span>
+              </div>
+              <div class="ctl-row">
+                <span class="lbl">Lightness</span>
+                <span class="slider" aria-hidden="true">
+                  <span class="fill"></span>
+                  <span class="thumb a"></span>
+                  <span class="thumb b"></span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 03 — Tokens table ──────────────────────── -->
+      <article class="block">
+        <div class="block-copy fade-in">
+          <p class="chapter">03 — Tokens table</p>
+          <h2>Every token, one table.</h2>
+          <p class="lede">Search, rename, group, and export. See light and dark values side-by-side. Tokens with smart rules glow softly so you know they're alive.</p>
+          <ul>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Export to CSS, Tailwind, DTCG, or Figma.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Per-theme overrides in one view.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Hide what you don't need yet.</li>
+          </ul>
+        </div>
+        <div class="block-visual fade-in delay-2">
+          <div class="preview-table" role="img" aria-label="A tokens spreadsheet with rows for each design token, columns for light/dark values, visibility, primary, and advanced-logic flag.">
+            <div class="th">
+              <span class="ttl">Tokens · 124</span>
+              <div class="right">
+                <span class="fmt">CSS Variables <svg aria-hidden="true"><use href="#i-chev-down"/></svg></span>
+              </div>
+            </div>
+            <div class="grid">
+              <div class="hdr">
+                <span></span>
+                <span>Name</span>
+                <span>Group</span>
+                <span>Light</span>
+                <span>Dark</span>
+                <span class="col-c">Vis</span>
+                <span class="col-c">Pri</span>
+                <span class="col-c">Logic</span>
+              </div>
+
+              <div class="row">
+                <span class="swatch-c"><span class="sw" style="background:#3b82f6"></span></span>
+                <span class="name">color.primary</span>
+                <span class="grp">Brand</span>
+                <span class="vw">#3B82F6</span>
+                <span class="vw">#60A5FA</span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-eye"/></svg></span>
+                <span class="col-c crown on"><svg aria-hidden="true"><use href="#i-crown"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-zap"/></svg></span>
+              </div>
+
+              <div class="row alt has-logic">
+                <span class="swatch-c"><span class="sw" style="background:#60a5fa"></span></span>
+                <span class="name">color.hover</span>
+                <span class="grp">Brand</span>
+                <span class="vw">#60A5FA</span>
+                <span class="vw">#93C5FD</span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-eye"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-crown"/></svg></span>
+                <span class="col-c on"><svg aria-hidden="true"><use href="#i-zap"/></svg></span>
+              </div>
+
+              <div class="row">
+                <span class="swatch-c"><span class="sw" style="background:#10b981"></span></span>
+                <span class="name">color.success</span>
+                <span class="grp">Status</span>
+                <span class="vw">#10B981</span>
+                <span class="vw">#34D399</span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-eye"/></svg></span>
+                <span class="col-c crown on"><svg aria-hidden="true"><use href="#i-crown"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-zap"/></svg></span>
+              </div>
+
+              <div class="row alt hover has-logic">
+                <span class="swatch-c"><span class="sw" style="background:#ef4444"></span></span>
+                <span class="name">color.danger</span>
+                <span class="grp">Status</span>
+                <span class="vw">#EF4444</span>
+                <span class="vw">#f87171</span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-eye"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-crown"/></svg></span>
+                <span class="col-c on"><svg aria-hidden="true"><use href="#i-zap"/></svg></span>
+              </div>
+
+              <div class="row">
+                <span class="swatch-c"><span class="sw" style="background:#fbbf24"></span></span>
+                <span class="name">color.warning</span>
+                <span class="grp">Status</span>
+                <span class="vw">#FBBF24</span>
+                <span class="vw">#FCD34D</span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-eye"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-crown"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-zap"/></svg></span>
+              </div>
+
+              <div class="row alt hidden-c">
+                <span class="swatch-c"><span class="sw" style="background:#a3a3a3"></span></span>
+                <span class="name">color.muted</span>
+                <span class="grp">Neutral</span>
+                <span class="vw">#A3A3A3</span>
+                <span class="vw">#525252</span>
+                <span class="col-c hidden-c"><svg aria-hidden="true"><use href="#i-eye-off"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-crown"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-zap"/></svg></span>
+              </div>
+
+              <div class="row">
+                <span class="swatch-c"><span class="sw" style="background:#171717"></span></span>
+                <span class="name">surface.canvas</span>
+                <span class="grp">Surface</span>
+                <span class="vw">#FFFFFF</span>
+                <span class="vw">#0A0A0A</span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-eye"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-crown"/></svg></span>
+                <span class="col-c"><svg aria-hidden="true"><use href="#i-zap"/></svg></span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 04 — Advanced logic ─────────────────────── -->
+      <article class="block flip">
+        <div class="block-copy fade-in">
+          <p class="chapter">04 — Advanced logic</p>
+          <h2>When this, then that.</h2>
+          <p class="lede">Make tokens that think. If the parent gets dark, the hover gets lighter. If it's the dark theme, pick a different swatch. Visual rules — no code.</p>
+          <ul>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Rules on any channel: H, S, L, A, R, G, B, OKLCH, HCT.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Conditional token assignments per theme.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Live preview, with errors before you ship.</li>
+          </ul>
+        </div>
+        <div class="block-visual fade-in delay-2">
+          <div class="preview-logic" role="img" aria-label="A rule editor showing a conditional rule on the Lightness channel with a live output preview.">
+            <div class="lh">
+              <div class="ttl">Advanced Logic <span class="sub">· Hover Blue</span></div>
+              <div class="right">
+                <span class="icb" aria-hidden="true"><svg><use href="#i-link"/></svg></span>
+                <span class="icb" aria-hidden="true"><svg><use href="#i-more"/></svg></span>
+              </div>
+            </div>
+            <div class="tabs">
+              <span class="tab on">Channel logic</span>
+              <span class="tab">Token assignment</span>
+            </div>
+            <div class="body">
+
+              <div class="rule">
+                <span class="kw">If</span>
+                <span class="chip">Brand · 500 <svg aria-hidden="true"><use href="#i-chev-down"/></svg></span>
+                <span class="chip">Lightness <svg aria-hidden="true"><use href="#i-chev-down"/></svg></span>
+                <span class="chip">&gt;</span>
+                <span class="chip">50</span>
+                <span class="chip gate">AND</span>
+                <span class="chip">theme = dark</span>
+              </div>
+              <div class="rule">
+                <span class="kw">Then</span>
+                <span class="chip formula">Lightness = parent + 12</span>
+              </div>
+
+              <div class="live" aria-live="polite">
+                <span class="lbl">Live output</span>
+                <span class="sw"></span>
+                <span class="v"><span class="k">L</span>72%</span>
+                <span class="dot" aria-hidden="true"></span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 05 — AI Build Mode ──────────────────────── -->
+      <article class="block">
+        <div class="block-copy fade-in">
+          <p class="chapter">05 — AI Build Mode</p>
+          <h2>Describe it. Watch it build.</h2>
+          <p class="lede">Tell the AI what you want. It creates the nodes, the shades, the tokens — on your canvas, in front of you. You approve every step.</p>
+          <ul>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Bring your own Anthropic, OpenAI, or OpenRouter key.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Keys live on your device. The server never sees them.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Undo any batch with one click.</li>
+          </ul>
+        </div>
+        <div class="block-visual fade-in delay-2">
+          <div class="preview-ai" role="img" aria-label="An AI chat panel showing a user prompt, an assistant response, and a list of four pending tool actions ready to run.">
+            <div class="ah">
+              <span class="mode"><svg aria-hidden="true"><use href="#i-sparkle"/></svg> Build Mode</span>
+              <span class="prov">Anthropic · <strong>Claude 4.6 Sonnet</strong></span>
+            </div>
+            <div class="body">
+              <div class="msg user">Create a red palette with 11 shades and assign it to color.danger.</div>
+              <div class="msg bot">On it. Here's what I'll add<span class="cursor"></span></div>
+
+              <div class="pending">
+                <h5><span class="n">4</span> Pending actions</h5>
+
+                <div class="item">
+                  <span class="ico" aria-hidden="true"><svg><use href="#i-palette"/></svg></span>
+                  <div class="txt">
+                    <span class="tt">Create Palette Node</span>
+                    <span class="pp">name: <span class="tk">"Red"</span>, base: #EF4444</span>
+                  </div>
+                </div>
+                <div class="item">
+                  <span class="ico" aria-hidden="true"><svg><use href="#i-sparkle"/></svg></span>
+                  <div class="txt">
+                    <span class="tt">Generate 11 shades</span>
+                    <span class="pp">curve: <span class="tk">ease-in-out</span>, range: 50–950</span>
+                  </div>
+                </div>
+                <div class="item">
+                  <span class="ico" aria-hidden="true"><svg><use href="#i-tag"/></svg></span>
+                  <div class="txt">
+                    <span class="tt">Create Token</span>
+                    <span class="pp">name: <span class="tk">color.danger</span></span>
+                  </div>
+                </div>
+                <div class="item">
+                  <span class="ico" aria-hidden="true"><svg><use href="#i-link"/></svg></span>
+                  <div class="txt">
+                    <span class="tt">Link token to shade 500</span>
+                    <span class="pp">token: color.danger → Red · 500</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ai-foot">
+              <button class="bp run">Run 4 actions</button>
+              <button class="bp cancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 06 — Themes & export ──────────────────── -->
+      <article class="block flip">
+        <div class="block-copy fade-in">
+          <p class="chapter">06 — Themes & export</p>
+          <h2>One canvas. Every theme. Every format.</h2>
+          <p class="lede">Light, dark, brand-A, brand-B — same canvas, different lenses. Click export and your tokens drop straight into your code in the shape you want.</p>
+          <ul>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> CSS Variables · Tailwind · DTCG · Figma.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> Pick any color space — HSL, OKLCH, HCT, hex.</li>
+            <li><span class="check"><svg aria-hidden="true"><use href="#i-check"/></svg></span> One ZIP for multi-page projects.</li>
+          </ul>
+        </div>
+        <div class="block-visual fade-in delay-2">
+          <div class="preview-themes" role="img" aria-label="A theme switcher with light, dark, and high-contrast pills next to a tabbed code preview showing CSS variables.">
+            <div class="pane">
+              <div class="th-head">Themes</div>
+              <div class="th-pills">
+                <span class="th-pill"><span class="pi"></span>Light</span>
+                <span class="th-pill on"><span class="pi"></span>Dark</span>
+                <span class="th-pill"><span class="pi"></span>High&nbsp;contrast</span>
+              </div>
+              <div class="th-head">Live preview</div>
+              <div class="mini-rows">
+                <div class="mini-row"><span class="sw" style="background:#0a0a0a"></span><span class="nm">surface</span><span class="v">#0A0A0A</span></div>
+                <div class="mini-row"><span class="sw" style="background:#3b82f6"></span><span class="nm">primary</span><span class="v">#3B82F6</span></div>
+                <div class="mini-row"><span class="sw" style="background:#60a5fa"></span><span class="nm">hover</span><span class="v">#60A5FA</span></div>
+                <div class="mini-row"><span class="sw" style="background:#f5f5f5"></span><span class="nm">text</span><span class="v">#F5F5F5</span></div>
+                <div class="mini-row"><span class="sw" style="background:#262626"></span><span class="nm">border</span><span class="v">#262626</span></div>
+              </div>
+            </div>
+
+            <div class="pane code-pane">
+              <div class="ct-tabs">
+                <span class="ct on">CSS</span>
+                <span class="ct">Tailwind</span>
+                <span class="ct">DTCG</span>
+                <span class="ct">Figma</span>
+              </div>
+<pre><span class="cmt">/* dark theme */</span>
+:root {
+  <span class="vname">--surface</span>: <span class="vval">oklch(0.18 0 0)</span>;
+  <span class="vname">--primary</span>: <span class="vval">oklch(0.62 0.18 256)</span>;
+  <span class="vname">--hover</span>:   <span class="vval">oklch(0.72 0.16 256)</span>;
+  <span class="vname">--text</span>:    <span class="vval">oklch(0.97 0 0)</span>;
+}</pre>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ SMALL FEATURE GRID ═══════════════════════ -->
+  <section class="section" id="details">
+    <div class="container">
+      <div class="section-header fade-in">
+        <h2>Every detail, considered.</h2>
+        <p class="lede">The small things that turn a tool into a workshop.</p>
+      </div>
+
+      <div class="grid-features">
+
+        <div class="f-card fade-in">
+          <h4>Pick your color space</h4>
+          <p>HSL for the familiar. OKLCH for the perceptually smooth. HCT when you live in Material.</p>
+          <div class="f-visual">
+            <div class="chip-row">
+              <span class="ch">HSL</span>
+              <span class="ch">RGB</span>
+              <span class="ch on">OKLCH</span>
+              <span class="ch">HCT</span>
+              <span class="ch">Hex</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="f-card fade-in delay-1">
+          <h4>Lock &amp; diff inheritance</h4>
+          <p>Lock the hue, follow the lightness. Or save a fixed offset. Children stay smart, automatically.</p>
+          <div class="f-visual">
+            <div class="lock-rows">
+              <div class="lr locked"><span class="l">H</span><span class="v">217°</span><span class="b" aria-hidden="true"><svg><use href="#i-lock"/></svg></span></div>
+              <div class="lr"><span class="l">S</span><span class="v">91%</span><span class="b" aria-hidden="true"><svg><use href="#i-unlock"/></svg></span></div>
+              <div class="lr diff"><span class="l">L</span><span class="v">parent + 12</span><span class="b">Δ</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="f-card fade-in delay-2">
+          <h4>Multi-page projects</h4>
+          <p>One page for colors. One for type. One for spacing. Same tokens, no clutter.</p>
+          <div class="f-visual">
+            <div class="pagetabs">
+              <span class="pt on"><span class="dot"></span>Colors</span>
+              <span class="pt"><span class="dot"></span>Typography</span>
+              <span class="pt"><span class="dot"></span>Spacing</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="f-card fade-in">
+          <h4>Command palette</h4>
+          <p>Press <span class="mono" style="opacity:.7">⌘K</span>. Type. Done. Every action is one keystroke away.</p>
+          <div class="f-visual" style="width:100%">
+            <div class="cmdk">
+              <div class="top">
+                <svg aria-hidden="true"><use href="#i-search"/></svg>
+                <span class="ph">Search actions…</span>
+                <span class="k">⌘K</span>
+              </div>
+              <div class="sug">
+                <svg aria-hidden="true" style="width:13px;height:13px;color:var(--accent-hover)"><use href="#i-sparkle"/></svg>
+                Create new color node
+                <span class="ret">↵</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="f-card f-soon fade-in delay-1">
+          <span class="soon-badge">Coming soon</span>
+          <h4>Spacing tokens too</h4>
+          <p>Same canvas, same superpowers — for spacing, radius, and any numeric scale.</p>
+          <div class="f-visual">
+            <div class="spacing-stack" aria-hidden="true">
+              <div class="row"><span class="lbl">4</span><span class="bar" style="width:14px"></span></div>
+              <div class="row"><span class="lbl">8</span><span class="bar" style="width:28px"></span></div>
+              <div class="row"><span class="lbl">12</span><span class="bar" style="width:44px"></span></div>
+              <div class="row"><span class="lbl">16</span><span class="bar" style="width:60px"></span></div>
+              <div class="row"><span class="lbl">24</span><span class="bar" style="width:88px"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="f-card fade-in delay-2">
+          <h4>Per-theme visibility</h4>
+          <p>Hide what doesn't apply. Dark-only tokens stay out of the light export, and vice versa.</p>
+          <div class="f-visual">
+            <div class="visible-rows">
+              <div class="vr"><span class="sw" style="background:#3b82f6"></span><span class="nm">color.primary</span><span class="eye" aria-hidden="true"><svg style="width:12px;height:12px"><use href="#i-eye"/></svg></span></div>
+              <div class="vr"><span class="sw" style="background:#60a5fa"></span><span class="nm">color.hover</span><span class="eye" aria-hidden="true"><svg style="width:12px;height:12px"><use href="#i-eye"/></svg></span></div>
+              <div class="vr off"><span class="sw" style="background:#fbbf24"></span><span class="nm">color.legacy</span><span class="eye" aria-hidden="true"><svg style="width:12px;height:12px"><use href="#i-eye-off"/></svg></span></div>
+              <div class="vr"><span class="sw" style="background:#ef4444"></span><span class="nm">color.danger</span><span class="eye" aria-hidden="true"><svg style="width:12px;height:12px"><use href="#i-eye"/></svg></span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ SELF-HOST ═══════════════════════ -->
+  <section id="selfhost" class="selfhost">
+    <div class="container-wide">
+      <div class="selfhost-inner">
+
+        <div class="selfhost-copy fade-in">
+          <p class="chapter">Self-host</p>
+          <h2>Your data. Your server. Your rules.</h2>
+          <p class="lede">One Railway service. One Postgres plugin. One click to deploy. No third-party identity. No usage analytics. No lock-in.</p>
+
+          <div class="selfhost-bullets">
+            <div class="b">
+              <span class="num">1</span>
+              <div>
+                <h4>Click. Wait 90 seconds. You're live.</h4>
+                <p>Hit the Deploy button. Railway provisions the app and Postgres, and wires <span class="mono" style="font-size:13px">DATABASE_URL</span> for you.</p>
+              </div>
+            </div>
+            <div class="b">
+              <span class="num">2</span>
+              <div>
+                <h4>Your Postgres. Your domain. Your auth.</h4>
+                <p>Local sign-in with bcrypt passwords and signed session cookies. The setup wizard turns the first visitor into the admin.</p>
+              </div>
+            </div>
+            <div class="b">
+              <span class="num">3</span>
+              <div>
+                <h4>No telemetry. No accounts. No lock-in.</h4>
+                <p>We collect nothing. AI API keys live on your device. The whole thing is MIT — fork it, theme it, ship it.</p>
+              </div>
+            </div>
+          </div>
+
+          <a class="block-link" href="https://railway.com/deploy/0colors" target="_blank" rel="noopener">
+            Deploy on Railway <svg aria-hidden="true"><use href="#i-arrow"/></svg>
+          </a>
+        </div>
+
+        <div class="block-visual fade-in delay-2">
+          <div class="preview-arch" role="img" aria-label="Architecture diagram showing one Railway service running the 0colors app talking to a Postgres plugin under a custom domain.">
+            <span class="domain"><svg aria-hidden="true"><use href="#i-globe"/></svg> tokens.yourdomain.com</span>
+
+            <div class="frame">
+              <div class="box">
+                <div class="bt"><span class="bi app"><svg aria-hidden="true"><use href="#i-server"/></svg></span> <span class="brand"><span class="zero">0</span>colors</span>&nbsp;app</div>
+                <div class="bchips">
+                  <span class="bchip">/api · JSON</span>
+                  <span class="bchip">/ · React SPA</span>
+                  <span class="bchip">$PORT</span>
+                </div>
+              </div>
+
+              <div class="link" aria-hidden="true">
+                <svg><use href="#i-double-arrow"/></svg>
+              </div>
+
+              <div class="box">
+                <div class="bt"><span class="bi db"><svg aria-hidden="true"><use href="#i-db"/></svg></span> Postgres</div>
+                <div class="bchips">
+                  <span class="bchip">auto-backups</span>
+                  <span class="bchip mono">${{Postgres.DATABASE_URL}}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="json-peek">
+              <span class="k">"healthcheckPath"</span>: <span class="s">"/api/health"</span> · <span class="k">"restartPolicyType"</span>: <span class="s">"ON_FAILURE"</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ CODE SNIPPET ═══════════════════════ -->
+  <section id="code" class="section">
+    <div class="container">
+      <div class="section-header fade-in">
+        <p class="chapter">Export</p>
+        <h2>Tokens, ready for your codebase.</h2>
+        <p class="lede">Same source of truth, four output formats. Copy. Paste. Ship.</p>
+      </div>
+
+      <div class="codeblock fade-in">
+        <div class="code-tabs" role="tablist">
+          <button class="code-tab" role="tab" aria-selected="true" data-tab="css">CSS Variables</button>
+          <button class="code-tab" role="tab" aria-selected="false" data-tab="tailwind">Tailwind</button>
+          <button class="code-tab" role="tab" aria-selected="false" data-tab="dtcg">DTCG</button>
+          <button class="code-tab" role="tab" aria-selected="false" data-tab="figma">Figma</button>
+          <div class="code-actions">
+            <button class="copy-btn" id="copyBtn" aria-label="Copy code">
+              <svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="code-body">
+<pre id="code-css" class="code-pane" data-active>
+<span class="tok-c">/* 0colors export · dark theme */</span>
+<span class="tok-t">:root</span> {
+  <span class="tok-v">--surface</span>:        <span class="tok-s">oklch(0.18 0 0)</span>;
+  <span class="tok-v">--surface-panel</span>:  <span class="tok-s">oklch(0.21 0 0)</span>;
+  <span class="tok-v">--text</span>:           <span class="tok-s">oklch(0.97 0 0)</span>;
+  <span class="tok-v">--text-secondary</span>: <span class="tok-s">oklch(0.74 0 0)</span>;
+  <span class="tok-v">--border</span>:         <span class="tok-s">oklch(0.27 0 0)</span>;
+  <span class="tok-v">--primary</span>:        <span class="tok-s">oklch(0.62 0.18 256)</span>;
+  <span class="tok-v">--primary-hover</span>:  <span class="tok-s">oklch(0.72 0.16 256)</span>;
+  <span class="tok-v">--success</span>:        <span class="tok-s">oklch(0.71 0.16 158)</span>;
+  <span class="tok-v">--danger</span>:         <span class="tok-s">oklch(0.64 0.22 25)</span>;
+}</pre>
+
+<pre id="code-tailwind" class="code-pane" hidden>
+<span class="tok-c">// tailwind.config.js</span>
+<span class="tok-k">module</span>.<span class="tok-p">exports</span> = {
+  <span class="tok-p">theme</span>: {
+    <span class="tok-p">extend</span>: {
+      <span class="tok-p">colors</span>: {
+        <span class="tok-p">surface</span>:  <span class="tok-s">'var(--surface)'</span>,
+        <span class="tok-p">primary</span>:  <span class="tok-s">'var(--primary)'</span>,
+        <span class="tok-p">success</span>:  <span class="tok-s">'var(--success)'</span>,
+        <span class="tok-p">danger</span>:   <span class="tok-s">'var(--danger)'</span>,
+      },
+    },
+  },
+}</pre>
+
+<pre id="code-dtcg" class="code-pane" hidden>
+<span class="tok-c">// tokens.json · DTCG</span>
+{
+  <span class="tok-s">"color"</span>: {
+    <span class="tok-s">"primary"</span>: {
+      <span class="tok-s">"$type"</span>: <span class="tok-s">"color"</span>,
+      <span class="tok-s">"$value"</span>: <span class="tok-s">"#3B82F6"</span>
+    },
+    <span class="tok-s">"hover"</span>: {
+      <span class="tok-s">"$type"</span>: <span class="tok-s">"color"</span>,
+      <span class="tok-s">"$value"</span>: <span class="tok-s">"#60A5FA"</span>
+    }
+  }
+}</pre>
+
+<pre id="code-figma" class="code-pane" hidden>
+<span class="tok-c">// figma-variables.json</span>
+{
+  <span class="tok-s">"variableCollection"</span>: <span class="tok-s">"0colors"</span>,
+  <span class="tok-s">"modes"</span>: [<span class="tok-s">"Light"</span>, <span class="tok-s">"Dark"</span>],
+  <span class="tok-s">"variables"</span>: [
+    { <span class="tok-s">"name"</span>: <span class="tok-s">"color/primary"</span>,
+      <span class="tok-s">"resolvedValuesByMode"</span>: {
+        <span class="tok-s">"Light"</span>: <span class="tok-s">"#2563EB"</span>,
+        <span class="tok-s">"Dark"</span>:  <span class="tok-s">"#3B82F6"</span>
+      } }
+  ]
+}</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ FINAL CTA ═══════════════════════ -->
+  <section class="final">
+    <div class="container final-inner fade-in">
+      <h2>Start with your colors. End with a design&nbsp;system.</h2>
+      <p class="lede" style="margin: 0 auto 32px;">Free, open source, runs on your Railway in 90 seconds.</p>
+      <a class="btn btn-primary btn-lg" href="https://railway.com/deploy/0colors" target="_blank" rel="noopener">
+        <svg class="ico" aria-hidden="true"><use href="#i-railway"/></svg>
+        Deploy on Railway
+      </a>
+      <a class="btn btn-secondary btn-lg" href="https://github.com/Withso/0colors" target="_blank" rel="noopener">
+        <svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="foot">
+  <div class="container-wide">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="nav-logo" href="#top">
+          <img src="assets/logo.svg" alt="" aria-hidden="true" />
+          <strong><span class="zero">0</span>colors</strong>
+        </a>
+        <p>The design-tokens canvas you can self-host. MIT licensed. Made by Withso.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#selfhost">Self-host</a></li>
+          <li><a href="#code">Export</a></li>
+          <li><a href="https://railway.com/deploy/0colors" target="_blank" rel="noopener">Deploy</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="https://github.com/Withso/0colors" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="https://github.com/Withso/0colors/blob/main/README.md" target="_blank" rel="noopener">Docs</a></li>
+          <li><a href="https://github.com/Withso/0colors/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a></li>
+          <li><a href="https://github.com/Withso/0colors/blob/main/SECURITY.md" target="_blank" rel="noopener">Security</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Community</h5>
+        <ul>
+          <li><a href="https://github.com/Withso/0colors/issues" target="_blank" rel="noopener">Issues</a></li>
+          <li><a href="https://github.com/Withso/0colors/discussions" target="_blank" rel="noopener">Discussions</a></li>
+          <li><a href="https://github.com/Withso/0colors/releases" target="_blank" rel="noopener">Releases</a></li>
+          <li><a href="https://github.com/Withso/0colors/blob/main/LICENSE" target="_blank" rel="noopener">License</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Withso · MIT licensed · No telemetry, ever.</span>
+      <span class="pill"><span class="dot"></span> All systems normal</span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js" defer></script>
+</body>
+</html>
