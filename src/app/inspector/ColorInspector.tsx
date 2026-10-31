@@ -85,7 +85,7 @@ export function ColorInspector({ node }: { node: ColorNode }) {
         </div>
         {errors > 0 && (
           <div className="mt-2 flex items-center gap-1.5 text-[11.5px] text-danger">
-            <TriangleAlert size={13} /> {errors} formula{errors > 1 ? 's' : ''} need attention below.
+            <TriangleAlert size={13} /> {errors === 1 ? '1 formula needs' : `${errors} formulas need`} attention below.
           </div>
         )}
       </Section>

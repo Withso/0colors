@@ -93,7 +93,15 @@ function CanvasInner() {
 
   const rfEdges = useMemo(() => {
     const selected = new Set(edgeSelection);
-    const color: ColorFlowEdge[] = edges.map((e) => ({
+    const byId = new Map(nodes.map((n) => [n.id, n]));
+    // Edges from palette shades that no longer exist (steps were reduced) stay in the
+    // document, so raising the step count reconnects them, but are not drawn.
+    const live = edges.filter((e) => {
+      const src = byId.get(e.source);
+      if (src?.type !== 'palette' || e.sourceHandle === 'out') return true;
+      return Number(e.sourceHandle.slice(1)) < Math.round(src.data.steps);
+    });
+    const color: ColorFlowEdge[] = live.map((e) => ({
       id: e.id, source: e.source, sourceHandle: e.sourceHandle, target: e.target, targetHandle: e.targetHandle,
       type: 'color', selected: selected.has(e.id), data: { kind: 'color' },
     }));
@@ -101,7 +109,7 @@ function CanvasInner() {
       id: r.id, source: r.source, target: r.target, type: 'ref', selectable: false, focusable: false, deletable: false, data: { kind: 'ref' }, zIndex: 0,
     }));
     return [...ref, ...color];
-  }, [edges, refs, edgeSelection]);
+  }, [nodes, edges, refs, edgeSelection]);
 
   // ── Changes from React Flow ──
   const onNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => {
