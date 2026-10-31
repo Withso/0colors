@@ -173,7 +173,14 @@
   fill: oklch(0 0 0 / 0.08);
 }
 .react-flow__attribution {
-  display: none;
+  background: transparent;
+  padding: 2px 6px;
+  font-size: 9px;
+  opacity: 0.45;
+  margin: 0 4px 2px 0;
+}
+.react-flow__attribution a {
+  color: var(--app-fg-3);
 }
 @keyframes dash {
   to {

@@ -14,6 +14,7 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: true,
+    chunkSizeWarningLimit: 1200,
   },
   test: {
     include: ['src/**/*.test.ts'],
