@@ -69,7 +69,7 @@ const SHORTCUTS: [string, string][] = [
   ['Add a color at the cursor', 'Double-click canvas'],
   ['Derive a connected node', 'Drag from a right-side handle'],
   ['Create the source for an input', 'Drag from a left-side handle'],
-  ['Select / Pan tool', 'V  ·  H (or hold Space)'],
+  ['Select tool · Hand tool (or hold Space)', 'V  H'],
   ['Box select', 'Drag on empty canvas'],
   ['Add to selection', '⇧ / ⌘ click'],
   ['Pan · Zoom', 'Scroll · ⌘/Ctrl + scroll or pinch'],
@@ -77,10 +77,10 @@ const SHORTCUTS: [string, string][] = [
   ['Zoom in · out', '+  −'],
   ['See where a color comes from and goes', 'Hover a node'],
   ['Nudge selection', 'Arrows (⇧ = 5×)'],
-  ['Duplicate · Copy · Paste', '⌘D · ⌘C · ⌘V'],
-  ['Delete selection', 'Delete / Backspace'],
-  ['Undo · Redo', '⌘Z · ⇧⌘Z'],
-  ['Select all · Deselect', '⌘A · Esc'],
+  ['Duplicate · Copy · Paste', '⌘D  ⌘C  ⌘V'],
+  ['Delete selection', '⌫'],
+  ['Undo · Redo', '⌘Z  ⇧⌘Z'],
+  ['Select all · Deselect', '⌘A  Esc'],
   ['Scrub a channel on the canvas', 'Drag a value on a color node'],
   ['Scrub a number in the panel', 'Drag its label (⇧ faster, ⌥ finer)'],
   ['Rename a node', 'Double-click its title'],
@@ -94,8 +94,14 @@ function ShortcutsDialog() {
         {SHORTCUTS.map(([what, keys]) => (
           <div key={what} className="flex items-center justify-between gap-4 py-2 text-[12.5px]">
             <span className="text-fg-2">{what}</span>
-            <span className="flex shrink-0 flex-wrap justify-end gap-1">
-              {keys.split('  ').map((k) => <Kbd key={k}>{k.trim()}</Kbd>)}
+            <span className="flex shrink-0 flex-wrap items-center justify-end gap-1">
+              {keys.split('  ').map((k) => {
+                const key = k.trim();
+                // Short keys get key caps; mouse gestures read better as plain text.
+                return /\s/.test(key) && key.length > 6
+                  ? <span key={key} className="text-[12px] text-fg-3">{key}</span>
+                  : <Kbd key={key}>{key}</Kbd>;
+              })}
             </span>
           </div>
         ))}

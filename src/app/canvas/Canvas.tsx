@@ -263,13 +263,26 @@ function CanvasInner() {
       const mod = e.metaKey || e.ctrlKey;
       const k = e.key.toLowerCase();
       const { selection, undo, redo, select } = getEditor();
+
+      // ── Global: work wherever focus is (outside text fields) ──
       if (mod && k === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
       if (mod && k === 'y') { e.preventDefault(); redo(); return; }
-      // Everything else belongs to the canvas: only act when it (or nothing) has focus,
-      // so selecting text in the panel and pressing ⌘C / ⌘A behaves normally.
-      if (k === 'escape' && !mod) { select([], []); setMenu(null); return; }
-      const onCanvas = !t || t === document.body || !!wrapper.current?.contains(t);
-      if (!onCanvas) return;
+      if (!mod && !e.altKey) {
+        if (k === 'escape') { select([], []); setMenu(null); return; }
+        if (e.key === '?') { useUI.getState().setShortcutsOpen(true); return; }
+        if (k === 'f' || (e.shiftKey && e.code === 'Digit1')) { e.preventDefault(); rf.fitView({ padding: 0.12, duration: 350, maxZoom: 1.2 }); return; }
+        if (e.shiftKey && e.code === 'Digit0') { e.preventDefault(); rf.zoomTo(1, { duration: 220 }); return; }
+        if (e.key === '-' || e.key === '_') { e.preventDefault(); rf.zoomOut({ duration: 200 }); return; }
+        if (e.key === '=' || e.key === '+') { e.preventDefault(); rf.zoomIn({ duration: 200 }); return; }
+        if (k === 'v') { useUI.getState().setTool('select'); return; }
+        if (k === 'h') { useUI.getState().setTool('hand'); return; }
+        const item = ADD_ITEMS.find((i) => i.key.toLowerCase() === k);
+        if (item) { e.preventDefault(); addAtCenter(item.type); return; }
+      }
+
+      // ── Canvas-only: selection, clipboard, delete, nudge ──
+      // The side panel keeps native behavior (text selection, arrow keys on controls).
+      if (t?.closest('aside')) return;
       const textSelected = (window.getSelection()?.toString() ?? '').length > 0;
       if (mod && k === 'd') { e.preventDefault(); duplicateNodes(selection); return; }
       if (mod && k === 'c') { if (!textSelected && copyNodes(selection)) e.preventDefault(); return; }
@@ -277,13 +290,6 @@ function CanvasInner() {
       if (mod && k === 'a') { if (!textSelected) { e.preventDefault(); selectAll(); } return; }
       if (mod || e.altKey) return;
       if (k === 'delete' || k === 'backspace') { e.preventDefault(); deleteSelection(); return; }
-      if (k === 'f' || (e.shiftKey && e.code === 'Digit1')) { e.preventDefault(); rf.fitView({ padding: 0.12, duration: 350, maxZoom: 1.2 }); return; }
-      if (e.shiftKey && e.code === 'Digit0') { e.preventDefault(); rf.zoomTo(1, { duration: 220 }); return; }
-      if (e.key === '-' || e.key === '_') { e.preventDefault(); rf.zoomOut({ duration: 200 }); return; }
-      if (e.key === '=' || e.key === '+') { e.preventDefault(); rf.zoomIn({ duration: 200 }); return; }
-      if (e.key === '?') { useUI.getState().setShortcutsOpen(true); return; }
-      if (k === 'v') { useUI.getState().setTool('select'); return; }
-      if (k === 'h') { useUI.getState().setTool('hand'); return; }
       if (k.startsWith('arrow') && selection.length) {
         e.preventDefault();
         const step = e.shiftKey ? 40 : 8;
@@ -291,10 +297,7 @@ function CanvasInner() {
         const dy = k === 'arrowup' ? -step : k === 'arrowdown' ? step : 0;
         const { project } = getEditor();
         moveNodes(project.nodes.filter((n) => selection.includes(n.id)).map((n) => ({ id: n.id, position: { x: n.position.x + dx, y: n.position.y + dy } })));
-        return;
       }
-      const item = ADD_ITEMS.find((i) => i.key.toLowerCase() === k);
-      if (item) { e.preventDefault(); addAtCenter(item.type); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);

@@ -467,7 +467,9 @@ export function Dialog({ open, onOpenChange, title, description, children, class
     <RDialog.Root open={open} onOpenChange={onOpenChange}>
       <RDialog.Portal>
         <RDialog.Overlay className="animate-fade fixed inset-0 z-50 bg-black/45 backdrop-blur-[3px]" />
-        <RDialog.Content className={cn('animate-dialog fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-[16px] bg-surface p-5 shadow-panel outline-none', className)}>
+        <RDialog.Content
+          onOpenAutoFocus={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).focus(); }}
+          className={cn('animate-dialog fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-[16px] bg-surface p-5 shadow-panel outline-none', className)}>
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <RDialog.Title className="text-[15px] font-semibold tracking-[-0.01em] text-fg">{title}</RDialog.Title>
