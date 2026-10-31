@@ -79,7 +79,9 @@ const SHORTCUTS: [string, string][] = [
   ['Delete selection', 'Delete / Backspace'],
   ['Undo · Redo', '⌘Z · ⇧⌘Z'],
   ['Select all · Deselect', '⌘A · Esc'],
-  ['Scrub a number', 'Drag its label (⇧ faster, ⌥ finer)'],
+  ['Scrub a channel on the canvas', 'Drag a value on a color node'],
+  ['Scrub a number in the panel', 'Drag its label (⇧ faster, ⌥ finer)'],
+  ['Rename a node', 'Double-click its title'],
 ];
 
 function ShortcutsDialog() {

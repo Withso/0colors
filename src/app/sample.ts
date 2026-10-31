@@ -43,6 +43,7 @@ const TEXT = {
     'Every color here is a node. Connected nodes derive their color from their parent through simple rules, so changing one color updates everything downstream.',
     '- Select any node — the inspector explains how its color is computed.',
     '- Double-click the canvas to add a color; drag from a node’s right edge to derive a new one.',
+    '- Press `F` to see the whole canvas: seven numbered sections, each with a note like this one.',
     '- Everything is saved in this browser. Use the menu to start a blank canvas or reset this sample.',
   ].join('\n'),
   spaces: [

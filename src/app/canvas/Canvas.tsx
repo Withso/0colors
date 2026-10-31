@@ -237,7 +237,7 @@ function CanvasInner() {
     const rect = wrapper.current?.getBoundingClientRect();
     const fitZoom = rect ? Math.min(rect.width / (maxX - minX + 120), rect.height / (maxY - minY + 120)) : 1;
     if (fitZoom >= 0.55) { rf.fitView({ padding: 0.08, maxZoom: 1 }); return; }
-    const zoom = 0.8;
+    const zoom = 0.9;
     rf.setViewport({ x: -minX * zoom + 48, y: -minY * zoom + 40, zoom });
   }, [initialized, loadCount, rf]);
 

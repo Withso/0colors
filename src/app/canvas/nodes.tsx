@@ -13,8 +13,8 @@ import { SPACES, channelDefs, formatChannel } from '@/engine/color/spaces';
 import { MIX_SPACES, mixStops } from '@/engine/color/mix';
 import { toHex } from '@/engine/color/convert';
 import { wcagGrade } from '@/engine/color/contrast';
-import { useEditor, useResult } from '../store';
-import { updateNodeData } from '../actions';
+import { getEditor, useEditor, useResult } from '../store';
+import { renameNode, setChannelValue, updateNodeData } from '../actions';
 import { cn } from '../ui';
 import { fmt, inkOn } from '../lib/color-ui';
 
@@ -39,11 +39,47 @@ function Card({ selected, width, children, className }: { selected: boolean; wid
   );
 }
 
-function Header({ icon, title, badge, children, mono }: { icon: ReactNode; title: string; badge?: ReactNode; children?: ReactNode; mono?: boolean }) {
+/** Node title that turns into a text field on double-click (Enter saves, Esc cancels). */
+function EditableTitle({ id, name, className }: { id: string; name: string; className?: string }) {
+  const [editing, setEditing] = useState(false);
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (editing) ref.current?.select(); }, [editing]);
+  if (editing) {
+    return (
+      <input
+        ref={ref}
+        defaultValue={name}
+        aria-label="Node name"
+        className={cn('nodrag min-w-0 flex-1 rounded-[5px] bg-surface-2 px-1 py-0 outline-none ring-2 ring-accent/70', className)}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === 'Enter') e.currentTarget.blur();
+          if (e.key === 'Escape') { e.currentTarget.value = name; e.currentTarget.blur(); }
+        }}
+        onBlur={(e) => {
+          const v = e.currentTarget.value.trim();
+          setEditing(false);
+          if (v && v !== name) renameNode(id, v);
+        }}
+      />
+    );
+  }
+  return (
+    <span
+      className={cn('min-w-0 flex-1 truncate', className)}
+      title="Double-click to rename"
+      onDoubleClick={(e) => { e.stopPropagation(); setEditing(true); }}
+    >
+      {name}
+    </span>
+  );
+}
+
+function Header({ id, icon, title, badge, children, mono }: { id: string; icon: ReactNode; title: string; badge?: ReactNode; children?: ReactNode; mono?: boolean }) {
   return (
     <div className="flex h-9 items-center gap-2 pl-3 pr-2.5">
       <span className="text-fg-3">{icon}</span>
-      <span className={cn('min-w-0 flex-1 truncate font-semibold tracking-[-0.01em]', mono ? 'num text-[12px]' : 'text-[12.5px]')}>{title}</span>
+      <EditableTitle id={id} name={title} className={cn('font-semibold tracking-[-0.01em]', mono ? 'num text-[12px]' : 'text-[12.5px]')} />
       {badge && <span className="text-[10px] font-medium text-fg-3">{badge}</span>}
       {children}
     </div>
@@ -73,6 +109,37 @@ export const ColorNodeView = memo(function ColorNodeView({ id, data, selected }:
   const showAlpha = color.alpha < 1 || (!!alpha && alpha.mode !== (hasParent ? 'inherit' : 'root'));
   const channels = res.channels.filter((c) => c.key !== 'alpha' || showAlpha);
 
+  // Drag a channel cell sideways to scrub its value (⇧ ×10, ⌥ ÷10), right on the canvas.
+  const scrub = (e: React.PointerEvent, key: string, start: number, def: { step: number; min: number; max: number; wrap?: boolean }) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    const el = e.currentTarget as HTMLElement;
+    el.setPointerCapture(e.pointerId);
+    const x0 = e.clientX;
+    let moved = false;
+    const move = (ev: PointerEvent) => {
+      const dx = ev.clientX - x0;
+      if (!moved && Math.abs(dx) < 3) return;
+      moved = true;
+      const k = ev.shiftKey ? 10 : ev.altKey ? 0.1 : 1;
+      const range = def.max - def.min;
+      const perPx = Math.max(def.step, range / 400) * k;
+      let v = start + dx * perPx;
+      v = def.wrap ? ((v % 360) + 360) % 360 : Math.min(def.max, Math.max(def.min, v));
+      setChannelValue(id, key, Math.round(v / def.step) * def.step);
+    };
+    const up = () => {
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', up);
+      el.removeEventListener('pointercancel', up);
+      getEditor().breakCoalesce();
+      if (!moved) getEditor().select([id]);
+    };
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
+  };
+
   return (
     <Card selected={selected} width={208}>
       <div className="relative p-1.5">
@@ -89,7 +156,7 @@ export const ColorNodeView = memo(function ColorNodeView({ id, data, selected }:
       </div>
       <div className="px-3 pb-1 pt-0.5">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="truncate text-[12.5px] font-semibold tracking-[-0.01em]">{node.name}</span>
+          <EditableTitle id={id} name={node.name} className="text-[12.5px] font-semibold tracking-[-0.01em]" />
           <span className="shrink-0 text-[10px] font-medium text-fg-3">{SPACES[node.data.space].label}</span>
         </div>
         <div className="num text-[11px] text-fg-2">{color.hexa}</div>
@@ -101,8 +168,14 @@ export const ColorNodeView = memo(function ColorNodeView({ id, data, selected }:
           return (
             <div
               key={c.key}
-              title={c.error ? c.error.message : `${def.label} ${formatChannel(def, c.value)}${def.unit ?? ''}`}
-              className={cn('min-w-0 px-2 py-1.5', i > 0 && 'shadow-[inset_0.5px_0_0_var(--app-line-strong)]', c.error && 'bg-danger/10')}
+              title={c.error ? c.error.message : c.mode === 'formula' ? `${def.label} is driven by a formula` : `${def.label} ${formatChannel(def, c.value)}${def.unit ?? ''} — drag to adjust`}
+              onPointerDown={c.mode === 'formula' ? undefined : (e) => scrub(e, c.key, c.value, def)}
+              className={cn(
+                'min-w-0 px-2 py-1.5 transition-colors',
+                c.mode !== 'formula' && 'nodrag cursor-ew-resize hover:bg-surface-3/70',
+                i > 0 && 'shadow-[inset_0.5px_0_0_var(--app-line-strong)]',
+                c.error && 'bg-danger/10',
+              )}
             >
               <div className="flex items-center justify-between gap-1">
                 <span className="text-[9.5px] font-semibold text-fg-3">{def.short}</span>
@@ -136,7 +209,7 @@ export const PaletteNodeView = memo(function PaletteNodeView({ id, data, selecte
     <Card selected={selected} width={228}>
       <div className="relative">
         <Handle type="target" position={Position.Left} id="in" />
-        <Header icon={<PaletteIcon size={13} />} title={node.name} badge={node.data.space.toUpperCase()} />
+        <Header id={id} icon={<PaletteIcon size={13} />} title={node.name} badge={node.data.space.toUpperCase()} />
         <Handle type="source" position={Position.Right} id="out" style={outHandleStyle(res.base.hex)} />
       </div>
       <div className="pb-1.5">
@@ -183,7 +256,7 @@ export const MixNodeView = memo(function MixNodeView({ id, data, selected }: Vie
   };
   return (
     <Card selected={selected} width={228}>
-      <Header icon={<Blend size={13} />} title={node.name} badge={MIX_SPACES[node.data.space].label} />
+      <Header id={id} icon={<Blend size={13} />} title={node.name} badge={MIX_SPACES[node.data.space].label} />
       {input('a')}
       {input('b')}
       <div className="px-3 pb-2 pt-1.5">
@@ -226,7 +299,7 @@ export const ContrastNodeView = memo(function ContrastNodeView({ id, data, selec
   const tone = (ok: boolean, mid: boolean) => (ok ? 'text-success' : mid ? 'text-warning' : 'text-danger');
   return (
     <Card selected={selected} width={248}>
-      <Header icon={<Contrast size={13} />} title={node.name} />
+      <Header id={id} icon={<Contrast size={13} />} title={node.name} />
       {row('fg', 'Text', res.fg, res.fgConnected)}
       {row('bg', 'Background', res.bg, res.bgConnected)}
       <div className="px-1.5 pt-1.5">
@@ -278,7 +351,7 @@ export const TokenNodeView = memo(function TokenNodeView({ id, data, selected }:
   return (
     <Card selected={selected} width={228}>
       <div className="relative">
-        <Header icon={<Tag size={12} />} title={node.name} mono>
+        <Header id={id} icon={<Tag size={12} />} title={node.name} mono>
           {res?.color ? <Chip hex={res.color.hexa} className="h-4 w-4" /> : <span className="h-4 w-4 rounded-[4px] border border-dashed border-line-strong" />}
         </Header>
         <Handle type="source" position={Position.Right} id="out" style={outHandleStyle(res?.color?.hex)} />

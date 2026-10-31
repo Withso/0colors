@@ -108,6 +108,8 @@ Function names are case-insensitive.
 | Add a color | Double-click the canvas |
 | Add a connected node | Drag from an output handle into empty space |
 | Create the source of an input | Drag from an input handle into empty space |
+| Scrub a channel right on the canvas | Drag a value on a color node (⇧ faster, ⌥ finer) |
+| Rename a node | Double-click its title |
 | All shortcuts | ? |
 
 ## Local development
