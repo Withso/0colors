@@ -1,0 +1,190 @@
+@import 'tailwindcss';
+@import '@xyflow/react/dist/base.css';
+
+/* App chrome is deliberately neutral so the colors on the canvas are judged fairly. */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --app-canvas: oklch(0.155 0.004 265);
+  --app-dots: oklch(1 0 0 / 0.07);
+  --app-surface: oklch(0.19 0.005 265);
+  --app-surface-2: oklch(0.225 0.006 265);
+  --app-surface-3: oklch(0.265 0.007 265);
+  --app-line: oklch(1 0 0 / 0.08);
+  --app-line-strong: oklch(1 0 0 / 0.15);
+  --app-fg: oklch(0.96 0.003 265);
+  --app-fg-2: oklch(0.76 0.008 265);
+  --app-fg-3: oklch(0.58 0.01 265);
+  --app-accent: oklch(0.7 0.16 258);
+  --app-accent-soft: oklch(0.7 0.16 258 / 0.16);
+  --app-accent-fg: oklch(0.16 0.02 258);
+  --app-danger: oklch(0.7 0.18 25);
+  --app-warning: oklch(0.8 0.15 80);
+  --app-success: oklch(0.75 0.15 155);
+  --app-shadow: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 12px 32px -12px oklch(0 0 0 / 0.6), 0 2px 6px oklch(0 0 0 / 0.3);
+  --app-node-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px -10px oklch(0 0 0 / 0.55);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --app-canvas: oklch(0.972 0.002 265);
+  --app-dots: oklch(0 0 0 / 0.09);
+  --app-surface: oklch(1 0 0);
+  --app-surface-2: oklch(0.97 0.003 265);
+  --app-surface-3: oklch(0.935 0.004 265);
+  --app-line: oklch(0 0 0 / 0.09);
+  --app-line-strong: oklch(0 0 0 / 0.17);
+  --app-fg: oklch(0.21 0.01 265);
+  --app-fg-2: oklch(0.44 0.012 265);
+  --app-fg-3: oklch(0.6 0.01 265);
+  --app-accent: oklch(0.56 0.2 260);
+  --app-accent-soft: oklch(0.56 0.2 260 / 0.12);
+  --app-accent-fg: oklch(1 0 0);
+  --app-danger: oklch(0.56 0.2 25);
+  --app-warning: oklch(0.62 0.14 70);
+  --app-success: oklch(0.55 0.14 155);
+  --app-shadow: 0 1px 2px oklch(0 0 0 / 0.06), 0 12px 32px -14px oklch(0 0 0 / 0.22);
+  --app-node-shadow: 0 1px 2px oklch(0 0 0 / 0.08), 0 8px 22px -12px oklch(0 0 0 / 0.25);
+}
+
+@theme inline {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --color-canvas: var(--app-canvas);
+  --color-surface: var(--app-surface);
+  --color-surface-2: var(--app-surface-2);
+  --color-surface-3: var(--app-surface-3);
+  --color-line: var(--app-line);
+  --color-line-strong: var(--app-line-strong);
+  --color-fg: var(--app-fg);
+  --color-fg-2: var(--app-fg-2);
+  --color-fg-3: var(--app-fg-3);
+  --color-accent: var(--app-accent);
+  --color-accent-soft: var(--app-accent-soft);
+  --color-accent-fg: var(--app-accent-fg);
+  --color-danger: var(--app-danger);
+  --color-warning: var(--app-warning);
+  --color-success: var(--app-success);
+  --shadow-panel: var(--app-shadow);
+  --shadow-node: var(--app-node-shadow);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--app-canvas);
+    color: var(--app-fg);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  button {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--app-accent);
+    outline-offset: 1px;
+  }
+  ::selection {
+    background: var(--app-accent-soft);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--app-line-strong) transparent;
+  }
+}
+
+@layer components {
+  /* Checkerboard behind translucent swatches. */
+  .checker {
+    background-color: #fff;
+    background-image:
+      linear-gradient(45deg, #d4d4d8 25%, transparent 25%),
+      linear-gradient(-45deg, #d4d4d8 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #d4d4d8 75%),
+      linear-gradient(-45deg, transparent 75%, #d4d4d8 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+  }
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* ── React Flow theming ─────────────────────────────────────── */
+.react-flow {
+  --xy-background-color: transparent;
+  --xy-selection-background-color: var(--app-accent-soft);
+  --xy-selection-border: 1px solid var(--app-accent);
+}
+.react-flow__pane.draggable {
+  cursor: default;
+}
+.react-flow__pane.dragging {
+  cursor: grabbing;
+}
+.react-flow__handle {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid var(--app-surface);
+  background: var(--app-fg-3);
+  transition: transform 120ms ease, background 120ms ease;
+}
+.react-flow__handle:hover,
+.react-flow__handle.connectingto,
+.react-flow__handle.valid {
+  transform: scale(1.35);
+  background: var(--app-accent);
+}
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke-width: 3;
+}
+.react-flow__connectionline path {
+  stroke: var(--app-accent);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+.react-flow__node {
+  font-size: 12px;
+}
+.react-flow__minimap {
+  background: var(--app-surface);
+  border-radius: 10px;
+  border: 1px solid var(--app-line);
+  overflow: hidden;
+}
+.react-flow__minimap-mask {
+  fill: oklch(0 0 0 / 0.35);
+}
+[data-theme='light'] .react-flow__minimap-mask {
+  fill: oklch(0 0 0 / 0.08);
+}
+.react-flow__attribution {
+  display: none;
+}
+@keyframes dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+.edge-ref {
+  animation: dash 1.2s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .edge-ref {
+    animation: none;
+  }
+}

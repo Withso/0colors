@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>0colors — color logic playground</title>
+    <meta
+      name="description"
+      content="An open canvas for understanding color logic: color spaces, inheritance, palettes, mixing, contrast, tokens and themes. Runs entirely in your browser."
+    />
+    <meta name="theme-color" content="#0f1012" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f6f7f8" media="(prefers-color-scheme: light)" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:title" content="0colors — color logic playground" />
+    <meta
+      property="og:description"
+      content="Build color systems as a node graph and see exactly how every color is computed."
+    />
+    <script>
+      // Apply the saved app theme before first paint to avoid a flash.
+      (function () {
+        try {
+          var pref = localStorage.getItem('0colors:app-theme') || 'system';
+          var dark = pref === 'dark' || (pref === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

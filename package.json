@@ -1,51 +1,48 @@
 {
-    "name": "0colors",
-    "version": "1.0.0",
-    "private": true,
-    "description": "0colors – Full-stack monorepo (Backend + Frontend)",
-    "workspaces": [
-        "packages/*"
-    ],
-    "scripts": {
-        "dev": "concurrently --names backend,frontend --prefix-colors cyan,magenta \"npm run dev -w @0colors/backend\" \"npm run dev -w @0colors/frontend\"",
-        "dev:qa": "concurrently --names backend,frontend,qa-runner --prefix-colors cyan,magenta,green \"npm run dev -w @0colors/backend\" \"npm run dev -w @0colors/frontend\" \"npm run qa:runner\"",
-        "dev:backend": "npm run dev -w @0colors/backend",
-        "dev:frontend": "npm run dev -w @0colors/frontend",
-        "build": "npm run build:frontend && npm run build:backend",
-        "build:backend": "npm run build -w @0colors/backend",
-        "build:frontend": "npm run build -w @0colors/frontend",
-        "typecheck": "npm run typecheck -w @0colors/backend",
-        "start:backend": "npm run start -w @0colors/backend",
-        "start:frontend": "npm run start -w @0colors/frontend",
-        "test:e2e": "node scripts/qa-e2e-run.mjs",
-        "test:e2e:a11y": "npx playwright test -c playwright.a11y.config.ts",
-        "test:e2e:headed": "QA_RUN_ID=manual-local npx playwright test --headed",
-        "test:e2e:ui": "npx playwright test --ui",
-        "test:e2e:install": "playwright install chromium",
-        "test:domain": "node scripts/qa-vitest-layer.mjs domain",
-        "test:property": "node scripts/qa-vitest-layer.mjs property",
-        "test:component": "node scripts/qa-vitest-layer.mjs component",
-        "test:integration": "node scripts/qa-vitest-layer.mjs integration",
-        "qa:sync-report": "node scripts/sync-qa-dashboard.mjs",
-        "qa:full": "node scripts/qa-full-run.mjs",
-        "qa:runner": "node scripts/qa-local-runner.mjs",
-        "test:e2e:report": "npm run test:e2e && npm run qa:sync-report",
-        "test:unit": "node scripts/qa-vitest-layer.mjs unit",
-        "test:qa:unit": "npx vitest run --config QA-automation/vitest.config.ts --project unit",
-        "test:qa:domain": "npx vitest run --config QA-automation/vitest.config.ts --project domain",
-        "test:qa:integration": "npx vitest run --config QA-automation/vitest.config.ts --project integration",
-        "test:qa:e2e": "cd QA-automation && QA_PLAYWRIGHT_REPORT_FILE=reports/qa-e2e-results.json npx playwright test -c playwright.config.ts --project=0colors",
-        "test:qa:smoke": "cd QA-automation && QA_PLAYWRIGHT_REPORT_FILE=reports/qa-smoke-results.json npx playwright test -c playwright.config.ts --project=0colors-smoke",
-        "test:mutation": "stryker run"
-    },
-    "devDependencies": {
-        "@axe-core/playwright": "^4.11.1",
-        "@playwright/test": "^1.49.1",
-        "@stryker-mutator/core": "^9.6.0",
-        "@stryker-mutator/vitest-runner": "^9.6.0",
-        "concurrently": "^9.1.2"
-    },
-    "engines": {
-        "node": ">=20.0.0"
-    }
+  "name": "0colors",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "An open canvas for understanding color logic: color spaces, inheritance, palettes, mixing, contrast, tokens and themes. Runs entirely in your browser.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "@material/material-color-utilities": "^0.4.0",
+    "@xyflow/react": "^12.12.0",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "idb-keyval": "^6.3.0",
+    "immer": "^11.2.9",
+    "lucide-react": "^1.66.0",
+    "radix-ui": "^1.8.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.7.0",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
 }

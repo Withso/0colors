@@ -1,0 +1,39 @@
+# 0colors — static file server for the built single-page app.
+# Railway sets $PORT; 8080 is the local default.
+{
+	admin off
+	auto_https off
+}
+
+:{$PORT:8080} {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		-Server
+	}
+
+	# Fingerprinted build assets never change: cache them for a year.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+
+	# Everything else (index.html, SPA routes, favicon) is revalidated on each
+	# load so a new deploy shows up immediately.
+	@notAssets not path /assets/*
+	header @notAssets Cache-Control "no-cache"
+
+	# Railway healthcheck.
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	# Single-page app: serve the file if it exists, otherwise index.html.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

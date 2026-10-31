@@ -1,56 +1,31 @@
 # Dependencies
 node_modules/
 
-# Build outputs
+# Build output
 dist/
-packages/frontend/build/
+coverage/
+*.tsbuildinfo
 
 # Environment
 .env
-.env.local
-.env.*.local
-**/.env
-**/.env.local
-**/.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
+.env.*
 
 # Logs
 *.log
 npm-debug.log*
 
-# TypeScript
-*.tsbuildinfo
+# Test artifacts
+test-results/
+playwright-report/
 
-# Claude Code
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local tooling
 .claude/
-
-# Factory
 .factory/
-
-# Generated QA dashboard payload (run: npm run qa:sync-report)
-packages/frontend/public/qa-reports/latest-run.json
-
-# Playwright machine-local JSON (regenerated each run)
-QA-automation/reports/e2e-results.json
-QA-automation/reports/unit-results.json
-QA-automation/reports/latest-raw-run.json
-QA-automation/reports/runs/
-QA-automation/reports/scratch/
-QA-automation/reports/html/
-QA-automation/test-results/
-
-# Stale legacy report locations (now consolidated under QA-automation/)
-packages/frontend/tests/e2e/playwright-report/
-packages/frontend/tests/e2e/test-results/
-
-# QA hub run history (local machine)
-packages/frontend/public/qa-reports/runs-history.json

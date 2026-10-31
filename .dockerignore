@@ -1,0 +1,20 @@
+# Dependencies and build output are recreated inside the image
+node_modules
+**/node_modules
+dist
+
+# Version control and local state
+.git
+.env*
+*.log
+.DS_Store
+
+# Test artifacts
+coverage
+test-results
+playwright-report
+
+# Local tooling
+.claude
+.zeros
+.mcp.json
