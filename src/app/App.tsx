@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Toaster, toast } from 'sonner';
-import { Eye, Code2, SlidersHorizontal, Tags, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { getEditor } from './store';
 import { type PanelTab, useUI } from './ui-store';
 import { bootProject, startAutosave } from './persist';
@@ -12,11 +12,11 @@ import { PreviewPanel } from './panels/PreviewPanel';
 import { CodePanel } from './panels/CodePanel';
 import { Dialog, IconButton, Kbd, TooltipProvider, cn } from './ui';
 
-const TABS: { id: PanelTab; label: string; icon: React.ReactNode }[] = [
-  { id: 'inspect', label: 'Inspect', icon: <SlidersHorizontal size={14} /> },
-  { id: 'tokens', label: 'Tokens', icon: <Tags size={14} /> },
-  { id: 'preview', label: 'Preview', icon: <Eye size={14} /> },
-  { id: 'code', label: 'Code', icon: <Code2 size={14} /> },
+const TABS: { id: PanelTab; label: string }[] = [
+  { id: 'inspect', label: 'Inspect' },
+  { id: 'tokens', label: 'Tokens' },
+  { id: 'preview', label: 'Preview' },
+  { id: 'code', label: 'Code' },
 ];
 
 function RightPanel() {
@@ -24,29 +24,32 @@ function RightPanel() {
   return (
     <aside
       className={cn(
-        'z-30 flex flex-col border-line bg-surface',
-        'fixed inset-x-0 bottom-0 h-[62vh] rounded-t-2xl border-t shadow-panel',
-        'md:static md:h-auto md:w-[340px] md:shrink-0 md:rounded-none md:border-l md:border-t-0 md:shadow-none',
+        'z-30 flex flex-col bg-surface',
+        'animate-sheet fixed inset-x-0 bottom-0 h-[62vh] rounded-t-[16px] shadow-panel',
+        'md:static md:h-auto md:w-[320px] md:shrink-0 md:animate-none md:rounded-none md:shadow-[inset_0.5px_0_0_var(--app-line-strong)]',
       )}
     >
-      <div className="flex h-11 shrink-0 items-center gap-1 border-b border-line px-2">
-        <div role="tablist" className="flex flex-1 items-center gap-0.5">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={panelTab === t.id}
-              onClick={() => setPanelTab(t.id)}
-              className={cn(
-                'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-colors',
-                panelTab === t.id ? 'bg-surface-3 text-fg' : 'text-fg-3 hover:text-fg',
-              )}
-            >
-              {t.icon}
-              {t.label}
-            </button>
-          ))}
+      <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-line-strong md:hidden" />
+      <div className="flex h-11 shrink-0 items-center gap-2 border-b border-line px-3">
+        <div role="tablist" aria-label="Panel" className="flex flex-1 gap-px rounded-[9px] bg-surface-2 p-[2px]">
+          {TABS.map((t) => {
+            const on = panelTab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setPanelTab(t.id)}
+                className={cn(
+                  'h-[26px] flex-1 rounded-[7px] text-[12px] font-medium outline-none transition-[background-color,color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-accent/60',
+                  on ? 'bg-raised text-fg shadow-[0_1px_2px_oklch(0_0_0/0.18),0_0_0_0.5px_oklch(0_0_0/0.12)]' : 'text-fg-3 hover:text-fg-2',
+                )}
+              >
+                {t.label}
+              </button>
+            );
+          })}
         </div>
         <IconButton label="Close panel" size="icon-sm" className="md:hidden" onClick={() => setPanelOpen(false)}><X size={14} /></IconButton>
       </div>
@@ -84,7 +87,7 @@ function ShortcutsDialog() {
     <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} title="Keyboard & mouse" description="On Windows and Linux, use Ctrl instead of ⌘.">
       <div className="divide-y divide-line">
         {SHORTCUTS.map(([what, keys]) => (
-          <div key={what} className="flex items-center justify-between gap-4 py-2 text-[13px]">
+          <div key={what} className="flex items-center justify-between gap-4 py-2 text-[12.5px]">
             <span className="text-fg-2">{what}</span>
             <span className="flex shrink-0 flex-wrap justify-end gap-1">
               {keys.split('  ').map((k) => <Kbd key={k}>{k.trim()}</Kbd>)}
@@ -125,7 +128,7 @@ export function App() {
         <TopBar />
         <div className="relative flex min-h-0 flex-1">
           <main className="relative min-w-0 flex-1">
-            {ready ? <Canvas /> : <div className="flex h-full items-center justify-center text-[13px] text-fg-3">Loading your canvas…</div>}
+            {ready ? <Canvas /> : <div className="flex h-full items-center justify-center text-[12.5px] text-fg-3">Loading your canvas…</div>}
           </main>
           {panelOpen && <RightPanel />}
         </div>
@@ -134,7 +137,7 @@ export function App() {
       <Toaster
         theme={resolvedTheme}
         position="bottom-right"
-        toastOptions={{ className: '!bg-surface !text-fg !border-line !shadow-panel !rounded-xl !text-[13px]' }}
+        toastOptions={{ className: '!glass !text-fg !border-0 !shadow-panel !rounded-[12px] !text-[12.5px] !font-medium' }}
       />
     </TooltipProvider>
   );

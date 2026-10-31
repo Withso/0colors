@@ -22,7 +22,7 @@ import {
 } from '../actions';
 import { type FlowNode, nodeTypes } from './nodes';
 import { type ColorFlowEdge, type RefFlowEdge, edgeTypes } from './edges';
-import { IconButton, Kbd, Tooltip, cn } from '../ui';
+import { IconButton, Kbd, MENU_ITEM, MENU_SURFACE, Tooltip, cn } from '../ui';
 
 const NODE_SIZE: Record<NodeType, XY> = {
   color: { x: 216, y: 150 }, palette: { x: 236, y: 330 }, mix: { x: 236, y: 190 },
@@ -30,12 +30,12 @@ const NODE_SIZE: Record<NodeType, XY> = {
 };
 
 export const ADD_ITEMS: { type: NodeType; label: string; key: string; icon: ReactNode; hint: string }[] = [
-  { type: 'color', label: 'Color', key: 'C', icon: <Square size={16} />, hint: 'A color in OKLCH, HCT, HSL or RGB' },
-  { type: 'palette', label: 'Palette', key: 'P', icon: <Palette size={16} />, hint: 'A lightness scale from one hue' },
-  { type: 'mix', label: 'Mix', key: 'M', icon: <Blend size={16} />, hint: 'Blend two colors in a chosen space' },
-  { type: 'contrast', label: 'Contrast', key: 'K', icon: <Contrast size={16} />, hint: 'Check text/background readability' },
-  { type: 'token', label: 'Token', key: 'T', icon: <Tag size={16} />, hint: 'A semantic name with one input per theme' },
-  { type: 'note', label: 'Note', key: 'N', icon: <StickyNote size={16} />, hint: 'Write an explanation on the canvas' },
+  { type: 'color', label: 'Color', key: 'C', icon: <Square size={17} />, hint: 'A color in OKLCH, HCT, HSL or RGB' },
+  { type: 'palette', label: 'Palette', key: 'P', icon: <Palette size={17} />, hint: 'A lightness scale from one hue' },
+  { type: 'mix', label: 'Mix', key: 'M', icon: <Blend size={17} />, hint: 'Blend two colors in a chosen space' },
+  { type: 'contrast', label: 'Contrast', key: 'K', icon: <Contrast size={17} />, hint: 'Check text/background readability' },
+  { type: 'token', label: 'Token', key: 'T', icon: <Tag size={17} />, hint: 'A semantic name with one input per theme' },
+  { type: 'note', label: 'Note', key: 'N', icon: <StickyNote size={17} />, hint: 'Write an explanation on the canvas' },
 ];
 
 const BACKDROPS: Record<Backdrop, { bg: string; dots: string; label: string }> = {
@@ -305,7 +305,7 @@ function CanvasInner() {
     <div
       ref={wrapper}
       className="relative h-full w-full"
-      style={{ background: bd.bg }}
+      style={{ background: bd.bg, ['--canvas-bd' as string]: bd.bg }}
       onDoubleClick={(e) => {
         if (!(e.target as Element).classList.contains('react-flow__pane')) return;
         addAt('color', rf.screenToFlowPosition({ x: e.clientX, y: e.clientY }));
@@ -362,7 +362,7 @@ function CanvasInner() {
             nodeStrokeWidth={0}
             nodeBorderRadius={6}
             maskColor="transparent"
-            style={{ width: 168, height: 110, marginBottom: 56, marginLeft: 12 }}
+            style={{ width: 176, height: 112, marginBottom: 60, marginLeft: 12 }}
           />
         )}
       </ReactFlow>
@@ -377,12 +377,38 @@ function CanvasInner() {
 
 function EmptyHint() {
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-      <div className="max-w-sm rounded-2xl border border-dashed border-line-strong bg-surface/70 px-6 py-5 text-center backdrop-blur">
-        <div className="text-[14px] font-semibold text-fg">An empty canvas</div>
-        <p className="mt-1.5 text-[13px] text-fg-2">Double-click anywhere to add a color, or pick a node from the toolbar below. Press <Kbd>?</Kbd> for shortcuts.</p>
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+      <div className="animate-pop max-w-[320px] text-center">
+        <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-[12px] bg-surface-2 text-fg-2 shadow-[inset_0_0_0_0.5px_var(--app-line-strong)]">
+          <Square size={18} />
+        </div>
+        <div className="text-[14px] font-semibold tracking-[-0.01em] text-fg">Start with a color</div>
+        <p className="mt-1 text-[12.5px] leading-relaxed text-fg-2">
+          Double-click anywhere on the canvas, or press <Kbd>C</Kbd>. Press <Kbd>?</Kbd> to see every shortcut.
+        </p>
       </div>
     </div>
+  );
+}
+
+const FLOAT = 'glass rounded-[14px] shadow-panel';
+
+function ToolButton({ label, shortcut, hint, active, onClick, children }: { label: string; shortcut: string; hint?: string; active?: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <Tooltip content={hint ? <span><span className="font-semibold">{label}</span><span className="text-white/65"> · {hint}</span></span> : label} shortcut={shortcut}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={active}
+        onClick={onClick}
+        className={cn(
+          'grid h-9 w-9 place-items-center rounded-[10px] outline-none transition-[background-color,color,transform] duration-150 active:scale-[0.94] focus-visible:ring-2 focus-visible:ring-accent/60',
+          active ? 'bg-accent text-accent-fg' : 'text-fg-2 hover:bg-surface-3/80 hover:text-fg',
+        )}
+      >
+        {children}
+      </button>
+    </Tooltip>
   );
 }
 
@@ -390,22 +416,14 @@ function Toolbar({ onAdd }: { onAdd: (t: NodeType) => void }) {
   const { tool, setTool } = useUI();
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
-      <div className="pointer-events-auto flex items-center gap-0.5 rounded-2xl border border-line bg-surface/95 p-1 shadow-panel backdrop-blur">
-        <IconButton label="Select" shortcut="V" active={tool === 'select'} onClick={() => setTool('select')}><MousePointer2 size={16} /></IconButton>
-        <IconButton label="Pan" shortcut="H · Space" active={tool === 'hand'} onClick={() => setTool('hand')}><Hand size={16} /></IconButton>
-        <div className="mx-1 h-5 w-px bg-line" />
+      <div className={cn('pointer-events-auto flex items-center gap-0.5 p-1', FLOAT)}>
+        <ToolButton label="Select" shortcut="V" active={tool === 'select'} onClick={() => setTool('select')}><MousePointer2 size={17} /></ToolButton>
+        <ToolButton label="Hand" shortcut="H" hint="drag to pan" active={tool === 'hand'} onClick={() => setTool('hand')}><Hand size={17} /></ToolButton>
+        <div className="mx-1 h-5 w-px bg-line-strong" />
         {ADD_ITEMS.map((item) => (
-          <Tooltip key={item.type} content={<span><b className="font-semibold">{item.label}</b> — {item.hint}</span>} shortcut={item.key}>
-            <button
-              type="button"
-              aria-label={`Add ${item.label}`}
-              onClick={() => onAdd(item.type)}
-              className="flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-[12px] font-medium text-fg-2 transition-colors hover:bg-surface-3 hover:text-fg"
-            >
-              {item.icon}
-              <span className="hidden lg:inline">{item.label}</span>
-            </button>
-          </Tooltip>
+          <ToolButton key={item.type} label={item.label} shortcut={item.key} hint={item.hint} onClick={() => onAdd(item.type)}>
+            {item.icon}
+          </ToolButton>
         ))}
       </div>
     </div>
@@ -418,25 +436,25 @@ function ZoomControls() {
   const { minimap, setMinimap, backdrop, setBackdrop } = useUI();
   const order: Backdrop[] = ['app', 'dark', 'gray', 'light'];
   return (
-    <div className="absolute bottom-4 left-3 hidden items-center gap-0.5 rounded-xl border border-line bg-surface/95 p-1 shadow-panel backdrop-blur sm:flex">
-      <IconButton label="Zoom out" size="icon-sm" onClick={() => rf.zoomOut({ duration: 200 })}><Minus size={14} /></IconButton>
-      <Tooltip content="Reset to 100%">
-        <button type="button" className="num h-6 w-11 rounded-md text-[11px] text-fg-2 hover:bg-surface-3 hover:text-fg" onClick={() => rf.zoomTo(1, { duration: 200 })}>
+    <div className={cn('absolute bottom-4 left-3 hidden items-center gap-px p-1 sm:flex', FLOAT)}>
+      <IconButton label="Zoom out" shortcut="−" size="icon-sm" onClick={() => rf.zoomOut({ duration: 200 })}><Minus size={14} /></IconButton>
+      <Tooltip content="Zoom to 100%">
+        <button type="button" className="num h-7 w-12 rounded-[7px] text-[11.5px] font-medium text-fg-2 outline-none transition-colors hover:bg-surface-3/80 hover:text-fg" onClick={() => rf.zoomTo(1, { duration: 220 })}>
           {Math.round(zoom * 100)}%
         </button>
       </Tooltip>
-      <IconButton label="Zoom in" size="icon-sm" onClick={() => rf.zoomIn({ duration: 200 })}><Plus size={14} /></IconButton>
-      <IconButton label="Fit everything" shortcut="F" size="icon-sm" onClick={() => rf.fitView({ padding: 0.12, duration: 350, maxZoom: 1.2 })}><Maximize size={13} /></IconButton>
-      <div className="mx-0.5 h-4 w-px bg-line" />
+      <IconButton label="Zoom in" shortcut="+" size="icon-sm" onClick={() => rf.zoomIn({ duration: 200 })}><Plus size={14} /></IconButton>
+      <IconButton label="Zoom to fit" shortcut="F" size="icon-sm" onClick={() => rf.fitView({ padding: 0.12, duration: 380, maxZoom: 1.2 })}><Maximize size={13} /></IconButton>
+      <div className="mx-1 h-4 w-px bg-line-strong" />
       <IconButton label={minimap ? 'Hide minimap' : 'Show minimap'} size="icon-sm" active={minimap} onClick={() => setMinimap(!minimap)}><MapIcon size={13} /></IconButton>
-      <Tooltip content={`Canvas backdrop: ${BACKDROPS[backdrop].label} — colors look different on different surroundings`}>
+      <Tooltip content={`Backdrop: ${BACKDROPS[backdrop].label} — the same color looks different on different surroundings`}>
         <button
           type="button"
           aria-label="Change canvas backdrop"
           onClick={() => setBackdrop(order[(order.indexOf(backdrop) + 1) % order.length])}
-          className="flex h-6 w-6 items-center justify-center rounded-md hover:bg-surface-3"
+          className="grid h-7 w-7 place-items-center rounded-[7px] outline-none transition-colors hover:bg-surface-3/80"
         >
-          <span className="h-3.5 w-3.5 rounded-full ring-1 ring-line-strong" style={{ background: BACKDROPS[backdrop].bg }} />
+          <span className="h-3.5 w-3.5 rounded-full shadow-[inset_0_0_0_1px_var(--app-line-strong),0_0_0_2px_var(--app-surface-3)]" style={{ background: BACKDROPS[backdrop].bg }} />
         </button>
       </Tooltip>
     </div>
@@ -464,11 +482,11 @@ function CanvasMenu({ menu, close, addAt }: { menu: MenuState; close: () => void
       key={label}
       type="button"
       onClick={() => { run(); close(); }}
-      className={cn('flex h-8 w-full items-center gap-2.5 rounded-lg px-2 text-left text-[13px] hover:bg-surface-3', opts.danger ? 'text-danger' : 'text-fg')}
+      className={cn(MENU_ITEM, 'hover:bg-accent hover:text-accent-fg focus-visible:bg-accent focus-visible:text-accent-fg', opts.danger ? 'text-danger' : 'text-fg')}
     >
-      <span className="flex w-4 justify-center text-fg-2">{icon}</span>
+      <span className="flex w-4 justify-center text-fg-2 group-hover:text-accent-fg">{icon}</span>
       <span className="flex-1">{label}</span>
-      {opts.shortcut && <span className="num text-[11px] text-fg-3">{opts.shortcut}</span>}
+      {opts.shortcut && <span className="num text-[11px] text-fg-3 group-hover:text-accent-fg/80">{opts.shortcut}</span>}
     </button>
   );
 
@@ -479,7 +497,7 @@ function CanvasMenu({ menu, close, addAt }: { menu: MenuState; close: () => void
     const from = menu.from;
     content = (
       <>
-        <div className="px-2 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-fg-3">Connect a new…</div>
+        <div className="px-2 pb-1 pt-1.5 text-[11px] font-medium text-fg-3">Create a connected node</div>
         {item('Color (derived)', <Square size={14} />, () => addConnectedNode(from, 'color', { x: menu.flow.x, y: menu.flow.y - 38 }))}
         {item('Token', <Tag size={14} />, () => addConnectedNode(from, 'token', { x: menu.flow.x, y: menu.flow.y - 20 }))}
         {item('Palette', <Palette size={14} />, () => addConnectedNode(from, 'palette', { x: menu.flow.x, y: menu.flow.y - 18 }))}
@@ -498,7 +516,7 @@ function CanvasMenu({ menu, close, addAt }: { menu: MenuState; close: () => void
           getEditor().update((d) => { d.edges = d.edges.filter((e) => !ids.includes(e.target)); });
         })}
         {item('Center in view', <Crosshair size={14} />, () => window.dispatchEvent(new CustomEvent('0colors:focus-node', { detail: { id: menu.targetId } })))}
-        <div className="my-1 h-px bg-line" />
+        <div className="mx-2 my-[5px] h-px bg-line" />
         {item(ids.length > 1 ? `Delete ${ids.length} nodes` : 'Delete', <Trash2 size={14} />, () => deleteNodes(ids), { danger: true, shortcut: '⌫' })}
       </>
     );
@@ -507,9 +525,9 @@ function CanvasMenu({ menu, close, addAt }: { menu: MenuState; close: () => void
   } else {
     content = (
       <>
-        <div className="px-2 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-fg-3">Add here</div>
+        <div className="px-2 pb-1 pt-1.5 text-[11px] font-medium text-fg-3">Add here</div>
         {ADD_ITEMS.map((i) => item(i.label, i.icon, () => addAt(i.type, menu.flow), { shortcut: i.key }))}
-        <div className="my-1 h-px bg-line" />
+        <div className="mx-2 my-[5px] h-px bg-line" />
         {item('Paste', <Copy size={14} />, () => pasteNodes(menu.flow), { shortcut: '⌘V' })}
         {item('Select all', <MousePointer2 size={14} />, () => selectAll(), { shortcut: '⌘A' })}
       </>
@@ -520,7 +538,7 @@ function CanvasMenu({ menu, close, addAt }: { menu: MenuState; close: () => void
     <div
       ref={ref}
       role="menu"
-      className="fixed z-50 min-w-56 rounded-xl border border-line bg-surface p-1 shadow-panel"
+      className={cn(MENU_SURFACE, 'fixed')}
       style={{ left: pos.x, top: pos.y }}
       onContextMenu={(e) => e.preventDefault()}
     >

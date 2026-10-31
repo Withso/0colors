@@ -48,12 +48,12 @@ export const ColorEdgeView = memo(function ColorEdgeView(props: EdgeProps<ColorF
         </linearGradient>
       </defs>
       {selected && <path d={path} fill="none" stroke="var(--app-accent)" strokeWidth={7} strokeOpacity={0.35} strokeLinecap="round" />}
-      <path d={path} fill="none" stroke="var(--app-canvas)" strokeWidth={4.5} strokeOpacity={0.9} />
+      <path d={path} fill="none" stroke="var(--canvas-bd, var(--app-canvas))" strokeWidth={5} strokeOpacity={0.85} />
       <BaseEdge id={id} path={path} interactionWidth={18} style={{ stroke: `url(#${gradientId})`, strokeWidth: selected ? 3 : 2.25 }} />
       {summary && (
         <EdgeLabelRenderer>
           <div
-            className="num pointer-events-none absolute rounded-md border border-line bg-surface px-1.5 py-0.5 text-[10px] font-medium text-fg-2 shadow-sm"
+            className="num glass pointer-events-none absolute rounded-[6px] px-1.5 py-[3px] text-[10px] font-medium text-fg-2 shadow-[0_0_0_0.5px_var(--app-line-strong),0_2px_6px_oklch(0_0_0/0.18)]"
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
           >
             {summary}
@@ -94,7 +94,7 @@ export const RefEdgeView = memo(function RefEdgeView({ id, source, target }: Edg
   return (
     <g className="pointer-events-none">
       <path id={id} d={path} fill="none" stroke={color} strokeWidth={1.75} strokeDasharray="5 5" strokeOpacity={0.85} className="edge-ref" />
-      <circle cx={p2.x} cy={p2.y} r={3.5} fill={color} stroke="var(--app-canvas)" strokeWidth={1.5} />
+      <circle cx={p2.x} cy={p2.y} r={3.5} fill={color} stroke="var(--canvas-bd, var(--app-canvas))" strokeWidth={1.5} />
     </g>
   );
 });

@@ -1,13 +1,12 @@
 // ─────────────────────────────────────────────────────────────
-// Canvas node views. Nodes stay compact and glanceable; full controls live in
-// the inspector. Every value shown here comes from the compute results.
+// Canvas node views. Cards stay calm and glanceable — an inset swatch, a name,
+// and quiet hints about how each value is derived. Full controls live in the
+// inspector. Every value shown here comes from the compute results.
 // ─────────────────────────────────────────────────────────────
-import { memo, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, memo, type ReactNode, useEffect, useRef, useState } from 'react';
 import { Handle, type NodeProps, Position, type Node as RFNode } from '@xyflow/react';
-import { AlertTriangle, Blend, Contrast, FunctionSquare, Lock, Palette as PaletteIcon, Tag } from 'lucide-react';
-import type {
-  CanvasNode, ColorNode, ContrastNode, MixNode, NoteNode, PaletteNode, TokenNode,
-} from '@/engine/model';
+import { Blend, Contrast, Lock, Palette as PaletteIcon, Tag, TriangleAlert } from 'lucide-react';
+import type { CanvasNode, ColorNode, ContrastNode, MixNode, NoteNode, PaletteNode, TokenNode } from '@/engine/model';
 import { shadeHandle, tokenHandle } from '@/engine/model';
 import type { ColorResult, ContrastResult, MixResult, PaletteResult, TokenResult } from '@/engine/compute';
 import { SPACES, channelDefs, formatChannel } from '@/engine/color/spaces';
@@ -22,13 +21,16 @@ import { fmt, inkOn } from '../lib/color-ui';
 export type FlowNode = RFNode<{ node: CanvasNode }>;
 type ViewProps = NodeProps<FlowNode>;
 
-function Frame({ selected, width, children, className }: { selected: boolean; width: number; children: ReactNode; className?: string }) {
+const outHandleStyle = (hex?: string | null): CSSProperties => (hex ? { background: hex } : {});
+
+function Card({ selected, width, children, className }: { selected: boolean; width: number; children: ReactNode; className?: string }) {
   return (
     <div
       style={{ width }}
       className={cn(
-        'rounded-xl border border-line bg-surface text-fg shadow-node transition-[box-shadow,border-color] hover:border-line-strong',
-        selected && 'ring-2 ring-accent ring-offset-0',
+        'rounded-[14px] bg-surface text-fg shadow-node transition-[outline-color] duration-150',
+        'outline-2 outline-offset-2',
+        selected ? 'outline-accent' : 'outline-transparent',
         className,
       )}
     >
@@ -37,26 +39,25 @@ function Frame({ selected, width, children, className }: { selected: boolean; wi
   );
 }
 
-function Header({ icon, title, badge, children }: { icon: ReactNode; title: string; badge?: ReactNode; children?: ReactNode }) {
+function Header({ icon, title, badge, children, mono }: { icon: ReactNode; title: string; badge?: ReactNode; children?: ReactNode; mono?: boolean }) {
   return (
-    <div className="relative flex h-9 items-center gap-2 px-3">
+    <div className="flex h-9 items-center gap-2 pl-3 pr-2.5">
       <span className="text-fg-3">{icon}</span>
-      <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
-      {badge && <span className="num rounded bg-surface-3 px-1.5 py-0.5 text-[10px] font-medium text-fg-2">{badge}</span>}
+      <span className={cn('min-w-0 flex-1 truncate font-semibold tracking-[-0.01em]', mono ? 'num text-[12px]' : 'text-[12.5px]')}>{title}</span>
+      {badge && <span className="text-[10px] font-medium text-fg-3">{badge}</span>}
       {children}
     </div>
   );
 }
 
-const RULE_TEXT = (mode: string, delta?: number, decimals = 1) => {
-  switch (mode) {
-    case 'inherit': return '= parent';
-    case 'offset': return `${(delta ?? 0) >= 0 ? '+' : '−'}${fmt(Math.abs(delta ?? 0), decimals)}`;
-    case 'fixed': return 'fixed';
-    case 'formula': return 'ƒ formula';
-    default: return '';
-  }
-};
+function Chip({ hex, className }: { hex: string; className?: string }) {
+  return (
+    <span className={cn('checker relative inline-block shrink-0 overflow-hidden rounded-[4px]', className ?? 'h-3.5 w-3.5')}>
+      <span className="absolute inset-0" style={{ background: hex }} />
+      <span className="absolute inset-0 rounded-[inherit] shadow-[inset_0_0_0_0.5px_oklch(0_0_0/0.25)]" />
+    </span>
+  );
+}
 
 // ── Color ────────────────────────────────────────────────────
 export const ColorNodeView = memo(function ColorNodeView({ id, data, selected }: ViewProps) {
@@ -67,63 +68,61 @@ export const ColorNodeView = memo(function ColorNodeView({ id, data, selected }:
   const ink = inkOn(color);
   const hasParent = !!res.parentId;
   const errors = res.channels.filter((c) => c.error).length;
-  const usesFormula = res.channels.some((c) => c.mode === 'formula');
   const defs = channelDefs(node.data.space);
-  const showAlpha = color.alpha < 1 || (res.channels.find((c) => c.key === 'alpha')?.mode ?? 'root') !== (hasParent ? 'inherit' : 'root');
+  const alpha = res.channels.find((c) => c.key === 'alpha');
+  const showAlpha = color.alpha < 1 || (!!alpha && alpha.mode !== (hasParent ? 'inherit' : 'root'));
   const channels = res.channels.filter((c) => c.key !== 'alpha' || showAlpha);
 
   return (
-    <Frame selected={selected} width={216}>
-      <div className="relative">
+    <Card selected={selected} width={208}>
+      <div className="relative p-1.5">
         <Handle type="target" position={Position.Left} id="in" />
-        <div className="checker relative h-[76px] overflow-hidden rounded-t-[11px]">
-          <div className="absolute inset-0 flex flex-col justify-between p-2.5" style={{ background: color.hexa, color: ink }}>
-            <div className="flex items-start justify-between gap-2">
-              <span className="truncate text-[13px] font-semibold leading-tight">{node.name}</span>
-              <span className="flex shrink-0 items-center gap-1 opacity-80">
-                {usesFormula && <FunctionSquare size={13} />}
-                {!color.inGamut && <span title="Outside sRGB — showing the closest displayable color"><AlertTriangle size={13} /></span>}
-              </span>
-            </div>
-            <div className="flex items-end justify-between">
-              <span className="num text-[11px] font-medium opacity-90">{color.hexa}</span>
-              <span className="num text-[10px] opacity-70">{SPACES[node.data.space].label}</span>
-            </div>
+        <div className="checker relative h-[68px] overflow-hidden rounded-[10px]">
+          <div className="absolute inset-0" style={{ background: color.hexa }} />
+          <div className="absolute inset-0 rounded-[inherit] shadow-[inset_0_0_0_0.5px_oklch(0_0_0/0.18)]" />
+          <div className="absolute right-2 top-1.5 flex items-center gap-1" style={{ color: ink }}>
+            {res.channels.some((c) => c.mode === 'formula') && <span className="num text-[11px] font-semibold opacity-75" title="Uses a formula">ƒ</span>}
+            {!color.inGamut && <span title="Outside sRGB — showing the closest displayable color" className="opacity-75"><TriangleAlert size={11} /></span>}
           </div>
         </div>
-        <Handle type="source" position={Position.Right} id="out" />
+        <Handle type="source" position={Position.Right} id="out" style={outHandleStyle(color.hex)} />
       </div>
-      <div className={cn('grid gap-1 p-1.5', channels.length > 3 ? 'grid-cols-4' : 'grid-cols-3')}>
-        {channels.map((c) => {
+      <div className="px-3 pb-1 pt-0.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="truncate text-[12.5px] font-semibold tracking-[-0.01em]">{node.name}</span>
+          <span className="shrink-0 text-[10px] font-medium text-fg-3">{SPACES[node.data.space].label}</span>
+        </div>
+        <div className="num text-[11px] text-fg-2">{color.hexa}</div>
+      </div>
+      <div className={cn('mx-1.5 mb-1.5 mt-1.5 grid overflow-hidden rounded-[8px] bg-surface-2', channels.length > 3 ? 'grid-cols-4' : 'grid-cols-3')}>
+        {channels.map((c, i) => {
           const def = defs.find((d) => d.key === c.key)!;
-          const ruleText = hasParent || c.mode === 'formula' ? RULE_TEXT(c.mode, c.delta, def.decimals) : '';
+          const derived = hasParent || c.mode === 'formula';
           return (
             <div
               key={c.key}
-              title={c.error ? c.error.message : `${def.label}: ${formatChannel(def, c.value)}${def.unit ?? ''}`}
-              className={cn('min-w-0 rounded-md bg-surface-2 px-1.5 py-1', c.error && 'ring-1 ring-danger/60')}
+              title={c.error ? c.error.message : `${def.label} ${formatChannel(def, c.value)}${def.unit ?? ''}`}
+              className={cn('min-w-0 px-2 py-1.5', i > 0 && 'shadow-[inset_0.5px_0_0_var(--app-line-strong)]', c.error && 'bg-danger/10')}
             >
-              <div className="flex items-baseline justify-between gap-1">
-                <span className="text-[10px] font-semibold text-fg-3">{def.short}</span>
-                <span className="num truncate text-[11px]">{formatChannel(def, c.value)}</span>
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[9.5px] font-semibold text-fg-3">{def.short}</span>
+                {derived && c.mode === 'offset' && (
+                  <span className="num text-[9.5px] font-medium text-accent">{(c.delta ?? 0) >= 0 ? '+' : '−'}{fmt(Math.abs(c.delta ?? 0), def.decimals)}</span>
+                )}
+                {derived && c.mode === 'fixed' && <Lock size={8.5} className="text-fg-3" />}
+                {c.mode === 'formula' && <span className={cn('num text-[10px] font-semibold', c.error ? 'text-danger' : 'text-warning')}>ƒ</span>}
               </div>
-              {ruleText && (
-                <div className={cn('num mt-0.5 flex items-center gap-0.5 truncate text-[9.5px]',
-                  c.mode === 'offset' ? 'text-accent' : c.mode === 'formula' ? 'text-warning' : 'text-fg-3')}>
-                  {c.mode === 'fixed' && <Lock size={8} />}
-                  {ruleText}
-                </div>
-              )}
+              <div className="num truncate text-[11.5px] text-fg">{formatChannel(def, c.value)}</div>
             </div>
           );
         })}
       </div>
       {errors > 0 && (
-        <div className="flex items-center gap-1.5 border-t border-line px-2.5 py-1.5 text-[11px] text-danger">
-          <AlertTriangle size={12} /> {errors === 1 ? 'Formula error' : `${errors} formula errors`}
+        <div className="flex items-center gap-1.5 px-3 pb-2 text-[11px] font-medium text-danger">
+          <TriangleAlert size={11} /> {errors === 1 ? 'Formula error' : `${errors} formula errors`}
         </div>
       )}
-    </Frame>
+    </Card>
   );
 });
 
@@ -132,35 +131,34 @@ export const PaletteNodeView = memo(function PaletteNodeView({ id, data, selecte
   const node = data.node as PaletteNode;
   const res = useResult(id) as PaletteResult | undefined;
   if (!res) return null;
+  const last = res.shades.length - 1;
   return (
-    <Frame selected={selected} width={236}>
+    <Card selected={selected} width={228}>
       <div className="relative">
         <Handle type="target" position={Position.Left} id="in" />
-        <Header icon={<PaletteIcon size={14} />} title={node.name} badge={node.data.space.toUpperCase()} />
-        <Handle type="source" position={Position.Right} id="out" />
+        <Header icon={<PaletteIcon size={13} />} title={node.name} badge={node.data.space.toUpperCase()} />
+        <Handle type="source" position={Position.Right} id="out" style={outHandleStyle(res.base.hex)} />
       </div>
-      <div className="px-1.5 pb-1.5">
-        {res.shades.map((shade, i) => {
-          const ink = inkOn(shade.color);
-          return (
+      <div className="pb-1.5">
+        {res.shades.map((shade, i) => (
+          <div key={i} className="relative h-[22px] px-1.5">
             <div
-              key={i}
-              className={cn('relative flex h-6 items-center justify-between px-2.5', i === 0 && 'rounded-t-md', i === res.shades.length - 1 && 'rounded-b-md')}
-              style={{ background: shade.color.hex, color: ink }}
+              className={cn('flex h-full items-center justify-between px-2.5', i === 0 && 'rounded-t-[9px]', i === last && 'rounded-b-[9px]')}
+              style={{ background: shade.color.hex, color: inkOn(shade.color) }}
             >
-              <span className="num text-[11px] font-semibold">{shade.name}</span>
-              <span className="num flex items-center gap-1.5 text-[10.5px] opacity-80">
+              <span className="num text-[10.5px] font-semibold">{shade.name}</span>
+              <span className="num flex items-center gap-1.5 text-[10px] opacity-75">
                 {!shade.color.inGamut && (
-                  <span title="Requested chroma is outside sRGB here; showing the closest displayable color" className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                  <span title="Requested chroma is outside sRGB here; showing the closest displayable color" className="h-1 w-1 rounded-full bg-current" />
                 )}
                 {shade.color.hex}
               </span>
-              <Handle type="source" position={Position.Right} id={shadeHandle(i)} className="!h-2.5 !w-2.5" />
             </div>
-          );
-        })}
+            <Handle type="source" position={Position.Right} id={shadeHandle(i)} style={{ ...outHandleStyle(shade.color.hex), width: 9, height: 9 }} />
+          </div>
+        ))}
       </div>
-    </Frame>
+    </Card>
   );
 });
 
@@ -169,37 +167,43 @@ export const MixNodeView = memo(function MixNodeView({ id, data, selected }: Vie
   const node = data.node as MixNode;
   const res = useResult(id) as MixResult | undefined;
   if (!res) return null;
-  const stops = mixStops(res.a.rgb, res.b.rgb, node.data.space, 11).map(toHex);
-  const gradient = `linear-gradient(to right, ${stops.join(', ')})`;
-  const input = (handle: 'a' | 'b', label: string, info = handle === 'a' ? res.a : res.b, connected = handle === 'a' ? res.aConnected : res.bConnected) => (
-    <div className="relative flex h-7 items-center gap-2 px-3">
-      <Handle type="target" position={Position.Left} id={handle} />
-      <span className="w-3 text-[10px] font-semibold text-fg-3">{label}</span>
-      <span className="checker h-4 w-4 overflow-hidden rounded ring-1 ring-inset ring-line"><span className="block h-full w-full" style={{ background: info.hexa }} /></span>
-      <span className="num text-[11px] text-fg-2">{info.hexa}</span>
-      {!connected && <span className="ml-auto text-[10px] text-fg-3">not connected</span>}
-    </div>
-  );
+  const stops = mixStops(res.a.rgb, res.b.rgb, node.data.space, 13).map(toHex);
+  const input = (handle: 'a' | 'b') => {
+    const info = handle === 'a' ? res.a : res.b;
+    const connected = handle === 'a' ? res.aConnected : res.bConnected;
+    return (
+      <div className="relative flex h-7 items-center gap-2 px-3">
+        <Handle type="target" position={Position.Left} id={handle} />
+        <span className="w-2.5 text-[10px] font-semibold text-fg-3">{handle.toUpperCase()}</span>
+        <Chip hex={info.hexa} />
+        <span className="num text-[11px] text-fg-2">{info.hexa}</span>
+        {!connected && <span className="ml-auto text-[10px] text-fg-3">fallback</span>}
+      </div>
+    );
+  };
   return (
-    <Frame selected={selected} width={236}>
-      <Header icon={<Blend size={14} />} title={node.name} badge={MIX_SPACES[node.data.space].label} />
-      {input('a', 'A')}
-      {input('b', 'B')}
-      <div className="px-3 pb-1.5 pt-1">
-        <div className="relative h-3 rounded ring-1 ring-inset ring-line" style={{ background: gradient }}>
-          <span className="absolute top-1/2 h-4 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-sm border border-white bg-transparent shadow" style={{ left: `${node.data.ratio * 100}%` }} />
+    <Card selected={selected} width={228}>
+      <Header icon={<Blend size={13} />} title={node.name} badge={MIX_SPACES[node.data.space].label} />
+      {input('a')}
+      {input('b')}
+      <div className="px-3 pb-2 pt-1.5">
+        <div className="relative h-2 rounded-full shadow-[inset_0_0_0_0.5px_oklch(0_0_0/0.2)]" style={{ background: `linear-gradient(to right, ${stops.join(', ')})` }}>
+          <span
+            className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_0.5px_oklch(0_0_0/0.35),0_1px_3px_oklch(0_0_0/0.3)]"
+            style={{ left: `${node.data.ratio * 100}%`, background: res.color.hex }}
+          />
         </div>
       </div>
-      <div className="relative p-1.5 pt-0">
-        <div className="checker overflow-hidden rounded-md">
-          <div className="flex h-11 items-center justify-between px-2.5" style={{ background: res.color.hexa, color: inkOn(res.color) }}>
+      <div className="relative px-1.5 pb-1.5">
+        <div className="checker overflow-hidden rounded-[9px]">
+          <div className="flex h-10 items-center justify-between px-2.5" style={{ background: res.color.hexa, color: inkOn(res.color) }}>
             <span className="text-[11px] font-semibold">{Math.round(node.data.ratio * 100)}% B</span>
-            <span className="num text-[11px]">{res.color.hexa}</span>
+            <span className="num text-[11px] opacity-85">{res.color.hexa}</span>
           </div>
         </div>
-        <Handle type="source" position={Position.Right} id="out" />
+        <Handle type="source" position={Position.Right} id="out" style={outHandleStyle(res.color.hex)} />
       </div>
-    </Frame>
+    </Card>
   );
 });
 
@@ -209,43 +213,45 @@ export const ContrastNodeView = memo(function ContrastNodeView({ id, data, selec
   const res = useResult(id) as ContrastResult | undefined;
   if (!res) return null;
   const grade = wcagGrade(res.wcag);
+  const lc = Math.abs(res.apca);
   const row = (handle: 'fg' | 'bg', label: string, info: typeof res.fg, connected: boolean) => (
     <div className="relative flex h-7 items-center gap-2 px-3">
       <Handle type="target" position={Position.Left} id={handle} />
-      <span className="w-16 text-[10.5px] text-fg-3">{label}</span>
-      <span className="checker h-4 w-4 overflow-hidden rounded ring-1 ring-inset ring-line"><span className="block h-full w-full" style={{ background: info.hexa }} /></span>
+      <span className="w-[68px] text-[11px] text-fg-3">{label}</span>
+      <Chip hex={info.hexa} />
       <span className="num text-[11px] text-fg-2">{info.hexa}</span>
       {!connected && <span className="ml-auto text-[10px] text-fg-3">manual</span>}
     </div>
   );
+  const tone = (ok: boolean, mid: boolean) => (ok ? 'text-success' : mid ? 'text-warning' : 'text-danger');
   return (
-    <Frame selected={selected} width={256}>
-      <Header icon={<Contrast size={14} />} title={node.name} />
+    <Card selected={selected} width={248}>
+      <Header icon={<Contrast size={13} />} title={node.name} />
       {row('fg', 'Text', res.fg, res.fgConnected)}
       {row('bg', 'Background', res.bg, res.bgConnected)}
-      <div className="p-1.5">
-        <div className="rounded-md px-3 py-2.5" style={{ background: res.bg.hex, color: res.seen.hex }}>
-          <div className="truncate text-[15px] font-semibold leading-tight">{node.data.sample || 'Aa'}</div>
-          <div className="truncate text-[11px] leading-snug">Body text looks like this.</div>
+      <div className="px-1.5 pt-1.5">
+        <div className="rounded-[9px] px-3 py-2.5 shadow-[inset_0_0_0_0.5px_oklch(0_0_0/0.15)]" style={{ background: res.bg.hex, color: res.seen.hex }}>
+          <div className="truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">{node.data.sample || 'Aa'}</div>
+          <div className="truncate text-[11px] leading-snug opacity-95">Body text looks like this.</div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-1.5 px-1.5 pb-1.5">
-        <div className="rounded-md bg-surface-2 px-2 py-1.5">
+      <div className="grid grid-cols-2 px-3 py-2">
+        <div>
           <div className="text-[10px] text-fg-3">WCAG 2</div>
-          <div className="num text-[14px] font-semibold">{fmt(res.wcag, 2)}:1</div>
-          <div className={cn('text-[10px] font-medium', grade.aa ? 'text-success' : grade.aaLarge ? 'text-warning' : 'text-danger')}>
+          <div className="num text-[14px] font-semibold tracking-[-0.02em]">{fmt(res.wcag, 2)}<span className="text-fg-3">:1</span></div>
+          <div className={cn('text-[10.5px] font-medium', tone(grade.aa, grade.aaLarge))}>
             {grade.aaa ? 'AAA' : grade.aa ? 'AA' : grade.aaLarge ? 'AA large only' : 'Fails'}
           </div>
         </div>
-        <div className="rounded-md bg-surface-2 px-2 py-1.5">
+        <div>
           <div className="text-[10px] text-fg-3">APCA</div>
-          <div className="num text-[14px] font-semibold">Lc {fmt(res.apca, 0)}</div>
-          <div className={cn('text-[10px] font-medium', Math.abs(res.apca) >= 75 ? 'text-success' : Math.abs(res.apca) >= 60 ? 'text-warning' : 'text-danger')}>
-            {Math.abs(res.apca) >= 75 ? 'Body text' : Math.abs(res.apca) >= 60 ? 'Large text' : Math.abs(res.apca) >= 45 ? 'Headlines only' : 'Too low'}
+          <div className="num text-[14px] font-semibold tracking-[-0.02em]"><span className="text-fg-3">Lc </span>{fmt(res.apca, 0)}</div>
+          <div className={cn('text-[10.5px] font-medium', tone(lc >= 75, lc >= 60))}>
+            {lc >= 75 ? 'Body text' : lc >= 60 ? 'Large text' : lc >= 45 ? 'Headlines only' : 'Too low'}
           </div>
         </div>
       </div>
-    </Frame>
+    </Card>
   );
 });
 
@@ -270,44 +276,40 @@ export const TokenNodeView = memo(function TokenNodeView({ id, data, selected }:
     return src.name;
   };
   return (
-    <Frame selected={selected} width={236}>
+    <Card selected={selected} width={228}>
       <div className="relative">
-        <Header icon={<Tag size={13} />} title={node.name}>
-          {res?.color && <span className="checker h-4 w-4 overflow-hidden rounded ring-1 ring-inset ring-line"><span className="block h-full w-full" style={{ background: res.color.hexa }} /></span>}
+        <Header icon={<Tag size={12} />} title={node.name} mono>
+          {res?.color ? <Chip hex={res.color.hexa} className="h-4 w-4" /> : <span className="h-4 w-4 rounded-[4px] border border-dashed border-line-strong" />}
         </Header>
-        <Handle type="source" position={Position.Right} id="out" />
+        <Handle type="source" position={Position.Right} id="out" style={outHandleStyle(res?.color?.hex)} />
       </div>
       <div className="px-1.5 pb-1.5">
         {themes.map((t, i) => {
           const src = label(tokenHandle(t.id));
           const active = t.id === themeId;
           return (
-            <div key={t.id} className={cn('relative flex h-8 items-center gap-2 rounded-md px-2', active && 'bg-surface-2')}>
-              <Handle type="target" position={Position.Left} id={tokenHandle(t.id)} />
-              <span className={cn('w-12 shrink-0 truncate text-[10.5px]', active ? 'font-semibold text-fg' : 'text-fg-3')}>{t.name}</span>
-              <span className={cn('min-w-0 flex-1 truncate text-[11px]', src ? 'text-fg-2' : 'italic text-fg-3')}>
-                {src ?? (i === 0 ? 'not set' : `↳ ${themes[0].name}`)}
+            <div key={t.id} className={cn('relative flex h-7 items-center gap-2 rounded-[7px] px-1.5', active && 'bg-surface-2')}>
+              <Handle type="target" position={Position.Left} id={tokenHandle(t.id)} style={{ left: -6 }} />
+              <span className={cn('w-11 shrink-0 truncate text-[10.5px]', active ? 'font-semibold text-fg' : 'text-fg-3')}>{t.name}</span>
+              <span className={cn('min-w-0 flex-1 truncate text-[11px]', src ? 'text-fg-2' : 'text-fg-3')}>
+                {src ?? (i === 0 ? 'Not set' : `Uses ${themes[0].name}`)}
               </span>
             </div>
           );
         })}
       </div>
-    </Frame>
+    </Card>
   );
 });
 
 // ── Note ─────────────────────────────────────────────────────
 const NOTE_TONES: Record<NoteNode['data']['tone'], string> = {
-  neutral: 'oklch(0.5 0 0 / 0.12)',
-  yellow: 'oklch(0.85 0.12 90 / 0.22)',
-  blue: 'oklch(0.7 0.12 250 / 0.2)',
-  green: 'oklch(0.75 0.12 150 / 0.2)',
-  pink: 'oklch(0.72 0.14 350 / 0.2)',
-  purple: 'oklch(0.68 0.14 300 / 0.2)',
-};
-export const NOTE_DOTS: Record<NoteNode['data']['tone'], string> = {
-  neutral: 'oklch(0.6 0 0)', yellow: 'oklch(0.85 0.15 90)', blue: 'oklch(0.68 0.15 250)',
-  green: 'oklch(0.72 0.15 150)', pink: 'oklch(0.72 0.16 350)', purple: 'oklch(0.66 0.16 300)',
+  neutral: 'oklch(0.55 0 0 / 0.1)',
+  yellow: 'oklch(0.86 0.13 92 / 0.16)',
+  blue: 'oklch(0.7 0.13 250 / 0.14)',
+  green: 'oklch(0.75 0.13 155 / 0.14)',
+  pink: 'oklch(0.74 0.14 350 / 0.14)',
+  purple: 'oklch(0.7 0.14 300 / 0.14)',
 };
 
 /** Tiny markdown: **bold**, `code`, "- " bullets, blank-line paragraphs. */
@@ -317,17 +319,24 @@ export function NoteText({ text }: { text: string }) {
     return (
       <span key={key}>
         {parts.map((p, i) => p.startsWith('**') ? <strong key={i} className="font-semibold text-fg">{p.slice(2, -2)}</strong>
-          : p.startsWith('`') ? <code key={i} className="num rounded bg-black/10 px-1 py-px text-[11px] dark:bg-white/10">{p.slice(1, -1)}</code>
+          : p.startsWith('`') ? <code key={i} className="num rounded-[4px] bg-fg/8 px-1 py-px text-[11px] text-fg">{p.slice(1, -1)}</code>
           : p)}
       </span>
     );
   };
   const lines = text.split('\n');
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       {lines.map((line, i) => {
-        if (!line.trim()) return <div key={i} className="h-1" />;
-        if (/^\s*[-•]\s+/.test(line)) return <div key={i} className="flex gap-1.5 pl-0.5"><span className="text-fg-3">•</span><span>{inline(line.replace(/^\s*[-•]\s+/, ''), i)}</span></div>;
+        if (!line.trim()) return <div key={i} className="h-0.5" />;
+        if (/^\s*[-•]\s+/.test(line)) {
+          return (
+            <div key={i} className="flex gap-2 pl-0.5">
+              <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-fg-3" />
+              <span>{inline(line.replace(/^\s*[-•]\s+/, ''), i)}</span>
+            </div>
+          );
+        }
         return <p key={i}>{inline(line, i)}</p>;
       })}
     </div>
@@ -348,7 +357,11 @@ export const NoteNodeView = memo(function NoteNodeView({ id, data, selected }: V
   return (
     <div
       style={{ width: node.data.width, background: NOTE_TONES[node.data.tone] }}
-      className={cn('rounded-xl border border-line px-3.5 py-3 text-[12.5px] leading-relaxed text-fg-2 backdrop-blur-sm', selected && 'ring-2 ring-accent')}
+      className={cn(
+        'rounded-[14px] px-4 py-3.5 text-[12.5px] leading-[1.6] text-fg-2 shadow-[inset_0_0_0_0.5px_var(--app-line-strong)] backdrop-blur-md',
+        'outline-2 outline-offset-2 transition-[outline-color] duration-150',
+        selected ? 'outline-accent' : 'outline-transparent',
+      )}
       onDoubleClick={(e) => { e.stopPropagation(); setEditing(true); }}
     >
       {editing ? (

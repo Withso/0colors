@@ -1,50 +1,57 @@
 @import 'tailwindcss';
 @import '@xyflow/react/dist/base.css';
 
-/* App chrome is deliberately neutral so the colors on the canvas are judged fairly. */
+/*
+  App chrome uses true neutral grays (zero chroma) so the UI never tints how the
+  colors on the canvas are perceived. One accent (blue) marks focus and selection.
+*/
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
-  --app-canvas: oklch(0.155 0.004 265);
-  --app-dots: oklch(1 0 0 / 0.07);
-  --app-surface: oklch(0.19 0.005 265);
-  --app-surface-2: oklch(0.225 0.006 265);
-  --app-surface-3: oklch(0.265 0.007 265);
-  --app-line: oklch(1 0 0 / 0.08);
-  --app-line-strong: oklch(1 0 0 / 0.15);
-  --app-fg: oklch(0.96 0.003 265);
-  --app-fg-2: oklch(0.76 0.008 265);
-  --app-fg-3: oklch(0.58 0.01 265);
-  --app-accent: oklch(0.7 0.16 258);
-  --app-accent-soft: oklch(0.7 0.16 258 / 0.16);
-  --app-accent-fg: oklch(0.16 0.02 258);
+  --app-canvas: oklch(0.205 0 0);
+  --app-dots: oklch(1 0 0 / 0.075);
+  --app-surface: oklch(0.245 0 0);
+  --app-surface-2: oklch(0.285 0 0);
+  --app-surface-3: oklch(0.325 0 0);
+  --app-glass: oklch(0.255 0 0 / 0.82);
+  --app-raised: oklch(0.385 0 0);
+  --app-line: oklch(1 0 0 / 0.075);
+  --app-line-strong: oklch(1 0 0 / 0.14);
+  --app-fg: oklch(0.965 0 0);
+  --app-fg-2: oklch(0.77 0 0);
+  --app-fg-3: oklch(0.6 0 0);
+  --app-accent: oklch(0.68 0.165 250);
+  --app-accent-soft: oklch(0.68 0.165 250 / 0.18);
+  --app-accent-fg: oklch(1 0 0);
   --app-danger: oklch(0.7 0.18 25);
-  --app-warning: oklch(0.8 0.15 80);
-  --app-success: oklch(0.75 0.15 155);
-  --app-shadow: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 12px 32px -12px oklch(0 0 0 / 0.6), 0 2px 6px oklch(0 0 0 / 0.3);
-  --app-node-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px -10px oklch(0 0 0 / 0.55);
+  --app-warning: oklch(0.82 0.15 80);
+  --app-success: oklch(0.76 0.15 155);
+  --app-shadow: 0 0 0 0.5px oklch(0 0 0 / 0.5), 0 1px 0 0 oklch(1 0 0 / 0.05) inset, 0 12px 32px -8px oklch(0 0 0 / 0.55), 0 3px 8px oklch(0 0 0 / 0.25);
+  --app-node-shadow: 0 0 0 0.5px oklch(0 0 0 / 0.45), 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px -10px oklch(0 0 0 / 0.55);
 }
 
 [data-theme='light'] {
   color-scheme: light;
-  --app-canvas: oklch(0.972 0.002 265);
-  --app-dots: oklch(0 0 0 / 0.09);
+  --app-canvas: oklch(0.968 0 0);
+  --app-dots: oklch(0 0 0 / 0.11);
   --app-surface: oklch(1 0 0);
-  --app-surface-2: oklch(0.97 0.003 265);
-  --app-surface-3: oklch(0.935 0.004 265);
-  --app-line: oklch(0 0 0 / 0.09);
-  --app-line-strong: oklch(0 0 0 / 0.17);
-  --app-fg: oklch(0.21 0.01 265);
-  --app-fg-2: oklch(0.44 0.012 265);
-  --app-fg-3: oklch(0.6 0.01 265);
-  --app-accent: oklch(0.56 0.2 260);
-  --app-accent-soft: oklch(0.56 0.2 260 / 0.12);
+  --app-surface-2: oklch(0.963 0 0);
+  --app-surface-3: oklch(0.928 0 0);
+  --app-glass: oklch(1 0 0 / 0.82);
+  --app-raised: oklch(1 0 0);
+  --app-line: oklch(0 0 0 / 0.08);
+  --app-line-strong: oklch(0 0 0 / 0.15);
+  --app-fg: oklch(0.22 0 0);
+  --app-fg-2: oklch(0.45 0 0);
+  --app-fg-3: oklch(0.6 0 0);
+  --app-accent: oklch(0.6 0.2 255);
+  --app-accent-soft: oklch(0.6 0.2 255 / 0.12);
   --app-accent-fg: oklch(1 0 0);
-  --app-danger: oklch(0.56 0.2 25);
-  --app-warning: oklch(0.62 0.14 70);
-  --app-success: oklch(0.55 0.14 155);
-  --app-shadow: 0 1px 2px oklch(0 0 0 / 0.06), 0 12px 32px -14px oklch(0 0 0 / 0.22);
-  --app-node-shadow: 0 1px 2px oklch(0 0 0 / 0.08), 0 8px 22px -12px oklch(0 0 0 / 0.25);
+  --app-danger: oklch(0.57 0.21 25);
+  --app-warning: oklch(0.64 0.14 70);
+  --app-success: oklch(0.56 0.14 155);
+  --app-shadow: 0 0 0 0.5px oklch(0 0 0 / 0.08), 0 12px 32px -10px oklch(0 0 0 / 0.18), 0 3px 8px oklch(0 0 0 / 0.06);
+  --app-node-shadow: 0 0 0 0.5px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.06), 0 8px 22px -12px oklch(0 0 0 / 0.2);
 }
 
 @theme inline {
@@ -54,6 +61,8 @@
   --color-surface: var(--app-surface);
   --color-surface-2: var(--app-surface-2);
   --color-surface-3: var(--app-surface-3);
+  --color-glass: var(--app-glass);
+  --color-raised: var(--app-raised);
   --color-line: var(--app-line);
   --color-line-strong: var(--app-line-strong);
   --color-fg: var(--app-fg);
@@ -67,6 +76,7 @@
   --color-success: var(--app-success);
   --shadow-panel: var(--app-shadow);
   --shadow-node: var(--app-node-shadow);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
@@ -82,15 +92,19 @@
     font-family: var(--font-sans);
     font-size: 13px;
     line-height: 1.45;
+    letter-spacing: -0.003em;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     overflow: hidden;
   }
   button {
-    cursor: pointer;
+    cursor: default;
   }
   :focus-visible {
     outline: 2px solid var(--app-accent);
     outline-offset: 1px;
+    border-radius: 6px;
   }
   ::selection {
     background: var(--app-accent-soft);
@@ -99,6 +113,10 @@
     scrollbar-width: thin;
     scrollbar-color: var(--app-line-strong) transparent;
   }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--app-fg-3);
+  }
 }
 
 @layer components {
@@ -106,17 +124,88 @@
   .checker {
     background-color: #fff;
     background-image:
-      linear-gradient(45deg, #d4d4d8 25%, transparent 25%),
-      linear-gradient(-45deg, #d4d4d8 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #d4d4d8 75%),
-      linear-gradient(-45deg, transparent 75%, #d4d4d8 75%);
-    background-size: 10px 10px;
-    background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+      linear-gradient(45deg, #d6d6d6 25%, transparent 25%),
+      linear-gradient(-45deg, #d6d6d6 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #d6d6d6 75%),
+      linear-gradient(-45deg, transparent 75%, #d6d6d6 75%);
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0;
   }
   .num {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+  }
+  /* Translucent material for floating chrome (toolbars, menus). */
+  .glass {
+    background: var(--app-glass);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+  }
+  /* A hairline that stays 1 device pixel on retina screens. */
+  .hairline-inset {
+    box-shadow: inset 0 0 0 0.5px var(--app-line-strong);
+  }
+}
+
+/* ── Motion ─────────────────────────────────────────────────── */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.animate-pop {
+  animation: pop-in 160ms var(--ease-out-expo);
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin, var(--radix-tooltip-content-transform-origin, top left));
+}
+.animate-fade {
+  animation: fade-in 160ms ease-out;
+}
+.animate-dialog {
+  animation: dialog-in 220ms var(--ease-out-expo);
+}
+.animate-sheet {
+  animation: sheet-in 240ms var(--ease-out-expo);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop,
+  .animate-fade,
+  .animate-dialog,
+  .animate-sheet {
+    animation: none;
   }
 }
 
@@ -132,51 +221,67 @@
 .react-flow__pane.dragging {
   cursor: grabbing;
 }
+.react-flow__node {
+  font-size: 12px;
+}
+.react-flow__node.dragging {
+  cursor: grabbing;
+}
+/* Connectors: hollow rings for inputs, filled dots (the color itself) for outputs. */
 .react-flow__handle {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   border-radius: 999px;
   border: 2px solid var(--app-surface);
   background: var(--app-fg-3);
-  transition: transform 120ms ease, background 120ms ease;
+  box-shadow: 0 0 0 0.5px var(--app-line-strong);
+  transition: transform 140ms var(--ease-out-expo), box-shadow 140ms ease;
+}
+.react-flow__handle.target {
+  background: var(--app-surface);
+  border-color: var(--app-fg-3);
+  border-width: 1.5px;
 }
 .react-flow__handle:hover,
 .react-flow__handle.connectingto,
 .react-flow__handle.valid {
-  transform: scale(1.35);
-  background: var(--app-accent);
+  transform: translate(-50%, -50%) scale(1.45);
+  box-shadow: 0 0 0 3px var(--app-accent-soft);
 }
-.react-flow__edge-path {
-  stroke-width: 2;
+.react-flow__handle-right:hover,
+.react-flow__handle-right.connectingto,
+.react-flow__handle-right.valid {
+  transform: translate(50%, -50%) scale(1.45);
 }
-.react-flow__edge.selected .react-flow__edge-path {
-  stroke-width: 3;
+.react-flow__handle.target:hover,
+.react-flow__handle.target.valid,
+.react-flow__handle.target.connectingto {
+  border-color: var(--app-accent);
 }
 .react-flow__connectionline path {
   stroke: var(--app-accent);
   stroke-width: 2;
-  stroke-dasharray: 6 4;
-}
-.react-flow__node {
-  font-size: 12px;
+  stroke-dasharray: 5 4;
 }
 .react-flow__minimap {
-  background: var(--app-surface);
-  border-radius: 10px;
-  border: 1px solid var(--app-line);
+  background: var(--app-glass);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  box-shadow: var(--app-shadow);
   overflow: hidden;
 }
 .react-flow__minimap-mask {
-  fill: oklch(0 0 0 / 0.35);
+  fill: oklch(0 0 0 / 0.32);
 }
 [data-theme='light'] .react-flow__minimap-mask {
-  fill: oklch(0 0 0 / 0.08);
+  fill: oklch(0 0 0 / 0.06);
 }
 .react-flow__attribution {
   background: transparent;
   padding: 2px 6px;
   font-size: 9px;
-  opacity: 0.45;
+  opacity: 0.4;
   margin: 0 4px 2px 0;
 }
 .react-flow__attribution a {
@@ -188,7 +293,7 @@
   }
 }
 .edge-ref {
-  animation: dash 1.2s linear infinite;
+  animation: dash 1.4s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .edge-ref {

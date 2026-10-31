@@ -1,5 +1,7 @@
 // ─────────────────────────────────────────────────────────────
-// Small UI kit. Chrome uses semantic tokens (bg-surface, text-fg, border-line…);
+// UI kit. Quiet, compact controls in the spirit of Figma and macOS:
+// borderless fields that reveal a hairline on hover, raised segmented thumbs,
+// round slider knobs, translucent menus. Chrome uses semantic tokens only;
 // user colors are always inline styles.
 // ─────────────────────────────────────────────────────────────
 import {
@@ -17,16 +19,16 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'icon' | 'icon-sm';
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-accent text-accent-fg hover:brightness-110 shadow-sm',
-  secondary: 'bg-surface-2 text-fg border border-line hover:bg-surface-3',
-  ghost: 'text-fg-2 hover:text-fg hover:bg-surface-3',
+  primary: 'bg-accent text-accent-fg hover:brightness-[1.08] active:brightness-95 shadow-[0_1px_2px_oklch(0_0_0/0.2)]',
+  secondary: 'bg-surface-2 text-fg hairline-inset hover:bg-surface-3',
+  ghost: 'text-fg-2 hover:text-fg hover:bg-surface-3/80',
   danger: 'text-danger hover:bg-danger/10',
 };
 const SIZES: Record<Size, string> = {
-  sm: 'h-7 px-2.5 text-xs gap-1.5 rounded-md',
-  md: 'h-8 px-3 text-[13px] gap-2 rounded-lg',
-  icon: 'h-8 w-8 rounded-lg',
-  'icon-sm': 'h-6 w-6 rounded-md',
+  sm: 'h-7 px-2.5 text-[12px] gap-1.5 rounded-[7px]',
+  md: 'h-8 px-3 text-[13px] gap-2 rounded-[8px]',
+  icon: 'h-8 w-8 rounded-[8px]',
+  'icon-sm': 'h-7 w-7 rounded-[7px]',
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -43,8 +45,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={cn(
-        'inline-flex shrink-0 select-none items-center justify-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-40',
-        VARIANTS[variant], SIZES[size], active && 'bg-accent-soft text-accent hover:bg-accent-soft hover:text-accent', className,
+        'inline-flex shrink-0 select-none items-center justify-center font-medium outline-none transition-[background-color,color,transform,filter] duration-150 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-accent/60 disabled:pointer-events-none disabled:opacity-35',
+        VARIANTS[variant], SIZES[size],
+        active && 'bg-accent-soft text-accent hover:bg-accent-soft hover:text-accent',
+        className,
       )}
       {...props}
     />
@@ -53,7 +57,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
 // ── Tooltip ──────────────────────────────────────────────────
 export function TooltipProvider({ children }: { children: ReactNode }) {
-  return <RTooltip.Provider delayDuration={350} skipDelayDuration={200}>{children}</RTooltip.Provider>;
+  return <RTooltip.Provider delayDuration={400} skipDelayDuration={150}>{children}</RTooltip.Provider>;
 }
 
 export function Tooltip({ content, children, side = 'top', shortcut }: { content: ReactNode; children: ReactNode; side?: 'top' | 'bottom' | 'left' | 'right'; shortcut?: string }) {
@@ -64,11 +68,12 @@ export function Tooltip({ content, children, side = 'top', shortcut }: { content
       <RTooltip.Portal>
         <RTooltip.Content
           side={side}
-          sideOffset={6}
-          className="z-50 flex max-w-72 items-center gap-2 rounded-md bg-fg px-2 py-1 text-xs leading-snug text-canvas shadow-panel"
+          sideOffset={8}
+          collisionPadding={8}
+          className="animate-pop z-50 flex max-w-72 items-center gap-2 rounded-[7px] bg-[oklch(0.18_0_0)] px-2 py-1 text-[11.5px] font-medium leading-snug text-white shadow-panel"
         >
           <span>{content}</span>
-          {shortcut && <kbd className="num rounded bg-canvas/15 px-1 text-[10px]">{shortcut}</kbd>}
+          {shortcut && <kbd className="num rounded-[4px] bg-white/12 px-1 text-[10.5px] text-white/75">{shortcut}</kbd>}
         </RTooltip.Content>
       </RTooltip.Portal>
     </RTooltip.Root>
@@ -86,15 +91,15 @@ export const IconButton = forwardRef<HTMLButtonElement, ButtonProps & { label: s
 );
 
 // ── Inputs ───────────────────────────────────────────────────
+const FIELD =
+  'rounded-[7px] border border-transparent bg-surface-2 text-fg outline-none transition-[border-color,background-color] duration-150 hover:border-line-strong focus-within:border-accent focus-within:bg-surface';
+
 export const TextInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function TextInput({ className, ...props }, ref) {
   return (
     <input
       ref={ref}
       spellCheck={false}
-      className={cn(
-        'h-8 w-full min-w-0 rounded-lg border border-line bg-surface-2 px-2.5 text-[13px] text-fg outline-none transition-colors placeholder:text-fg-3 hover:border-line-strong focus:border-accent',
-        className,
-      )}
+      className={cn('h-7 w-full min-w-0 px-2 text-[12.5px]', FIELD, 'focus:border-accent focus:bg-surface', className)}
       {...props}
     />
   );
@@ -161,9 +166,9 @@ export function NumberField({
     target.addEventListener('pointerup', up);
   };
   return (
-    <div className={cn('flex h-8 min-w-0 items-center rounded-lg border border-line bg-surface-2 transition-colors focus-within:border-accent hover:border-line-strong', disabled && 'opacity-50', className)}>
+    <div className={cn('flex h-7 min-w-0 items-center', FIELD, disabled && 'pointer-events-none opacity-45', className)}>
       {label !== undefined && (
-        <span onPointerDown={scrub} className="flex h-full cursor-ew-resize select-none items-center pl-2 pr-1 text-[11px] font-medium text-fg-3">
+        <span onPointerDown={scrub} className="flex h-full cursor-ew-resize select-none items-center pl-2 pr-0.5 text-[11px] font-medium text-fg-3">
           {label}
         </span>
       )}
@@ -200,13 +205,17 @@ export function GradientSlider({
   gradient: string; disabled?: boolean; label: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState(false);
   const pct = max === min ? 0 : ((value - min) / (max - min)) * 100;
   const fromPointer = (clientX: number) => {
     const rect = ref.current!.getBoundingClientRect();
-    const t = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    // Keep the knob fully inside the track: map pointer across [r, w - r].
+    const r = 8;
+    const t = Math.min(1, Math.max(0, (clientX - rect.left - r) / Math.max(1, rect.width - 2 * r)));
     const raw = min + t * (max - min);
     return Math.min(max, Math.max(min, Math.round(raw / step) * step));
   };
+  const clamped = Math.min(100, Math.max(0, pct));
   return (
     <div
       ref={ref}
@@ -217,18 +226,20 @@ export function GradientSlider({
       aria-valuenow={value}
       aria-disabled={disabled}
       tabIndex={disabled ? -1 : 0}
-      className={cn('relative h-5 w-full touch-none select-none rounded-md outline-offset-2', disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer')}
+      className={cn('group relative h-4 w-full touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface', disabled ? 'opacity-50' : '')}
       onPointerDown={(e) => {
         if (disabled) return;
         e.preventDefault();
-        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        setDragging(true);
         onChange(fromPointer(e.clientX));
       }}
       onPointerMove={(e) => {
         if (disabled || !(e.buttons & 1)) return;
         onChange(fromPointer(e.clientX));
       }}
-      onPointerUp={() => onCommit?.()}
+      onPointerUp={() => { setDragging(false); onCommit?.(); }}
+      onPointerCancel={() => setDragging(false)}
       onKeyDown={(e) => {
         if (disabled) return;
         const k = e.shiftKey ? 10 : 1;
@@ -236,11 +247,16 @@ export function GradientSlider({
         if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); onChange(Math.max(min, value - step * k)); }
       }}
     >
-      <div className="checker absolute inset-0 rounded-md" />
-      <div className="absolute inset-0 rounded-md ring-1 ring-inset ring-line" style={{ background: gradient }} />
+      <div className="checker absolute inset-x-0 top-[2px] h-3 overflow-hidden rounded-full">
+        <div className="absolute inset-0" style={{ background: gradient }} />
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 top-[2px] h-3 rounded-full shadow-[inset_0_0_0_0.5px_oklch(0_0_0/0.25)]" />
       <div
-        className="pointer-events-none absolute top-1/2 h-6 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-[4px] border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.35),0_2px_6px_rgba(0,0,0,0.35)]"
-        style={{ left: `${Math.min(100, Math.max(0, pct))}%` }}
+        className={cn(
+          'pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[2.5px] border-white shadow-[0_0_0_0.5px_oklch(0_0_0/0.35),0_1px_4px_oklch(0_0_0/0.35)] transition-transform duration-150',
+          dragging ? 'scale-115' : 'group-hover:scale-110',
+        )}
+        style={{ left: `calc(8px + (100% - 16px) * ${clamped / 100})` }}
       />
     </div>
   );
@@ -253,24 +269,29 @@ export function Segmented<T extends string>({
   value: T; options: { value: T; label: ReactNode; title?: string }[]; onChange: (v: T) => void; size?: 'sm' | 'md'; className?: string;
 }) {
   return (
-    <div role="radiogroup" className={cn('flex rounded-lg border border-line bg-surface-2 p-0.5', className)}>
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          role="radio"
-          aria-checked={o.value === value}
-          title={o.title}
-          onClick={() => onChange(o.value)}
-          className={cn(
-            'flex-1 whitespace-nowrap rounded-md px-2 font-medium transition-colors',
-            size === 'sm' ? 'h-6 text-[11px]' : 'h-7 text-xs',
-            o.value === value ? 'bg-surface-3 text-fg shadow-sm' : 'text-fg-3 hover:text-fg',
-          )}
-        >
-          {o.label}
-        </button>
-      ))}
+    <div role="radiogroup" className={cn('flex gap-px rounded-[8px] bg-surface-2 p-[2px]', className)}>
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            title={o.title}
+            onClick={() => onChange(o.value)}
+            className={cn(
+              'flex flex-1 items-center justify-center whitespace-nowrap rounded-[6px] px-2 font-medium outline-none transition-[background-color,color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-accent/60',
+              size === 'sm' ? 'h-[22px] text-[11px]' : 'h-6 text-[12px]',
+              on
+                ? 'bg-raised text-fg shadow-[0_1px_2px_oklch(0_0_0/0.18),0_0_0_0.5px_oklch(0_0_0/0.12)]'
+                : 'text-fg-3 hover:text-fg-2',
+            )}
+          >
+            {o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -279,14 +300,19 @@ export function Select<T extends string>({
   value, options, onChange, className, label,
 }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; className?: string; label?: string }) {
   return (
-    <select
-      aria-label={label}
-      value={value}
-      onChange={(e) => onChange(e.target.value as T)}
-      className={cn('h-8 w-full min-w-0 cursor-pointer rounded-lg border border-line bg-surface-2 px-2 text-[13px] text-fg outline-none hover:border-line-strong focus:border-accent', className)}
-    >
-      {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-    </select>
+    <div className={cn('relative min-w-0', className)}>
+      <select
+        aria-label={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+        className={cn('h-7 w-full min-w-0 appearance-none truncate pl-2 pr-7 text-[12.5px]', FIELD, 'focus:border-accent')}
+      >
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      <svg viewBox="0 0 10 10" aria-hidden="true" className="pointer-events-none absolute right-2 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-fg-3">
+        <path d="M2 4l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
   );
 }
 
@@ -298,9 +324,17 @@ export function Switch({ checked, onChange, label }: { checked: boolean; onChang
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={cn('relative h-5 w-9 shrink-0 rounded-full transition-colors', checked ? 'bg-accent' : 'bg-surface-3 ring-1 ring-inset ring-line-strong')}
+      className={cn(
+        'relative h-[18px] w-[30px] shrink-0 rounded-full outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accent/60',
+        checked ? 'bg-accent' : 'bg-surface-3 shadow-[inset_0_0_0_0.5px_var(--app-line-strong)]',
+      )}
     >
-      <span className={cn('absolute left-0 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform', checked ? 'translate-x-4.5' : 'translate-x-0.5')} />
+      <span
+        className={cn(
+          'absolute left-0 top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow-[0_1px_3px_oklch(0_0_0/0.3)] transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]',
+          checked ? 'translate-x-[14px]' : 'translate-x-[2px]',
+        )}
+      />
     </button>
   );
 }
@@ -310,8 +344,8 @@ export function Section({ title, children, actions, className }: { title?: React
   return (
     <section className={cn('border-b border-line px-4 py-3.5 last:border-b-0', className)}>
       {(title || actions) && (
-        <header className="mb-2.5 flex min-h-5 items-center justify-between gap-2">
-          {title && <h3 className="text-[11px] font-semibold uppercase tracking-wide text-fg-3">{title}</h3>}
+        <header className="mb-2.5 flex min-h-6 items-center justify-between gap-2">
+          {title && <h3 className="text-[12px] font-semibold tracking-[-0.01em] text-fg">{title}</h3>}
           {actions}
         </header>
       )}
@@ -322,8 +356,8 @@ export function Section({ title, children, actions, className }: { title?: React
 
 export function FieldRow({ label, children, hint }: { label: ReactNode; children: ReactNode; hint?: ReactNode }) {
   return (
-    <label className="grid grid-cols-[88px_1fr] items-center gap-2 py-1">
-      <span className="text-xs text-fg-2">{label}</span>
+    <label className="grid grid-cols-[84px_1fr] items-center gap-x-2 gap-y-1 py-[3px]">
+      <span className="truncate text-[12px] text-fg-2">{label}</span>
       <span className="min-w-0">{children}</span>
       {hint && <span className="col-span-2 text-[11px] leading-snug text-fg-3">{hint}</span>}
     </label>
@@ -331,26 +365,31 @@ export function FieldRow({ label, children, hint }: { label: ReactNode; children
 }
 
 export function Kbd({ children }: { children: ReactNode }) {
-  return <kbd className="num inline-flex h-5 min-w-5 items-center justify-center rounded border border-line bg-surface-2 px-1 text-[10px] text-fg-2">{children}</kbd>;
+  return (
+    <kbd className="num inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-[5px] bg-surface-2 px-1 text-[10.5px] font-medium text-fg-2 shadow-[inset_0_-1px_0_var(--app-line-strong),inset_0_0_0_0.5px_var(--app-line)]">
+      {children}
+    </kbd>
+  );
 }
 
 export function Badge({ children, tone = 'neutral', className }: { children: ReactNode; tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'accent'; className?: string }) {
   const tones = {
     neutral: 'bg-surface-3 text-fg-2',
-    success: 'bg-success/15 text-success',
-    warning: 'bg-warning/15 text-warning',
-    danger: 'bg-danger/15 text-danger',
+    success: 'bg-success/14 text-success',
+    warning: 'bg-warning/14 text-warning',
+    danger: 'bg-danger/14 text-danger',
     accent: 'bg-accent-soft text-accent',
   };
-  return <span className={cn('inline-flex h-5 items-center gap-1 rounded-md px-1.5 text-[11px] font-medium', tones[tone], className)}>{children}</span>;
+  return <span className={cn('inline-flex h-[18px] items-center gap-1 rounded-[5px] px-1.5 text-[10.5px] font-semibold', tones[tone], className)}>{children}</span>;
 }
 
 /** A color chip with a checkerboard behind translucent colors. */
 export function Swatch({ color, className, title }: { color: string | null | undefined; className?: string; title?: string }) {
   return (
-    <span title={title} className={cn('checker relative inline-block shrink-0 overflow-hidden rounded-md ring-1 ring-inset ring-line', className ?? 'h-5 w-5')}>
+    <span title={title} className={cn('checker relative inline-block shrink-0 overflow-hidden rounded-[5px]', className ?? 'h-5 w-5')}>
       <span className="absolute inset-0" style={{ background: color ?? 'transparent' }} />
       {!color && <span className="absolute inset-0 bg-surface-2 [background-image:repeating-linear-gradient(45deg,transparent_0_4px,var(--app-line-strong)_4px_5px)]" />}
+      <span className="absolute inset-0 rounded-[inherit] shadow-[inset_0_0_0_0.5px_oklch(0_0_0/0.22)]" />
     </span>
   );
 }
@@ -361,12 +400,12 @@ export function CopyButton({ text, label = 'Copy', className }: { text: string; 
     <IconButton
       label={done ? 'Copied' : label}
       size="icon-sm"
-      className={className}
+      className={cn('h-6 w-6', className)}
       onClick={async () => {
         try { await navigator.clipboard.writeText(text); setDone(true); setTimeout(() => setDone(false), 1200); } catch { /* clipboard blocked */ }
       }}
     >
-      {done ? <Check size={13} /> : <Copy size={13} />}
+      {done ? <Check size={12} className="text-success" /> : <Copy size={12} />}
     </IconButton>
   );
 }
@@ -375,15 +414,20 @@ export function CopyButton({ text, label = 'Copy', className }: { text: string; 
 export const Menu = RMenu.Root;
 export const MenuTrigger = RMenu.Trigger;
 
+export const MENU_SURFACE = 'glass animate-pop z-50 min-w-56 rounded-[12px] p-[5px] shadow-panel';
+
 export function MenuContent({ children, align = 'start', className }: { children: ReactNode; align?: 'start' | 'center' | 'end'; className?: string }) {
   return (
     <RMenu.Portal>
-      <RMenu.Content align={align} sideOffset={6} className={cn('z-50 min-w-52 rounded-xl border border-line bg-surface p-1 shadow-panel', className)}>
+      <RMenu.Content align={align} sideOffset={6} collisionPadding={8} className={cn(MENU_SURFACE, className)}>
         {children}
       </RMenu.Content>
     </RMenu.Portal>
   );
 }
+
+export const MENU_ITEM =
+  'group flex h-7 w-full cursor-default select-none items-center gap-2.5 rounded-[7px] px-2 text-left text-[13px] outline-none transition-colors duration-75';
 
 export function MenuItem({ children, onSelect, icon, shortcut, danger, disabled }: { children: ReactNode; onSelect?: () => void; icon?: ReactNode; shortcut?: string; danger?: boolean; disabled?: boolean }) {
   return (
@@ -391,22 +435,23 @@ export function MenuItem({ children, onSelect, icon, shortcut, danger, disabled 
       disabled={disabled}
       onSelect={onSelect}
       className={cn(
-        'flex h-8 cursor-pointer select-none items-center gap-2.5 rounded-lg px-2 text-[13px] outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-40 data-[highlighted]:bg-surface-3',
+        MENU_ITEM,
+        'data-[disabled]:pointer-events-none data-[disabled]:opacity-35 data-[highlighted]:bg-accent data-[highlighted]:text-accent-fg',
         danger ? 'text-danger' : 'text-fg',
       )}
     >
-      {icon && <span className="flex w-4 justify-center text-fg-2">{icon}</span>}
+      {icon && <span className="flex w-4 justify-center text-fg-2 group-data-[highlighted]:text-accent-fg">{icon}</span>}
       <span className="flex-1 truncate">{children}</span>
-      {shortcut && <span className="num text-[11px] text-fg-3">{shortcut}</span>}
+      {shortcut && <span className="num text-[11px] text-fg-3 group-data-[highlighted]:text-accent-fg/80">{shortcut}</span>}
     </RMenu.Item>
   );
 }
 
 export function MenuLabel({ children }: { children: ReactNode }) {
-  return <RMenu.Label className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-fg-3">{children}</RMenu.Label>;
+  return <RMenu.Label className="px-2 pb-1 pt-2 text-[11px] font-medium text-fg-3">{children}</RMenu.Label>;
 }
 
-export const MenuSeparator = () => <RMenu.Separator className="my-1 h-px bg-line" />;
+export const MenuSeparator = () => <RMenu.Separator className="mx-2 my-[5px] h-px bg-line" />;
 
 // ── Dialog ───────────────────────────────────────────────────
 export function Dialog({ open, onOpenChange, title, description, children, className }: {
@@ -415,12 +460,12 @@ export function Dialog({ open, onOpenChange, title, description, children, class
   return (
     <RDialog.Root open={open} onOpenChange={onOpenChange}>
       <RDialog.Portal>
-        <RDialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-[2px]" />
-        <RDialog.Content className={cn('fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-2xl border border-line bg-surface p-5 shadow-panel outline-none', className)}>
+        <RDialog.Overlay className="animate-fade fixed inset-0 z-50 bg-black/45 backdrop-blur-[3px]" />
+        <RDialog.Content className={cn('animate-dialog fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-[16px] bg-surface p-5 shadow-panel outline-none', className)}>
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <RDialog.Title className="text-[15px] font-semibold text-fg">{title}</RDialog.Title>
-              {description && <RDialog.Description className="mt-1 text-[13px] text-fg-2">{description}</RDialog.Description>}
+              <RDialog.Title className="text-[15px] font-semibold tracking-[-0.01em] text-fg">{title}</RDialog.Title>
+              {description && <RDialog.Description className="mt-1 text-[13px] leading-relaxed text-fg-2">{description}</RDialog.Description>}
             </div>
             <RDialog.Close asChild>
               <Button variant="ghost" size="icon-sm" aria-label="Close"><X size={14} /></Button>

@@ -1,8 +1,11 @@
-import { Code2, Keyboard, Monitor, Moon, PanelRight, Plus, Redo2, Sun, Undo2 } from 'lucide-react';
-import { useEditor } from '../store';
+import { useRef, useState } from 'react';
+import { Check, Copy, Keyboard, Link2, Monitor, Moon, PanelRight, Plus, Redo2, Sun, Undo2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { encodeShare, shareUrl } from '@/engine/share';
+import { getEditor, useEditor } from '../store';
 import { useUI } from '../ui-store';
 import { addTheme } from '../actions';
-import { IconButton, Tooltip, cn } from '../ui';
+import { Button, Dialog, IconButton, Tooltip, cn } from '../ui';
 import { ProjectMenu } from './ProjectMenu';
 
 export function Logo({ className }: { className?: string }) {
@@ -16,7 +19,7 @@ export function Logo({ className }: { className?: string }) {
           <stop offset="1" stopColor="#6c8cff" />
         </linearGradient>
       </defs>
-      <rect width="64" height="64" rx="15" className="fill-fg" />
+      <rect width="64" height="64" rx="16" className="fill-[oklch(0.2_0_0)]" />
       <ellipse cx="32" cy="32" rx="12" ry="16" fill="none" stroke="url(#logo-g)" strokeWidth="6.5" />
     </svg>
   );
@@ -28,24 +31,27 @@ function ThemeSwitcher() {
   const setTheme = useEditor((s) => s.setTheme);
   return (
     <div className="flex items-center gap-1">
-      <div role="radiogroup" aria-label="Active theme" className="flex max-w-[38vw] items-center overflow-x-auto rounded-xl border border-line bg-surface-2 p-0.5 [scrollbar-width:none]">
-        {themes.map((t, i) => (
-          <Tooltip key={t.id} content={`${t.name}${i === 0 ? ' · primary theme' : ''}${t.dark ? ' · dark' : ''}`}>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={t.id === themeId}
-              onClick={() => setTheme(t.id)}
-              className={cn(
-                'flex h-7 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-colors',
-                t.id === themeId ? 'bg-surface text-fg shadow-sm ring-1 ring-line' : 'text-fg-3 hover:text-fg',
-              )}
-            >
-              {t.dark ? <Moon size={12} /> : <Sun size={12} />}
-              <span className="max-sm:max-w-14 max-sm:truncate">{t.name}</span>
-            </button>
-          </Tooltip>
-        ))}
+      <div role="radiogroup" aria-label="Active theme" className="flex max-w-[38vw] items-center gap-px overflow-x-auto rounded-[9px] bg-surface-2 p-[2px] [scrollbar-width:none]">
+        {themes.map((t, i) => {
+          const on = t.id === themeId;
+          return (
+            <Tooltip key={t.id} content={`${t.name}${i === 0 ? ' — primary theme' : ''}`}>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setTheme(t.id)}
+                className={cn(
+                  'flex h-[26px] shrink-0 items-center gap-1.5 rounded-[7px] px-2.5 text-[12px] font-medium outline-none transition-[background-color,color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-accent/60',
+                  on ? 'bg-raised text-fg shadow-[0_1px_2px_oklch(0_0_0/0.18),0_0_0_0.5px_oklch(0_0_0/0.12)]' : 'text-fg-3 hover:text-fg-2',
+                )}
+              >
+                {t.dark ? <Moon size={12} strokeWidth={2.2} /> : <Sun size={12} strokeWidth={2.2} />}
+                <span className="max-sm:max-w-14 max-sm:truncate">{t.name}</span>
+              </button>
+            </Tooltip>
+          );
+        })}
       </div>
       <IconButton
         label="Add a theme"
@@ -62,24 +68,74 @@ function ThemeSwitcher() {
   );
 }
 
+function ShareDialog({ open, onOpenChange, url }: { open: boolean; onOpenChange: (v: boolean) => void; url: string }) {
+  const [copied, setCopied] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      input.current?.select();
+      toast('Press ⌘C / Ctrl+C to copy the selected link');
+    }
+  };
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Share this canvas"
+      description="The whole canvas is compressed into the link — nothing is uploaded anywhere. Anyone who opens it gets their own editable copy."
+    >
+      <div className="flex items-center gap-2">
+        <input
+          ref={input}
+          readOnly
+          value={url}
+          onFocus={(e) => e.currentTarget.select()}
+          className="num h-8 min-w-0 flex-1 rounded-[8px] bg-surface-2 px-2.5 text-[11.5px] text-fg-2 outline-none focus:ring-2 focus:ring-accent/50"
+        />
+        <Button variant="primary" onClick={copy} className="w-[92px]">
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+          {copied ? 'Copied' : 'Copy'}
+        </Button>
+      </div>
+      <p className="mt-3 text-[11.5px] leading-relaxed text-fg-3">
+        {url.length > 8000
+          ? `This link is long (${Math.round(url.length / 1000)}k characters). Some chat apps truncate long links — use Export JSON from the canvas menu if it doesn't open.`
+          : `${url.length.toLocaleString()} characters. Edits you make after sharing aren't included — share again to send a new version.`}
+      </p>
+    </Dialog>
+  );
+}
+
 export function TopBar() {
   const canUndo = useEditor((s) => s.past.length > 0);
   const canRedo = useEditor((s) => s.future.length > 0);
   const undo = useEditor((s) => s.undo);
   const redo = useEditor((s) => s.redo);
-  const { appTheme, setAppTheme, panelOpen, setPanelOpen, setPanelTab, panelTab, setShortcutsOpen } = useUI();
+  const { appTheme, setAppTheme, panelOpen, setPanelOpen, setShortcutsOpen } = useUI();
+  const [share, setShare] = useState<{ open: boolean; url: string }>({ open: false, url: '' });
   const nextAppTheme = appTheme === 'system' ? 'dark' : appTheme === 'dark' ? 'light' : 'system';
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
   const mod = mac ? '⌘' : 'Ctrl+';
 
+  const openShare = async () => {
+    try {
+      const code = await encodeShare(getEditor().project);
+      setShare({ open: true, url: shareUrl(location.origin, code) });
+    } catch {
+      toast.error('Could not create a share link for this canvas.');
+    }
+  };
+
   return (
-    <header className="relative z-20 flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line bg-surface px-2.5">
-      <div className="flex min-w-0 shrink items-center gap-2">
-        <a href="/" className="flex items-center gap-2 rounded-lg px-1 py-1" aria-label="0colors">
-          <Logo className="h-7 w-7" />
-          <span className="hidden text-[14px] font-semibold tracking-tight sm:inline"><span className="text-fg-3">0</span>colors</span>
+    <header className="relative z-20 flex h-11 shrink-0 items-center justify-between gap-2 border-b border-line bg-surface px-2">
+      <div className="flex min-w-0 shrink items-center gap-1">
+        <a href="/" className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] outline-none transition-colors hover:bg-surface-3/80" aria-label="0colors home">
+          <Logo className="h-[22px] w-[22px]" />
         </a>
-        <span className="hidden h-5 w-px bg-line sm:block" />
         <ProjectMenu />
       </div>
 
@@ -88,26 +144,29 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-0.5">
-        <div className="md:hidden"><ThemeSwitcher /></div>
-        <IconButton label="Undo" shortcut={`${mod}Z`} side="bottom" disabled={!canUndo} onClick={undo}><Undo2 size={16} /></IconButton>
-        <IconButton label="Redo" shortcut={mac ? '⇧⌘Z' : 'Ctrl+Y'} side="bottom" disabled={!canRedo} onClick={redo}><Redo2 size={16} /></IconButton>
-        <span className="mx-1 hidden h-5 w-px bg-line sm:block" />
-        <IconButton label="Keyboard shortcuts" shortcut="?" side="bottom" className="hidden sm:inline-flex" onClick={() => setShortcutsOpen(true)}><Keyboard size={16} /></IconButton>
+        <div className="mr-1 md:hidden"><ThemeSwitcher /></div>
+        <IconButton label="Undo" shortcut={`${mod}Z`} side="bottom" size="icon-sm" disabled={!canUndo} onClick={undo}><Undo2 size={15} /></IconButton>
+        <IconButton label="Redo" shortcut={mac ? '⇧⌘Z' : 'Ctrl+Y'} side="bottom" size="icon-sm" disabled={!canRedo} onClick={redo}><Redo2 size={15} /></IconButton>
+        <span className="mx-1.5 hidden h-4 w-px bg-line-strong sm:block" />
+        <IconButton label="Keyboard shortcuts" shortcut="?" side="bottom" size="icon-sm" className="hidden sm:inline-flex" onClick={() => setShortcutsOpen(true)}><Keyboard size={15} /></IconButton>
         <IconButton
-          label={`App theme: ${appTheme} (click for ${nextAppTheme})`}
+          label={`Appearance: ${appTheme === 'system' ? 'match system' : appTheme} — click for ${nextAppTheme === 'system' ? 'system' : nextAppTheme}`}
           side="bottom"
+          size="icon-sm"
           className="hidden sm:inline-flex"
           onClick={() => setAppTheme(nextAppTheme)}
         >
-          {appTheme === 'system' ? <Monitor size={16} /> : appTheme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+          {appTheme === 'system' ? <Monitor size={15} /> : appTheme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
         </IconButton>
-        <IconButton label="Export code" side="bottom" className="hidden sm:inline-flex" active={panelOpen && panelTab === 'code'} onClick={() => (panelOpen && panelTab === 'code' ? setPanelOpen(false) : setPanelTab('code'))}>
-          <Code2 size={16} />
+        <IconButton label={panelOpen ? 'Hide panel' : 'Show panel'} side="bottom" size="icon-sm" active={panelOpen} onClick={() => setPanelOpen(!panelOpen)}>
+          <PanelRight size={15} />
         </IconButton>
-        <IconButton label={panelOpen ? 'Hide panel' : 'Show panel'} side="bottom" active={panelOpen} onClick={() => setPanelOpen(!panelOpen)}>
-          <PanelRight size={16} />
-        </IconButton>
+        <Button variant="primary" size="sm" className="ml-1.5 hidden px-3 sm:inline-flex" onClick={openShare}>
+          <Link2 size={13} strokeWidth={2.2} />
+          Share
+        </Button>
       </div>
+      <ShareDialog open={share.open} onOpenChange={(open) => setShare((s) => ({ ...s, open }))} url={share.url} />
     </header>
   );
 }
