@@ -408,12 +408,12 @@ function EmptyHint() {
 
 const FLOAT = 'glass rounded-[14px] shadow-panel';
 
-function ToolButton({ label, shortcut, hint, active, onClick, children }: { label: string; shortcut: string; hint?: string; active?: boolean; onClick: () => void; children: ReactNode }) {
+function ToolButton({ label, ariaLabel, shortcut, hint, active, onClick, children }: { label: string; ariaLabel?: string; shortcut: string; hint?: string; active?: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <Tooltip content={hint ? <span><span className="font-semibold">{label}</span><span className="text-white/65"> · {hint}</span></span> : label} shortcut={shortcut}>
       <button
         type="button"
-        aria-label={label}
+        aria-label={ariaLabel ?? label}
         aria-pressed={active}
         onClick={onClick}
         className={cn(
@@ -436,7 +436,7 @@ function Toolbar({ onAdd }: { onAdd: (t: NodeType) => void }) {
         <ToolButton label="Hand" shortcut="H" hint="drag to pan" active={tool === 'hand'} onClick={() => setTool('hand')}><Hand size={17} /></ToolButton>
         <div className="mx-1 h-5 w-px bg-line-strong" />
         {ADD_ITEMS.map((item) => (
-          <ToolButton key={item.type} label={item.label} shortcut={item.key} hint={item.hint} onClick={() => onAdd(item.type)}>
+          <ToolButton key={item.type} label={item.label} ariaLabel={`Add ${item.label}`} shortcut={item.key} hint={item.hint} onClick={() => onAdd(item.type)}>
             {item.icon}
           </ToolButton>
         ))}

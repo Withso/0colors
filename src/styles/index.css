@@ -212,6 +212,22 @@
   }
 }
 
+/* Cross-fade colors while switching themes (only then — edits stay instant). */
+.theme-anim .react-flow__node *,
+.theme-anim aside * {
+  transition: background-color 380ms ease, color 380ms ease, border-color 380ms ease !important;
+}
+.theme-anim .react-flow__edge stop {
+  transition: stop-color 380ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-anim .react-flow__node *,
+  .theme-anim aside *,
+  .theme-anim .react-flow__edge stop {
+    transition: none !important;
+  }
+}
+
 /* ── React Flow theming ─────────────────────────────────────── */
 .react-flow {
   --xy-background-color: transparent;

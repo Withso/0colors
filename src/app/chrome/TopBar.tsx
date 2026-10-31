@@ -29,6 +29,14 @@ function ThemeSwitcher() {
   const themes = useEditor((s) => s.project.themes);
   const themeId = useEditor((s) => s.themeId);
   const setTheme = useEditor((s) => s.setTheme);
+  const switchTheme = (id: string) => {
+    if (id === themeId) return;
+    const root = document.documentElement;
+    root.classList.add('theme-anim');
+    window.clearTimeout((window as unknown as { __themeAnim?: number }).__themeAnim);
+    (window as unknown as { __themeAnim?: number }).__themeAnim = window.setTimeout(() => root.classList.remove('theme-anim'), 450);
+    setTheme(id);
+  };
   return (
     <div className="flex items-center gap-1">
       <div role="radiogroup" aria-label="Active theme" className="flex max-w-[38vw] items-center gap-px overflow-x-auto rounded-[9px] bg-surface-2 p-[2px] [scrollbar-width:none]">
@@ -40,7 +48,7 @@ function ThemeSwitcher() {
                 type="button"
                 role="radio"
                 aria-checked={on}
-                onClick={() => setTheme(t.id)}
+                onClick={() => switchTheme(t.id)}
                 className={cn(
                   'flex h-[26px] shrink-0 items-center gap-1.5 rounded-[7px] px-2.5 text-[12px] font-medium outline-none transition-[background-color,color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-accent/60',
                   on ? 'bg-raised text-fg shadow-[0_1px_2px_oklch(0_0_0/0.18),0_0_0_0.5px_oklch(0_0_0/0.12)]' : 'text-fg-3 hover:text-fg-2',

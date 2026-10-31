@@ -24,6 +24,10 @@ A complete rebuild. 0colors is now a local-only playground for understanding col
 - Automatic saving to IndexedDB, plus JSON import and export.
 - Share links that carry the whole project in the URL hash.
 - A sample showcase canvas that uses every node type, with notes explaining each idea.
+- Logic you can see: connections carry gradient strokes in the colors they pass along, edge labels summarize each rule (`L −6 · H +180`), formula references appear as dashed links, and hovering a node traces its whole lineage.
+- Direct manipulation: drag a channel value on a color node to scrub it, double-click a title to rename, drag from an output into empty space to create a connected node, or from an input to create its source.
+- A Share dialog, multiple local canvases with a searchable list, light and dark app appearance, canvas backdrops (dark, mid gray, light) and a keyboard-first workflow (`?` lists every shortcut).
+- A calm, neutral interface in the spirit of Figma and macOS: true-gray chrome so colors are judged fairly, glass floating toolbars, compact inspector controls and subtle motion that respects reduced-motion settings.
 
 ### Changed
 
