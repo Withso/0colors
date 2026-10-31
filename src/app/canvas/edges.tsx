@@ -6,6 +6,7 @@ import { outputColor } from '@/engine/compute';
 import { channelDef } from '@/engine/color/spaces';
 import { useEditor } from '../store';
 import { fmt } from '../lib/color-ui';
+import { useLinkEmphasis } from './hover';
 
 /** One-line summary of how a derived color differs from its parent, e.g. "L −6 · H +180". */
 function useRuleSummary(target: string, handle: string | null | undefined) {
@@ -32,6 +33,7 @@ export type RefFlowEdge = RFEdge<{ kind: 'ref' }>;
 export const ColorEdgeView = memo(function ColorEdgeView(props: EdgeProps<ColorFlowEdge>) {
   const { id, source, target, sourceHandleId, targetHandleId, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected } = props;
   const summary = useRuleSummary(target, targetHandleId);
+  const emphasis = useLinkEmphasis(source, target);
   const from = useEditor((s) => outputColor(s.result.nodes[source], sourceHandleId ?? 'out')?.hex ?? 'var(--app-fg-3)');
   const to = useEditor((s) => {
     const r = s.result.nodes[target];
@@ -39,8 +41,10 @@ export const ColorEdgeView = memo(function ColorEdgeView(props: EdgeProps<ColorF
   });
   const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, curvature: 0.35 });
   const gradientId = `edge-gradient-${id}`;
+  const faded = emphasis === 'off';
+  const strong = emphasis === 'on' || selected;
   return (
-    <>
+    <g style={{ opacity: faded ? 0.16 : 1, transition: 'opacity 160ms ease' }}>
       <defs>
         <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1={sourceX} y1={sourceY} x2={targetX} y2={targetY}>
           <stop offset="0" stopColor={from} />
@@ -49,18 +53,18 @@ export const ColorEdgeView = memo(function ColorEdgeView(props: EdgeProps<ColorF
       </defs>
       {selected && <path d={path} fill="none" stroke="var(--app-accent)" strokeWidth={7} strokeOpacity={0.35} strokeLinecap="round" />}
       <path d={path} fill="none" stroke="var(--canvas-bd, var(--app-canvas))" strokeWidth={5} strokeOpacity={0.85} />
-      <BaseEdge id={id} path={path} interactionWidth={18} style={{ stroke: `url(#${gradientId})`, strokeWidth: selected ? 3 : 2.25 }} />
+      <BaseEdge id={id} path={path} interactionWidth={18} style={{ stroke: `url(#${gradientId})`, strokeWidth: strong ? 3 : 2.25 }} />
       {summary && (
         <EdgeLabelRenderer>
           <div
             className="num glass pointer-events-none absolute rounded-[6px] px-1.5 py-[3px] text-[10px] font-medium text-fg-2 shadow-[0_0_0_0.5px_var(--app-line-strong),0_2px_6px_oklch(0_0_0/0.18)]"
-            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
+            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, opacity: faded ? 0.2 : 1, transition: 'opacity 160ms ease' }}
           >
             {summary}
           </div>
         </EdgeLabelRenderer>
       )}
-    </>
+    </g>
   );
 });
 
@@ -83,6 +87,7 @@ export const RefEdgeView = memo(function RefEdgeView({ id, source, target }: Edg
   const a = useInternalNode(source);
   const b = useInternalNode(target);
   const color = useEditor((s) => outputColor(s.result.nodes[source], 'out')?.hex ?? 'var(--app-fg-3)');
+  const emphasis = useLinkEmphasis(source, target);
   if (!a || !b) return null;
   const ra: Rect = { x: a.internals.positionAbsolute.x, y: a.internals.positionAbsolute.y, w: a.measured.width ?? 200, h: a.measured.height ?? 120 };
   const rb: Rect = { x: b.internals.positionAbsolute.x, y: b.internals.positionAbsolute.y, w: b.measured.width ?? 200, h: b.measured.height ?? 120 };
@@ -92,7 +97,7 @@ export const RefEdgeView = memo(function RefEdgeView({ id, source, target }: Edg
   const p2 = borderPoint(rb, ca);
   const path = `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
   return (
-    <g className="pointer-events-none">
+    <g className="pointer-events-none" style={{ opacity: emphasis === 'off' ? 0.12 : 1, transition: 'opacity 160ms ease' }}>
       <path id={id} d={path} fill="none" stroke={color} strokeWidth={1.75} strokeDasharray="5 5" strokeOpacity={0.85} className="edge-ref" />
       <circle cx={p2.x} cy={p2.y} r={3.5} fill={color} stroke="var(--canvas-bd, var(--app-canvas))" strokeWidth={1.5} />
     </g>

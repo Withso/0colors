@@ -22,6 +22,7 @@ import {
 } from '../actions';
 import { type FlowNode, nodeTypes } from './nodes';
 import { type ColorFlowEdge, type RefFlowEdge, edgeTypes } from './edges';
+import { useHover } from './hover';
 import { IconButton, Kbd, MENU_ITEM, MENU_SURFACE, Tooltip, cn } from '../ui';
 
 const NODE_SIZE: Record<NodeType, XY> = {
@@ -276,7 +277,10 @@ function CanvasInner() {
       if (mod || e.altKey) return;
       if (k === 'delete' || k === 'backspace') { e.preventDefault(); deleteSelection(); return; }
       if (k === 'escape') { select([], []); setMenu(null); return; }
-      if (k === 'f') { rf.fitView({ padding: 0.12, duration: 350, maxZoom: 1.2 }); return; }
+      if (k === 'f' || (e.shiftKey && e.code === 'Digit1')) { e.preventDefault(); rf.fitView({ padding: 0.12, duration: 350, maxZoom: 1.2 }); return; }
+      if (e.shiftKey && e.code === 'Digit0') { e.preventDefault(); rf.zoomTo(1, { duration: 220 }); return; }
+      if (e.key === '-' || e.key === '_') { e.preventDefault(); rf.zoomOut({ duration: 200 }); return; }
+      if (e.key === '=' || e.key === '+') { e.preventDefault(); rf.zoomIn({ duration: 200 }); return; }
       if (e.key === '?') { useUI.getState().setShortcutsOpen(true); return; }
       if (k === 'v') { useUI.getState().setTool('select'); return; }
       if (k === 'h') { useUI.getState().setTool('hand'); return; }
@@ -328,6 +332,11 @@ function CanvasInner() {
         onConnectEnd={onConnectEnd}
         isValidConnection={isValidConnection}
         onNodeDragStop={() => getEditor().breakCoalesce()}
+        onNodeMouseEnter={(_, n) => useHover.getState().setHovered(n.id)}
+        onNodeMouseLeave={() => useHover.getState().setHovered(null)}
+        onNodeDragStart={() => useHover.getState().setHovered(null)}
+        snapToGrid
+        snapGrid={[8, 8]}
         onMoveEnd={(_, vp) => setViewport({ x: Math.round(vp.x), y: Math.round(vp.y), zoom: Math.round(vp.zoom * 1000) / 1000 })}
         onPaneClick={() => setMenu(null)}
         onPaneContextMenu={(e) => {
@@ -444,13 +453,13 @@ function ZoomControls() {
   return (
     <div className={cn('absolute bottom-4 left-3 hidden items-center gap-px p-1 sm:flex', FLOAT)}>
       <IconButton label="Zoom out" shortcut="−" size="icon-sm" onClick={() => rf.zoomOut({ duration: 200 })}><Minus size={14} /></IconButton>
-      <Tooltip content="Zoom to 100%">
+      <Tooltip content="Zoom to 100%" shortcut="⇧0">
         <button type="button" className="num h-7 w-12 rounded-[7px] text-[11.5px] font-medium text-fg-2 outline-none transition-colors hover:bg-surface-3/80 hover:text-fg" onClick={() => rf.zoomTo(1, { duration: 220 })}>
           {Math.round(zoom * 100)}%
         </button>
       </Tooltip>
       <IconButton label="Zoom in" shortcut="+" size="icon-sm" onClick={() => rf.zoomIn({ duration: 200 })}><Plus size={14} /></IconButton>
-      <IconButton label="Zoom to fit" shortcut="F" size="icon-sm" onClick={() => rf.fitView({ padding: 0.12, duration: 380, maxZoom: 1.2 })}><Maximize size={13} /></IconButton>
+      <IconButton label="Zoom to fit" shortcut="F · ⇧1" size="icon-sm" onClick={() => rf.fitView({ padding: 0.12, duration: 380, maxZoom: 1.2 })}><Maximize size={13} /></IconButton>
       <div className="mx-1 h-4 w-px bg-line-strong" />
       <IconButton label={minimap ? 'Hide minimap' : 'Show minimap'} size="icon-sm" active={minimap} onClick={() => setMinimap(!minimap)}><MapIcon size={13} /></IconButton>
       <Tooltip content={`Backdrop: ${BACKDROPS[backdrop].label} — the same color looks different on different surroundings`}>
