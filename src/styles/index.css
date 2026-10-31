@@ -15,6 +15,7 @@
   --app-surface-3: oklch(0.325 0 0);
   --app-glass: oklch(0.255 0 0 / 0.82);
   --app-raised: oklch(0.385 0 0);
+  --app-tooltip: oklch(0.14 0 0);
   --app-line: oklch(1 0 0 / 0.075);
   --app-line-strong: oklch(1 0 0 / 0.14);
   --app-fg: oklch(0.965 0 0);
@@ -39,6 +40,7 @@
   --app-surface-3: oklch(0.928 0 0);
   --app-glass: oklch(1 0 0 / 0.82);
   --app-raised: oklch(1 0 0);
+  --app-tooltip: oklch(0.2 0 0);
   --app-line: oklch(0 0 0 / 0.08);
   --app-line-strong: oklch(0 0 0 / 0.15);
   --app-fg: oklch(0.22 0 0);
@@ -63,6 +65,7 @@
   --color-surface-3: var(--app-surface-3);
   --color-glass: var(--app-glass);
   --color-raised: var(--app-raised);
+  --color-tooltip: var(--app-tooltip);
   --color-line: var(--app-line);
   --color-line-strong: var(--app-line-strong);
   --color-fg: var(--app-fg);

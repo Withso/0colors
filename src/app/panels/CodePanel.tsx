@@ -8,7 +8,7 @@ import {
   type ColorFormat, type ExportFormat, type ExportOptions, EXPORT_FORMATS, exportProject,
 } from '@/engine/export';
 import { useEditor } from '../store';
-import { Button, CopyButton, FieldRow, Section, Segmented, Select, Switch } from '../ui';
+import { CopyButton, FieldRow, IconButton, Section, Segmented, Select, Switch } from '../ui';
 import { downloadText } from './download';
 import { highlight } from './highlight';
 
@@ -89,6 +89,7 @@ export function CodePanel() {
     <div>
       <Section title="Export">
         <Segmented
+          size="sm"
           className="mb-3"
           value={options.format}
           onChange={(v) => set('format', v)}
@@ -107,31 +108,35 @@ export function CodePanel() {
             />
           </FieldRow>
         )}
-        <div className="mt-1.5 flex flex-col gap-2">
-          <label className="flex items-center justify-between gap-3 text-xs text-fg-2">
+        <div className="mt-1 flex flex-col">
+          <label className="flex h-8 items-center justify-between gap-3 text-[12px] text-fg-2">
             <span>Include primitives</span>
             <Switch label="Include primitives" checked={options.includePrimitives} onChange={(v) => set('includePrimitives', v)} />
           </label>
-          <label className="flex items-center justify-between gap-3 text-xs text-fg-2">
-            <span>Use aliases (var references)</span>
+          <label className="flex h-8 items-center justify-between gap-3 text-[12px] text-fg-2">
+            <span>Use aliases <span className="text-fg-3">(var references)</span></span>
             <Switch label="Use aliases" checked={options.useAliases} onChange={(v) => set('useAliases', v)} />
           </label>
         </div>
-        <p className="mt-3 text-[11px] leading-relaxed text-fg-3">{usage[options.format]}</p>
+        <p className="mt-2 text-[11px] leading-relaxed text-fg-3">{usage[options.format]}</p>
       </Section>
 
       <Section
         title={meta.label}
         actions={
-          <div className="flex items-center gap-1">
-            <CopyButton text={output} label={`Copy ${meta.label}`} />
-            <Button size="sm" variant="ghost" onClick={() => downloadText(fileName, output, meta.language === 'json' ? 'application/json' : 'text/css')}>
-              <Download size={13} /> {fileName}
-            </Button>
+          <div className="-mr-1.5 flex items-center">
+            <CopyButton text={output} label={`Copy ${meta.label}`} className="h-7 w-7" />
+            <IconButton
+              label={`Download ${fileName}`}
+              size="icon-sm"
+              onClick={() => downloadText(fileName, output, meta.language === 'json' ? 'application/json' : 'text/css')}
+            >
+              <Download size={13} />
+            </IconButton>
           </div>
         }
       >
-        <pre className="num overflow-x-auto whitespace-pre rounded-lg border border-line bg-surface-2 p-3 text-[11px] leading-relaxed text-fg-2">
+        <pre className="num overflow-x-auto whitespace-pre rounded-[10px] bg-surface-2 px-3 py-2.5 text-[11px] leading-[1.7] text-fg-2">
           <code>{highlighted}</code>
         </pre>
       </Section>

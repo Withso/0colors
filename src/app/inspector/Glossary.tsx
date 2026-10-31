@@ -31,12 +31,12 @@ export function Glossary() {
               type="button"
               aria-expanded={isOpen}
               onClick={() => setOpen(isOpen ? null : g.term)}
-              className="flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[12px] text-fg hover:bg-surface-3"
+              className="flex h-7 w-full items-center gap-1.5 rounded-[6px] px-1.5 text-left text-[12px] text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg aria-expanded:text-fg"
             >
               <ChevronRight size={12} className={cn('shrink-0 text-fg-3 transition-transform', isOpen && 'rotate-90')} />
               {g.term}
             </button>
-            {isOpen && <p className="px-6 pb-1.5 text-[11.5px] leading-relaxed text-fg-3">{g.text}</p>}
+            {isOpen && <p className="animate-fade px-[26px] pb-2 pt-0.5 text-[11.5px] leading-relaxed text-fg-3">{g.text}</p>}
           </li>
         );
       })}

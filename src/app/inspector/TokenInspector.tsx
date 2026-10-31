@@ -1,12 +1,12 @@
 // Inspector for a Token node: one source per theme, fallbacks and alias chains.
 import { useMemo } from 'react';
-import { ArrowRight, CornerDownRight } from 'lucide-react';
+import { ArrowRight, ChevronDown, CornerDownRight } from 'lucide-react';
 import { type TokenNode, slugify, tokenHandle } from '@/engine/model';
 import { type TokenResult, computeAllThemes } from '@/engine/compute';
 import { canConnect, connect, disconnectInput, updateNodeData } from '../actions';
 import { useEditor } from '../store';
 import { Badge, CopyButton, Section, Swatch, cn } from '../ui';
-import { AutoTextarea, Code, Explain, InspectorHeader, focusNode, useDraft } from './common';
+import { AutoTextarea, Code, Explain, FIELD_CLASS, InspectorHeader, focusNode, useDraft } from './common';
 
 interface Candidate { value: string; source: string; handle: string; label: string; group: string }
 
@@ -48,7 +48,7 @@ export function TokenInspector({ node }: { node: TokenNode }) {
         hint={
           <span className="flex flex-wrap items-center gap-1">
             Use <Code>/</Code> to group, e.g. <Code>bg/surface</Code> · exports as <Code>{cssName}</Code>
-            <CopyButton text={`var(${cssName})`} label="Copy CSS variable" />
+            <CopyButton text={`var(${cssName})`} label="Copy CSS variable" className="h-5 w-5" />
           </span>
         }
       />
@@ -64,7 +64,7 @@ export function TokenInspector({ node }: { node: TokenNode }) {
       </Section>
 
       <Section title="Value per theme">
-        <div className="space-y-3">
+        <div className="-my-1 divide-y divide-line">
           {project.themes.map((theme, i) => {
             const r = all[theme.id]?.nodes[node.id] as TokenResult | undefined;
             const handle = tokenHandle(theme.id);
@@ -72,69 +72,72 @@ export function TokenInspector({ node }: { node: TokenNode }) {
             const current = edge ? `${edge.source}|${edge.sourceHandle}` : '';
             const options = candidates.filter((c) => c.value === current || canConnect({ source: c.source, sourceHandle: c.handle, target: node.id, targetHandle: handle }));
             return (
-              <div key={theme.id} className="rounded-xl border border-line bg-surface-2/60 p-2.5">
-                <div className="mb-2 flex items-center gap-1.5">
-                  <span className="text-[12px] font-medium text-fg">{theme.name}</span>
-                  {i === 0 && <Badge tone="accent">Primary</Badge>}
-                  {theme.dark && <Badge>Dark</Badge>}
-                </div>
-                <div className="mb-2 flex items-center gap-2">
-                  <Swatch color={r?.color?.hexa} className="h-8 w-8 rounded-lg" />
+              <div key={theme.id} className="py-3">
+                <div className="mb-2 flex items-center gap-2.5">
+                  <Swatch color={r?.color?.hexa} className="h-8 w-8 rounded-[8px]" />
                   <div className="min-w-0 flex-1">
-                    <div className="num text-[12px] text-fg">{r?.color ? r.color.hexa : 'Not set'}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[12.5px] font-medium text-fg">{theme.name}</span>
+                      {i === 0 && <Badge tone="accent">Primary</Badge>}
+                      {theme.dark && !/dark/i.test(theme.name) && <Badge>Dark</Badge>}
+                      <span className="num ml-auto text-[11.5px] text-fg-2">{r?.color ? r.color.hexa : ''}</span>
+                    </div>
                     <div className="truncate text-[11px] text-fg-3">
                       {r?.inherited
                         ? `Falls back to ${primary.name}${r.source ? ` · ${r.source.label}` : ''}`
                         : r?.source
                           ? `From ${r.source.label}`
-                          : i === 0 ? 'Connect a color, palette step or token' : `Nothing set — and ${primary.name} is empty too`}
+                          : i === 0 ? 'Connect a color, palette step or token' : `Not set — and ${primary.name} is empty too`}
                     </div>
                   </div>
                 </div>
-                <select
-                  aria-label={`Source for ${theme.name}`}
-                  value={current}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (!v) { disconnectInput(node.id, handle); return; }
-                    const c = candidates.find((x) => x.value === v);
-                    if (c) connect({ source: c.source, sourceHandle: c.handle, target: node.id, targetHandle: handle });
-                  }}
-                  className="h-8 w-full min-w-0 cursor-pointer rounded-lg border border-line bg-surface-2 px-2 text-[12.5px] text-fg outline-none hover:border-line-strong focus:border-accent"
-                >
-                  <option value="">{i === 0 ? '— none —' : `— same as ${primary.name} —`}</option>
-                  {GROUPS.map((g) => {
-                    const items = options.filter((o) => o.group === g);
-                    if (!items.length) return null;
-                    return (
-                      <optgroup key={g} label={g}>
-                        {items.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                      </optgroup>
-                    );
-                  })}
-                </select>
+                <div className="relative">
+                  <select
+                    aria-label={`Source for ${theme.name}`}
+                    value={current}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (!v) { disconnectInput(node.id, handle); return; }
+                      const c = candidates.find((x) => x.value === v);
+                      if (c) connect({ source: c.source, sourceHandle: c.handle, target: node.id, targetHandle: handle });
+                    }}
+                    className={cn('h-7 w-full min-w-0 appearance-none truncate pl-2 pr-7 text-[12.5px]', FIELD_CLASS)}
+                  >
+                    <option value="">{i === 0 ? '— none —' : `— same as ${primary.name} —`}</option>
+                    {GROUPS.map((g) => {
+                      const items = options.filter((o) => o.group === g);
+                      if (!items.length) return null;
+                      return (
+                        <optgroup key={g} label={g}>
+                          {items.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </optgroup>
+                      );
+                    })}
+                  </select>
+                  <ChevronDown size={12} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-fg-3" />
+                </div>
                 {r && r.chain.length > 1 && (
-                  <div className="mt-2 flex flex-wrap items-center gap-1 text-[11px] text-fg-3">
+                  <div className="mt-2 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] text-fg-3">
                     {r.chain.map((link, idx) => (
                       <span key={`${link.nodeId}-${idx}`} className="flex items-center gap-1">
-                        {idx > 0 && <ArrowRight size={11} />}
+                        {idx > 0 && <ArrowRight size={10} className="text-fg-3" />}
                         <button
                           type="button"
                           onClick={() => focusNode(link.nodeId)}
-                          className={cn('rounded px-1 py-px hover:bg-surface-3 hover:text-fg', link.type === 'token' ? 'num text-fg-2' : 'text-fg-2')}
+                          className={cn('rounded-[4px] px-1 py-px transition-colors hover:bg-surface-2 hover:text-fg', link.type === 'token' ? 'num text-fg-2' : 'text-fg-2')}
                         >
                           {link.label}
                         </button>
                       </span>
                     ))}
-                    {r.color && <span className="num flex items-center gap-1"><ArrowRight size={11} />{r.color.hex}</span>}
+                    {r.color && <span className="num flex items-center gap-1"><ArrowRight size={10} />{r.color.hex}</span>}
                   </div>
                 )}
               </div>
             );
           })}
         </div>
-        <Explain className="mt-2.5">
+        <Explain className="mt-2">
           A <b className="font-medium text-fg-2">semantic token</b> names a purpose (“surface”), not a color. Each theme can point it at a
           different primitive. Leave a theme empty to fall back to {primary.name}.
         </Explain>
@@ -142,17 +145,17 @@ export function TokenInspector({ node }: { node: TokenNode }) {
 
       {usedBy.length > 0 && (
         <Section title="Used by">
-          <ul className="space-y-0.5">
+          <ul className="-mx-1.5">
             {usedBy.map((n) => (
               <li key={n.id}>
-                <button type="button" onClick={() => focusNode(n.id)} className="flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[12px] text-fg hover:bg-surface-3">
+                <button type="button" onClick={() => focusNode(n.id)} className="flex h-7 w-full items-center gap-1.5 rounded-[6px] px-1.5 text-left text-[12px] text-fg transition-colors hover:bg-surface-2">
                   <CornerDownRight size={12} className="text-fg-3" />
                   <span className={cn('truncate', n.type === 'token' && 'num')}>{n.name}</span>
                 </button>
               </li>
             ))}
           </ul>
-          <Explain className="mt-1.5">Tokens that point at other tokens are <b className="font-medium text-fg-2">aliases</b>: change this one and they follow.</Explain>
+          <Explain className="mt-2">Tokens that point at other tokens are <b className="font-medium text-fg-2">aliases</b>: change this one and they follow.</Explain>
         </Section>
       )}
     </div>

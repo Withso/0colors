@@ -58,7 +58,7 @@ export function FormulaEditor({
   const unit = def.unit ?? '';
 
   return (
-    <div className="mt-2 space-y-2">
+    <div className="mt-2.5 space-y-2">
       <AutoTextarea
         textareaRef={textareaRef}
         ariaLabel={`${def.label} formula`}
@@ -72,30 +72,30 @@ export function FormulaEditor({
       />
 
       {error ? (
-        <div className="rounded-lg bg-danger/10 px-2.5 py-2 text-[11.5px] leading-snug text-danger">
-          <div className="flex items-start gap-1.5">
-            <TriangleAlert size={13} className="mt-px shrink-0" />
+        <div className="rounded-[8px] bg-surface-2 px-2.5 py-2 text-[11.5px] leading-snug text-fg-2">
+          <div className="flex items-start gap-2">
+            <TriangleAlert size={13} className="mt-px shrink-0 text-danger" />
             <span>{error.message}</span>
           </div>
           {error.end > error.start && (
-            <div className="num mt-1.5 break-all text-[11px] text-fg-2">
+            <div className="num mt-1.5 break-all pl-[21px] text-[11px] text-fg-3">
               {committed.slice(0, error.start)}
-              <span className="rounded-sm bg-danger/20 text-danger underline decoration-wavy underline-offset-2">
+              <span className="text-danger underline decoration-danger/70 decoration-wavy underline-offset-[3px]">
                 {committed.slice(error.start, error.end)}
               </span>
               {committed.slice(error.end)}
             </div>
           )}
-          <div className="mt-1.5 text-[11px] text-fg-3">
+          <div className="mt-1.5 pl-[21px] text-[11px] text-fg-3">
             Using {hasParent ? 'the parent value' : 'the stored value'} until the formula works.
           </div>
         </div>
       ) : (
         trace?.explain && (
-          <div className="rounded-lg bg-surface-2 px-2.5 py-2">
+          <div className="border-l-2 border-line-strong pl-2.5">
             <div className="num flex items-baseline gap-2">
-              <span className="text-fg-3">→</span>
-              <span className="text-[15px] font-semibold text-fg">{formatChannel(def, trace.value)}{unit}</span>
+              <span className="text-[11px] text-fg-3">=</span>
+              <span className="text-[14px] font-semibold text-fg">{formatChannel(def, trace.value)}{unit}</span>
               {trace.adjusted && (
                 <span className="text-[11px] text-warning">
                   {trace.adjusted === 'wrap' ? 'wrapped' : 'clamped'} from {formatChannel(def, trace.raw)}
@@ -103,14 +103,14 @@ export function FormulaEditor({
               )}
             </div>
             {trace.explain.substituted !== committed.trim() && (
-              <div className="num mt-1 break-all text-[11px] text-fg-2">= {trace.explain.substituted}</div>
+              <div className="num mt-0.5 break-all text-[11px] text-fg-3">{trace.explain.substituted}</div>
             )}
             {trace.explain.lookups.length > 0 && (
-              <ul className="num mt-1.5 space-y-0.5 border-t border-line pt-1.5 text-[11px] text-fg-3">
+              <ul className="num mt-1.5 space-y-0.5 text-[11px]">
                 {trace.explain.lookups.map((l, i) => (
-                  <li key={i} className="flex justify-between gap-2">
-                    <span className="truncate text-fg-2">{l.text}</span>
-                    <span>{l.value}</span>
+                  <li key={i} className="flex justify-between gap-3">
+                    <span className="truncate text-fg-3">{l.text}</span>
+                    <span className="text-fg-2">{l.value}</span>
                   </li>
                 ))}
               </ul>
@@ -125,7 +125,7 @@ export function FormulaEditor({
             key={ex}
             type="button"
             onClick={() => { change(ex); commit(ex); }}
-            className="num rounded-md border border-line bg-surface-2 px-1.5 py-0.5 text-[10.5px] text-fg-2 transition-colors hover:border-line-strong hover:text-fg"
+            className="num rounded-[6px] bg-surface-2 px-1.5 py-[3px] text-[10.5px] text-fg-2 transition-colors hover:bg-surface-3 hover:text-fg"
             title="Use this example"
           >
             {ex}
@@ -136,23 +136,24 @@ export function FormulaEditor({
       <button
         type="button"
         onClick={() => setShowRef((v) => !v)}
-        className="flex items-center gap-1 text-[11px] font-medium text-fg-3 hover:text-fg"
+        className="flex h-6 items-center gap-1 text-[11px] font-medium text-fg-3 transition-colors hover:text-fg"
+        aria-expanded={showRef}
       >
         {showRef ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
         <BookOpen size={12} />
-        Functions &amp; variables
+        Functions and variables
       </button>
 
       {showRef && (
-        <div className="max-h-72 space-y-2.5 overflow-auto rounded-lg border border-line bg-surface-2 p-2.5">
-          <p className="text-[11px] leading-snug text-fg-3">
+        <div className="max-h-72 space-y-3 overflow-auto rounded-[8px] bg-surface-2 p-2.5">
+          <p className="px-1.5 text-[11px] leading-relaxed text-fg-3">
             In this {SPACES[space].label} node, <span className="num text-fg-2">.{channelKeys.join(' .')}</span> read
             channels in the same space. Other spaces: <span className="num text-fg-2">parent.hsl.l</span>,{' '}
             <span className="num text-fg-2">parent.hct.t</span>, <span className="num text-fg-2">parent.rgb.r</span>,{' '}
             <span className="num text-fg-2">.alpha</span>. Click to insert.
           </p>
           <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-fg-3">Variables</div>
+            <div className="mb-1 px-1.5 text-[11px] font-medium text-fg-2">Variables</div>
             {FORMULA_VARIABLES.map((v) => (
               <RefItem
                 key={v.name}
@@ -163,14 +164,14 @@ export function FormulaEditor({
             ))}
           </div>
           <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-fg-3">Functions</div>
+            <div className="mb-1 px-1.5 text-[11px] font-medium text-fg-2">Functions</div>
             {FORMULA_FUNCTIONS.map((f) => (
               <RefItem key={f.name} title={f.signature} description={f.description} onClick={() => insert(`${f.name === 'deltae' ? 'deltaE' : f.name}()`, 1)} />
             ))}
           </div>
           <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-fg-3">Operators</div>
-            <p className="num text-[11px] leading-relaxed text-fg-2">
+            <div className="mb-1 px-1.5 text-[11px] font-medium text-fg-2">Operators</div>
+            <p className="num px-1.5 text-[11px] leading-relaxed text-fg-2">
               + − * / %  ·  &lt; &lt;= &gt; &gt;= == !=  ·  &amp;&amp; || !  (and or not)  ·  cond ? a : b
             </p>
           </div>
@@ -182,7 +183,7 @@ export function FormulaEditor({
 
 function RefItem({ title, description, onClick }: { title: string; description: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="block w-full rounded-md px-1.5 py-1 text-left hover:bg-surface-3">
+    <button type="button" onClick={onClick} className="block w-full rounded-[6px] px-1.5 py-1 text-left transition-colors hover:bg-surface-3">
       <span className="num block text-[11px] text-accent">{title}</span>
       <span className="block text-[11px] leading-snug text-fg-3">{description}</span>
     </button>

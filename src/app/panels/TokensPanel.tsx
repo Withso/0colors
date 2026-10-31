@@ -15,10 +15,10 @@ function TokenValue({ result, primaryName, compact }: { result: TokenResult | un
   const hex = color?.hexa ?? null;
   const title = !color ? 'Not connected in this theme' : result?.inherited ? `${hex} · falls back to ${primaryName}` : hex ?? '';
   return (
-    <span className="flex min-w-0 items-center gap-1.5" title={title}>
-      {result?.inherited && <span className="text-[11px] leading-none text-fg-3" aria-label={`falls back to ${primaryName}`}>↳</span>}
-      <Swatch color={hex} className="h-4 w-4 rounded" />
+    <span className={cn('flex min-w-0 items-center gap-1.5', result?.inherited && 'opacity-60')} title={title}>
+      <Swatch color={hex} className="h-4 w-4 rounded-[4px]" />
       {!compact && <span className={cn('num truncate text-[11px]', color ? 'text-fg-2' : 'text-fg-3')}>{hex ?? '—'}</span>}
+      {result?.inherited && <span className="sr-only">falls back to {primaryName}</span>}
     </span>
   );
 }
@@ -37,7 +37,7 @@ export function TokensPanel() {
   const tokens = project.nodes.filter((n): n is TokenNode => n.type === 'token');
   const active: ComputeResult | undefined = all[themeId] ?? all[primary?.id ?? ''];
   const primitives = project.nodes.filter((n) => n.type === 'palette' || n.type === 'color' || n.type === 'mix');
-  const gridCols = { gridTemplateColumns: `minmax(0, 1fr) repeat(${themes.length}, ${compact ? '28px' : '78px'})` };
+  const gridCols = { gridTemplateColumns: `minmax(0, 1fr) repeat(${themes.length}, ${compact ? '24px' : '72px'})` };
 
   return (
     <div>
@@ -46,22 +46,21 @@ export function TokensPanel() {
         actions={<span className="num text-[11px] text-fg-3">{tokens.length}</span>}
       >
         {tokens.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-line-strong bg-surface-2 p-3.5 text-xs leading-relaxed text-fg-2">
-            <div className="mb-1.5 flex items-center gap-2 font-medium text-fg">
-              <Tag size={14} className="text-accent" /> No tokens yet
-            </div>
-            <p>
-              Tokens are semantic names like <code className="num text-fg">bg/surface</code> or{' '}
-              <code className="num text-fg">text/primary</code> that point at primitives. Each token has one input per theme,
-              so the same name can be light in Light and dark in Dark.
+          <div className="flex flex-col items-center px-4 py-6 text-center">
+            <span className="mb-2.5 flex h-9 w-9 items-center justify-center rounded-[10px] bg-surface-2 text-fg-2">
+              <Tag size={16} />
+            </span>
+            <div className="text-[13px] font-medium text-fg">No tokens yet</div>
+            <p className="mt-1 text-[11.5px] leading-relaxed text-fg-3">
+              Tokens are semantic names like <code className="num text-fg-2">bg/surface</code> that point at a different primitive in each theme.
             </p>
-            <p className="mt-2">
-              Press <Kbd>T</Kbd> or use the toolbar to add one, then drag a palette shade into its theme input.
+            <p className="mt-2.5 flex items-center gap-1.5 text-[11.5px] text-fg-3">
+              Press <Kbd>T</Kbd> to add one, then drag a palette shade into it.
             </p>
           </div>
         ) : (
-          <div className="-mx-1">
-            <div className="grid items-center gap-2 px-1 pb-1.5 text-[11px] font-medium text-fg-3" style={gridCols}>
+          <div className="-mx-1.5">
+            <div className="grid h-6 items-center gap-2 px-1.5 text-[11px] font-medium text-fg-3" style={gridCols}>
               <span>Name</span>
               {themes.map((t) => (
                 <span key={t.id} className={cn('truncate', t.id === themeId && 'text-fg')} title={t.name}>
@@ -80,14 +79,14 @@ export function TokensPanel() {
                       type="button"
                       onClick={() => focusNode(token.id)}
                       className={cn(
-                        'grid w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left transition-colors hover:bg-surface-3',
+                        'grid min-h-9 w-full items-center gap-2 rounded-[7px] px-1.5 py-1 text-left transition-colors hover:bg-surface-2',
                         selected && 'bg-accent-soft hover:bg-accent-soft',
                       )}
                       style={gridCols}
                     >
                       <span className="min-w-0">
-                        <span className="num block truncate text-[12px] text-fg">{token.name}</span>
-                        <span className={cn('block truncate text-[11px]', chain.length ? 'text-fg-3' : 'text-warning')}>
+                        <span className="num block truncate text-[12px] leading-tight text-fg">{token.name}</span>
+                        <span className={cn('block truncate text-[10.5px] leading-tight', chain.length ? 'text-fg-3' : 'text-warning')}>
                           {chain.length ? `→ ${chain.join(' → ')}` : 'Not connected'}
                         </span>
                       </span>
@@ -112,11 +111,11 @@ export function TokensPanel() {
         title={
           <button
             type="button"
-            className="flex items-center gap-1 uppercase tracking-wide hover:text-fg"
+            className="-ml-1 flex items-center gap-1 rounded-[5px] px-1 transition-colors hover:bg-surface-2"
             onClick={() => setShowPrimitives((v) => !v)}
             aria-expanded={showPrimitives}
           >
-            <ChevronRight size={12} className={cn('transition-transform', showPrimitives && 'rotate-90')} />
+            <ChevronRight size={12} className={cn('text-fg-3 transition-transform duration-150', showPrimitives && 'rotate-90')} />
             Primitives
           </button>
         }
@@ -124,9 +123,9 @@ export function TokensPanel() {
       >
         {showPrimitives && (
           primitives.length === 0 ? (
-            <p className="text-xs text-fg-3">Colors, palettes and mixes you add to the canvas show up here.</p>
+            <p className="text-[11.5px] text-fg-3">Colors, palettes and mixes you add to the canvas show up here.</p>
           ) : (
-            <ul className="-mx-1 flex flex-col">
+            <ul className="-mx-1.5 flex flex-col">
               {primitives.map((node) => (
                 <PrimitiveRow key={node.id} node={node} result={active} selected={selection.includes(node.id)} />
               ))}
@@ -141,7 +140,7 @@ export function TokensPanel() {
 function PrimitiveRow({ node, result, selected }: { node: CanvasNode; result: ComputeResult | undefined; selected: boolean }) {
   const r = result?.nodes[node.id];
   const rowClass = cn(
-    'flex w-full items-center gap-2.5 rounded-lg px-1 py-1.5 text-left transition-colors hover:bg-surface-3',
+    'flex min-h-8 w-full items-center gap-2.5 rounded-[7px] px-1.5 py-1 text-left transition-colors hover:bg-surface-2',
     selected && 'bg-accent-soft hover:bg-accent-soft',
   );
 
@@ -153,7 +152,7 @@ function PrimitiveRow({ node, result, selected }: { node: CanvasNode; result: Co
             <span className="truncate text-[12px] text-fg">{node.name}</span>
             <span className="num shrink-0 text-[11px] text-fg-3">{r.shades.length} steps</span>
           </span>
-          <span className="flex h-5 overflow-hidden rounded-md ring-1 ring-inset ring-line">
+          <span className="flex h-4 gap-px overflow-hidden rounded-[4px]">
             {r.shades.map((s) => (
               <Tooltip key={s.index} content={`${s.name} · ${s.color.hex}`}>
                 <span className="h-full flex-1" style={{ background: s.color.hex }} />
@@ -169,9 +168,9 @@ function PrimitiveRow({ node, result, selected }: { node: CanvasNode; result: Co
   return (
     <li>
       <button type="button" className={rowClass} onClick={() => focusNode(node.id)}>
-        <Swatch color={color?.hexa} className="h-5 w-5" />
+        <Swatch color={color?.hexa} className="h-4 w-4 rounded-[4px]" />
         <span className="min-w-0 flex-1 truncate text-[12px] text-fg">{node.name}</span>
-        {node.type === 'mix' && <span className="text-[10px] uppercase tracking-wide text-fg-3">mix</span>}
+        {node.type === 'mix' && <span className="text-[10.5px] text-fg-3">Mix</span>}
         <span className="num shrink-0 text-[11px] text-fg-2">{color?.hexa ?? '—'}</span>
       </button>
     </li>

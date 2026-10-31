@@ -70,7 +70,7 @@ export function Tooltip({ content, children, side = 'top', shortcut }: { content
           side={side}
           sideOffset={8}
           collisionPadding={8}
-          className="animate-pop z-50 flex max-w-72 items-center gap-2 rounded-[7px] bg-[oklch(0.18_0_0)] px-2 py-1 text-[11.5px] font-medium leading-snug text-white shadow-panel"
+          className="animate-pop z-50 flex max-w-72 items-center gap-2 rounded-[7px] bg-tooltip px-2 py-1 text-[11.5px] font-medium leading-snug text-white shadow-panel"
         >
           <span>{content}</span>
           {shortcut && <kbd className="num rounded-[4px] bg-white/12 px-1 text-[10.5px] text-white/75">{shortcut}</kbd>}
@@ -434,6 +434,7 @@ export function MenuContent({ children, align = 'start', className }: { children
 export const MENU_ITEM =
   'group flex h-7 w-full cursor-default select-none items-center gap-2.5 rounded-[7px] px-2 text-left text-[13px] outline-none transition-colors duration-75';
 
+/** Icons inherit the item's color so they turn white on highlight — don't color them yourself. */
 export function MenuItem({ children, onSelect, icon, shortcut, danger, disabled }: { children: ReactNode; onSelect?: () => void; icon?: ReactNode; shortcut?: string; danger?: boolean; disabled?: boolean }) {
   return (
     <RMenu.Item

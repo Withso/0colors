@@ -9,7 +9,7 @@ import { CURVES, NAMINGS, paletteKeys } from '@/engine/palette';
 import { disconnectInput, setPaletteSpace, updateNodeData } from '../actions';
 import { useShallow } from 'zustand/react/shallow';
 import { getEditor, useEditor } from '../store';
-import { CopyButton, FieldRow, GradientSlider, IconButton, NumberField, Section, Segmented, Select } from '../ui';
+import { CopyButton, FieldRow, GradientSlider, IconButton, NumberField, Section, Segmented, Select, Swatch } from '../ui';
 import { channelGradient, fmt } from '../lib/color-ui';
 import { Explain, InspectorHeader, focusNode } from './common';
 
@@ -47,7 +47,7 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
     <div>
       <InspectorHeader node={node} hint="A palette spreads one hue across a lightness scale. Each step has its own output." />
 
-      <Section title="Space">
+      <Section title="Color space">
         <Segmented
           value={data.space}
           onChange={(s) => setPaletteSpace(node.id, s)}
@@ -58,21 +58,23 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
 
       <Section title="Base color">
         {fromInput ? (
-          <div className="flex items-center gap-2 rounded-lg bg-surface-2 px-2.5 py-2 text-[12px]">
-            <span className="checker relative h-5 w-5 shrink-0 overflow-hidden rounded-md ring-1 ring-inset ring-line">
-              <span className="absolute inset-0" style={{ background: result.base.hexa }} />
-            </span>
-            <Link2 size={12} className="text-fg-3" />
-            <span className="text-fg-3">Hue &amp; chroma from</span>
-            <button type="button" onClick={() => inputSource && focusNode(inputSource.id)} className="min-w-0 truncate font-medium text-fg hover:text-accent">
+          <div className="flex h-7 items-center gap-2 text-[12px]">
+            <Swatch color={result.base.hexa} className="h-6 w-6 rounded-[6px]" />
+            <Link2 size={12} className="shrink-0 text-fg-3" />
+            <span className="shrink-0 text-fg-3">Hue and chroma from</span>
+            <button
+              type="button"
+              onClick={() => inputSource && focusNode(inputSource.id)}
+              className="min-w-0 truncate rounded-[5px] px-1 font-medium text-fg transition-colors hover:bg-surface-2"
+            >
               {inputSource?.name ?? 'input'}
             </button>
-            <IconButton label="Disconnect input" size="icon-sm" className="ml-auto" onClick={() => disconnectInput(node.id, 'in')}>
+            <IconButton label="Disconnect input" size="icon-sm" className="-mr-1.5 ml-auto" onClick={() => disconnectInput(node.id, 'in')}>
               <Unlink size={13} />
             </IconButton>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <BaseChannel
               label="Hue" def={hueDef} value={data.hue}
               gradient={channelGradient(data.space, baseValues, keys.h)}
@@ -86,7 +88,7 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
           </div>
         )}
         {fromInput && (
-          <Explain className="mt-1.5">The input sets hue and chroma; each step's lightness comes from the curve below.</Explain>
+          <Explain className="mt-2">The input sets hue and chroma; each step’s lightness comes from the curve below.</Explain>
         )}
       </Section>
 
@@ -143,30 +145,28 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
 
       <Section title="Lightness curve">
         <LightnessChart result={result} lKey={keys.l} cKey={keys.c} chromaMax={chromaDef.max} />
-        <Explain className="mt-1.5">Dots are the steps, bars show chroma. A straight line in OKLCH or HCT means evenly spaced perceived lightness.</Explain>
+        <Explain className="mt-2">Dots are the steps, bars show chroma. A straight line in OKLCH or HCT means evenly spaced perceived lightness.</Explain>
       </Section>
 
-      <Section title={`Shades · ${result.shades.length}`}>
-        <div className="mb-1 grid grid-cols-[20px_1fr_auto_auto] gap-x-2 px-1 text-[10px] font-semibold uppercase tracking-wide text-fg-3">
+      <Section title="Shades" actions={<span className="num text-[11px] text-fg-3">{result.shades.length}</span>}>
+        <div className="-mx-1.5 mb-0.5 grid grid-cols-[16px_1fr_auto_24px] items-center gap-x-2.5 px-1.5 text-[10.5px] font-medium text-fg-3">
           <span />
           <span>Step</span>
-          <span className="w-[86px] text-right">vs white · black</span>
-          <span className="w-6" />
+          <span className="w-[92px] text-right">vs white · black</span>
+          <span />
         </div>
-        <ul>
+        <ul className="-mx-1.5">
           {result.shades.map((s) => (
-            <li key={s.index} className="group grid grid-cols-[20px_1fr_auto_auto] items-center gap-x-2 rounded-md px-1 py-0.5 hover:bg-surface-2">
-              <span className="checker relative h-5 w-5 overflow-hidden rounded-md ring-1 ring-inset ring-line">
-                <span className="absolute inset-0" style={{ background: s.color.hexa }} />
-              </span>
+            <li key={s.index} className="group grid h-7 grid-cols-[16px_1fr_auto_24px] items-center gap-x-2.5 rounded-[6px] px-1.5 transition-colors hover:bg-surface-2">
+              <Swatch color={s.color.hexa} className="h-4 w-4 rounded-[4px]" />
               <span className="flex min-w-0 items-baseline gap-2">
                 <span className="num w-9 shrink-0 text-[12px] font-medium text-fg">{s.name}</span>
                 <span className="num truncate text-[11px] text-fg-3">{s.color.hexa}</span>
               </span>
-              <span className="num w-[86px] text-right text-[11px] text-fg-2">
+              <span className="num w-[92px] text-right text-[11px] text-fg-2">
                 {fmt(wcagContrast(s.color.rgb, WHITE), 1)} · {fmt(wcagContrast(s.color.rgb, BLACK), 1)}
               </span>
-              <CopyButton text={s.color.hexa} label="Copy hex" className="opacity-50 group-hover:opacity-100" />
+              <CopyButton text={s.color.hexa} label="Copy hex" className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100" />
             </li>
           ))}
         </ul>
@@ -183,12 +183,12 @@ function BaseChannel({
 }) {
   return (
     <div>
-      <div className="mb-1.5 text-[12px] font-medium text-fg">{label}</div>
-      <div className="flex items-center gap-2">
+      <div className="mb-2 text-[12px] font-medium text-fg">{label}</div>
+      <div className="flex items-center gap-2.5">
         <div className="min-w-0 flex-1">
           <GradientSlider label={label} value={value} min={def.min} max={def.max} step={def.step} gradient={gradient} onChange={onChange} onCommit={onEnd} />
         </div>
-        <NumberField className="w-[76px]" value={value} min={def.min} max={def.max} step={def.step} decimals={def.decimals} suffix={def.unit} onChange={onChange} onScrubEnd={onEnd} />
+        <NumberField className="w-[72px]" value={value} min={def.min} max={def.max} step={def.step} decimals={def.decimals} suffix={def.unit} onChange={onChange} onScrubEnd={onEnd} />
       </div>
     </div>
   );
@@ -212,7 +212,7 @@ function LightnessChart({ result, lKey, cKey, chromaMax }: { result: PaletteResu
   }, [result, lKey, cKey, chromaMax]);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="block h-24 w-full overflow-visible rounded-lg bg-surface-2" role="img" aria-label="Lightness of each palette step">
+    <svg viewBox={`0 0 ${W} ${H}`} className="block h-24 w-full overflow-visible rounded-[10px] bg-surface-2" role="img" aria-label="Lightness of each palette step">
       {[25, 50, 75].map((l) => (
         <line key={l} x1={pad} x2={W - pad} y1={pad + (1 - l / 100) * (H - pad * 2)} y2={pad + (1 - l / 100) * (H - pad * 2)} stroke="var(--app-line)" strokeDasharray="2 3" />
       ))}

@@ -5,8 +5,9 @@ import { MIX_SPACES, mixRgb, mixStops } from '@/engine/color/mix';
 import { toHex } from '@/engine/color/convert';
 import { updateNodeData } from '../actions';
 import { getEditor, useEditor } from '../store';
-import { CopyButton, GradientSlider, NumberField, Section, Segmented, cn } from '../ui';
-import { ColorInputSlot, Explain, InspectorHeader } from './common';
+import { Check } from 'lucide-react';
+import { GradientSlider, NumberField, Section, Segmented, Swatch, cn } from '../ui';
+import { ColorInputSlot, Explain, HeroSwatch, InspectorHeader } from './common';
 
 const ORDER: MixSpace[] = ['oklab', 'oklch', 'srgb', 'linear', 'hsl'];
 
@@ -28,15 +29,7 @@ export function MixInspector({ node }: { node: MixNode }) {
       <InspectorHeader node={node} hint="Blends input A into input B. The space you mix in changes the path between them." />
 
       <Section>
-        <div className="checker relative h-16 overflow-hidden rounded-xl ring-1 ring-inset ring-line">
-          <div className="absolute inset-0" style={{ background: result.color.hexa }} />
-          <div className="absolute bottom-2 left-2.5 rounded-md bg-black/30 px-1.5 py-0.5 backdrop-blur-sm">
-            <span className="num text-[12px] font-semibold text-white">{result.color.hexa}</span>
-          </div>
-          <div className="absolute right-1.5 top-1.5 rounded-md bg-black/25 backdrop-blur-sm">
-            <CopyButton text={result.color.hexa} label="Copy hex" className="text-white hover:bg-white/15 hover:text-white" />
-          </div>
-        </div>
+        <HeroSwatch color={result.color} detail={`${Math.round((1 - data.ratio) * 100)}% A · ${Math.round(data.ratio * 100)}% B`} />
       </Section>
 
       <Section title="Inputs">
@@ -48,7 +41,7 @@ export function MixInspector({ node }: { node: MixNode }) {
           label="B" nodeId={node.id} handle="b" connected={result.bConnected} info={result.b}
           fallbackHex={data.b} onFallback={(hex) => set('b', hex)}
         />
-        <Explain className="mt-1">Connect colors from the canvas, or type fallback hex values.</Explain>
+        <Explain className="mt-2">Connect colors from the canvas, or type fallback hex values.</Explain>
       </Section>
 
       <Section title="Mix">
@@ -59,8 +52,8 @@ export function MixInspector({ node }: { node: MixNode }) {
           options={ORDER.map((s) => ({ value: s, label: MIX_SPACES[s].label }))}
         />
         <Explain className="mt-2">{MIX_SPACES[data.space].blurb}</Explain>
-        <div className="mt-3 flex items-center gap-2">
-          <span className="w-8 text-xs text-fg-2">A</span>
+        <div className="mt-3.5 flex items-center gap-2">
+          <span className="w-3 text-[11px] font-medium text-fg-3">A</span>
           <div className="min-w-0 flex-1">
             <GradientSlider
               label="Ratio"
@@ -73,9 +66,9 @@ export function MixInspector({ node }: { node: MixNode }) {
               onCommit={end}
             />
           </div>
-          <span className="w-3 text-xs text-fg-2">B</span>
+          <span className="w-3 text-[11px] font-medium text-fg-3">B</span>
           <NumberField
-            className="w-[68px]"
+            className="w-[64px]"
             value={data.ratio * 100}
             min={0}
             max={100}
@@ -85,11 +78,11 @@ export function MixInspector({ node }: { node: MixNode }) {
             onScrubEnd={end}
           />
         </div>
-        <div className="num mt-1.5 text-[11px] text-fg-3">{Math.round((1 - data.ratio) * 100)}% A + {Math.round(data.ratio * 100)}% B</div>
+        <div className="num mt-1.5 pl-5 text-[11px] text-fg-3">{Math.round((1 - data.ratio) * 100)}% A + {Math.round(data.ratio * 100)}% B</div>
       </Section>
 
       <Section title="Compare spaces">
-        <ul className="space-y-2.5">
+        <ul className="-mx-1.5 space-y-0.5">
           {ORDER.map((space) => {
             const midpoint = toHex(mixRgb(result.a.rgb, result.b.rgb, data.ratio, space).rgb);
             const active = space === data.space;
@@ -97,17 +90,21 @@ export function MixInspector({ node }: { node: MixNode }) {
               <li key={space}>
                 <button
                   type="button"
+                  aria-pressed={active}
                   onClick={() => set('space', space)}
-                  className={cn('block w-full rounded-lg p-1.5 text-left transition-colors', active ? 'bg-accent-soft' : 'hover:bg-surface-2')}
+                  className={cn('block w-full rounded-[8px] px-1.5 pb-2 pt-1.5 text-left transition-colors', active ? 'bg-surface-2' : 'hover:bg-surface-2/70')}
                 >
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className={cn('text-[12px] font-medium', active ? 'text-accent' : 'text-fg')}>{MIX_SPACES[space].label}</span>
+                  <div className="mb-1.5 flex h-4 items-center justify-between">
+                    <span className={cn('flex items-center gap-1.5 text-[12px]', active ? 'font-medium text-fg' : 'text-fg-2')}>
+                      {active && <Check size={12} className="text-accent" />}
+                      {MIX_SPACES[space].label}
+                    </span>
                     <span className="flex items-center gap-1.5">
-                      <span className="h-3 w-3 rounded-[3px] ring-1 ring-inset ring-line" style={{ background: midpoint }} />
+                      <Swatch color={midpoint} className="h-3 w-3 rounded-[3px]" />
                       <span className="num text-[11px] text-fg-3">{midpoint}</span>
                     </span>
                   </div>
-                  <div className="h-4 rounded-md ring-1 ring-inset ring-line" style={{ background: stripGradient(result.a, result.b, space) }} />
+                  <div className="h-2.5 rounded-full shadow-[inset_0_0_0_0.5px_oklch(0_0_0/0.2)]" style={{ background: stripGradient(result.a, result.b, space) }} />
                 </button>
               </li>
             );

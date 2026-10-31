@@ -267,6 +267,7 @@ function CanvasInner() {
       if (mod && k === 'y') { e.preventDefault(); redo(); return; }
       // Everything else belongs to the canvas: only act when it (or nothing) has focus,
       // so selecting text in the panel and pressing ⌘C / ⌘A behaves normally.
+      if (k === 'escape' && !mod) { select([], []); setMenu(null); return; }
       const onCanvas = !t || t === document.body || !!wrapper.current?.contains(t);
       if (!onCanvas) return;
       const textSelected = (window.getSelection()?.toString() ?? '').length > 0;
@@ -276,7 +277,6 @@ function CanvasInner() {
       if (mod && k === 'a') { if (!textSelected) { e.preventDefault(); selectAll(); } return; }
       if (mod || e.altKey) return;
       if (k === 'delete' || k === 'backspace') { e.preventDefault(); deleteSelection(); return; }
-      if (k === 'escape') { select([], []); setMenu(null); return; }
       if (k === 'f' || (e.shiftKey && e.code === 'Digit1')) { e.preventDefault(); rf.fitView({ padding: 0.12, duration: 350, maxZoom: 1.2 }); return; }
       if (e.shiftKey && e.code === 'Digit0') { e.preventDefault(); rf.zoomTo(1, { duration: 220 }); return; }
       if (e.key === '-' || e.key === '_') { e.preventDefault(); rf.zoomOut({ duration: 200 }); return; }

@@ -78,8 +78,12 @@ function Slot({ slots, slot, children, className, style }: {
 function MockApp({ slots }: { slots: Record<PreviewSlot, SlotValue> }) {
   const c = (s: PreviewSlot) => slots[s].color;
   return (
-    <Slot slots={slots} slot="background" className="overflow-hidden rounded-xl text-[12px] leading-snug shadow-node" style={{ background: c('background'), border: `1px solid ${c('border')}` }}>
-      <Slot slots={slots} slot={['surface', 'border']} className="flex items-center gap-2 px-3 py-2" style={{ background: c('surface'), borderBottom: `1px solid ${c('border')}` }}>
+    <Slot slots={slots} slot="background" className="overflow-hidden rounded-[12px] text-[12px] leading-snug shadow-node" style={{ background: c('background'), boxShadow: `0 0 0 1px ${c('border')}, var(--app-node-shadow)` }}>
+      {/* Window title bar (neutral dots, tinted from the theme's muted text). */}
+      <div className="flex h-6 items-center gap-[5px] px-2.5" style={{ background: c('surface') }}>
+        {[0, 1, 2].map((i) => <span key={i} className="h-2 w-2 rounded-full" style={{ background: tint(c('text-muted'), 35) }} />)}
+      </div>
+      <Slot slots={slots} slot={['surface', 'border']} className="flex items-center gap-2 px-3 pb-2.5 pt-1" style={{ background: c('surface'), borderBottom: `1px solid ${c('border')}` }}>
         <span className="h-5 w-5 shrink-0 rounded-md" style={{ background: c('primary') }} />
         <div className="min-w-0 flex-1">
           <div className="truncate font-semibold" style={{ color: c('text') }}>Northwind</div>
@@ -174,17 +178,17 @@ export function PreviewPanel() {
 
   return (
     <div>
-      <Section title="Live preview" actions={<span className="num text-[11px] text-fg-3">{boundCount}/{PREVIEW_SLOTS.length} bound</span>}>
-        <p className="mb-3 text-xs leading-relaxed text-fg-2">
-          The same UI painted with your tokens in every theme. Change a primitive on the canvas and watch both update.
+      <Section title="Live preview" actions={<span className="num text-[11px] text-fg-3">{boundCount} of {PREVIEW_SLOTS.length} bound</span>}>
+        <p className="mb-3.5 text-[11.5px] leading-relaxed text-fg-3">
+          The same UI painted with your tokens in every theme. Change a primitive on the canvas and watch every theme update.
         </p>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           {project.themes.map((theme) => (
             <figure key={theme.id} className="m-0">
-              <figcaption className="mb-1.5 flex items-center gap-2 text-[11px] font-medium text-fg-2">
-                <span className={theme.id === activeThemeId ? 'text-fg' : undefined}>{theme.name}</span>
-                <span className="text-fg-3">{theme.dark ? 'dark' : 'light'}</span>
-                {theme.id === activeThemeId && <span className="h-1.5 w-1.5 rounded-full bg-accent" title="Active theme" />}
+              <figcaption className="mb-2 flex items-center gap-1.5 text-[11px] text-fg-3">
+                <span className={theme.id === activeThemeId ? 'font-medium text-fg' : 'font-medium text-fg-2'}>{theme.name}</span>
+                <span>· {theme.dark ? 'Dark' : 'Light'} appearance</span>
+                {theme.id === activeThemeId && <span className="ml-auto flex items-center gap-1 text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" /> Active</span>}
               </figcaption>
               <MockApp slots={resolveSlots(project, all[theme.id], theme)} />
             </figure>
@@ -195,13 +199,13 @@ export function PreviewPanel() {
       <Section
         title="Bindings"
         actions={
-          <Button size="sm" variant="ghost" onClick={runAutoBind} disabled={!tokens.length}>
-            <Wand2 size={13} /> Auto-bind by name
+          <Button size="sm" variant="ghost" className="-mr-1.5" onClick={runAutoBind} disabled={!tokens.length}>
+            <Wand2 size={13} /> Auto-bind
           </Button>
         }
       >
         {!tokens.length && (
-          <p className="mb-2 text-xs text-fg-3">Add token nodes first — each preview slot reads one token.</p>
+          <p className="mb-2 text-[11.5px] text-fg-3">Add token nodes first — each preview slot reads one token.</p>
         )}
         {PREVIEW_SLOTS.map((slot) => (
           <FieldRow key={slot} label={SLOT_LABELS[slot]}>
