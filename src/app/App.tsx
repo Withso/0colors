@@ -3,7 +3,8 @@ import { Toaster, toast } from 'sonner';
 import { X } from 'lucide-react';
 import { getEditor } from './store';
 import { type PanelTab, useUI } from './ui-store';
-import { bootProject, startAutosave } from './persist';
+import { bootProject, createCanvas, saveNow, startAutosave } from './persist';
+import { decodeShare, readShareCode } from '@/engine/share';
 import { Canvas } from './canvas/Canvas';
 import { TopBar } from './chrome/TopBar';
 import { Inspector } from './inspector/Inspector';
@@ -109,6 +110,24 @@ export function App() {
   useEffect(() => {
     document.documentElement.dataset.theme = resolvedTheme;
   }, [resolvedTheme]);
+
+  // A share link pasted into an already-open tab only changes the hash; open it as a new canvas.
+  useEffect(() => {
+    const onHash = async () => {
+      const code = readShareCode(location.hash);
+      if (!code) return;
+      history.replaceState(null, '', location.pathname + location.search);
+      try {
+        await saveNow();
+        await createCanvas(await decodeShare(code));
+        toast.success('Opened a shared canvas. This is your own copy — edit away.');
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'This share link could not be opened.');
+      }
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   useEffect(() => {
     if (booted) { setReady(true); return; }

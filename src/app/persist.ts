@@ -5,6 +5,7 @@
 // Keys:  canvas:<id> → Project   ·   canvases → CanvasMeta[]   ·   last → id
 // ─────────────────────────────────────────────────────────────
 import { createStore, del as idbDel, get as idbGet, set as idbSet } from 'idb-keyval';
+import { toast } from 'sonner';
 import type { Project } from '@/engine/model';
 import { type ComputeResult, computeProject, outputColor } from '@/engine/compute';
 import { createBlankProject } from '@/engine/defaults';
@@ -28,6 +29,35 @@ let useLocal = typeof indexedDB === 'undefined';
 
 const store = () => (idbStore ??= createStore('0colors', 'kv'));
 
+const FALLBACK_FLAG = '0colors:kv-fallback';
+let warnedFull = false;
+
+/** IndexedDB failed mid-session: remember it so the next load can recover the newer copies. */
+function markFallback() {
+  try { localStorage.setItem(FALLBACK_FLAG, String(Date.now())); } catch { /* ignore */ }
+}
+
+/**
+ * If a previous session had to fall back to localStorage, those copies are the newest.
+ * Move them back into IndexedDB before anything is read, so a reload never shows stale work.
+ */
+async function recoverFallback(): Promise<void> {
+  let flagged = false;
+  try { flagged = !!localStorage.getItem(FALLBACK_FLAG); } catch { return; }
+  if (!flagged || useLocal) return;
+  try {
+    const keys = Object.keys(localStorage).filter((k) => k.startsWith(LOCAL_PREFIX));
+    for (const k of keys) {
+      const raw = localStorage.getItem(k);
+      if (raw !== null) await idbSet(k.slice(LOCAL_PREFIX.length), JSON.parse(raw), store());
+    }
+    for (const k of keys) localStorage.removeItem(k);
+    localStorage.removeItem(FALLBACK_FLAG);
+  } catch {
+    useLocal = true; // IndexedDB still unavailable: keep reading the localStorage copies.
+  }
+}
+
 async function kvGet<T>(key: string): Promise<T | undefined> {
   if (!useLocal) {
     try {
@@ -50,13 +80,24 @@ async function kvSet(key: string, value: unknown): Promise<void> {
       await idbSet(key, value, store());
       return;
     } catch {
-      useLocal = true;
+      // Safari can drop the connection; retry once with a fresh store before falling back.
+      idbStore = null;
+      try {
+        await idbSet(key, value, store());
+        return;
+      } catch {
+        useLocal = true;
+        markFallback();
+      }
     }
   }
   try {
     localStorage.setItem(LOCAL_PREFIX + key, JSON.stringify(value));
   } catch {
-    // Storage full or blocked — nothing sensible left to do.
+    if (!warnedFull) {
+      warnedFull = true;
+      toast.error('Couldn’t save — browser storage is full or blocked. Export JSON from the canvas menu to keep your work.');
+    }
   }
 }
 
@@ -67,6 +108,7 @@ async function kvDel(key: string): Promise<void> {
       return;
     } catch {
       useLocal = true;
+      markFallback();
     }
   }
   try {
@@ -209,6 +251,7 @@ async function loadLastOrSample(): Promise<{ project: Project; source: 'saved' |
  * canvas, else a fresh copy of the sample.
  */
 export async function bootProject(): Promise<{ project: Project; source: 'share' | 'saved' | 'sample'; error?: string }> {
+  await recoverFallback();
   const code = typeof location !== 'undefined' ? readShareCode(location.hash) : null;
   if (code) {
     const clearHash = () => history.replaceState(null, '', location.pathname + location.search);

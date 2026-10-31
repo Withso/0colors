@@ -150,8 +150,8 @@ function validSourceHandle(node: CanvasNode, handle: string): boolean {
   if (!hasOutput(node.type)) return false;
   if (node.type === 'palette') {
     if (handle === 'out') return true;
-    const m = /^s(\d+)$/.exec(handle);
-    return !!m && Number(m[1]) < node.data.steps;
+    // Shades beyond the current step count are kept: raising the count reconnects them.
+    return /^s\d+$/.test(handle);
   }
   return handle === 'out';
 }

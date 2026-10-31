@@ -108,6 +108,7 @@ export const TextInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLIn
 /** Text input that commits on blur / Enter, and reverts on Escape. */
 export function CommitInput({ value, onCommit, className, ...props }: Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> & { value: string; onCommit: (v: string) => void }) {
   const [draft, setDraft] = useState(value);
+  const cancelled = useRef(false);
   useEffect(() => setDraft(value), [value]);
   return (
     <TextInput
@@ -115,10 +116,13 @@ export function CommitInput({ value, onCommit, className, ...props }: Omit<Input
       className={className}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
-      onBlur={() => draft !== value && onCommit(draft)}
+      onBlur={() => {
+        if (cancelled.current) { cancelled.current = false; setDraft(value); return; }
+        if (draft !== value) onCommit(draft);
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-        if (e.key === 'Escape') { setDraft(value); (e.target as HTMLInputElement).blur(); }
+        if (e.key === 'Escape') { cancelled.current = true; (e.target as HTMLInputElement).blur(); }
         e.stopPropagation();
       }}
     />
@@ -141,6 +145,7 @@ export function NumberField({
   useEffect(() => { if (!focused) setDraft(format(value)); }, [value, focused]); // eslint-disable-line react-hooks/exhaustive-deps
   const clampV = (v: number) => Math.min(max, Math.max(min, v));
   const commit = () => {
+    if (draft === format(value)) return; // unchanged — don't round the stored value
     const v = parseFloat(draft);
     if (Number.isFinite(v)) onChange(clampV(v));
     else setDraft(format(value));

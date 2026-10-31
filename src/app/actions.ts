@@ -110,13 +110,17 @@ export function duplicateNodes(ids: string[]) {
   getEditor().select(nodes.map((n) => n.id));
 }
 
-let clipboard: { nodes: CanvasNode[]; edges: Edge[] } | null = null;
+let clipboard: { nodes: CanvasNode[]; edges: Edge[]; themeIds: string[] } | null = null;
 
 export function copyNodes(ids: string[]) {
   const { project } = getEditor();
   const nodes = project.nodes.filter((n) => ids.includes(n.id));
   if (!nodes.length) return false;
-  clipboard = { nodes: structuredClone(nodes), edges: structuredClone(project.edges.filter((e) => ids.includes(e.target))) };
+  clipboard = {
+    nodes: structuredClone(nodes),
+    edges: structuredClone(project.edges.filter((e) => ids.includes(e.target))),
+    themeIds: project.themes.map((t) => t.id),
+  };
   return true;
 }
 
@@ -126,10 +130,21 @@ export function pasteNodes(at?: XY) {
   const minX = Math.min(...clipboard.nodes.map((n) => n.position.x));
   const minY = Math.min(...clipboard.nodes.map((n) => n.position.y));
   const offset = at ? { x: at.x - minX, y: at.y - minY } : { x: 48, y: 48 };
-  const { nodes, edges } = cloneNodes(project, clipboard.nodes, clipboard.edges, offset);
+  // Token inputs are per theme; map them by theme position when pasting into another canvas.
+  const themeMap = new Map(clipboard.themeIds.map((id, i) => [id, project.themes[i]?.id]));
+  const remapped = clipboard.edges.map((e) => {
+    if (!e.targetHandle.startsWith('t:')) return e;
+    const mapped = themeMap.get(e.targetHandle.slice(2));
+    return { ...e, targetHandle: mapped ? tokenHandle(mapped) : '' };
+  }).filter((e) => e.targetHandle);
+  const { nodes, edges } = cloneNodes(project, clipboard.nodes, remapped, offset);
   update((d) => {
     d.nodes.push(...(nodes as Draft<CanvasNode>[]));
-    d.edges.push(...edges.filter((e) => d.nodes.some((n) => n.id === e.source)));
+    d.edges.push(...edges.filter((e) => {
+      const target = d.nodes.find((n) => n.id === e.target);
+      return d.nodes.some((n) => n.id === e.source) && !!target && inputHandles(target as CanvasNode, d.themes).includes(e.targetHandle)
+        && !d.edges.some((x) => x.target === e.target && x.targetHandle === e.targetHandle);
+    }));
   });
   getEditor().select(nodes.map((n) => n.id));
 }

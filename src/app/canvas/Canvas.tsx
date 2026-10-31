@@ -142,7 +142,8 @@ function CanvasInner() {
         if (c.selected) next.add(c.id); else next.delete(c.id);
       }
     }
-    if (changed) getEditor().select(next.size ? [] : getEditor().selection, [...next]);
+    // React Flow selects the edges between box-selected nodes too; keep the nodes selected.
+    if (changed) getEditor().select(getEditor().selection, [...next]);
   }, []);
 
   const toConn = (c: RFConnection) => ({ source: c.source, sourceHandle: c.sourceHandle ?? 'out', target: c.target, targetHandle: c.targetHandle ?? 'in' });
@@ -263,10 +264,15 @@ function CanvasInner() {
       const { selection, undo, redo, select } = getEditor();
       if (mod && k === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
       if (mod && k === 'y') { e.preventDefault(); redo(); return; }
+      // Everything else belongs to the canvas: only act when it (or nothing) has focus,
+      // so selecting text in the panel and pressing ⌘C / ⌘A behaves normally.
+      const onCanvas = !t || t === document.body || !!wrapper.current?.contains(t);
+      if (!onCanvas) return;
+      const textSelected = (window.getSelection()?.toString() ?? '').length > 0;
       if (mod && k === 'd') { e.preventDefault(); duplicateNodes(selection); return; }
-      if (mod && k === 'c') { if (copyNodes(selection)) e.preventDefault(); return; }
+      if (mod && k === 'c') { if (!textSelected && copyNodes(selection)) e.preventDefault(); return; }
       if (mod && k === 'v') { if (hasClipboard()) { e.preventDefault(); pasteNodes(viewportCenter()); } return; }
-      if (mod && k === 'a') { e.preventDefault(); selectAll(); return; }
+      if (mod && k === 'a') { if (!textSelected) { e.preventDefault(); selectAll(); } return; }
       if (mod || e.altKey) return;
       if (k === 'delete' || k === 'backspace') { e.preventDefault(); deleteSelection(); return; }
       if (k === 'escape') { select([], []); setMenu(null); return; }
