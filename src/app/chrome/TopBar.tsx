@@ -28,7 +28,7 @@ function ThemeSwitcher() {
   const setTheme = useEditor((s) => s.setTheme);
   return (
     <div className="flex items-center gap-1">
-      <div role="radiogroup" aria-label="Active theme" className="flex max-w-[44vw] items-center overflow-x-auto rounded-xl border border-line bg-surface-2 p-0.5">
+      <div role="radiogroup" aria-label="Active theme" className="flex max-w-[38vw] items-center overflow-x-auto rounded-xl border border-line bg-surface-2 p-0.5 [scrollbar-width:none]">
         {themes.map((t, i) => (
           <Tooltip key={t.id} content={`${t.name}${i === 0 ? ' · primary theme' : ''}${t.dark ? ' · dark' : ''}`}>
             <button
@@ -42,7 +42,7 @@ function ThemeSwitcher() {
               )}
             >
               {t.dark ? <Moon size={12} /> : <Sun size={12} />}
-              {t.name}
+              <span className="max-sm:max-w-14 max-sm:truncate">{t.name}</span>
             </button>
           </Tooltip>
         ))}
@@ -50,6 +50,7 @@ function ThemeSwitcher() {
       <IconButton
         label="Add a theme"
         size="icon-sm"
+        className="hidden sm:inline-flex"
         onClick={() => {
           const last = themes[themes.length - 1];
           addTheme(`Theme ${themes.length + 1}`, !(last?.dark ?? false));
@@ -73,7 +74,7 @@ export function TopBar() {
 
   return (
     <header className="relative z-20 flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line bg-surface px-2.5">
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 shrink items-center gap-2">
         <a href="/" className="flex items-center gap-2 rounded-lg px-1 py-1" aria-label="0colors">
           <Logo className="h-7 w-7" />
           <span className="hidden text-[14px] font-semibold tracking-tight sm:inline"><span className="text-fg-3">0</span>colors</span>
@@ -95,11 +96,12 @@ export function TopBar() {
         <IconButton
           label={`App theme: ${appTheme} (click for ${nextAppTheme})`}
           side="bottom"
+          className="hidden sm:inline-flex"
           onClick={() => setAppTheme(nextAppTheme)}
         >
           {appTheme === 'system' ? <Monitor size={16} /> : appTheme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
         </IconButton>
-        <IconButton label="Export code" side="bottom" active={panelOpen && panelTab === 'code'} onClick={() => (panelOpen && panelTab === 'code' ? setPanelOpen(false) : setPanelTab('code'))}>
+        <IconButton label="Export code" side="bottom" className="hidden sm:inline-flex" active={panelOpen && panelTab === 'code'} onClick={() => (panelOpen && panelTab === 'code' ? setPanelOpen(false) : setPanelTab('code'))}>
           <Code2 size={16} />
         </IconButton>
         <IconButton label={panelOpen ? 'Hide panel' : 'Show panel'} side="bottom" active={panelOpen} onClick={() => setPanelOpen(!panelOpen)}>

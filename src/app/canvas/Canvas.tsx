@@ -178,12 +178,31 @@ function CanvasInner() {
     return rf.screenToFlowPosition({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
   }, [rf]);
 
+  /** Nearest spot to `want` where a node of `size` doesn't overlap existing nodes. */
+  const freeSpot = useCallback((want: XY, size: XY): XY => {
+    const boxes = rf.getNodes().map((n) => ({
+      x: n.position.x, y: n.position.y, w: n.measured?.width ?? 220, h: n.measured?.height ?? 140,
+    }));
+    const gap = 24;
+    const fits = (p: XY) => boxes.every((b) => p.x + size.x + gap <= b.x || b.x + b.w + gap <= p.x || p.y + size.y + gap <= b.y || b.y + b.h + gap <= p.y);
+    if (fits(want)) return want;
+    for (let r = 1; r <= 24; r++) {
+      const step = 40 * r;
+      for (let a = 0; a < 16; a++) {
+        const ang = (a / 16) * Math.PI * 2;
+        const p = { x: Math.round(want.x + Math.cos(ang) * step), y: Math.round(want.y + Math.sin(ang) * step) };
+        if (fits(p)) return p;
+      }
+    }
+    return want;
+  }, [rf]);
+
   const addAtCenter = useCallback((type: NodeType) => {
     const c = viewportCenter();
     const k = cascade.current++ % 6;
     const size = NODE_SIZE[type];
-    addNode(type, { x: Math.round(c.x - size.x / 2 + k * 24), y: Math.round(c.y - size.y / 2 + k * 24) });
-  }, [viewportCenter]);
+    addNode(type, freeSpot({ x: Math.round(c.x - size.x / 2 + k * 12), y: Math.round(c.y - size.y / 2 + k * 12) }, size));
+  }, [viewportCenter, freeSpot]);
 
   const addAt = (type: NodeType, flow: XY) => {
     const size = NODE_SIZE[type];
@@ -391,7 +410,7 @@ function ZoomControls() {
   const { minimap, setMinimap, backdrop, setBackdrop } = useUI();
   const order: Backdrop[] = ['app', 'dark', 'gray', 'light'];
   return (
-    <div className="absolute bottom-4 left-3 flex items-center gap-0.5 rounded-xl border border-line bg-surface/95 p-1 shadow-panel backdrop-blur">
+    <div className="absolute bottom-4 left-3 hidden items-center gap-0.5 rounded-xl border border-line bg-surface/95 p-1 shadow-panel backdrop-blur sm:flex">
       <IconButton label="Zoom out" size="icon-sm" onClick={() => rf.zoomOut({ duration: 200 })}><Minus size={14} /></IconButton>
       <Tooltip content="Reset to 100%">
         <button type="button" className="num h-6 w-11 rounded-md text-[11px] text-fg-2 hover:bg-surface-3 hover:text-fg" onClick={() => rf.zoomTo(1, { duration: 200 })}>

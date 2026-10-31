@@ -27,7 +27,7 @@ function Frame({ selected, width, children, className }: { selected: boolean; wi
     <div
       style={{ width }}
       className={cn(
-        'rounded-xl border border-line bg-surface text-fg shadow-node transition-shadow',
+        'rounded-xl border border-line bg-surface text-fg shadow-node transition-[box-shadow,border-color] hover:border-line-strong',
         selected && 'ring-2 ring-accent ring-offset-0',
         className,
       )}
@@ -149,8 +149,10 @@ export const PaletteNodeView = memo(function PaletteNodeView({ id, data, selecte
               style={{ background: shade.color.hex, color: ink }}
             >
               <span className="num text-[11px] font-semibold">{shade.name}</span>
-              <span className="num flex items-center gap-1 text-[10.5px] opacity-80">
-                {!shade.color.inGamut && <AlertTriangle size={10} />}
+              <span className="num flex items-center gap-1.5 text-[10.5px] opacity-80">
+                {!shade.color.inGamut && (
+                  <span title="Requested chroma is outside sRGB here; showing the closest displayable color" className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                )}
                 {shade.color.hex}
               </span>
               <Handle type="source" position={Position.Right} id={shadeHandle(i)} className="!h-2.5 !w-2.5" />

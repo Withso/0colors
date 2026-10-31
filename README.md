@@ -95,6 +95,9 @@ Function names are case-insensitive.
 
 | Action | Shortcut |
 |---|---|
+| Add color / palette / mix / contrast / token / note | C / P / M / K / T / N |
+| Select tool / pan tool | V / H (or hold Space) |
+| Nudge selection | Arrow keys (⇧ for bigger steps) |
 | Delete selection | Delete / Backspace |
 | Duplicate | ⌘/Ctrl + D |
 | Undo | ⌘/Ctrl + Z |
@@ -104,6 +107,8 @@ Function names are case-insensitive.
 | Fit view | F |
 | Add a color | Double-click the canvas |
 | Add a connected node | Drag from an output handle into empty space |
+| Create the source of an input | Drag from an input handle into empty space |
+| All shortcuts | ? |
 
 ## Local development
 

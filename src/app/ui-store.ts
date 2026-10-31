@@ -58,7 +58,7 @@ export const useUI = create<UIState>()((set) => ({
   panelOpen: read<boolean>('panel-open', typeof innerWidth === 'undefined' || innerWidth >= 900),
   tool: coarse ? 'hand' : 'select',
   backdrop: read<Backdrop>('backdrop', 'app'),
-  minimap: read<boolean>('minimap', true),
+  minimap: read<boolean>('minimap', typeof innerWidth === 'undefined' || innerWidth >= 768),
   shortcutsOpen: false,
   setAppTheme: (appTheme) => {
     try { localStorage.setItem('0colors:app-theme', appTheme); } catch { /* ignore */ }
