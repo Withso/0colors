@@ -132,26 +132,15 @@ The dev server runs on <http://localhost:3000>.
 | `npm test` | Run the unit tests (Vitest) |
 | `npm run check` | Typecheck, tests and build in one go |
 
-## Deploy on Railway
+## Hosting
 
-0colors deploys as a static site. The repo's `Dockerfile` builds the app with Node and serves `dist/` with [Caddy](https://caddyserver.com) on Railway's `$PORT`. `railway.json` selects the Dockerfile builder and a `/healthz` healthcheck. There is nothing else to configure: no environment variables, database or migrations.
+0colors is a hosted app, not a self-hosting template. The maintainers run the official deployment on Railway, built from the `main` branch: `railway.json` builds the `Dockerfile`, which serves the static build with [Caddy](https://caddyserver.com) (healthcheck `/healthz`). There is no one-click deploy, and self-hosted installs aren't supported.
 
-1. Create a Railway service from this repository.
-2. Railway reads `railway.json` and builds the Dockerfile.
-3. Generate a domain for the service.
+The code is MIT-licensed: you're welcome to read it, learn from it and reuse parts of it.
 
-To try the image locally:
+## Contributing
 
-```bash
-docker build -t 0colors .
-docker run --rm -p 8080:8080 0colors
-```
-
-**Upgrading a 1.x deployment.** Version 2 has no server-side storage, so projects stored in the old Postgres database are not migrated.
-
-- **Database:** The Postgres service is no longer used and can be removed from the Railway project.
-- **Environment variables:** The old variables can be deleted: `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `FIGMA_WEBHOOK_SECRET`, `CRON_SECRET` and `VITE_API_BASE_URL`.
-- **Service settings:** Clear any custom Start Command or Pre-deploy Command left in the service settings. The old setup ran the Node backend and a database migration; the new image starts Caddy on its own.
+Issues and pull requests are welcome. Run `npm run check` before opening a PR; it type-checks, runs the tests and builds. Keep `src/engine` free of React and covered by tests.
 
 ## Project structure
 

@@ -31,7 +31,7 @@ A complete rebuild. 0colors is now a local-only playground for understanding col
 
 ### Changed
 
-- Deployment is now a static site: a Caddy container on Railway serves the built app, with a `/healthz` healthcheck.
+- 0colors is now a hosted app rather than a self-hosting template. The maintainers deploy it on Railway as a static site (a Caddy container with a `/healthz` healthcheck).
 - The repository is a single package at the root (no npm workspaces).
 
 ### Removed
@@ -45,6 +45,7 @@ A complete rebuild. 0colors is now a local-only playground for understanding col
 - Figma variables export.
 - Multi-page projects and spacing nodes.
 - The QA automation suite and the marketing site.
+- Self-hosting: the Railway template, the Deploy on Railway button and the self-hosting docs. Projects stored in a 1.x self-hosted Postgres database are not migrated.
 
 ## [1.1.0] — 2026-05-12
 

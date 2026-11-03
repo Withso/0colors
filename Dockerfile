@@ -1,4 +1,4 @@
-# 0colors — static site image for Railway.
+# 0colors — image for the hosted deployment on Railway.
 #
 # Stage 1 builds the Vite app; stage 2 serves dist/ with Caddy.
 # No Node.js at runtime, no database, no migrations.
