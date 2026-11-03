@@ -21,6 +21,10 @@ import { type UpdateOptions, getEditor } from './store';
 const update = (recipe: (d: Draft<Project>) => void, key?: string | UpdateOptions) =>
   getEditor().update(recipe, typeof key === 'object' ? key : { key });
 const nodeIn = (d: Draft<Project>, id: string) => d.nodes.find((n) => n.id === id);
+/** Escape every RegExp metacharacter, so a name can be matched literally. */
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
+/** Matches `@name` as a whole reference (not a prefix of a longer name). */
+const refPattern = (slug: string) => new RegExp(`@${escapeRegExp(slug)}(?![A-Za-z0-9_-])`, 'gi');
 
 export interface Connection { source: string; sourceHandle: string; target: string; targetHandle: string }
 
@@ -146,7 +150,7 @@ export function duplicateForAltDrag(ids: string[], gestureKey?: string) {
       if (!inSet.has(n.id) || n.type !== 'color') continue;
       for (const rule of Object.values(n.data.rules)) {
         if (rule.mode !== 'formula' || !rule.expr) continue;
-        for (const r of renamed) rule.expr = rule.expr.replace(new RegExp(`@${r.from.replace(/-/g, '\\-')}(?![A-Za-z0-9_-])`, 'gi'), `@${r.to}`);
+        for (const r of renamed) rule.expr = rule.expr.replace(refPattern(r.from), `@${r.to}`);
       }
     }
     const next: Edge[] = [];
@@ -362,7 +366,7 @@ export function renameNode(id: string, rawName: string) {
     if (n) n.name = name;
     // Notes, sections and frames have no @name, so formulas never point at them.
     if (before === after || isAnnotation(node.type)) return;
-    const re = new RegExp(`@${before.replace(/[-]/g, '\\-')}(?![A-Za-z0-9_-])`, 'gi');
+    const re = refPattern(before);
     for (const other of d.nodes) {
       if (other.type !== 'color') continue;
       for (const rule of Object.values(other.data.rules)) {

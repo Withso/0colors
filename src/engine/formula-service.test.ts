@@ -12,9 +12,12 @@ const ctx: CompletionContext = {
   ],
 };
 
+/** Remove the single caret marker at `caret` (formulas may contain other '|' characters, e.g. `||`). */
+const unmark = (marked: string, caret: number) => (caret < 0 ? marked : marked.slice(0, caret) + marked.slice(caret + 1));
+
 function complete(marked: string, context = ctx) {
   const caret = marked.indexOf('|');
-  return formulaCompletions(marked.replace('|', ''), caret < 0 ? marked.length : caret, context);
+  return formulaCompletions(unmark(marked, caret), caret < 0 ? marked.length : caret, context);
 }
 
 const labels = (marked: string, context = ctx) => complete(marked, context)?.items.map((i) => i.label) ?? [];
@@ -211,7 +214,7 @@ describe('formulaCompletions', () => {
 });
 
 describe('signatureAt', () => {
-  const signature = (marked: string) => signatureAt(marked.replace('|', ''), marked.indexOf('|'));
+  const signature = (marked: string) => signatureAt(unmark(marked, marked.indexOf('|')), marked.indexOf('|'));
 
   it('finds the innermost function and counts only its own commas', () => {
     expect(signature('clamp(1, |')).toMatchObject({ name: 'clamp', signature: 'clamp(x, min, max)', params: ['x', 'min', 'max'], active: 1 });
