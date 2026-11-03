@@ -1,6 +1,6 @@
 // Shared building blocks for the inspector panels.
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Blend, Contrast, Copy, Droplet, Link2, Palette, StickyNote, Tag, Trash2, TriangleAlert, Unlink } from 'lucide-react';
+import { AppWindow, Blend, Contrast, Copy, Droplet, Frame, Link2, Palette, StickyNote, Tag, Trash2, TriangleAlert, Unlink } from 'lucide-react';
 import type { CanvasNode, NodeType } from '@/engine/model';
 import type { ColorInfo } from '@/engine/color/spaces';
 import { parseHex } from '@/engine/color/convert';
@@ -18,6 +18,8 @@ export const TYPE_ICONS: Record<NodeType, typeof Droplet> = {
   contrast: Contrast,
   token: Tag,
   note: StickyNote,
+  section: Frame,
+  html: AppWindow,
 };
 
 /** Interactive field look shared with the ui kit: borderless until hovered or focused. */
@@ -250,6 +252,8 @@ export function useDraft(value: string, commit: (v: string) => void, delay = 250
     window.clearTimeout(timer.current);
     editing.current = false;
     if (draft !== value) latest.current(draft);
+    // Leaving the field ends this edit's undo step.
+    getEditor().breakCoalesce();
   };
   return { draft, change, flush, setDraft };
 }

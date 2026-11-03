@@ -91,9 +91,13 @@ export function linearRgbToOklab({ r, g, b }: RGB): OKLab {
 }
 
 export function oklabToLinearRgb({ l: L, a, b }: OKLab): RGB {
-  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const lRoot = L + 0.3963377774 * a + 0.2158037573 * b;
+  const mRoot = L - 0.1055613458 * a - 0.0638541728 * b;
+  const sRoot = L - 0.0894841775 * a - 1.291485548 * b;
+  // This is the inner loop of gamut mapping; multiplication avoids general pow calls.
+  const l = lRoot * lRoot * lRoot;
+  const m = mRoot * mRoot * mRoot;
+  const s = sRoot * sRoot * sRoot;
   return {
     r: 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
     g: -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,

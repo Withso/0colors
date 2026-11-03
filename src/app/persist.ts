@@ -6,12 +6,12 @@
 // ─────────────────────────────────────────────────────────────
 import { createStore, del as idbDel, get as idbGet, set as idbSet } from 'idb-keyval';
 import { toast } from 'sonner';
-import type { Project } from '@/engine/model';
+import { type Project, uid } from '@/engine/model';
 import { type ComputeResult, computeProject, outputColor } from '@/engine/compute';
 import { createBlankProject } from '@/engine/defaults';
 import { normalizeProject } from '@/engine/schema';
 import { decodeShare, readShareCode } from '@/engine/share';
-import { createSampleProject } from './sample';
+import { SAMPLE_ID, createSampleProject, isSampleId } from './sample';
 import { getEditor, useEditor } from './store';
 
 export interface CanvasMeta {
@@ -20,6 +20,8 @@ export interface CanvasMeta {
   updatedAt: number;
   /** Up to 6 distinct hex colors, for the canvas list. */
   swatches: string[];
+  /** The permanent, editable demo. It can be reset, but never deleted. */
+  sample?: boolean;
 }
 
 // ── Key/value layer ──────────────────────────────────────────
@@ -149,13 +151,18 @@ function resultFor(project: Project): ComputeResult | undefined {
   return state.project === project ? state.result : undefined;
 }
 
-function writeProject(project: Project, swatches?: string[]): Promise<void> {
-  const meta: CanvasMeta = {
+function metaFor(project: Project, swatches?: string[]): CanvasMeta {
+  return {
     id: project.id,
     name: project.name,
     updatedAt: project.updatedAt,
     swatches: swatches ?? swatchesFor(project, resultFor(project)),
+    sample: isSampleId(project.id),
   };
+}
+
+function writeProject(project: Project, swatches?: string[]): Promise<void> {
+  const meta = metaFor(project, swatches);
   return serial(async () => {
     await kvSet(`canvas:${project.id}`, project);
     const metas = (await kvGet<CanvasMeta[]>('canvases')) ?? [];
@@ -167,6 +174,30 @@ function writeProject(project: Project, swatches?: string[]): Promise<void> {
 async function readProject(id: string): Promise<Project | null> {
   const raw = await kvGet<unknown>(`canvas:${id}`);
   return raw ? normalizeProject(raw) : null;
+}
+
+/** Repair the demo record/index without changing the last-opened canvas or any edits. */
+function ensureSample(): Promise<Project> {
+  return serial(async () => {
+    let project: Project | null = null;
+    try { project = await readProject(SAMPLE_ID); } catch { /* Rebuild an unreadable demo. */ }
+    if (!project || !isSampleId(project.id)) {
+      project = createSampleProject();
+      await kvSet(`canvas:${SAMPLE_ID}`, project);
+    }
+    const metas = (await kvGet<CanvasMeta[]>('canvases')) ?? [];
+    const meta = metas.find((m) => isSampleId(m.id));
+    if (!meta || !meta.sample || meta.name !== project.name || meta.updatedAt !== project.updatedAt) {
+      await kvSet('canvases', [metaFor(project), ...metas.filter((m) => !isSampleId(m.id))]);
+    }
+    return project;
+  });
+}
+
+/** Every incoming document is a new canvas, even if its id matches local work or the demo. */
+function asNewCanvas(project: Project): Project {
+  const now = Date.now();
+  return { ...project, id: uid('p_'), createdAt: now, updatedAt: now };
 }
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
@@ -229,11 +260,12 @@ async function loadLastOrSample(): Promise<{ project: Project; source: 'saved' |
   let error: string | undefined;
   try {
     const last = await kvGet<string>('last');
-    const candidates = [last, ...((await kvGet<CanvasMeta[]>('canvases')) ?? []).map((m) => m.id)].filter(Boolean) as string[];
+    const metas = (await kvGet<CanvasMeta[]>('canvases')) ?? [];
+    const candidates = [...new Set([last, ...metas.filter((m) => !isSampleId(m.id)).map((m) => m.id), SAMPLE_ID])].filter(Boolean) as string[];
     for (const id of candidates) {
       try {
         const project = await readProject(id);
-        if (project) return { project, source: 'saved' };
+        if (project) return { project, source: isSampleId(id) ? 'sample' : 'saved' };
       } catch (err) {
         error = `A saved canvas could not be opened: ${message(err)}`;
       }
@@ -252,11 +284,12 @@ async function loadLastOrSample(): Promise<{ project: Project; source: 'saved' |
  */
 export async function bootProject(): Promise<{ project: Project; source: 'share' | 'saved' | 'sample'; error?: string }> {
   await recoverFallback();
+  await ensureSample();
   const code = typeof location !== 'undefined' ? readShareCode(location.hash) : null;
   if (code) {
     const clearHash = () => history.replaceState(null, '', location.pathname + location.search);
     try {
-      const project = await decodeShare(code);
+      const project = asNewCanvas(await decodeShare(code));
       await writeProject(project);
       clearHash();
       return { project, source: 'share' };
@@ -276,14 +309,19 @@ export async function bootProject(): Promise<{ project: Project; source: 'share'
 
 // ── Canvas management ────────────────────────────────────────
 export async function listCanvases(): Promise<CanvasMeta[]> {
+  await ensureSample();
   const metas = (await kvGet<CanvasMeta[]>('canvases')) ?? [];
   const { project } = getEditor();
   // The open canvas may be up to one autosave behind; show its live name and time.
-  const live = metas.map((m) => (m.id === project.id ? { ...m, name: project.name, updatedAt: project.updatedAt } : m));
+  const live: CanvasMeta[] = metas.map((m) => ({
+    ...m,
+    ...(m.id === project.id ? { name: project.name, updatedAt: project.updatedAt } : {}),
+    sample: isSampleId(m.id),
+  }));
   if (!live.some((m) => m.id === project.id)) {
-    live.push({ id: project.id, name: project.name, updatedAt: project.updatedAt, swatches: swatchesFor(project, resultFor(project)) });
+    live.push(metaFor(project));
   }
-  return live.sort((a, b) => b.updatedAt - a.updatedAt);
+  return live.sort((a, b) => Number(!!b.sample) - Number(!!a.sample) || b.updatedAt - a.updatedAt);
 }
 
 async function openWithoutSaving(id: string): Promise<void> {
@@ -296,16 +334,28 @@ async function openWithoutSaving(id: string): Promise<void> {
 export async function openCanvas(id: string): Promise<void> {
   if (getEditor().project.id === id) return;
   await saveNow();
+  if (isSampleId(id)) await ensureSample();
   await openWithoutSaving(id);
 }
 
 export async function createCanvas(project: Project): Promise<void> {
   await saveNow();
-  await writeProject(project, swatchesFor(project));
+  const incoming = asNewCanvas(project);
+  await writeProject(incoming, swatchesFor(incoming));
+  getEditor().load(incoming);
+}
+
+/** Restore the original demo and open it; queued old saves finish before this replacement. */
+export async function resetSample(): Promise<void> {
+  dropPending(SAMPLE_ID);
+  if (!isSampleId(getEditor().project.id)) await saveNow();
+  const project = createSampleProject();
+  await writeProject(project);
   getEditor().load(project);
 }
 
 export async function deleteCanvas(id: string): Promise<void> {
+  if (isSampleId(id)) throw new Error('The demo can’t be deleted — reset it instead.');
   const isOpen = getEditor().project.id === id;
   if (isOpen) dropPending(id);
   await serial(async () => {

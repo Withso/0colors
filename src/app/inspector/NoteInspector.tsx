@@ -2,7 +2,7 @@
 import type { NoteNode, NoteTone } from '@/engine/model';
 import { updateNodeData } from '../actions';
 import { Section, Segmented } from '../ui';
-import { AutoTextarea, Code, Explain, InspectorHeader, useDraft } from './common';
+import { AutoTextarea, InspectorHeader, useDraft } from './common';
 
 const TONES: { value: NoteTone; label: string; dot: string }[] = [
   { value: 'neutral', label: 'Gray', dot: 'oklch(0.7 0.01 265)' },
@@ -17,12 +17,10 @@ export function NoteInspector({ node }: { node: NoteNode }) {
   const text = useDraft(node.data.text, (v) => updateNodeData<NoteNode>(node.id, (d) => { d.text = v; }, `note:${node.id}:text`));
   return (
     <div>
-      <InspectorHeader node={node} hint="Notes explain what’s happening on the canvas. They don’t affect any color." />
+      <InspectorHeader node={node} />
       <Section title="Text">
         <AutoTextarea ariaLabel="Note text" value={text.draft} onChange={text.change} onBlur={text.flush} minRows={5} />
-        <Explain className="mt-2">
-          Supports <Code>**bold**</Code>, <Code>`code`</Code> and lines starting with <Code>- </Code> for bullets.
-        </Explain>
+        <p className="num mt-1.5 text-[10.5px] text-fg-3">**bold** · `code` · - list</p>
       </Section>
       <Section title="Color">
         <Segmented

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Canvas field guide — 0colors</title>
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --ink: #202229; --muted: #626773; --faint: #8a909a; --line: #e5e7eb; --soft: #f6f7f9; --raised: #ffffff; --blue: #356bd9; --purple: #7756b6; --teal: #16766a; --shadow: 0 6px 18px #1620340a; }
+@media (prefers-color-scheme: dark) { :root { --bg: #202126; --ink: #f1f2f5; --muted: #a5a8b4; --faint: #797e8d; --line: #393c45; --soft: #282a31; --raised: #30333b; --blue: #8cb2ff; --purple: #c5a2f1; --teal: #7ad6c6; --shadow: 0 6px 18px #00000018; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { color: var(--ink); background: var(--bg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+svg { display: block; overflow: visible; }
+code, kbd, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.kicker { color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .15em; text-transform: uppercase; }
+.lesson { height: 100%; padding: 28px 32px; display: grid; grid-template-columns: 310px 1fr; gap: 32px; align-items: center; }
+.lesson h1 { font-size: 32px; line-height: 1.12; font-weight: 650; letter-spacing: -.045em; margin: 12px 0; }
+.lesson .intro { font-size: 13.5px; line-height: 1.65; color: var(--muted); max-width: 298px; }
+.panel { border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
+.small { font-size: 11px; line-height: 1.55; color: var(--muted); }
+.ref { color: var(--blue); }
+.kw { color: var(--purple); }
+.fn { color: var(--teal); }
+.comment { color: var(--faint); }
+.local { font-family: Georgia, serif; font-style: italic; }
+
+.desk { position: relative; height: 100%; padding: 28px 32px 100px; display: grid; grid-template-rows: auto 1fr; gap: 23px; }
+.desk h1 { margin: 9px 0 8px; font-size: 34px; letter-spacing: -.05em; line-height: 1.1; font-weight: 650; }
+.desk .intro { color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.gestures { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 12px; min-height: 0; }
+.gesture { border: 1px solid var(--line); border-radius: 12px; padding: 13px 16px; background: var(--soft); }
+.gesture h2 { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; letter-spacing: -.02em; margin-bottom: 8px; }
+.gesture h2 span { font-size: 10px; font-weight: 400; color: var(--faint); }
+.gesture p { font-size: 11.5px; line-height: 1.6; color: var(--muted); }
+.gesture p + p { margin-top: 4px; }
+kbd { display: inline-block; border: 1px solid var(--line); background: var(--raised); color: var(--ink); border-radius: 4px; font-size: 10px; line-height: 1.4; padding: 1px 4px; vertical-align: 1px; white-space: nowrap; }
+.inline-flow { display: inline-flex; gap: 5px; align-items: center; color: var(--blue); vertical-align: -3px; }
+.dot { height: 6px; width: 6px; border-radius: 50%; background: currentColor; }
+.wire { height: 1px; width: 20px; background: currentColor; }
+.footer-note { position: absolute; right: 32px; bottom: 34px; color: var(--muted); font-size: 11px; }
+</style>
+</head>
+<body>
+<main class="desk">
+  <header><div class="kicker">09 / Your canvas, your pace</div><h1>A few gestures. Endless room.</h1><p class="intro">Try these anywhere in the demo. Use Cmd on Mac and Ctrl on Windows / Linux. Alt is Option on Mac.</p></header>
+  <div class="gestures">
+    <article class="gesture"><h2>Move &amp; select <span class="mono">01</span></h2><p>Scroll to pan. Pinch or Cmd / Ctrl + scroll to zoom. <kbd>Space</kbd> + drag pans; <kbd>F</kbd> fits all.</p><p>Drag empty canvas to select. Shift-click adds or removes a node. <kbd>Esc</kbd> clears selection.</p></article>
+    <article class="gesture"><h2>Add in a moment <span class="mono">02</span></h2><p><kbd>Tab</kbd> or <kbd>/</kbd> opens quick-add at the cursor.</p><p><kbd>Cmd K</kbd> searches commands and nodes.</p><p>Double-click empty canvas for a color.</p></article>
+    <article class="gesture"><h2>Pick two channels <span class="mono">03</span></h2><p>Drag below the inspector swatch. OKLCH: chroma × lightness. HCT: chroma × tone. HSL / RGB: saturation × lightness.</p><p>Linked axes become offsets. An axis formula locks the plane. The line marks sRGB; hue stays fixed.</p></article>
+    <article class="gesture"><h2>Connect <span class="inline-flow" aria-hidden="true"><i class="dot"></i><i class="wire"></i><i class="dot"></i></span></h2><p>Drag a right-side dot to an input, or drop on a node body for a free input.</p><p>Drag a left-side dot into empty space to create its source.</p></article>
+    <article class="gesture"><h2>Reconnect &amp; disconnect <span class="mono">05</span></h2><p>Drag out of a connected input to pick its connection up. Drop on another node to move it, or empty canvas to disconnect.</p><p>Hover a link for ×, or select it and press <kbd>Delete</kbd>.</p></article>
+    <article class="gesture"><h2>Drop a node into a link <span class="mono">06</span></h2><p>Drag one unconnected Color, Palette, Mix or Token onto a color connection. Release when it highlights to insert.</p><p>Mix uses A; Token uses the active theme. One undo reverses the whole drag.</p></article>
+    <article class="gesture"><h2>Cut connections <span class="mono">07</span></h2><p>Hold <kbd>X</kbd> and drag across links, or right-drag on empty canvas. Crossed color connections turn red; release cuts them in one undo step.</p><p><kbd>Esc</kbd> cancels. Dashed formula references stay. A right-click still opens the menu.</p></article>
+    <article class="gesture"><h2>Duplicate, paste, undo <span class="mono">08</span></h2><p><kbd>Alt</kbd> + drag duplicates. <kbd>Cmd V</kbd> pastes hex or CSS colors.</p><p class="mono">#FF6B6B #FFD166 #06D6A0</p><p><kbd>Cmd Z</kbd> undo · <kbd>Shift Cmd Z</kbd> redo</p></article>
+    <article class="gesture"><h2>Arrange your canvas <span class="mono">09</span></h2><p><kbd>S</kbd> adds a section; <kbd>Alt Cmd G</kbd> wraps a selection. Drag its title to move everything fully inside.</p><p>Guides align a drag. Hold Cmd / Ctrl to disable snapping. Arrow keys nudge; Shift moves farther.</p></article>
+  </div>
+  <p class="footer-note">Try it. Undo it. Try something else.</p>
+</main>
+</body>
+</html>

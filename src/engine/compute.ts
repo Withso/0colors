@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────
 import {
   type CanvasNode, type ColorNode, type Edge, type NodeType, type PaletteNode, type Project, type RuleMode,
-  type Theme, slugify, tokenHandle,
+  type Theme, isAnnotation, slugify, tokenHandle,
 } from './model';
 import {
   type ChannelValues, type ColorInfo, type Space, channelDefs, constrainChannel, describe, infoToSpace, spaceToRgb,
@@ -13,7 +13,7 @@ import {
 import { compositeOver, lerp, parseHex } from './color/convert';
 import { apcaContrast, wcagContrast } from './color/contrast';
 import { mixRgb } from './color/mix';
-import { type ColorRef, type FormulaEnv, FormulaError, collectRefs, evaluateFormula, parseCached } from './formula';
+import { type ColorRef, type EvalResult, type FormulaEnv, FormulaError, collectRefs, evaluateFormula, parseCached } from './formula';
 import { type Shade, generatePalette, paletteKeys } from './palette';
 
 export interface ChannelTrace {
@@ -26,7 +26,7 @@ export interface ChannelTrace {
   parent?: number;
   delta?: number;
   expr?: string;
-  explain?: { lookups: { text: string; value: string }[]; substituted: string };
+  explain?: Pick<EvalResult, 'lookups' | 'substituted' | 'steps'>;
   error?: { message: string; start: number; end: number };
 }
 
@@ -83,8 +83,10 @@ export interface TokenResult {
 }
 
 export interface NoteResult { type: 'note' }
+export interface SectionResult { type: 'section' }
+export interface HtmlResult { type: 'html' }
 
-export type NodeResult = ColorResult | PaletteResult | MixResult | ContrastResult | TokenResult | NoteResult;
+export type NodeResult = ColorResult | PaletteResult | MixResult | ContrastResult | TokenResult | NoteResult | SectionResult | HtmlResult;
 
 export interface ComputeResult {
   themeId: string;
@@ -94,6 +96,7 @@ export interface ComputeResult {
 }
 
 const WHITE = describe({ r: 1, g: 1, b: 1 });
+const shadeIndex = (handle: string) => /^s\d+$/.test(handle) ? Number(handle.slice(1)) : -1;
 
 export function hexInfo(hex: string, fallback = WHITE): ColorInfo {
   const parsed = parseHex(hex);
@@ -107,10 +110,10 @@ export function outputColor(result: NodeResult | undefined | null, handle = 'out
     case 'color':
     case 'mix':
     case 'token':
-      return result.color;
+      return handle === 'out' ? result.color : null;
     case 'palette':
       if (handle === 'out') return result.base;
-      return result.shades[Number(handle.slice(1))]?.color ?? null;
+      return result.shades[shadeIndex(handle)]?.color ?? null;
     default:
       return null;
   }
@@ -119,9 +122,9 @@ export function outputColor(result: NodeResult | undefined | null, handle = 'out
 /** Exact channel values behind an output, when it natively lives in a space. */
 export function outputNative(result: NodeResult | undefined | null, handle = 'out'): { space: Space; values: ChannelValues } | undefined {
   if (!result) return undefined;
-  if (result.type === 'color') return { space: result.space, values: result.values };
+  if (result.type === 'color' && handle === 'out') return { space: result.space, values: result.values };
   if (result.type === 'palette' && handle !== 'out') {
-    const shade = result.shades[Number(handle.slice(1))];
+    const shade = result.shades[shadeIndex(handle)];
     return shade ? { space: result.space, values: shade.values } : undefined;
   }
   return undefined;
@@ -129,8 +132,8 @@ export function outputNative(result: NodeResult | undefined | null, handle = 'ou
 
 export function outputLabel(node: CanvasNode | undefined, handle: string, result?: NodeResult | null): string {
   if (!node) return 'missing';
-  if (node.type === 'palette' && handle !== 'out') {
-    const shade = result?.type === 'palette' ? result.shades[Number(handle.slice(1))] : undefined;
+  if (node.type === 'palette' && shadeIndex(handle) >= 0) {
+    const shade = result?.type === 'palette' ? result.shades[shadeIndex(handle)] : undefined;
     return `${node.name} ${shade?.name ?? handle.slice(1)}`;
   }
   return node.name;
@@ -150,12 +153,13 @@ export function computeProject(project: Project, themeId?: string, previous?: Co
   }
   const bySlug = new Map<string, string>();
   for (const n of project.nodes) {
-    if (n.type === 'note') continue;
+    if (isAnnotation(n.type)) continue;
     const s = slugify(n.name);
     if (!bySlug.has(s)) bySlug.set(s, n.id);
   }
 
-  const results: Record<string, NodeResult> = {};
+  // Imported ids are arbitrary strings, including Object.prototype property names.
+  const results: Record<string, NodeResult> = Object.create(null);
   const visiting = new Set<string>();
 
   const resolve = (id: string): NodeResult | null => {
@@ -187,10 +191,8 @@ export function computeProject(project: Project, themeId?: string, previous?: Co
     };
   };
 
-  const refFor = (owner: CanvasNode, name: string, expr: string): ColorRef => {
-    const at = expr.toLowerCase().indexOf(`@${name}`);
-    const span = at >= 0 ? [at, at + name.length + 1] : [0, 0];
-    const fail = (msg: string) => new FormulaError(msg, span[0], span[1]);
+  const refFor = (owner: CanvasNode, name: string): ColorRef => {
+    const fail = (msg: string) => new FormulaError(msg);
     const id = bySlug.get(name);
     if (!id) throw fail(`No node named @${name}`);
     if (id === owner.id) throw fail(`@${name} is this node — use self instead`);
@@ -219,7 +221,7 @@ export function computeProject(project: Project, themeId?: string, previous?: Co
     for (const def of defs) own[def.key] = constrainChannel(def, node.data.values[def.key] ?? (def.key === 'alpha' ? 100 : 0));
 
     let selfRef: ColorRef | null = null;
-    const env = (expr: string): FormulaEnv => ({
+    const env = (): FormulaEnv => ({
       space,
       parent: parent && parentValues ? { info: parent, native: { space, values: parentValues }, label: 'parent' } : null,
       get self() {
@@ -230,7 +232,7 @@ export function computeProject(project: Project, themeId?: string, previous?: Co
         return selfRef;
       },
       dark: theme.dark,
-      ref: (name) => refFor(node, name, expr),
+      ref: (name) => refFor(node, name),
     });
 
     const values: ChannelValues = {};
@@ -255,9 +257,9 @@ export function computeProject(project: Project, themeId?: string, previous?: Co
           trace.expr = expr;
           if (parentValues) trace.parent = parentValues[def.key];
           try {
-            const r = evaluateFormula(expr, env(expr));
+            const r = evaluateFormula(expr, env());
             raw = r.value;
-            trace.explain = { lookups: r.lookups, substituted: r.substituted };
+            trace.explain = { lookups: r.lookups, substituted: r.substituted, steps: r.steps };
           } catch (err) {
             const e = err instanceof FormulaError ? err : new FormulaError(String(err));
             trace.error = { message: e.message, start: e.start, end: e.end };
@@ -357,6 +359,10 @@ export function computeProject(project: Project, themeId?: string, previous?: Co
       }
       case 'note':
         return { type: 'note' };
+      case 'section':
+        return { type: 'section' };
+      case 'html':
+        return { type: 'html' };
     }
   }
 
@@ -391,17 +397,38 @@ function reconcile(prev: ComputeResult | null, next: ComputeResult): ComputeResu
   let same = Object.keys(prev.nodes).length === Object.keys(next.nodes).length;
   for (const id of Object.keys(next.nodes)) {
     const old = prev.nodes[id];
-    if (old && JSON.stringify(old) === JSON.stringify(next.nodes[id])) next.nodes[id] = old;
+    if (old && sameValue(old, next.nodes[id])) next.nodes[id] = old;
     else same = false;
   }
-  const sameRefs = prev.refs.length === next.refs.length && prev.refs.every((r, i) => r.id === next.refs[i].id);
+  const sameRefs = prev.refs.length === next.refs.length && prev.refs.every((r, i) => r.id === next.refs[i].id && r.source === next.refs[i].source && r.target === next.refs[i].target);
   if (sameRefs) next.refs = prev.refs;
   return same && sameRefs ? prev : next;
 }
 
+/** Compare the small plain result trees without allocating serialized copies on every edit. */
+function sameValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+  if (Array.isArray(a)) {
+    if (!Array.isArray(b) || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) if (!sameValue(a[i], b[i])) return false;
+    return true;
+  }
+  if (Array.isArray(b)) return false;
+  const left = a as Record<string, unknown>; const right = b as Record<string, unknown>;
+  let leftSize = 0; let rightSize = 0;
+  for (const key in left) {
+    if (!Object.hasOwn(left, key)) continue;
+    leftSize++;
+    if (!Object.hasOwn(right, key) || !sameValue(left[key], right[key])) return false;
+  }
+  for (const key in right) if (Object.hasOwn(right, key)) rightSize++;
+  return leftSize === rightSize;
+}
+
 /** Compute every theme at once (tokens table, preview, export). */
 export function computeAllThemes(project: Project): Record<string, ComputeResult> {
-  const out: Record<string, ComputeResult> = {};
+  const out: Record<string, ComputeResult> = Object.create(null);
   for (const t of project.themes) out[t.id] = computeProject(project, t.id);
   return out;
 }
@@ -410,7 +437,11 @@ export function computeAllThemes(project: Project): Record<string, ComputeResult
 export function wouldCreateCycle(edges: Edge[], source: string, target: string): boolean {
   if (source === target) return true;
   const out = new Map<string, string[]>();
-  for (const e of edges) out.set(e.source, [...(out.get(e.source) ?? []), e.target]);
+  for (const e of edges) {
+    const targets = out.get(e.source);
+    if (targets) targets.push(e.target);
+    else out.set(e.source, [e.target]);
+  }
   const stack = [target];
   const seen = new Set<string>();
   while (stack.length) {

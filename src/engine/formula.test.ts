@@ -3,7 +3,7 @@ import {
   type ColorRef, type FormulaEnv, FORMULA_FUNCTIONS, FormulaError, collectRefs, evaluateFormula, parse,
   parseCached, tokenize,
 } from './formula';
-import { parseHex } from './color/convert';
+import { compositeOver, parseHex } from './color/convert';
 import { type ChannelValues, type Space, describe as describeColor, infoToSpace } from './color/spaces';
 import { apcaContrast, wcagContrast } from './color/contrast';
 
@@ -189,11 +189,195 @@ describe('functions', () => {
       smoothstep: 'smoothstep(0, 1, 0.5)', sin: 'sin(30)', cos: 'cos(60)', if: 'if(true, 1, 2)',
       contrast: 'contrast(white, black)', apca: 'apca(black, white)', luminance: 'luminance(white)',
       deltae: 'deltaE(white, black)', mix: 'mix(white, black, 0.5).l',
+      sign: 'sign(-2)', tan: 'tan(45)', atan2: 'atan2(1, 1)', log: 'log(1)', log2: 'log2(8)',
+      log10: 'log10(100)', exp: 'exp(1)', fract: 'fract(1.5)', invlerp: 'invlerp(0, 10, 5)',
+      inverselerp: 'inverselerp(0, 10, 5)', huelerp: 'huelerp(350, 10, 0.5)',
     };
     for (const fn of FORMULA_FUNCTIONS) {
       expect(samples[fn.name], `missing sample for ${fn.name}`).toBeDefined();
       expect(Number.isFinite(run(samples[fn.name]))).toBe(true);
     }
+  });
+});
+
+describe('formula language v2', () => {
+  it('composites translucent text for contrast just like the contrast node', () => {
+    expect(run('contrast(#0000, white)')).toBe(1);
+    expect(run('apca(#0000, white)')).toBe(0);
+    const seen = compositeOver({ r: 0, g: 0, b: 0 }, 128 / 255, { r: 1, g: 1, b: 1 });
+    expect(run('contrast(#00000080, white)')).toBeCloseTo(wcagContrast(seen, { r: 1, g: 1, b: 1 }), 9);
+  });
+
+  it('points reference failures at the evaluated occurrence', () => {
+    const source = '// @missing\nif false then @missing.l else @missing.l';
+    const error = expectError(source, /No node named @missing/);
+    expect(error.start).toBe(source.lastIndexOf('@missing'));
+    expect(source.slice(error.start, error.end)).toBe('@missing');
+  });
+
+  it.each([
+    ['if true then 10 else 20', 10],
+    ['IF FALSE THEN 10 ELSE 20', 20],
+    ['if (1 < 2) then 3 else 4', 3],
+    ['if (1 < 2) and true then 3 else 4', 3],
+    ['if (1 + 2) > 0 then 3 else 4', 3],
+    ['if 1 > 2 then 1 else if 2 > 1 then 2 else 3', 2],
+    ['if true then if false then 1 else 2 else 3', 2],
+    ['if false then 1 else if false then 2 else 3', 3],
+    ['(if true then 2 else 3) * 4', 8],
+    ['if true then 2 else 3 + 4', 2],
+    ['if(1 < 2, 3, 4)', 3],
+    ['IF(true, if false then 1 else 2, 3)', 2],
+    ['max(if true then 2 else 3, 4)', 4],
+    ['if NOT false AND true OR false then 4 else 5', 4],
+    ['if true then 1 else 1 / 0', 1],
+    ['false and (1 / 0) ? 1 : 2', 2],
+    ['if\n true\n then\n 1\n else\n 2', 1],
+    ['if (true)\nthen 1\nelse 2', 1],
+  ])('evaluates %s', (source, expected) => {
+    expect(run(source)).toBe(expected);
+  });
+
+  it('evaluates named rows in order, with numbers, booleans and colors', () => {
+    const source = '// A reusable color\nbase = mix(black, white, 0.5)\nout_1 = base.oklch.l\nis_dark = out_1 < 60\nif is_dark then out_1 + 10 else out_1';
+    const result = evaluateFormula(source, env());
+    expect(result.value).toBeCloseTo(60, 3);
+    expect(result.steps.map((s) => s.name)).toEqual(['base', 'out_1', 'is_dark', null]);
+    expect(result.steps.map((s) => s.value)).toEqual(['#636363', '50', 'true', '60']);
+    for (const step of result.steps) expect(source.slice(step.start, step.end)).toBe(step.text);
+    expect(result.lookups).toContainEqual({ text: 'out_1', value: '50' });
+  });
+
+  it('supports semicolons, blank lines, CRLF and a final assignment', () => {
+    expect(run(';\r\nout_1 = 5;\r\n\r\nout_2 = out_1 * 2;')).toBe(10);
+    expect(run('a = 4; a = a + 2; a')).toBe(6);
+    expect(run('1\n2\n3')).toBe(3);
+  });
+
+  it('keeps multiline arithmetic, member access and arguments working', () => {
+    expect(run('1 +\n 2 *\n 3')).toBe(7);
+    expect(run('1\n + 2\n * 3')).toBe(7);
+    expect(run('white\n .hsl\n .l')).toBeCloseTo(100);
+    expect(run('max(\n 1,\n 2\n)')).toBe(2);
+    expect(run('max\n(1, 2)')).toBe(2);
+    expect(run('value =\n (1 +\n 2); value')).toBe(3);
+    expect(run('true\n ? 1\n : 2')).toBe(1);
+  });
+
+  it('ignores comments while preserving exact source offsets', () => {
+    const source = '// intro\r\nout_1 = 2 // first\r\n\n out_1 × 3 // final';
+    const result = evaluateFormula(source, env());
+    expect(result.value).toBe(6);
+    expect(result.steps).toEqual([
+      { name: 'out_1', text: 'out_1 = 2', value: '2', start: 10, end: 19 },
+      { name: null, text: 'out_1 × 3', value: '6', start: 32, end: 41 },
+    ]);
+    expect(run('1 + // continue\n 2')).toBe(3);
+    expectError('// only a comment', /Write a formula/);
+  });
+
+  it('includes a step for an existing single expression', () => {
+    expect(evaluateFormula('  2 + 3  ', env()).steps).toEqual([
+      { name: null, text: '2 + 3', value: '5', start: 2, end: 7 },
+    ]);
+  });
+
+  it('isolates locals between evaluations and treats identifiers as plain data', () => {
+    expect(run('constructor = 2; __proto__ = 3; constructor + __proto__')).toBe(5);
+    expect(run('amount = 2; amount')).toBe(2);
+    expectError('amount', /Unknown name/);
+    expectError('parent.constructor', /not a OKLCH channel/);
+    expectError('parent.hsl.__proto__', /not a HSL channel/);
+  });
+
+  it('reports forward references and self-references at the offending name', () => {
+    const err = expectError('out_1 + 1\nout_1 = 2', /Local "out_1" is used before it is defined/);
+    expect([err.start, err.end]).toEqual([0, 5]);
+    expectError('out_1 = out_1 + 1', /before it is defined/);
+    expect(run('if true then 2 else out_1\nout_1 = 3')).toBe(3);
+  });
+
+  it.each(['parent', 'self', 'dark', 'light', 'white', 'black', 'pi', 'clamp', 'IF', 'then', 'TRUE'])('protects %s from assignment', (name) => {
+    expectError(`${name} = 2; 3`, /reserved/);
+  });
+
+  it.each(['parent.l = 2', '1 = 2', 'if dark = true then 1 else 0', 'a = (2 = 2)', 'clamp(2 = 3, 0, 1)'])('explains comparison = in %s', (source) => {
+    const err = expectError(source, /Use == to compare/);
+    expect(source.slice(err.start, err.end)).toBe('=');
+  });
+
+  it('suggests variables, functions and earlier locals, including transposed letters', () => {
+    expectError('parnt.l', /Unknown name "parnt" — did you mean parent\?/);
+    expectError('clmap(1, 0, 2)', /did you mean clamp/);
+    expectError('out_1 = 2; ou_1', /did you mean out_1/);
+    expectError('brand.l', /did you mean @brand/);
+  });
+
+  it('collects references across every statement and conditional branch', () => {
+    const refs = collectRefs(parse('a = @Brand;\nb = if dark then @night else @day\nmax(a.l, b.l) + @other.l'));
+    expect([...refs]).toEqual(['brand', 'night', 'day', 'other']);
+  });
+
+  it.each([
+    ['2 × 3 · 4 ÷ 2 − 1', 11],
+    ['if 3 ≤ 3 and 4 ≥ 2 and 3 ≠ 4 then 1 else 0', 1],
+    ['1e2 + 5E-1 + .25e+1', 103],
+    ['sign(-3) + sign(0) + sign(2)', 0],
+    ['tan(45)', 1],
+    ['atan2(1, 0)', 90],
+    ['atan2(-1, 0)', 270],
+    ['atan2(0, -1)', 180],
+    ['atan2(0, 0)', 0],
+    ['log(exp(2))', 2],
+    ['log2(8)', 3],
+    ['log10(100)', 2],
+    ['fract(2.25)', 0.25],
+    ['fract(-2.25)', 0.75],
+    ['invlerp(10, 20, 15)', 0.5],
+    ['inverselerp(20, 10, 15)', 0.5],
+    ['invlerp(1, 1, 10)', 0],
+    ['invlerp(0, 10, 20)', 2],
+    ['huelerp(350, 10, 0.5)', 0],
+    ['huelerp(10, 350, 0.5)', 0],
+    ['huelerp(-10, 370, 0.25)', 355],
+    ['huelerp(0, 180, 0.5)', 90],
+    ['huelerp(350, 10, 2)', 30],
+  ])('supports %s', (source, expected) => {
+    expect(run(source)).toBeCloseTo(expected, 8);
+  });
+
+  it('validates new functions and rejects invalid intermediate statements', () => {
+    expectError('atan2(1)', /takes 2 arguments/);
+    expectError('log(0)', /positive value/);
+    expectError('log2(-1)', /positive value/);
+    expectError('log10(-1)', /positive value/);
+    expectError('x = exp(1000); 2', /invalid number/);
+    expectError('exp(1000)', /invalid number/);
+    expectError('1e', /digits after the exponent/);
+  });
+
+  it('provides consistent function metadata for autocomplete and signature help', () => {
+    for (const fn of FORMULA_FUNCTIONS) {
+      expect(fn.signature.slice(fn.signature.indexOf('('))).toBe(`(${fn.params.join(', ')})`);
+      expect(['math', 'logic', 'color']).toContain(fn.category);
+      expect(fn.description.length).toBeGreaterThan(5);
+    }
+  });
+
+  it('exposes alpha through explicit space namespaces as well as shorthand', () => {
+    expect(run('#ff000080.hsl.alpha')).toBeCloseTo(128 / 255 * 100);
+    expect(run('#ff000080.rgb.a')).toBeCloseTo(128 / 255 * 100);
+  });
+
+  it('reports incomplete conditionals and statements as formula errors', () => {
+    expectError('if dark 1 else 2', /Expected "then"/);
+    expectError('if dark then 1', /Expected "else"/);
+    expectError('if dark then 1 else', /ends too early/);
+    expectError('out_1 =', /ends too early/);
+    expectError('out_1 = 2; out_2 =', /ends too early/);
+    expectError('then 2', /Unexpected/);
+    expectError('if()', /takes 3 arguments/);
+    expectError('if(true)', /takes 3 arguments/);
   });
 });
 

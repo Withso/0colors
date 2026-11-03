@@ -1,7 +1,7 @@
 // Factories for nodes, edges and projects.
 import {
-  type CanvasNode, type ColorNode, type ContrastNode, type Edge, type MixNode, type NodeType, type NoteNode,
-  type PaletteNode, type Project, type Theme, type TokenNode, type XY, slugify, uid,
+  type CanvasNode, type ColorNode, type ContrastNode, type Edge, type HtmlNode, type MixNode, type NodeType, type NoteNode,
+  type PaletteNode, type Project, type SectionNode, type Theme, type TokenNode, type XY, isAnnotation, slugify, uid,
 } from './model';
 import { type ChannelValues, type ColorInfo, type Space, channelDefs, rgbToSpace, round } from './color/spaces';
 import { parseHex, toHex } from './color/convert';
@@ -34,7 +34,7 @@ export function valuesFromInfo(space: Space, info: ColorInfo): ChannelValues {
 
 /** Make a name unique among nodes so formula references (@name) stay unambiguous. */
 export function uniqueName(nodes: CanvasNode[], base: string, ignoreId?: string): string {
-  const taken = new Set(nodes.filter((n) => n.id !== ignoreId && n.type !== 'note').map((n) => slugify(n.name)));
+  const taken = new Set(nodes.filter((n) => n.id !== ignoreId && !isAnnotation(n.type)).map((n) => slugify(n.name)));
   const clean = base.trim() || 'Color';
   if (!taken.has(slugify(clean))) return clean;
   const stem = clean.replace(/\s+\d+$/, '');
@@ -96,8 +96,26 @@ export function createNoteNode(opts: { position: XY; text?: string; tone?: NoteN
   };
 }
 
+export function createSectionNode(opts: {
+  name?: string; position: XY; width?: number; height?: number; tone?: SectionNode['data']['tone']; id?: string;
+}): SectionNode {
+  return {
+    id: opts.id ?? uid('n_'), type: 'section', name: opts.name ?? 'Section', position: opts.position,
+    data: { width: Math.round(opts.width ?? 640), height: Math.round(opts.height ?? 420), tone: opts.tone ?? 'neutral' },
+  };
+}
+
+export function createHtmlNode(opts: {
+  doc: string; position: XY; width?: number; height?: number; name?: string; id?: string;
+}): HtmlNode {
+  return {
+    id: opts.id ?? uid('n_'), type: 'html', name: opts.name ?? 'HTML frame', position: opts.position,
+    data: { doc: opts.doc, width: Math.round(opts.width ?? 960), height: Math.round(opts.height ?? 560) },
+  };
+}
+
 export const NODE_LABELS: Record<NodeType, string> = {
-  color: 'Color', palette: 'Palette', mix: 'Mix', contrast: 'Contrast', token: 'Token', note: 'Note',
+  color: 'Color', palette: 'Palette', mix: 'Mix', contrast: 'Contrast', token: 'Token', note: 'Note', section: 'Section', html: 'HTML frame',
 };
 
 /** A fresh node of any type with a unique, friendly name. */
@@ -109,6 +127,8 @@ export function createNode(type: NodeType, position: XY, nodes: CanvasNode[]): C
     case 'contrast': return createContrastNode({ name: uniqueName(nodes, 'Contrast'), position });
     case 'token': return createTokenNode({ name: uniqueName(nodes, 'color/token'), position });
     case 'note': return createNoteNode({ position });
+    case 'section': return createSectionNode({ position });
+    case 'html': return createHtmlNode({ doc: 'welcome', position });
   }
 }
 

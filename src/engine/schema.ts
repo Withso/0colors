@@ -2,10 +2,11 @@
 // Anything unknown or malformed is dropped or replaced with a sensible default.
 import {
   type CanvasNode, type ChannelRule, type Edge, type PreviewSlot, type Project, type Theme, type Viewport,
-  PREVIEW_SLOTS, hasOutput, inputHandles, uid,
+  PREVIEW_SLOTS, hasOutput, inputHandles, isHtmlDoc, uid,
 } from './model';
 import {
-  createColorNode, createContrastNode, createMixNode, createNoteNode, createPaletteNode, createTokenNode, defaultThemes,
+  createColorNode, createContrastNode, createHtmlNode, createMixNode, createNoteNode, createPaletteNode, createSectionNode, createTokenNode,
+  defaultThemes,
 } from './defaults';
 import { wouldCreateCycle } from './compute';
 import { SPACES, type Space, channelDefs } from './color/spaces';
@@ -123,6 +124,29 @@ function normalizeNode(raw: unknown): CanvasNode | null {
           text: isStr(d.text) ? d.text : base.data.text,
           tone: pick(d.tone, NOTE_TONES, base.data.tone),
           width: clampNum(d.width, 120, 1200, base.data.width),
+        },
+      };
+    }
+    case 'section': {
+      const base = createSectionNode({ id, name: name ?? 'Section', position });
+      return {
+        ...base,
+        data: {
+          width: Math.round(clampNum(d.width, 160, 8000, base.data.width)),
+          height: Math.round(clampNum(d.height, 120, 8000, base.data.height)),
+          tone: pick(d.tone, NOTE_TONES, base.data.tone),
+        },
+      };
+    }
+    case 'html': {
+      if (!isHtmlDoc(d.doc)) return null;
+      const base = createHtmlNode({ id, name, position, doc: d.doc });
+      return {
+        ...base,
+        data: {
+          doc: d.doc,
+          width: Math.round(clampNum(d.width, 240, 4000, base.data.width)),
+          height: Math.round(clampNum(d.height, 160, 4000, base.data.height)),
         },
       };
     }

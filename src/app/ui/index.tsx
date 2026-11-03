@@ -11,6 +11,10 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { Dialog as RDialog, DropdownMenu as RMenu, Tooltip as RTooltip } from 'radix-ui';
 import { Check, Copy, X } from 'lucide-react';
+import { getEditor } from '../store';
+
+/** An explicit commit (Enter, blur) is its own undo step: the next edit starts a new one. */
+const endStep = () => getEditor().breakCoalesce();
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
@@ -118,7 +122,7 @@ export function CommitInput({ value, onCommit, className, ...props }: Omit<Input
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => {
         if (cancelled.current) { cancelled.current = false; setDraft(value); return; }
-        if (draft !== value) onCommit(draft);
+        if (draft !== value) { onCommit(draft); endStep(); }
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
@@ -147,7 +151,7 @@ export function NumberField({
   const commit = () => {
     if (draft === format(value)) return; // unchanged — don't round the stored value
     const v = parseFloat(draft);
-    if (Number.isFinite(v)) onChange(clampV(v));
+    if (Number.isFinite(v)) { onChange(clampV(v)); endStep(); }
     else setDraft(format(value));
   };
   const scrub = (e: React.PointerEvent) => {
@@ -235,12 +239,15 @@ export function GradientSlider({
       onPointerDown={(e) => {
         if (disabled) return;
         e.preventDefault();
+        // Keep keyboard control with the slider after a click (arrows adjust it, not the canvas).
+        (e.currentTarget as HTMLElement).focus({ preventScroll: true });
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
         setDragging(true);
         onChange(fromPointer(e.clientX));
       }}
       onPointerMove={(e) => {
-        if (disabled || !(e.buttons & 1)) return;
+        // Only a press that began on this slider moves it (not a drag passing over the panel).
+        if (disabled || !e.currentTarget.hasPointerCapture(e.pointerId)) return;
         onChange(fromPointer(e.clientX));
       }}
       onPointerUp={() => { setDragging(false); onCommit?.(); }}
@@ -421,10 +428,20 @@ export const MenuTrigger = RMenu.Trigger;
 
 export const MENU_SURFACE = 'glass animate-pop z-50 min-w-56 rounded-[12px] p-[5px] shadow-panel';
 
-export function MenuContent({ children, align = 'start', className }: { children: ReactNode; align?: 'start' | 'center' | 'end'; className?: string }) {
+export function MenuContent({ children, align = 'start', className, keepFocus }: {
+  children: ReactNode; align?: 'start' | 'center' | 'end'; className?: string;
+  /** Don't return focus to the trigger on close (when the chosen item focuses something else). */
+  keepFocus?: boolean;
+}) {
   return (
     <RMenu.Portal>
-      <RMenu.Content align={align} sideOffset={6} collisionPadding={8} className={cn(MENU_SURFACE, className)}>
+      <RMenu.Content
+        align={align}
+        sideOffset={6}
+        collisionPadding={8}
+        className={cn(MENU_SURFACE, className)}
+        onCloseAutoFocus={keepFocus ? (e) => e.preventDefault() : undefined}
+      >
         {children}
       </RMenu.Content>
     </RMenu.Portal>
