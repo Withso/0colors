@@ -1,131 +1,163 @@
 # 0colors
 
-> A self-hosted, open-source design-tokens canvas. Build a color system on an infinite canvas, derive themes and tokens automatically, export to CSS / Tailwind / DTCG / Figma — all on your own Railway instance, no cloud account required.
+An open canvas for understanding color logic.
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/0colors)
+0colors lets you build a color system as a graph of nodes and see exactly how every color is computed: color spaces, inheritance, palettes, mixing, contrast, semantic tokens and light/dark themes. It opens on a sample canvas that uses every node type, with notes explaining each idea. Change something and watch the rest of the graph follow.
 
-## What you get
+It runs entirely in your browser. Your work is saved locally in IndexedDB. There are no accounts, no backend and no telemetry.
 
-A single Railway service plus a Postgres plugin, both running on your account:
+## Nodes
 
-- **One service** — a Hono backend that serves the React SPA on `/` and the JSON API on `/api/*`. One domain, one TLS cert, no CORS surface.
-- **Postgres plugin** — wired via `${{Postgres.DATABASE_URL}}`. Project snapshots, AI conversations, sessions, and community publications all live here.
-- **First-user-becomes-admin** setup wizard, plus an invite flow for additional users.
-- **Optional AI features** — Bring your own Anthropic, OpenAI, or OpenRouter key (any subset).
-- **Local auth, no third-party identity provider** — bcrypt-hashed passwords, HttpOnly session cookies.
+| Node | What it does |
+|---|---|
+| **Color** | One color in OKLCH, HCT, HSL or RGB. Connect a parent and each channel can follow it. |
+| **Palette** | Generates a scale of shades from a base color using a lightness curve, hue shift and chroma mode. Each shade has its own output. |
+| **Mix** | Blends two colors in sRGB, linear RGB, OKLab, OKLCH or HSL, so you can compare how each space mixes. |
+| **Contrast** | Checks a text color against a background with the WCAG 2 ratio and APCA Lc. |
+| **Token** | A semantic name such as `bg/surface`, with one input per theme. Tokens can point at other tokens, forming alias chains. |
+| **Note** | A sticky note for explaining what's going on. |
 
-## Quick deploy
+## Channel rules
 
-1. Click the **Deploy on Railway** button above.
-2. The wizard provisions a Postgres plugin and the app service, wires `DATABASE_URL` automatically.
-3. (Optional) Fill in `ADMIN_EMAIL` + `ADMIN_PASSWORD` to auto-create the admin on first boot. Leave blank to use the in-app setup wizard at first visit.
-4. Open the deployed URL. Either the setup wizard renders (set the admin password), or you can sign in directly with the env-seeded credentials.
+A color with a parent decides, channel by channel, how it relates to that parent:
 
-That's it. Invite teammates from **Profile → Invite a user**, share the generated link.
+| Rule | Value |
+|---|---|
+| **Inherit** | The parent's value. |
+| **Offset** | Parent + Δ. Hue wraps around; other channels are clamped to their range. |
+| **Fixed** | The node's own value, independent of the parent. |
+| **Formula** | An expression, for example `parent.l > 60 ? 15 : 98`. |
+
+The inspector shows how each channel was computed, step by step.
+
+## Formulas
+
+A formula returns a number for one channel.
+
+```text
+parent.l > 60 ? 15 : 98              dark text on light parents, light text on dark ones
+clamp(parent.c * 0.5, 0, 0.1)        half the parent's chroma, capped
+@background.l + (dark ? 20 : -20)    follow another node and react to the theme
+contrast(parent, white) >= 4.5 ? 100 : 0
+```
+
+**Variables**
+
+| Name | Meaning |
+|---|---|
+| `parent` | The color connected to this node's input. |
+| `self` | This node's own stored values (what the sliders hold). |
+| `@name` | Any other node, by name, e.g. `@brand` or `@neutral`. |
+| `dark` | `true` while a dark theme is active (`light` is the opposite). |
+| `white`, `black` | Handy reference colors. |
+| `#3b82f6` | Any hex color literal. |
+
+**Channels.** Shorthand channels follow the node's own color space. In an OKLCH node, `parent.l`, `parent.c` and `parent.h` are OKLCH lightness, chroma and hue. To read another space, name it: `parent.hct.t`, `parent.hsl.s`, `parent.oklch.c`, `parent.rgb.r`. `alpha` (0–100) works on any color.
+
+**Operators.** `+ - * / %`, comparisons `< <= > >= == !=`, logic `&& || !` (or `and`, `or`, `not`), and `condition ? a : b`.
+
+**Functions**
+
+| Function | Description |
+|---|---|
+| `clamp(x, min, max)` | Keep x between min and max. |
+| `min(a, b, …)` | Smallest value. |
+| `max(a, b, …)` | Largest value. |
+| `lerp(a, b, t)` | Blend from a to b; t = 0..1. |
+| `map(x, inMin, inMax, outMin, outMax)` | Re-map x from one range to another. |
+| `round(x, step?)` | Round to the nearest step (default 1). |
+| `floor(x)` | Round down. |
+| `ceil(x)` | Round up. |
+| `abs(x)` | Absolute value. |
+| `pow(x, y)` | x to the power of y. |
+| `sqrt(x)` | Square root. |
+| `mod(x, y)` | Remainder that stays positive (handy for hue). |
+| `step(edge, x)` | 0 below the edge, 1 at or above it. |
+| `smoothstep(e0, e1, x)` | Smooth 0→1 transition between two edges. |
+| `sin(degrees)` | Sine of an angle in degrees. |
+| `cos(degrees)` | Cosine of an angle in degrees. |
+| `if(condition, then, else)` | Same as `condition ? then : else`. |
+| `contrast(a, b)` | WCAG 2 contrast ratio between two colors (1–21). |
+| `apca(text, background)` | APCA lightness contrast Lc (about −108 to 106). |
+| `luminance(color)` | WCAG relative luminance (0–1). |
+| `deltaE(a, b)` | Perceptual difference (ΔE OK ×100; ~2 is barely visible). |
+| `mix(a, b, t)` | Blend two colors in OKLab; returns a color. |
+
+Function names are case-insensitive.
+
+## Saving, sharing and exporting
+
+- **Saving.** Everything is saved automatically in your browser (IndexedDB). Clearing site data deletes it, so export a JSON copy of anything you want to keep. JSON files can be imported back.
+- **Share links.** A share link carries the whole project, compressed into the URL hash (the part after `#`). Browsers never send the hash to a server, so the project only travels inside the link.
+- **Export.** CSS variables, Tailwind v4 `@theme`, DTCG JSON and plain JSON.
+
+## Keyboard shortcuts
+
+| Action | Shortcut |
+|---|---|
+| Add color / palette / mix / contrast / token / note | C / P / M / K / T / N |
+| Select tool / pan tool | V / H (or hold Space) |
+| Nudge selection | Arrow keys (⇧ for bigger steps) |
+| Delete selection | Delete / Backspace |
+| Duplicate | ⌘/Ctrl + D |
+| Undo | ⌘/Ctrl + Z |
+| Redo | ⇧⌘Z / Ctrl + Y |
+| Copy / paste | ⌘/Ctrl + C / V |
+| Select all | ⌘/Ctrl + A |
+| Fit view | F |
+| Add a color | Double-click the canvas |
+| Add a connected node | Drag from an output handle into empty space |
+| Create the source of an input | Drag from an input handle into empty space |
+| Scrub a channel right on the canvas | Drag a value on a color node (⇧ faster, ⌥ finer) |
+| Rename a node | Double-click its title |
+| All shortcuts | ? |
 
 ## Local development
 
-Requirements: Node 20+, Postgres 14+.
+Requires Node.js 20.19 or newer.
 
 ```bash
-# Clone and install
-git clone https://github.com/YOUR_ORG/0colors.git
-cd 0colors
 npm install
-
-# Configure
-cp .env.example .env
-# Edit .env — set DATABASE_URL at minimum
-
-# Run schema migrations (idempotent)
-npm run db:migrate -w @0colors/backend
-
-# Start backend (Hono, port 4455) and frontend (Vite, port 3000) together
 npm run dev
 ```
 
-Visit <http://localhost:3000>. Vite proxies `/api/*` to the backend automatically.
-
-Other useful commands:
+The dev server runs on <http://localhost:3000>.
 
 | Command | What it does |
 |---|---|
-| `npm run dev:backend` | Backend only (with `tsx watch`) |
-| `npm run dev:frontend` | Frontend only (Vite dev server) |
-| `npm run build` | Build frontend → build backend → bundle SPA into the backend's `dist/public/` |
-| `npm run start:backend` | Run the production build locally |
-| `npm run typecheck` | TypeScript check on the backend |
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run typecheck` | Type-check with `tsc --noEmit` |
+| `npm test` | Run the unit tests (Vitest) |
+| `npm run check` | Typecheck, tests and build in one go |
 
-## Configuration
+## Hosting
 
-The full env-var reference lives in [.env.example](.env.example). Highlights:
+0colors is a hosted app, not a self-hosting template. The maintainers run the official deployment on Railway, built from the `main` branch: `railway.json` builds the `Dockerfile`, which serves the static build with [Caddy](https://caddyserver.com) (healthcheck `/healthz`). There is no one-click deploy, and self-hosted installs aren't supported.
 
-| Variable | Required | Notes |
-|---|---|---|
-| `DATABASE_URL` | yes | Postgres connection string. On Railway, wired automatically. |
-| `PORT` | no | Railway injects this. Defaults to `4455` locally. |
-| `ADMIN_EMAIL` + `ADMIN_PASSWORD` | no | If both are set AND no user has activated yet, the admin is seeded on first boot (skips the setup wizard). |
-| `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `OPENROUTER_API_KEY` | no | Each independent; unset = that AI option is disabled. |
-| `FIGMA_WEBHOOK_SECRET` | no | Required only if you wire Figma → 0colors webhooks. |
-| `CRON_SECRET` | no | Required only if you use the cron endpoints. On Railway, generate with `${{ secret(32) }}`. |
-| `VITE_API_BASE_URL` | no | Only needed if the SPA is served from a different origin than the API. Default: same-origin `/api`. |
-
-## How it's deployed
-
-```
-┌───────────────────────────────────────────────────┐
-│  Railway project                                  │
-│                                                   │
-│  ┌─────────────────────┐    ┌──────────────────┐  │
-│  │  0colors (app)      │◀──▶│  Postgres        │  │
-│  │  • /api/*  JSON     │    │  (Railway plugin)│  │
-│  │  • /       SPA      │    │  Auto-backups    │  │
-│  │  $PORT, /api/health │    └──────────────────┘  │
-│  └─────────────────────┘                          │
-│           ▲                                       │
-│           │   *.up.railway.app + custom domain    │
-└───────────┼───────────────────────────────────────┘
-            │
-       Your browser
-```
-
-- `railway.json` declares the Dockerfile builder, `preDeployCommand` (runs `db:migrate` in a separate container), healthcheck on `/api/health`, `ON_FAILURE` restart policy.
-- The repo-root `Dockerfile` is a single-stage `node:20-alpine` image: `COPY .`, `npm ci --include=dev`, `npm run build`, `node packages/backend/dist/server.js`.
-- The build pipeline runs `vite build` first, then the backend's `tsc + bundle:spa` step copies `packages/frontend/build/` into `packages/backend/dist/public/`. The Hono server mounts that directory for static asset serving and falls back to `index.html` for any unmatched non-`/api` route (so client-side routes survive hard refresh).
-
-## Upgrading
-
-0colors uses [semantic versioning](https://semver.org/). The current release is **[v1.1.0](https://github.com/Withso/0colors/releases/tag/v1.1.0)** — see the full history in [CHANGELOG.md](CHANGELOG.md) or on the [Releases](https://github.com/Withso/0colors/releases) page.
-
-When a new version ships, two paths to receive it:
-
-| Update model | Setup | Behavior |
-|---|---|---|
-| **Track `main`** *(default)* | Nothing — this is what the Deploy on Railway button gives you | New commits to `main` trigger a Railway rebuild automatically. Idempotent schema migrations run as `preDeployCommand` between build and start, so a broken migration aborts the deploy without taking the running version down. |
-| **Pin to a tag** | In Railway, open the service → **Settings → Source → Branch** and set it to a tag (e.g. `v1.1.0`). | You stay on that tag until you change it. Manual control over when updates apply. Good if you'd rather review each release before taking it. |
-
-Either way, **all releases promise idempotent migrations** — you should never have to run anything by hand. If something does go wrong on deploy, the Railway log shows the `[db:migrate]` output for the failing step.
-
-## API documentation
-
-Most endpoints are gated by the session cookie set during sign-in. Highlights, including how to script invites without the UI, are in [docs/api.md](docs/api.md).
-
-## Telemetry
-
-**None.** 0colors collects nothing about your install, your users, or your designs. If telemetry ever lands, it will be opt-in and documented here.
-
-## Security
-
-Local cookie-based sessions, bcrypt-hashed passwords, server-side session revocation, CSRF protection via `SameSite=Lax`. Full notes: [SECURITY.md](SECURITY.md). Found something? Email the maintainer (see SECURITY.md) — please don't open a public issue for unpatched vulnerabilities.
+The code is MIT-licensed: you're welcome to read it, learn from it and reuse parts of it.
 
 ## Contributing
 
-PRs welcome. Quick checklist:
+Issues and pull requests are welcome. Run `npm run check` before opening a PR; it type-checks, runs the tests and builds. Keep `src/engine` free of React and covered by tests.
 
-- Read [RULES.md](RULES.md) for the in-repo conventions (file layout, page structure, state management patterns).
-- Run `npm run typecheck` and `npm run build` before opening a PR.
-- Keep schema changes idempotent (`CREATE TABLE IF NOT EXISTS`, `ALTER TABLE ADD COLUMN IF NOT EXISTS`) — `db:migrate` re-runs on every deploy.
+## Project structure
+
+```text
+src/
+  engine/   Pure TypeScript color logic (no React): conversions, gamut mapping,
+            contrast, mixing, formulas, graph evaluation, palettes, exporters.
+            Unit tests live next to the sources.
+  app/      React UI: canvas, inspector, panels and the store.
+  styles/   Tailwind entry point and the app's semantic CSS variables.
+public/     Static files copied as-is into the build.
+```
+
+## Tech stack
+
+React 19, TypeScript, Vite 8, Tailwind CSS 4, React Flow, Zustand, Radix UI and Material Color Utilities.
 
 ## License
 
-[MIT](LICENSE) — fork it, ship it, modify it. Attribution appreciated but not required.
+[MIT](LICENSE)

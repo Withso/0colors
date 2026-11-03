@@ -1,26 +1,26 @@
-# 0colors — monorepo Dockerfile (single service)
+# 0colors — image for the hosted deployment on Railway.
 #
-# Builds the Vite SPA and the Hono backend together, then runs the backend
-# which also serves the SPA from packages/backend/dist/public/. One image,
-# one process, one port. Used by the Railway template.
+# Stage 1 builds the Vite app; stage 2 serves dist/ with Caddy.
+# No Node.js at runtime, no database, no migrations.
 
-FROM node:20-alpine
-
+# ── Build ────────────────────────────────────────────────────
+FROM node:22-alpine AS build
 WORKDIR /app
-ENV NODE_ENV=production
 
-# Copy everything (.dockerignore filters out node_modules, build outputs, QA, etc.)
+# Install dependencies first so this layer stays cached between source changes.
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
 COPY . .
-
-# Workspaces: install full dep tree (we need devDeps for vite/tsc at build time).
-# --include=dev forces inclusion even when NODE_ENV=production.
-RUN npm ci --include=dev
-
-# Build frontend, then backend (backend's bundle:spa step copies the SPA into dist/public).
 RUN npm run build
 
-# Hono listens on $PORT (Railway injects this). Default to 4455 for local docker runs.
-ENV PORT=4455
-EXPOSE 4455
+# ── Serve ────────────────────────────────────────────────────
+FROM caddy:2-alpine
 
-CMD ["node", "packages/backend/dist/server.js"]
+COPY Caddyfile /etc/caddy/Caddyfile
+COPY --from=build /app/dist /srv
+
+# Railway injects $PORT at runtime; the Caddyfile falls back to 8080 locally.
+EXPOSE 8080
+
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
