@@ -7,7 +7,7 @@ import { updateNodeData } from '../actions';
 import { getEditor, useEditor } from '../store';
 import { Check } from 'lucide-react';
 import { GradientSlider, NumberField, Section, Segmented, Swatch, cn } from '../ui';
-import { ColorInputSlot, Explain, HeroSwatch, InspectorHeader } from './common';
+import { ColorInputSlot, HeroSwatch, InspectorHeader } from './common';
 
 const ORDER: MixSpace[] = ['oklab', 'oklch', 'srgb', 'linear', 'hsl'];
 
@@ -26,7 +26,7 @@ export function MixInspector({ node }: { node: MixNode }) {
 
   return (
     <div>
-      <InspectorHeader node={node} hint="Blends input A into input B. The space you mix in changes the path between them." />
+      <InspectorHeader node={node} />
 
       <Section>
         <HeroSwatch color={result.color} detail={`${Math.round((1 - data.ratio) * 100)}% A · ${Math.round(data.ratio * 100)}% B`} />
@@ -41,7 +41,6 @@ export function MixInspector({ node }: { node: MixNode }) {
           label="B" nodeId={node.id} handle="b" connected={result.bConnected} info={result.b}
           fallbackHex={data.b} onFallback={(hex) => set('b', hex)}
         />
-        <Explain className="mt-2">Connect colors from the canvas, or type fallback hex values.</Explain>
       </Section>
 
       <Section title="Mix">
@@ -49,10 +48,9 @@ export function MixInspector({ node }: { node: MixNode }) {
           size="sm"
           value={data.space}
           onChange={(v) => set('space', v)}
-          options={ORDER.map((s) => ({ value: s, label: MIX_SPACES[s].label }))}
+          options={ORDER.map((s) => ({ value: s, label: MIX_SPACES[s].label, title: MIX_SPACES[s].blurb }))}
         />
-        <Explain className="mt-2">{MIX_SPACES[data.space].blurb}</Explain>
-        <div className="mt-3.5 flex items-center gap-2">
+        <div className="mt-3 flex items-center gap-2">
           <span className="w-3 text-[11px] font-medium text-fg-3">A</span>
           <div className="min-w-0 flex-1">
             <GradientSlider
@@ -110,10 +108,6 @@ export function MixInspector({ node }: { node: MixNode }) {
             );
           })}
         </ul>
-        <Explain className="mt-2">
-          Same two colors, five paths. Perceptual spaces (OKLab, OKLCH) keep the middle bright and even; sRGB and linear RGB can
-          dip into gray or wash out.
-        </Explain>
       </Section>
     </div>
   );

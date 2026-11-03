@@ -9,9 +9,9 @@ import { CURVES, NAMINGS, paletteKeys } from '@/engine/palette';
 import { disconnectInput, setPaletteSpace, updateNodeData } from '../actions';
 import { useShallow } from 'zustand/react/shallow';
 import { getEditor, useEditor } from '../store';
-import { CopyButton, FieldRow, GradientSlider, IconButton, NumberField, Section, Segmented, Select, Swatch } from '../ui';
+import { CopyButton, FieldRow, GradientSlider, IconButton, NumberField, Section, Segmented, Select, Swatch, Tooltip } from '../ui';
 import { channelGradient, fmt } from '../lib/color-ui';
-import { Explain, InspectorHeader, focusNode } from './common';
+import { InspectorHeader, focusNode } from './common';
 
 const SPACE_NOTES: Record<PaletteNode['data']['space'], string> = {
   oklch: 'Lightness is OKLCH L (perceptual); chroma is OKLCH C (0–0.4). Even L steps look evenly spaced.',
@@ -45,18 +45,20 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
 
   return (
     <div>
-      <InspectorHeader node={node} hint="A palette spreads one hue across a lightness scale. Each step has its own output." />
+      <InspectorHeader node={node} />
 
-      <Section title="Color space">
-        <Segmented
-          value={data.space}
-          onChange={(s) => setPaletteSpace(node.id, s)}
-          options={(['oklch', 'hct', 'hsl'] as const).map((s) => ({ value: s, label: SPACES[s].label }))}
-        />
-        <Explain className="mt-2">{SPACE_NOTES[data.space]}</Explain>
-      </Section>
-
-      <Section title="Base color">
+      <Section
+        title="Base"
+        actions={
+          <Segmented
+            size="sm"
+            className="w-auto"
+            value={data.space}
+            onChange={(s) => setPaletteSpace(node.id, s)}
+            options={(['oklch', 'hct', 'hsl'] as const).map((s) => ({ value: s, label: SPACES[s].label, title: SPACE_NOTES[s] }))}
+          />
+        }
+      >
         {fromInput ? (
           <div className="flex h-7 items-center gap-2 text-[12px]">
             <Swatch color={result.base.hexa} className="h-6 w-6 rounded-[6px]" />
@@ -86,9 +88,6 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
               onChange={(v) => set('chroma', v)} onEnd={end}
             />
           </div>
-        )}
-        {fromInput && (
-          <Explain className="mt-2">The input sets hue and chroma; each step’s lightness comes from the curve below.</Explain>
         )}
       </Section>
 
@@ -138,14 +137,13 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
             </div>
           </FieldRow>
         )}
-        <FieldRow label="Hue shift" hint="Rotates hue across the scale, centered on the base — e.g. warmer lights, cooler darks.">
+        <FieldRow label={<Tooltip content="Rotates hue across the scale, centered on the base — e.g. warmer lights, cooler darks."><span className="cursor-help">Hue shift</span></Tooltip>}>
           <NumberField value={data.hueShift} min={-90} max={90} step={1} decimals={1} suffix="°" onChange={(v) => set('hueShift', v)} onScrubEnd={end} />
         </FieldRow>
       </Section>
 
-      <Section title="Lightness curve">
+      <Section title="Curve">
         <LightnessChart result={result} lKey={keys.l} cKey={keys.c} chromaMax={chromaDef.max} />
-        <Explain className="mt-2">Dots are the steps, bars show chroma. A straight line in OKLCH or HCT means evenly spaced perceived lightness.</Explain>
       </Section>
 
       <Section title="Shades" actions={<span className="num text-[11px] text-fg-3">{result.shades.length}</span>}>

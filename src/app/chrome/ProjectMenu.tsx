@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  Check, ChevronDown, CopyPlus, Download, LayoutGrid, Link2, Pencil, Plus, Search, Sparkles, Trash2, Upload,
+  Check, ChevronDown, CopyPlus, Download, LayoutGrid, Link2, Pencil, Plus, RotateCcw, Search, Sparkles, Trash2, Upload,
 } from 'lucide-react';
 import { slugify, uid } from '@/engine/model';
 import { createBlankProject } from '@/engine/defaults';
@@ -12,12 +12,13 @@ import { normalizeProject, serializeProject } from '@/engine/schema';
 import { encodeShare, shareUrl } from '@/engine/share';
 import { timeAgo } from '../lib/color-ui';
 import { renameProject } from '../actions';
-import { createSampleProject } from '../sample';
+import { SAMPLE_ID, isSampleId } from '../sample';
+import { useUI } from '../ui-store';
 import { getEditor, useEditor } from '../store';
 import { type CanvasMeta, createCanvas, deleteCanvas, listCanvases, openCanvas } from '../persist';
 import { downloadText } from '../panels/download';
 import {
-  Button, CommitInput, Dialog, IconButton, Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, TextInput, cn,
+  Badge, Button, CommitInput, Dialog, IconButton, Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, TextInput, cn,
 } from '../ui';
 
 const RECENT = 6;
@@ -61,7 +62,7 @@ export function ProjectMenu() {
 
   const newBlank = () => createCanvas(createBlankProject()).then(() => toast.success('New blank canvas')).catch(failed('Could not create a canvas'));
 
-  const newSample = () => createCanvas(createSampleProject()).then(() => toast.success('Fresh copy of the sample')).catch(failed('Could not create a canvas'));
+  const isDemo = isSampleId(projectId);
 
   const duplicate = () => {
     const { project } = getEditor();
@@ -131,8 +132,12 @@ export function ProjectMenu() {
         </MenuTrigger>
         <MenuContent className="w-72">
           <MenuItem icon={<Plus size={14} />} onSelect={newBlank}>New blank canvas</MenuItem>
-          <MenuItem icon={<Sparkles size={14} />} onSelect={newSample}>New from sample</MenuItem>
-          <MenuItem icon={<CopyPlus size={14} />} onSelect={duplicate}>Duplicate canvas</MenuItem>
+          {isDemo ? (
+            <MenuItem icon={<RotateCcw size={14} />} onSelect={afterMenu(() => useUI.getState().setResetOpen(true))}>Reset demo…</MenuItem>
+          ) : (
+            <MenuItem icon={<Sparkles size={14} />} onSelect={() => openOne(SAMPLE_ID)}>Open the demo</MenuItem>
+          )}
+          <MenuItem icon={<CopyPlus size={14} />} onSelect={duplicate}>{isDemo ? 'Make my own copy' : 'Duplicate canvas'}</MenuItem>
           <MenuItem icon={<Pencil size={14} />} onSelect={afterMenu(() => setRenaming(true))}>Rename…</MenuItem>
 
           <MenuSeparator />
@@ -147,6 +152,7 @@ export function ProjectMenu() {
               <span className="flex min-w-0 items-center gap-2">
                 <SwatchStrip colors={c.swatches} />
                 <span className="truncate">{c.name}</span>
+                {c.sample && <Badge tone="accent" className="h-4 px-1 text-[9.5px] group-data-[highlighted]:bg-white/20 group-data-[highlighted]:text-accent-fg">Demo</Badge>}
               </span>
             </MenuItem>
           ))}
@@ -160,8 +166,12 @@ export function ProjectMenu() {
           <MenuItem icon={<Download size={14} />} onSelect={exportJson}>Export JSON</MenuItem>
           <MenuItem icon={<Link2 size={14} />} onSelect={() => void copyShareLink()}>Copy share link</MenuItem>
 
-          <MenuSeparator />
-          <MenuItem icon={<Trash2 size={14} />} danger onSelect={afterMenu(() => setDeleting(true))}>Delete this canvas</MenuItem>
+          {!isDemo && (
+            <>
+              <MenuSeparator />
+              <MenuItem icon={<Trash2 size={14} />} danger onSelect={afterMenu(() => setDeleting(true))}>Delete this canvas</MenuItem>
+            </>
+          )}
         </MenuContent>
       </Menu>
 
@@ -304,9 +314,12 @@ function CanvasBrowser({
                 <span className="flex w-4 justify-center text-accent">{current && <Check size={14} />}</span>
                 <SwatchStrip colors={c.swatches} className="h-4 w-12" />
                 <span className="min-w-0 flex-1 truncate text-[13px] text-fg">{c.name}</span>
+                {c.sample && <Badge tone="accent">Demo</Badge>}
                 <span className="shrink-0 text-[11px] text-fg-3">{timeAgo(c.updatedAt)}</span>
               </button>
-              {confirming ? (
+              {c.sample ? (
+                <span className="w-7 shrink-0" />
+              ) : confirming ? (
                 <span className="flex shrink-0 items-center gap-1 pl-1">
                   <Button size="sm" variant="ghost" className="h-6 px-2 text-[11.5px]" onClick={() => setConfirmId(null)}>Cancel</Button>
                   <Button size="sm" variant="primary" className="h-6 bg-danger px-2 text-[11.5px]" onClick={() => remove(c)}>Delete</Button>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ReactFlowProvider } from '@xyflow/react';
 import { Toaster, toast } from 'sonner';
 import { X } from 'lucide-react';
 import { getEditor } from './store';
@@ -12,6 +13,8 @@ import { TokensPanel } from './panels/TokensPanel';
 import { PreviewPanel } from './panels/PreviewPanel';
 import { CodePanel } from './panels/CodePanel';
 import { Dialog, IconButton, Kbd, TooltipProvider, cn } from './ui';
+import { CommandPalette } from './chrome/CommandPalette';
+import { ResetDemoDialog } from './chrome/ResetDemoDialog';
 
 const TABS: { id: PanelTab; label: string }[] = [
   { id: 'inspect', label: 'Inspect' },
@@ -31,8 +34,8 @@ function RightPanel() {
       )}
     >
       <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-line-strong md:hidden" />
-      <div className="flex h-11 shrink-0 items-center gap-2 border-b border-line px-3">
-        <div role="tablist" aria-label="Panel" className="flex flex-1 gap-px rounded-[9px] bg-surface-2 p-[2px]">
+      <div className="flex h-11 shrink-0 items-stretch gap-2 border-b border-line pl-4 pr-2">
+        <div role="tablist" aria-label="Panel" className="flex flex-1 items-stretch gap-4">
           {TABS.map((t) => {
             const on = panelTab === t.id;
             return (
@@ -43,11 +46,12 @@ function RightPanel() {
                 aria-selected={on}
                 onClick={() => setPanelTab(t.id)}
                 className={cn(
-                  'h-[26px] flex-1 rounded-[7px] text-[12px] font-medium outline-none transition-[background-color,color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-accent/60',
-                  on ? 'bg-raised text-fg shadow-[0_1px_2px_oklch(0_0_0/0.18),0_0_0_0.5px_oklch(0_0_0/0.12)]' : 'text-fg-3 hover:text-fg-2',
+                  'relative text-[12.5px] font-medium outline-none transition-colors duration-150 focus-visible:text-fg',
+                  on ? 'text-fg' : 'text-fg-3 hover:text-fg-2',
                 )}
               >
                 {t.label}
+                <span className={cn('absolute inset-x-0 -bottom-px h-[1.5px] rounded-full bg-fg transition-opacity duration-150', on ? 'opacity-100' : 'opacity-0')} />
               </button>
             );
           })}
@@ -65,10 +69,20 @@ function RightPanel() {
 }
 
 const SHORTCUTS: [string, string][] = [
-  ['Add color · palette · mix · contrast · token · note', 'C  P  M  K  T  N'],
+  ['Search everything · run any command', '⌘K'],
+  ['Quick-add at the cursor', '/  Tab'],
+  ['Add color · palette · mix · contrast · token · note · section', 'C  P  M  K  T  N  S'],
   ['Add a color at the cursor', 'Double-click canvas'],
-  ['Derive a connected node', 'Drag from a right-side handle'],
-  ['Create the source for an input', 'Drag from a left-side handle'],
+  ['Derive a connected node', 'Drag from a right-side dot'],
+  ['Connect without aiming', 'Drop a connection on a node'],
+  ['Move a connection · disconnect it', 'Drag out of the input it feeds · drop on empty canvas'],
+  ['Insert a node into a connection', 'Drop an unconnected node on it'],
+  ['Cut connections', 'Hold X and drag across them · or right-drag'],
+  ['Create the source for an input', 'Drag from a left-side dot'],
+  ['Duplicate while dragging', '⌥ drag'],
+  ['Wrap the selection in a section', '⌥⌘G'],
+  ['Zoom to selection', '⇧2'],
+  ['Rename the selected node', '↵'],
   ['Select tool · Hand tool (or hold Space)', 'V  H'],
   ['Box select', 'Drag on empty canvas'],
   ['Add to selection', '⇧ / ⌘ click'],
@@ -152,6 +166,7 @@ export function App() {
   }, []);
 
   return (
+    <ReactFlowProvider>
     <TooltipProvider>
       <div className="flex h-full flex-col">
         <TopBar />
@@ -163,11 +178,14 @@ export function App() {
         </div>
       </div>
       <ShortcutsDialog />
+      <CommandPalette />
+      <ResetDemoDialog />
       <Toaster
         theme={resolvedTheme}
         position="bottom-right"
         toastOptions={{ className: '!glass !text-fg !border-0 !shadow-panel !rounded-[12px] !text-[12.5px] !font-medium' }}
       />
     </TooltipProvider>
+    </ReactFlowProvider>
   );
 }

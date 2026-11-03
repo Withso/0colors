@@ -4,6 +4,24 @@ All notable changes to 0colors are documented here. The format follows [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- **The demo canvas.** The sample is now a protected demo and the app's landing page: a guided tour in sections, from color spaces to logic, plus a glossary and canvas basics, with built-in HTML tutorial frames. It's always available, can be edited freely and restored with **Reset demo**; it can't be deleted.
+- **Sections**: titled frames that group nodes and carry their contents when dragged, with resize handles and ⌥⌘G to wrap a selection.
+- **Formula language v2**: `if … then … else`, multi-line formulas with named steps (`base = @brand`), `//` comments, math symbols (`× ÷ − ≤ ≥ ≠`), friendlier errors with suggestions, and new functions (`tan`, `atan2`, `sign`, `log`, `log2`, `log10`, `exp`, `fract`, `invlerp`, `huelerp`).
+- **A new formula editor**: typeset display with node chips and the live result; syntax highlighting, context-aware autocomplete, signature help, precise error underlines and a step-by-step "How it's computed".
+- **Forgiving connections**: drop a connection anywhere on a node, see which inputs can take it while dragging, pick a connection up from its input to move or remove it, disconnect from a hover ×, insert a color into a connection, and larger hit areas on every connector.
+- **Faster composition**: ⌘K command palette, `/` quick-add at the pointer, drag tools from the toolbar onto the canvas, ⌥-drag to duplicate, paste hex codes / CSS colors / token lists as color nodes, copy and paste between tabs, alignment guides, align and distribute, zoom to selection (⇧2), Enter to rename.
+- Hex, opacity and an eyedropper right in the color inspector.
+- **A 2D color picker**: drag across OKLCH chroma × lightness (HCT chroma × tone, HSL saturation × lightness) at the current hue, with the sRGB edge drawn — both channels change in one step.
+- **Drop a node onto a connection** to splice it in between, and **cut connections** by holding X and dragging across them (or right-dragging); both are single undo steps.
+
+### Changed
+
+- The right panel is minimal: no tutorials or glossary, one small rule control per channel instead of a four-way switch, compact headers and Figma-style tabs. Teaching moved onto the demo canvas.
+- Color nodes have even padding at the bottom.
+- Slow drags, scrubs and resizes are one undo step however long they pause.
+
 ## [2.0.0] — 2026-11-01
 
 A complete rebuild. 0colors is now a local-only playground for understanding color logic. Everything runs in the browser, with no server, accounts or database.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isInGamut, oklchToRgb, rgbToOklch } from './convert';
+import { isInGamut, oklchToRgb, rgbToOklch, toHex } from './convert';
 import { oklchMaxChroma, oklchToSrgbMapped } from './gamut';
 import { hctMaxChroma, hctToRgb, rgbToHct } from './hct';
 import { spaceToRgb } from './spaces';
@@ -8,6 +8,19 @@ const inUnit = (c: { r: number; g: number; b: number }) =>
   [c.r, c.g, c.b].every((v) => v >= 0 && v <= 1);
 
 describe('oklchToSrgbMapped', () => {
+  it.each([
+    [0, 0.16, '#C94F7C', true], [0, 0.4, '#ED007A', false],
+    [60, 0.16, '#C26300', false], [60, 0.4, '#C36200', false],
+    [120, 0.16, '#758C00', false], [120, 0.4, '#758D00', false],
+    [180, 0.16, '#009883', false], [180, 0.4, '#009883', false],
+    [240, 0.16, '#0089D5', false], [240, 0.4, '#0089D7', false],
+    [300, 0.16, '#9065D0', true], [300, 0.4, '#A032FF', false],
+  ] as const)('preserves mapped sRGB bytes at hue %s and chroma %s', (h, c, hex, inGamut) => {
+    const mapped = oklchToSrgbMapped({ l: 0.6, c, h });
+    expect(toHex(mapped.rgb)).toBe(hex);
+    expect(mapped.inGamut).toBe(inGamut);
+  });
+
   it('passes in-gamut colors through untouched', () => {
     const color = rgbToOklch({ r: 59 / 255, g: 130 / 255, b: 246 / 255 });
     const mapped = oklchToSrgbMapped(color);

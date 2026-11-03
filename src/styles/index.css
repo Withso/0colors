@@ -29,6 +29,13 @@
   --app-success: oklch(0.76 0.15 155);
   --app-shadow: 0 0 0 0.5px oklch(0 0 0 / 0.5), 0 1px 0 0 oklch(1 0 0 / 0.05) inset, 0 12px 32px -8px oklch(0 0 0 / 0.55), 0 3px 8px oklch(0 0 0 / 0.25);
   --app-node-shadow: 0 0 0 0.5px oklch(0 0 0 / 0.45), 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px -10px oklch(0 0 0 / 0.55);
+  --app-guide: oklch(0.68 0.22 18);
+  --app-syn-num: oklch(0.84 0.11 75);
+  --app-syn-ref: oklch(0.76 0.13 245);
+  --app-syn-var: oklch(0.8 0.11 180);
+  --app-syn-fn: oklch(0.78 0.13 300);
+  --app-syn-kw: oklch(0.76 0.15 350);
+  --app-syn-local: oklch(0.86 0.1 140);
 }
 
 [data-theme='light'] {
@@ -54,6 +61,13 @@
   --app-success: oklch(0.56 0.14 155);
   --app-shadow: 0 0 0 0.5px oklch(0 0 0 / 0.08), 0 12px 32px -10px oklch(0 0 0 / 0.18), 0 3px 8px oklch(0 0 0 / 0.06);
   --app-node-shadow: 0 0 0 0.5px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.06), 0 8px 22px -12px oklch(0 0 0 / 0.2);
+  --app-guide: oklch(0.6 0.23 18);
+  --app-syn-num: oklch(0.55 0.13 60);
+  --app-syn-ref: oklch(0.52 0.17 255);
+  --app-syn-var: oklch(0.52 0.1 190);
+  --app-syn-fn: oklch(0.5 0.18 300);
+  --app-syn-kw: oklch(0.55 0.19 355);
+  --app-syn-local: oklch(0.5 0.13 145);
 }
 
 @theme inline {
@@ -145,6 +159,22 @@
     -webkit-backdrop-filter: saturate(180%) blur(20px);
     backdrop-filter: saturate(180%) blur(20px);
   }
+  /* Formula editor: the highlight layer and the textarea above it must share every metric. */
+  .formula-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 18px;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    tab-size: 2;
+  }
+  .formula-error {
+    text-decoration: underline wavy var(--app-danger);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
   /* A hairline that stays 1 device pixel on retina screens. */
   .hairline-inset {
     box-shadow: inset 0 0 0 0.5px var(--app-line-strong);
@@ -170,14 +200,15 @@
     opacity: 1;
   }
 }
+/* Uses the individual `scale` property so it composes with Tailwind v4's `translate` centering. */
 @keyframes dialog-in {
   from {
     opacity: 0;
-    transform: translate(-50%, -48%) scale(0.97);
+    scale: 0.97;
   }
   to {
     opacity: 1;
-    transform: translate(-50%, -50%);
+    scale: 1;
   }
 }
 @keyframes sheet-in {
@@ -277,10 +308,62 @@
 .react-flow__handle.target.connectingto {
   border-color: var(--app-accent);
 }
-.react-flow__connectionline path {
-  stroke: var(--app-accent);
-  stroke-width: 2;
-  stroke-dasharray: 5 4;
+/* A generous invisible hit area around every connector, so they're easy to grab and to drop on. */
+.react-flow__handle::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 999px;
+}
+.react-flow__handle.handle-sm {
+  width: 9px;
+  height: 9px;
+}
+.react-flow__handle.handle-sm::before {
+  inset: -4px -8px;
+}
+/* While a connection is being dragged, connectors that could take it light up; the rest step back. */
+.react-flow.is-connecting .react-flow__handle {
+  transition: opacity 120ms ease, transform 140ms var(--ease-out-expo), box-shadow 140ms ease;
+}
+.react-flow.is-connecting .react-flow__handle:not(.compatible):not(.connectingfrom) {
+  opacity: 0.25;
+}
+.react-flow.is-connecting .react-flow__handle.compatible {
+  border-color: var(--app-accent);
+  box-shadow: 0 0 0 3px var(--app-accent-soft);
+}
+.react-flow__edgeupdater {
+  cursor: grab;
+}
+
+/* Cut mode (hold X): a crosshair says "drag across connections to cut them". */
+.cut-mode .react-flow__pane,
+.cut-mode .react-flow__edge {
+  cursor: crosshair !important;
+}
+
+/* Sections: click-through frames. Only the title and the resize controls take the pointer. */
+.react-flow__node-section .react-flow__resize-control {
+  pointer-events: all;
+}
+.react-flow__resize-control.handle.section-resize-handle {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--app-surface);
+  border: 1.5px solid var(--app-accent);
+}
+.react-flow__resize-control.line.section-resize-line {
+  border-color: transparent;
+}
+.react-flow__resize-control.line.note-resize {
+  border-width: 0 6px 0 0;
+  border-color: transparent;
+  cursor: ew-resize;
+}
+.react-flow__resize-control.line.note-resize:hover {
+  border-right-color: var(--app-accent-soft);
 }
 .react-flow__minimap {
   background: var(--app-glass);

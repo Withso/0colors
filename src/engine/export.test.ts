@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { type CanvasNode, type Edge, type Project, type Theme, tokenHandle } from './model';
-import { createColorNode, createPaletteNode, createTokenNode, makeEdge } from './defaults';
+import { createColorNode, createNoteNode, createPaletteNode, createSectionNode, createTokenNode, makeEdge } from './defaults';
 import { EXPORT_FORMATS, type ExportOptions, exportProject } from './export';
 
 const LIGHT: Theme = { id: 'light', name: 'Light', dark: false };
@@ -188,6 +188,21 @@ describe('DTCG export', () => {
 });
 
 describe('JSON export', () => {
+  it('preserves arbitrary theme and token names, including duplicates', () => {
+    const p = project([
+      createColorNode({ id: 'b', name: 'Base', position: at, hex: '#FF0000', space: 'rgb' }),
+      createTokenNode({ id: 'a', name: '__proto__', position: at }),
+      createTokenNode({ id: 'b2', name: '__proto__', position: at }),
+      createTokenNode({ id: 'c', name: 'constructor', position: at }),
+    ], [toLight('b', 'a'), toLight('b', 'b2'), toLight('b', 'c')], [
+      { ...LIGHT, name: '__proto__' }, { ...DARK, name: 'constructor' },
+    ]);
+    const doc = JSON.parse(exportProject(p, opts({ format: 'json' }))) as Record<string, { tokens: Record<string, string> }>;
+    expect(Object.keys(doc)).toEqual(['__proto__', 'constructor']);
+    expect(Object.keys(doc.__proto__.tokens)).toEqual(['__proto__', '__proto__ 2', 'constructor']);
+    expect(Object.values(doc.__proto__.tokens)).toEqual(['#FF0000', '#FF0000', '#FF0000']);
+  });
+
   it('resolves every theme to plain values in canvas order', () => {
     const doc = JSON.parse(exportProject(sample(), opts({ format: 'json', includePrimitives: false })));
     expect(Object.keys(doc)).toEqual(['Light', 'Dark']);
@@ -204,5 +219,29 @@ describe('JSON export', () => {
     const doc = JSON.parse(exportProject(sample(), opts({ format: 'json' })));
     expect(doc.Light.primitives.brand).toBe('#3B82F6');
     expect(Object.keys(doc.Light.primitives)).toEqual(['brand', 'neutral-100', 'neutral-200', 'neutral-300']);
+  });
+});
+
+describe('annotation and comment handling', () => {
+  it.each(['css', 'tailwind', 'dtcg', 'json'] as const)('ignores notes and sections in %s exports', (format) => {
+    const p = sample();
+    const before = exportProject(p, opts({ format }));
+    const note = createNoteNode({ id: 'note', position: at, text: 'Words belong on the canvas.' });
+    note.name = 'Brand';
+    const after = { ...p, nodes: [createSectionNode({ name: 'Brand', position: at }), note, ...p.nodes] };
+    expect(exportProject(after, opts({ format }))).toBe(before);
+  });
+
+  it.each(['css', 'tailwind'] as const)('keeps unusual names inside %s comments', (format) => {
+    const p = sample();
+    p.name = 'Project */ name';
+    p.themes[0] = { ...p.themes[0], name: 'Theme */ name' };
+    const unused = p.nodes.find((n) => n.id === 'unused')!;
+    unused.name = 'Unassigned */ token';
+    const text = exportProject(p, opts({ format }));
+    expect(text).toContain('Project * / name');
+    expect(text).toContain('Theme * / name');
+    expect(text).toContain('Unassigned * / token');
+    expect(text).not.toContain('Project */ name');
   });
 });

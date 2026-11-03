@@ -2,7 +2,9 @@
 
 An open canvas for understanding color logic.
 
-0colors lets you build a color system as a graph of nodes and see exactly how every color is computed: color spaces, inheritance, palettes, mixing, contrast, semantic tokens and light/dark themes. It opens on a sample canvas that uses every node type, with notes explaining each idea. Change something and watch the rest of the graph follow.
+0colors lets you build a color system as a graph of nodes and see exactly how every color is computed: color spaces, inheritance, palettes, mixing, contrast, semantic tokens and light/dark themes. Change something and watch the rest of the graph follow.
+
+It opens on the **demo** canvas: a guided tour in numbered sections (color spaces, rules, palettes, mixing, contrast, tokens and themes, logic, a glossary and canvas basics) built from live, editable nodes. The demo is always there — edit anything, and **Reset demo** (top bar, canvas menu or ⌘K) brings it back to its original state. It can't be deleted; "Make my own copy" turns it into a regular canvas.
 
 It runs entirely in your browser. Your work is saved locally in IndexedDB. There are no accounts, no backend and no telemetry.
 
@@ -16,6 +18,9 @@ It runs entirely in your browser. Your work is saved locally in IndexedDB. There
 | **Contrast** | Checks a text color against a background with the WCAG 2 ratio and APCA Lc. |
 | **Token** | A semantic name such as `bg/surface`, with one input per theme. Tokens can point at other tokens, forming alias chains. |
 | **Note** | A sticky note for explaining what's going on. |
+| **Section** | A titled frame that groups nodes. Drag it by its title and everything inside moves along. |
+
+The demo also uses **HTML frames**: built-in, static tutorial pages (`public/tutorials/*.html`, no scripts) rendered on the canvas with native buttons. They are part of the demo, not something you add to your own canvases.
 
 ## Channel rules
 
@@ -26,20 +31,31 @@ A color with a parent decides, channel by channel, how it relates to that parent
 | **Inherit** | The parent's value. |
 | **Offset** | Parent + Δ. Hue wraps around; other channels are clamped to their range. |
 | **Fixed** | The node's own value, independent of the parent. |
-| **Formula** | An expression, for example `parent.l > 60 ? 15 : 98`. |
+| **Formula** | An expression, for example `if parent.l > 60 then 15 else 98`. |
 
-The inspector shows how each channel was computed, step by step.
+Each channel has one small rule control in the inspector. Dragging a linked channel's slider turns it into an offset automatically.
 
 ## Formulas
 
 A formula returns a number for one channel.
 
 ```text
-parent.l > 60 ? 15 : 98              dark text on light parents, light text on dark ones
+if parent.l > 60 then 15 else 98     dark text on light parents, light text on dark ones
 clamp(parent.c * 0.5, 0, 0.1)        half the parent's chroma, capped
 @background.l + (dark ? 20 : -20)    follow another node and react to the theme
 contrast(parent, white) >= 4.5 ? 100 : 0
 ```
+
+Longer logic can name its steps. Each line can define a local with `=`; the last line is the result, and `//` starts a comment:
+
+```text
+// Pick readable text for whatever background this sits on
+bg = @surface
+ratio = contrast(bg, white)
+if ratio >= 4.5 then 98 else 14
+```
+
+**Editing.** Formulas read like math when you're not editing them (`×`, `≥`, `if … then … else`, node references as color chips) and show their live result. Click to edit: the field highlights syntax, autocompletes `@nodes`, channels after a dot, functions, locals and keywords (with ready-made examples for an empty formula), shows the current function's arguments, and points at the exact spot of an error. Enter finishes, Shift+Enter adds a line, Ctrl+Space shows suggestions. "How it's computed" lists every step's value.
 
 **Variables**
 
@@ -54,7 +70,7 @@ contrast(parent, white) >= 4.5 ? 100 : 0
 
 **Channels.** Shorthand channels follow the node's own color space. In an OKLCH node, `parent.l`, `parent.c` and `parent.h` are OKLCH lightness, chroma and hue. To read another space, name it: `parent.hct.t`, `parent.hsl.s`, `parent.oklch.c`, `parent.rgb.r`. `alpha` (0–100) works on any color.
 
-**Operators.** `+ - * / %`, comparisons `< <= > >= == !=`, logic `&& || !` (or `and`, `or`, `not`), and `condition ? a : b`.
+**Operators.** `+ - * / %`, comparisons `< <= > >= == !=`, logic `&& || !` (or `and`, `or`, `not`), `condition ? a : b` and `if condition then a else b`. Math symbols work too: `×` `÷` `−` `≤` `≥` `≠`.
 
 **Functions**
 
@@ -76,6 +92,14 @@ contrast(parent, white) >= 4.5 ? 100 : 0
 | `smoothstep(e0, e1, x)` | Smooth 0→1 transition between two edges. |
 | `sin(degrees)` | Sine of an angle in degrees. |
 | `cos(degrees)` | Cosine of an angle in degrees. |
+| `tan(degrees)` | Tangent of an angle in degrees. |
+| `atan2(y, x)` | Direction of (x, y) in degrees, 0–360. |
+| `sign(x)` | −1, 0 or 1. |
+| `log(x)`, `log2(x)`, `log10(x)` | Logarithms; x must be positive. |
+| `exp(x)` | e raised to x. |
+| `fract(x)` | Fractional part, 0–1. |
+| `invlerp(a, b, v)` | Where v sits between a and b (0–1). |
+| `huelerp(a, b, t)` | Blend hue angles along the shortest arc. |
 | `if(condition, then, else)` | Same as `condition ? then : else`. |
 | `contrast(a, b)` | WCAG 2 contrast ratio between two colors (1–21). |
 | `apca(text, background)` | APCA lightness contrast Lc (about −108 to 106). |
@@ -84,6 +108,17 @@ contrast(parent, white) >= 4.5 ? 100 : 0
 | `mix(a, b, t)` | Blend two colors in OKLab; returns a color. |
 
 Function names are case-insensitive.
+
+## Working on the canvas
+
+- **Connect** by dragging from a node's right-side dot. You don't have to hit the target dot: drop on a node and it connects to the nearest compatible input (free inputs first). While you drag, the inputs that can take the connection light up.
+- **Move or remove a connection** by dragging out of the input it feeds: drop it on another node to move it, on empty canvas to disconnect. Hovering a connection shows a × to disconnect; right-click it to insert a color in between.
+- **Insert a node into a connection** by dropping an unconnected Color, Palette, Mix or Token on it — the connection lights up while you hover, and the node is spliced in between.
+- **Cut connections** by holding X and dragging across them, or by right-dragging on the canvas (a plain right-click still opens the menu). Crossed connections turn red; Escape cancels.
+- **Pick a color in 2D** in the color inspector: a plane of chroma × lightness (OKLCH), chroma × tone (HCT) or saturation × lightness (HSL) at the current hue, with the sRGB edge drawn. Dragging sets both channels in one step.
+- **Create** by dragging a dot into empty space (a connected node or the source of an input), double-clicking the canvas, dragging a tool from the toolbar, pressing `/` for quick-add at the pointer, or pasting: ⌘V turns hex codes, CSS colors and CSS/JSON token lists into color nodes.
+- **Arrange** with alignment guides while dragging (hold ⌘/Ctrl to turn them off), ⌥-drag to duplicate, align and distribute buttons for multiple nodes, and sections (⌥⌘G wraps the selection).
+- **Find anything** with ⌘K: nodes and sections by name, every command, themes and files.
 
 ## Saving, sharing and exporting
 
@@ -95,16 +130,23 @@ Function names are case-insensitive.
 
 | Action | Shortcut |
 |---|---|
-| Add color / palette / mix / contrast / token / note | C / P / M / K / T / N |
+| Search nodes and commands | ⌘/Ctrl + K |
+| Quick-add at the pointer | / |
+| Add color / palette / mix / contrast / token / note / section | C / P / M / K / T / N / S |
 | Select tool / pan tool | V / H (or hold Space) |
 | Nudge selection | Arrow keys (⇧ for bigger steps) |
 | Delete selection | Delete / Backspace |
 | Duplicate | ⌘/Ctrl + D |
 | Undo | ⌘/Ctrl + Z |
 | Redo | ⇧⌘Z / Ctrl + Y |
-| Copy / paste | ⌘/Ctrl + C / V |
+| Copy / paste (also between tabs; paste hex codes to add colors) | ⌘/Ctrl + C / V |
 | Select all | ⌘/Ctrl + A |
-| Fit view | F |
+| Fit view / zoom to selection / zoom to 100% | F / ⇧2 / ⇧0 |
+| Wrap the selection in a section | ⌥⌘G / Ctrl + Alt + G |
+| Duplicate while dragging | ⌥/Alt + drag |
+| Cut connections | Hold X and drag across them, or right-drag |
+| Insert a node into a connection | Drop an unconnected node on it |
+| Rename the selected node | Enter |
 | Add a color | Double-click the canvas |
 | Add a connected node | Drag from an output handle into empty space |
 | Create the source of an input | Drag from an input handle into empty space |

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Anatomy of a formula — 0colors</title>
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --ink: #202229; --muted: #626773; --faint: #8a909a; --line: #e5e7eb; --soft: #f6f7f9; --raised: #ffffff; --blue: #356bd9; --purple: #7756b6; --teal: #16766a; --shadow: 0 6px 18px #1620340a; }
+@media (prefers-color-scheme: dark) { :root { --bg: #202126; --ink: #f1f2f5; --muted: #a5a8b4; --faint: #797e8d; --line: #393c45; --soft: #282a31; --raised: #30333b; --blue: #8cb2ff; --purple: #c5a2f1; --teal: #7ad6c6; --shadow: 0 6px 18px #00000018; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { color: var(--ink); background: var(--bg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+svg { display: block; overflow: visible; }
+code, kbd, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.kicker { color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .15em; text-transform: uppercase; }
+.lesson { height: 100%; padding: 28px 32px; display: grid; grid-template-columns: 310px 1fr; gap: 32px; align-items: center; }
+.lesson h1 { font-size: 32px; line-height: 1.12; font-weight: 650; letter-spacing: -.045em; margin: 12px 0; }
+.lesson .intro { font-size: 13.5px; line-height: 1.65; color: var(--muted); max-width: 298px; }
+.panel { border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
+.small { font-size: 11px; line-height: 1.55; color: var(--muted); }
+.ref { color: var(--blue); }
+.kw { color: var(--purple); }
+.fn { color: var(--teal); }
+.comment { color: var(--faint); }
+.local { font-family: Georgia, serif; font-style: italic; }
+
+.formula { padding: 18px 21px; }
+.formula-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 17px; }
+.formula-head .kicker { font-size: 9px; }
+.source { font-size: 13px; line-height: 1.9; white-space: nowrap; }
+.source .row { display: flex; align-items: baseline; gap: 16px; }
+.line-number { font-size: 10px; color: var(--faint); width: 10px; text-align: right; }
+.source .comment { font-size: 11px; }
+.chip { background: var(--raised); border: 1px solid var(--line); border-radius: 5px; padding: 2px 5px; color: var(--blue); }
+.results { display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--line); margin-top: 15px; padding-top: 13px; }
+.result { display: flex; align-items: center; gap: 10px; }
+.result span { color: var(--muted); font-size: 10px; }
+.result strong { font-size: 17px; font-weight: 550; letter-spacing: -.04em; }
+.result + .result { padding-left: 15px; border-left: 1px solid var(--line); }
+.results .small { margin-left: auto; font-size: 9px; }
+</style>
+</head>
+<body>
+<main class="lesson">
+  <div><div class="kicker">07 / Small formulas. Clear decisions.</div><h1>Color with<br>a point of view.</h1><p class="intro">Reference a color. Name a local. Choose by theme. The last line is your result, and every step can explain itself.</p></div>
+  <div class="formula panel">
+    <div class="formula-head"><span class="kicker">One channel / Lightness</span><span class="small mono">.l</span></div>
+    <div class="source mono">
+      <div class="row"><span class="line-number">1</span><span class="comment">// More light on dark surfaces</span></div>
+      <div class="row"><span class="line-number">2</span><span><span class="local">base</span> = <span class="chip">@logic-brand</span></span></div>
+      <div class="row"><span class="line-number">3</span><span><span class="kw">if</span> dark <span class="kw">then</span> <span class="fn">max</span>(<span class="local">base</span>.l, 74) <span class="kw">else</span> 52</span></div>
+    </div>
+    <div class="results"><div class="result"><span>Light</span><strong class="mono">52%</strong></div><div class="result"><span>Dark</span><strong class="mono">74%</strong></div><span class="small">For the example base at L 55.</span></div>
+  </div>
+</main>
+</body>
+</html>

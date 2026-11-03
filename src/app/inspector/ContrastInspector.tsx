@@ -6,7 +6,7 @@ import { updateNodeData } from '../actions';
 import { useEditor } from '../store';
 import { Badge, CommitInput, Section } from '../ui';
 import { fmt } from '../lib/color-ui';
-import { ColorInputSlot, Explain, InspectorHeader } from './common';
+import { ColorInputSlot, InspectorHeader } from './common';
 
 export function ContrastInspector({ node }: { node: ContrastNode }) {
   const result = useEditor((s) => s.result.nodes[node.id]) as ContrastResult | undefined;
@@ -20,7 +20,7 @@ export function ContrastInspector({ node }: { node: ContrastNode }) {
 
   return (
     <div>
-      <InspectorHeader node={node} hint="Checks whether text in one color is readable on another." />
+      <InspectorHeader node={node} />
 
       <Section title="Colors">
         <ColorInputSlot
@@ -32,7 +32,7 @@ export function ContrastInspector({ node }: { node: ContrastNode }) {
           fallbackHex={data.bg} onFallback={(hex) => set('bg', hex)}
         />
         {result.fg.alpha < 1 && (
-          <Explain className="mt-2">The text is translucent, so it’s measured as it appears over the background ({result.seen.hex}).</Explain>
+          <p className="mt-1.5 text-[11px] text-fg-3">Translucent text — measured as seen: <span className="num text-fg-2">{result.seen.hex}</span></p>
         )}
       </Section>
 
@@ -67,16 +67,6 @@ export function ContrastInspector({ node }: { node: ContrastNode }) {
         </div>
       </Section>
 
-      <Section title="Why two scores?">
-        <Explain className="text-[11.5px]">
-          <b className="font-medium text-fg-2">WCAG 2</b> compares relative luminance and is the current legal baseline (4.5:1 for body text).
-        </Explain>
-        <Explain className="mt-1.5">
-          <b className="font-medium text-fg-2">APCA</b> (the WCAG 3 candidate) models perception: it treats light-on-dark and dark-on-light
-          differently and is stricter with mid-tones.
-        </Explain>
-        <Explain className="mt-1.5">Swap text and background and watch the WCAG ratio stay put while APCA changes.</Explain>
-      </Section>
     </div>
   );
 }

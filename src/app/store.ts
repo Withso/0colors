@@ -11,6 +11,23 @@ import { createBlankProject } from '@/engine/defaults';
 const HISTORY_LIMIT = 150;
 const COALESCE_MS = 1200;
 
+/**
+ * Undo steps follow gestures: while a pointer is held (slider drag, scrub, node drag, resize),
+ * edits with the same key merge however long the pause; releasing the pointer ends the step.
+ */
+let pointerHeld = false;
+if (typeof window !== 'undefined') {
+  window.addEventListener('pointerdown', () => { pointerHeld = true; }, true);
+  const release = () => {
+    if (!pointerHeld) return;
+    pointerHeld = false;
+    // After this event finishes: React Flow completes drags (final position, splice) on the mouseup that follows.
+    setTimeout(() => useEditor.getState().breakCoalesce(), 0);
+  };
+  window.addEventListener('pointerup', release, true);
+  window.addEventListener('pointercancel', release, true);
+}
+
 export interface UpdateOptions {
   /** Consecutive updates with the same key (e.g. one slider drag) merge into one undo step. */
   key?: string;
@@ -18,6 +35,11 @@ export interface UpdateOptions {
   history?: boolean;
   /** false = the change cannot affect colors (positions, viewport), skip recomputing. */
   compute?: boolean;
+  /**
+   * Part of a continuous gesture (drag, scrub, resize): merges with the previous update with the
+   * same key however long the pause, until breakCoalesce() ends the gesture.
+   */
+  gesture?: boolean;
 }
 
 export interface EditorState {
@@ -78,7 +100,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
     const record = options.history !== false;
     let past = state.past;
     if (record) {
-      const merge = options.key && options.key === state.lastKey && now - state.lastTime < COALESCE_MS;
+      const merge = options.key && options.key === state.lastKey && (options.gesture || pointerHeld || now - state.lastTime < COALESCE_MS);
       if (!merge) past = [...past.slice(-(HISTORY_LIMIT - 1)), state.project];
     }
     const themeId = next.themes.some((t) => t.id === state.themeId) ? state.themeId : next.themes[0]?.id ?? '';

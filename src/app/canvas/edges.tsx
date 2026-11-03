@@ -1,12 +1,19 @@
 // Edge views: color connections are drawn with a gradient from the source color to
 // the target's color; formula references are dashed "logic" lines between node borders.
 import { memo } from 'react';
-import { BaseEdge, EdgeLabelRenderer, type Edge as RFEdge, type EdgeProps, getBezierPath, useInternalNode } from '@xyflow/react';
+import {
+  BaseEdge, type ConnectionLineComponentProps, EdgeLabelRenderer, type Edge as RFEdge, type EdgeProps, getBezierPath,
+  useInternalNode,
+} from '@xyflow/react';
+import { X } from 'lucide-react';
 import { outputColor } from '@/engine/compute';
 import { channelDef } from '@/engine/color/spaces';
 import { useEditor } from '../store';
+import { removeEdges } from '../actions';
 import { fmt } from '../lib/color-ui';
+import { cn } from '../ui';
 import { useLinkEmphasis } from './hover';
+import { useInteraction } from './interaction';
 
 /** One-line summary of how a derived color differs from its parent, e.g. "L −6 · H +180". */
 function useRuleSummary(target: string, handle: string | null | undefined) {
@@ -34,6 +41,10 @@ export const ColorEdgeView = memo(function ColorEdgeView(props: EdgeProps<ColorF
   const { id, source, target, sourceHandleId, targetHandleId, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected } = props;
   const summary = useRuleSummary(target, targetHandleId);
   const emphasis = useLinkEmphasis(source, target);
+  const hovered = useInteraction((s) => s.hoveredEdge === id);
+  const picked = useInteraction((s) => s.pickedEdge === id);
+  const splicing = useInteraction((s) => s.spliceEdge === id);
+  const cutting = useInteraction((s) => s.cutEdges.includes(id));
   const from = useEditor((s) => outputColor(s.result.nodes[source], sourceHandleId ?? 'out')?.hex ?? 'var(--app-fg-3)');
   const to = useEditor((s) => {
     const r = s.result.nodes[target];
@@ -42,25 +53,55 @@ export const ColorEdgeView = memo(function ColorEdgeView(props: EdgeProps<ColorF
   const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, curvature: 0.35 });
   const gradientId = `edge-gradient-${id}`;
   const faded = emphasis === 'off';
-  const strong = emphasis === 'on' || selected;
+  const strong = emphasis === 'on' || selected || hovered || splicing;
+  const showDelete = hovered || selected;
   return (
-    <g style={{ opacity: faded ? 0.16 : 1, transition: 'opacity 160ms ease' }}>
+    <g style={{ opacity: picked ? 0.22 : faded ? 0.16 : 1, transition: 'opacity 160ms ease' }}>
       <defs>
         <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1={sourceX} y1={sourceY} x2={targetX} y2={targetY}>
           <stop offset="0" stopColor={from} />
           <stop offset="1" stopColor={to} />
         </linearGradient>
       </defs>
-      {selected && <path d={path} fill="none" stroke="var(--app-accent)" strokeWidth={7} strokeOpacity={0.35} strokeLinecap="round" />}
+      {(selected || splicing) && <path d={path} fill="none" stroke="var(--app-accent)" strokeWidth={splicing ? 10 : 7} strokeOpacity={splicing ? 0.45 : 0.35} strokeLinecap="round" />}
+      {cutting && <path d={path} fill="none" stroke="var(--app-danger)" strokeWidth={8} strokeOpacity={0.3} strokeLinecap="round" />}
       <path d={path} fill="none" stroke="var(--canvas-bd, var(--app-canvas))" strokeWidth={5} strokeOpacity={0.85} />
-      <BaseEdge id={id} path={path} interactionWidth={18} style={{ stroke: `url(#${gradientId})`, strokeWidth: strong ? 3 : 2.25 }} />
-      {summary && (
+      <BaseEdge
+        id={id}
+        path={path}
+        interactionWidth={20}
+        style={cutting
+          ? { stroke: 'var(--app-danger)', strokeWidth: 2.5, strokeDasharray: '6 4' }
+          : { stroke: `url(#${gradientId})`, strokeWidth: strong ? 3 : 2.25 }}
+      />
+      {(summary || showDelete) && (
         <EdgeLabelRenderer>
           <div
-            className="num glass pointer-events-none absolute rounded-[6px] px-1.5 py-[3px] text-[10px] font-medium text-fg-2 shadow-[0_0_0_0.5px_var(--app-line-strong),0_2px_6px_oklch(0_0_0/0.18)]"
+            className="absolute flex items-center gap-1"
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, opacity: faded ? 0.2 : 1, transition: 'opacity 160ms ease' }}
+            onMouseEnter={() => useInteraction.getState().setHoveredEdge(id)}
+            onMouseLeave={() => useInteraction.getState().setHoveredEdge(null)}
           >
-            {summary}
+            {summary && (
+              <div className="num glass pointer-events-none rounded-[6px] px-1.5 py-[3px] text-[10px] font-medium text-fg-2 shadow-[0_0_0_0.5px_var(--app-line-strong),0_2px_6px_oklch(0_0_0/0.18)]">
+                {summary}
+              </div>
+            )}
+            {showDelete && (
+              <button
+                type="button"
+                aria-label="Disconnect"
+                title="Disconnect"
+                onClick={(e) => { e.stopPropagation(); removeEdges([id]); }}
+                className={cn(
+                  'nodrag nopan pointer-events-auto grid h-[18px] w-[18px] place-items-center rounded-full text-fg-2 outline-none',
+                  'glass shadow-[0_0_0_0.5px_var(--app-line-strong),0_2px_6px_oklch(0_0_0/0.18)] transition-colors hover:bg-danger hover:text-white',
+                  'animate-fade',
+                )}
+              >
+                <X size={11} strokeWidth={2.4} />
+              </button>
+            )}
           </div>
         </EdgeLabelRenderer>
       )}
@@ -103,5 +144,24 @@ export const RefEdgeView = memo(function RefEdgeView({ id, source, target }: Edg
     </g>
   );
 });
+
+/** The line drawn while dragging a new connection: the source color, solid once it can land. */
+export function ConnectionLine({ fromX, fromY, toX, toY, fromPosition, toPosition, fromNode, fromHandle, connectionStatus }: ConnectionLineComponentProps) {
+  const color = useEditor((s) => {
+    if (!fromNode || fromHandle?.type !== 'source') return null;
+    return outputColor(s.result.nodes[fromNode.id], fromHandle.id ?? 'out')?.hex ?? null;
+  });
+  const dropping = useInteraction((s) => s.dropTarget !== null);
+  const ok = connectionStatus === 'valid' || dropping;
+  const [path] = getBezierPath({ sourceX: fromX, sourceY: fromY, sourcePosition: fromPosition, targetX: toX, targetY: toY, targetPosition: toPosition, curvature: 0.35 });
+  const stroke = color ?? 'var(--app-accent)';
+  return (
+    <g>
+      <path d={path} fill="none" stroke="var(--canvas-bd, var(--app-canvas))" strokeWidth={5} strokeOpacity={0.85} />
+      <path d={path} fill="none" stroke={stroke} strokeWidth={ok ? 2.75 : 2.25} strokeDasharray={ok ? undefined : '6 5'} strokeLinecap="round" />
+      <circle cx={toX} cy={toY} r={ok ? 5 : 4} fill={ok ? stroke : 'var(--app-surface)'} stroke={stroke} strokeWidth={2} />
+    </g>
+  );
+}
 
 export const edgeTypes = { color: ColorEdgeView, ref: RefEdgeView };

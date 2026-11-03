@@ -100,7 +100,26 @@ export type NoteNode = NodeBase<'note', {
   width: number;
 }>;
 
-export type CanvasNode = ColorNode | PaletteNode | MixNode | ContrastNode | TokenNode | NoteNode;
+/**
+ * A titled frame that groups nodes on the canvas (like a Figma section). It has no inputs or outputs;
+ * moving it moves the nodes that sit fully inside it.
+ */
+export type SectionNode = NodeBase<'section', {
+  width: number;
+  height: number;
+  tone: NoteTone;
+}>;
+
+/** A built-in tutorial document, rendered by the UI from /tutorials/<doc>.html. */
+export type HtmlNode = NodeBase<'html', {
+  doc: string;
+  width: number;
+  height: number;
+}>;
+
+export const isHtmlDoc = (doc: unknown): doc is string => typeof doc === 'string' && /^[a-z0-9-]{1,64}$/.test(doc);
+
+export type CanvasNode = ColorNode | PaletteNode | MixNode | ContrastNode | TokenNode | NoteNode | SectionNode | HtmlNode;
 export type NodeType = CanvasNode['type'];
 
 export interface Edge {
@@ -154,12 +173,19 @@ export function inputHandles(node: CanvasNode, themes: Theme[]): string[] {
     case 'token':
       return themes.map((t) => tokenHandle(t.id));
     case 'note':
+    case 'section':
+    case 'html':
       return [];
   }
 }
 
 export function hasOutput(type: NodeType): boolean {
-  return type !== 'contrast' && type !== 'note';
+  return type !== 'contrast' && !isAnnotation(type);
+}
+
+/** Annotations have no @name and never take part in the color graph. */
+export function isAnnotation(type: NodeType): boolean {
+  return type === 'note' || type === 'section' || type === 'html';
 }
 
 /** Name → identifier used in formulas (@brand-blue) and exports (--brand-blue). */

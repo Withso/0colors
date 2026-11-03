@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Welcome to 0colors</title>
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --ink: #202229; --muted: #626773; --faint: #8a909a; --line: #e5e7eb; --soft: #f6f7f9; --raised: #ffffff; --blue: #356bd9; --purple: #7756b6; --teal: #16766a; --shadow: 0 6px 18px #1620340a; }
+@media (prefers-color-scheme: dark) { :root { --bg: #202126; --ink: #f1f2f5; --muted: #a5a8b4; --faint: #797e8d; --line: #393c45; --soft: #282a31; --raised: #30333b; --blue: #8cb2ff; --purple: #c5a2f1; --teal: #7ad6c6; --shadow: 0 6px 18px #00000018; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { color: var(--ink); background: var(--bg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+svg { display: block; overflow: visible; }
+code, kbd, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.kicker { color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .15em; text-transform: uppercase; }
+.lesson { height: 100%; padding: 28px 32px; display: grid; grid-template-columns: 310px 1fr; gap: 32px; align-items: center; }
+.lesson h1 { font-size: 32px; line-height: 1.12; font-weight: 650; letter-spacing: -.045em; margin: 12px 0; }
+.lesson .intro { font-size: 13.5px; line-height: 1.65; color: var(--muted); max-width: 298px; }
+.panel { border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
+.small { font-size: 11px; line-height: 1.55; color: var(--muted); }
+.ref { color: var(--blue); }
+.kw { color: var(--purple); }
+.fn { color: var(--teal); }
+.comment { color: var(--faint); }
+.local { font-family: Georgia, serif; font-style: italic; }
+
+.hero { position: relative; height: 100%; padding: 30px 36px 92px; display: grid; grid-template-rows: 30px 1fr 72px; gap: 20px; }
+.brand { display: flex; align-items: center; justify-content: space-between; }
+.wordmark { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 650; letter-spacing: -.055em; }
+.brand .kicker { font-size: 9px; }
+.hero-main { display: grid; grid-template-columns: 1.05fr 1fr; gap: 28px; align-items: center; min-height: 0; }
+.hero h1 { font-size: 59px; line-height: 1.02; letter-spacing: -.065em; font-weight: 650; }
+.hero h1 span { color: var(--muted); }
+.promise { margin-top: 17px; font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 435px; }
+.graph { width: 100%; height: 235px; }
+.graph text { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+.graph .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.features { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; padding-top: 17px; border-top: 1px solid var(--line); }
+.feature { display: grid; grid-template-columns: 22px 1fr; gap: 10px; }
+.feature .number { color: var(--faint); font-size: 10px; padding-top: 3px; }
+.feature h2 { font-size: 13px; font-weight: 600; letter-spacing: -.015em; margin-bottom: 5px; }
+.feature p { color: var(--muted); font-size: 11.5px; line-height: 1.5; }
+.footer-note { position: absolute; right: 36px; bottom: 29px; text-align: right; color: var(--muted); font-size: 11px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<main class="hero">
+  <header class="brand">
+    <div class="wordmark">
+      <svg width="27" height="27" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="logo" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff6b6b"/><stop offset=".35" stop-color="#ffd166"/><stop offset=".65" stop-color="#4fd1c5"/><stop offset="1" stop-color="#6c8cff"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="#202229"/><ellipse cx="32" cy="32" rx="12" ry="16" fill="none" stroke="url(#logo)" stroke-width="6.5"/></svg>
+      <span>0colors</span>
+    </div>
+    <span class="kicker">A playground for color logic</span>
+  </header>
+  <div class="hero-main">
+    <div>
+      <h1>A little logic.<br><span>A lot of color.</span></h1>
+      <p class="promise">Build colors that belong together.<br>Connect a few ideas. Watch a whole system follow.</p>
+    </div>
+    <svg class="graph" viewBox="0 0 450 238" role="img" aria-label="One blue source branches into a lighter tint and a softer muted color, each through a different rule.">
+      <defs><linearGradient id="tint-wire"><stop stop-color="#4a81eb"/><stop offset="1" stop-color="#a2bef2"/></linearGradient><linearGradient id="muted-wire"><stop stop-color="#4a81eb"/><stop offset="1" stop-color="#8599c1"/></linearGradient></defs>
+      <path d="M149 118 C218 118 219 54 286 54" fill="none" stroke="url(#tint-wire)" stroke-width="2.5"/>
+      <path d="M149 118 C218 118 219 185 286 185" fill="none" stroke="url(#muted-wire)" stroke-width="2.5"/>
+      <rect x="16" y="68" width="136" height="103" rx="13" fill="var(--raised)" stroke="var(--line)"/>
+      <rect x="23" y="75" width="122" height="48" rx="7" fill="#4a81eb"/>
+      <text x="29" y="142" font-size="12" font-weight="600" fill="var(--ink)">Brand</text><text x="29" y="158" class="mono" font-size="9" fill="var(--muted)">L 62 · C .17 · H 262</text>
+      <circle cx="152" cy="118" r="4" fill="#4a81eb" stroke="var(--bg)" stroke-width="2"/>
+      <rect x="286" y="8" width="145" height="95" rx="13" fill="var(--raised)" stroke="var(--line)"/>
+      <rect x="293" y="15" width="131" height="40" rx="7" fill="#a2bef2"/>
+      <text x="299" y="75" font-size="12" font-weight="600" fill="var(--ink)">A lighter tint</text><text x="299" y="91" class="mono" font-size="9" fill="var(--muted)">lightness + 18</text>
+      <circle cx="286" cy="54" r="4" fill="#a2bef2" stroke="var(--bg)" stroke-width="2"/>
+      <rect x="286" y="139" width="145" height="95" rx="13" fill="var(--raised)" stroke="var(--line)"/>
+      <rect x="293" y="146" width="131" height="40" rx="7" fill="#8599c1"/>
+      <text x="299" y="206" font-size="12" font-weight="600" fill="var(--ink)">A softer accent</text><text x="299" y="222" class="mono" font-size="9" fill="var(--muted)">chroma × 0.4</text>
+      <circle cx="286" cy="185" r="4" fill="#8599c1" stroke="var(--bg)" stroke-width="2"/>
+      <text x="190" y="45" class="mono" font-size="10" fill="var(--muted)">derive</text><text x="191" y="197" class="mono" font-size="10" fill="var(--muted)">adapt</text>
+    </svg>
+  </div>
+  <div class="features">
+    <div class="feature"><span class="number mono">01</span><div><h2>See the reason.</h2><p>Trace every color back to its source.</p></div></div>
+    <div class="feature"><span class="number mono">02</span><div><h2>Change one. Update all.</h2><p>Palettes, themes and tokens stay connected.</p></div></div>
+    <div class="feature"><span class="number mono">03</span><div><h2>Make it yours.</h2><p>Saved in your browser. No account needed.</p></div></div>
+  </div>
+  <p class="footer-note">Start with the live colors below.<br>Then follow the numbered frames.</p>
+</main>
+</body>
+</html>

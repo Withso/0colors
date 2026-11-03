@@ -179,9 +179,6 @@ export function PreviewPanel() {
   return (
     <div>
       <Section title="Live preview" actions={<span className="num text-[11px] text-fg-3">{boundCount} of {PREVIEW_SLOTS.length} bound</span>}>
-        <p className="mb-3.5 text-[11.5px] leading-relaxed text-fg-3">
-          The same UI painted with your tokens in every theme. Change a primitive on the canvas and watch every theme update.
-        </p>
         <div className="flex flex-col gap-5">
           {project.themes.map((theme) => (
             <figure key={theme.id} className="m-0">

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { type CanvasNode, type ChannelValues, type ColorNode, type Edge, type Project, type Space, type Theme, tokenHandle } from './model';
-import { createColorNode, createContrastNode, createMixNode, createPaletteNode, createTokenNode, makeEdge } from './defaults';
+import { createColorNode, createContrastNode, createMixNode, createPaletteNode, createSectionNode, createTokenNode, makeEdge } from './defaults';
 import {
   type ColorResult, type ContrastResult, type MixResult, type PaletteResult, type TokenResult,
-  computeProject, wouldCreateCycle,
+  computeAllThemes, computeProject, outputColor, outputNative, wouldCreateCycle,
 } from './compute';
 
 const LIGHT: Theme = { id: 'light', name: 'Light', dark: false };
@@ -24,6 +24,23 @@ const asColor = (r: ReturnType<typeof computeProject>, id: string) => r.nodes[id
 const channel = (r: ColorResult, key: string) => r.channels.find((c) => c.key === key)!;
 
 describe('computeProject — color rules', () => {
+  it('explains formula rows and collects references from named statements', () => {
+    const p = project([
+      color('a', 'Base', 'oklch', oklch(60, 0.1, 200)),
+      color('b', 'Derived', 'oklch', oklch(0, 0, 0), {
+        l: { mode: 'formula', expr: 'base = @base;\nout_1 = base.l - 10\nif dark then out_1 + 20 else out_1' },
+      }),
+    ]);
+    for (const theme of p.themes) {
+      const result = computeProject(p, theme.id);
+      const l = channel(asColor(result, 'b'), 'l');
+      expect(l.error).toBeUndefined();
+      expect(l.value).toBe(theme.dark ? 70 : 50);
+      expect(l.explain?.steps.map((s) => s.name)).toEqual(['base', 'out_1', null]);
+      expect(result.refs).toEqual([{ id: 'ref:a->b', source: 'a', target: 'b' }]);
+    }
+  });
+
   it('inherits every channel from the parent by default', () => {
     const p = project([color('a', 'Parent', 'oklch', oklch(60, 0.1, 200)), color('b', 'Child', 'oklch', oklch(10, 0, 0))], [edge('a', 'b')]);
     const r = computeProject(p, 'light');
@@ -268,6 +285,42 @@ describe('computeProject — tokens', () => {
 });
 
 describe('computeProject — reconcile', () => {
+  it('reuses results for cloned documents and visual-only section edits', () => {
+    const p = project([
+      color('a', 'A', 'oklch', oklch(50, 0.1, 200)),
+      createSectionNode({ id: 'frame', name: 'Frame', position: at }),
+    ]);
+    const first = computeProject(p, 'light');
+    expect(computeProject(structuredClone(p), 'light', first)).toBe(first);
+    const moved = structuredClone(p);
+    moved.nodes[0].position = { x: 50, y: -50 };
+    moved.nodes[1].name = 'Changed frame';
+    expect(computeProject(moved, 'light', first)).toBe(first);
+  });
+
+  it('updates changed explanations even when a formula’s numeric result is unchanged', () => {
+    const p = project([color('a', 'A', 'oklch', oklch(50, 0.1, 200), { l: { mode: 'formula', expr: 'out_1 = 20; out_1' } })]);
+    const first = computeProject(p, 'light');
+    const changed = project([color('a', 'A', 'oklch', oklch(50, 0.1, 200), { l: { mode: 'formula', expr: 'base = 20; base' } })]);
+    const next = computeProject(changed, 'light', first);
+    expect(next.nodes.a).not.toBe(first.nodes.a);
+    expect(asColor(next, 'a').values).toEqual(asColor(first, 'a').values);
+    expect(channel(asColor(next, 'a'), 'l').explain?.steps[0].name).toBe('base');
+    expect(next.refs).toBe(first.refs);
+  });
+
+  it('updates errors, removals and reference dependencies', () => {
+    const p = project([
+      color('base', 'Base', 'oklch', oklch(50, 0.1, 200)),
+      color('child', 'Child', 'oklch', oklch(50, 0.1, 200), { l: { mode: 'formula', expr: '@base.l' } }),
+    ]);
+    const first = computeProject(p);
+    const missing = computeProject({ ...p, nodes: p.nodes.slice(1) }, undefined, first);
+    expect(Object.keys(missing.nodes)).toEqual(['child']);
+    expect(missing.refs).toEqual([]);
+    expect(channel(asColor(missing, 'child'), 'l').error?.message).toContain('@base');
+  });
+
   it('reuses identical results', () => {
     const p = project([color('a', 'A', 'oklch', oklch(50, 0.1, 200)), color('b', 'B', 'oklch', oklch(70, 0.05, 40))]);
     const first = computeProject(p, 'light');
@@ -286,6 +339,58 @@ describe('computeProject — reconcile', () => {
     const dark = computeProject(p, 'dark', light);
     expect(dark).not.toBe(light);
     expect(dark.themeId).toBe('dark');
+  });
+});
+
+describe('imported ids and output handles', () => {
+  it('computes arbitrary node ids and theme ids as data', () => {
+    const p = project([
+      color('__proto__', 'Base', 'oklch', oklch(50, 0.1, 200)),
+      color('constructor', 'Child', 'oklch', oklch(0, 0, 0)),
+    ], [edge('__proto__', 'constructor')], [
+      { id: '__proto__', name: 'Light', dark: false }, { id: 'constructor', name: 'Dark', dark: true },
+    ]);
+    const all = computeAllThemes(p);
+    expect(Object.keys(all)).toEqual(['__proto__', 'constructor']);
+    for (const result of Object.values(all)) {
+      expect(Object.keys(result.nodes)).toEqual(['__proto__', 'constructor']);
+      expect(asColor(result, 'constructor').values.l).toBe(50);
+      expect(asColor(result, '__proto__').values.h).toBe(200);
+      expect(computeProject(p, result.themeId, result)).toBe(result);
+    }
+  });
+
+  it('rejects invalid handles rather than accidentally reading palette shade zero', () => {
+    const pal = createPaletteNode({ id: 'pal', name: 'Scale', position: at, steps: 3 });
+    const root = color('a', 'A', 'oklch', oklch(50, 0.1, 200));
+    const result = computeProject(project([pal, root]));
+    for (const handle of ['', 's', 'x0', 's-1', 's1.5', 'snope', 's9']) {
+      expect(outputColor(result.nodes.pal, handle), handle).toBeNull();
+      expect(outputNative(result.nodes.pal, handle), handle).toBeUndefined();
+    }
+    expect(outputColor(result.nodes.pal, 's0')).not.toBeNull();
+    expect(outputNative(result.nodes.pal, 's0')).toBeDefined();
+    expect(outputColor(result.nodes.a, 'in')).toBeNull();
+    expect(outputNative(result.nodes.a, 'in')).toBeUndefined();
+  });
+
+  it('does not let a section shadow a color’s formula reference', () => {
+    const p = project([
+      createSectionNode({ id: 'frame', name: 'Brand', position: at }),
+      color('brand', 'Brand', 'oklch', oklch(50, 0.1, 200)),
+      color('a', 'A', 'oklch', oklch(0, 0, 0), { l: { mode: 'formula', expr: '@brand.l' } }),
+    ]);
+    const r = computeProject(p);
+    expect(asColor(r, 'a').values.l).toBe(50);
+    expect(r.refs).toEqual([{ id: 'ref:brand->a', source: 'brand', target: 'a' }]);
+  });
+
+  it('keeps error spans on an actual reference after comments and earlier rows', () => {
+    const expr = '// @missing is an example\nout_1 = 5\nout_1 + @missing.l';
+    const p = project([color('a', 'A', 'oklch', oklch(40, 0.1, 200), { l: { mode: 'formula', expr } })]);
+    const error = channel(asColor(computeProject(p), 'a'), 'l').error!;
+    expect(error.start).toBe(expr.lastIndexOf('@missing'));
+    expect(expr.slice(error.start, error.end)).toBe('@missing');
   });
 });
 

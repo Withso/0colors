@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Tokens and themes — 0colors</title>
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --ink: #202229; --muted: #626773; --faint: #8a909a; --line: #e5e7eb; --soft: #f6f7f9; --raised: #ffffff; --blue: #356bd9; --purple: #7756b6; --teal: #16766a; --shadow: 0 6px 18px #1620340a; }
+@media (prefers-color-scheme: dark) { :root { --bg: #202126; --ink: #f1f2f5; --muted: #a5a8b4; --faint: #797e8d; --line: #393c45; --soft: #282a31; --raised: #30333b; --blue: #8cb2ff; --purple: #c5a2f1; --teal: #7ad6c6; --shadow: 0 6px 18px #00000018; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { color: var(--ink); background: var(--bg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+svg { display: block; overflow: visible; }
+code, kbd, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.kicker { color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .15em; text-transform: uppercase; }
+.lesson { height: 100%; padding: 28px 32px; display: grid; grid-template-columns: 310px 1fr; gap: 32px; align-items: center; }
+.lesson h1 { font-size: 32px; line-height: 1.12; font-weight: 650; letter-spacing: -.045em; margin: 12px 0; }
+.lesson .intro { font-size: 13.5px; line-height: 1.65; color: var(--muted); max-width: 298px; }
+.panel { border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
+.small { font-size: 11px; line-height: 1.55; color: var(--muted); }
+.ref { color: var(--blue); }
+.kw { color: var(--purple); }
+.fn { color: var(--teal); }
+.comment { color: var(--faint); }
+.local { font-family: Georgia, serif; font-style: italic; }
+
+.lesson { padding-top: 22px; padding-bottom: 22px; grid-template-columns: 310px 1fr; }
+.lesson h1 { font-size: 28px; margin: 9px 0; }
+.lesson .intro { font-size: 12.5px; }
+.theme-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.theme-title { display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: var(--muted); margin: 0 2px 8px; }
+.mock { border-radius: 12px; padding: 18px; height: 134px; border: 1px solid #0000000d; }
+.mock.light { color: #202838; background: #f4f6fa; }
+.mock.dark { color: #edf1f9; background: #202837; }
+.mock h2 { font-size: 19px; letter-spacing: -.04em; font-weight: 600; margin-bottom: 8px; }
+.mock p { font-size: 11px; opacity: .65; }
+.roles { display: flex; gap: 7px; margin-top: 19px; }
+.role { font-size: 9px; padding: 4px 7px; border: 1px solid currentColor; border-radius: 4px; opacity: .65; }
+</style>
+</head>
+<body>
+<main class="lesson">
+  <div><div class="kicker">06 / Same roles. Different light.</div><h1>Name the job.<br>Let the theme choose.</h1><p class="intro">A token gives a color a purpose. Light and Dark can choose different shades for that same purpose.</p></div>
+  <div class="theme-pair">
+    <div><div class="theme-title"><span>Light</span><code>bg/surface → light shade</code></div><div class="mock light"><h2>A place for your ideas.</h2><p>Readable text. Quiet surfaces. A clear hierarchy.</p><div class="roles"><span class="role">surface</span><span class="role">text</span><span class="role">border</span></div></div></div>
+    <div><div class="theme-title"><span>Dark</span><code>bg/surface → dark shade</code></div><div class="mock dark"><h2>A place for your ideas.</h2><p>Readable text. Quiet surfaces. A clear hierarchy.</p><div class="roles"><span class="role">surface</span><span class="role">text</span><span class="role">border</span></div></div></div>
+  </div>
+</main>
+</body>
+</html>

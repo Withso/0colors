@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Inheritance and rules — 0colors</title>
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --ink: #202229; --muted: #626773; --faint: #8a909a; --line: #e5e7eb; --soft: #f6f7f9; --raised: #ffffff; --blue: #356bd9; --purple: #7756b6; --teal: #16766a; --shadow: 0 6px 18px #1620340a; }
+@media (prefers-color-scheme: dark) { :root { --bg: #202126; --ink: #f1f2f5; --muted: #a5a8b4; --faint: #797e8d; --line: #393c45; --soft: #282a31; --raised: #30333b; --blue: #8cb2ff; --purple: #c5a2f1; --teal: #7ad6c6; --shadow: 0 6px 18px #00000018; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { color: var(--ink); background: var(--bg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+svg { display: block; overflow: visible; }
+code, kbd, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.kicker { color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .15em; text-transform: uppercase; }
+.lesson { height: 100%; padding: 28px 32px; display: grid; grid-template-columns: 310px 1fr; gap: 32px; align-items: center; }
+.lesson h1 { font-size: 32px; line-height: 1.12; font-weight: 650; letter-spacing: -.045em; margin: 12px 0; }
+.lesson .intro { font-size: 13.5px; line-height: 1.65; color: var(--muted); max-width: 298px; }
+.panel { border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
+.small { font-size: 11px; line-height: 1.55; color: var(--muted); }
+.ref { color: var(--blue); }
+.kw { color: var(--purple); }
+.fn { color: var(--teal); }
+.comment { color: var(--faint); }
+.local { font-family: Georgia, serif; font-style: italic; }
+
+.rule-map { display: grid; grid-template-columns: 148px 32px 1fr; gap: 12px; align-items: center; }
+.seed { padding: 8px; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+.seed-swatch { height: 54px; border-radius: 7px; background: #3266ce; margin-bottom: 10px; }
+.seed h2 { font-size: 12px; margin: 0 5px 6px; }
+.seed p { margin: 0 5px 4px; font-size: 10px; color: var(--muted); line-height: 1.7; }
+.rules { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rule { background: var(--soft); border: 1px solid var(--line); border-radius: 11px; padding: 12px 13px; }
+.rule h2 { font-size: 11px; font-weight: 550; color: var(--muted); margin-bottom: 8px; }
+.rule .calculation { font-size: 15px; font-weight: 500; letter-spacing: -.03em; line-height: 1.5; }
+.rule .calculation span { color: var(--muted); }
+.rule .hint { font-size: 9px; color: var(--muted); margin-top: 5px; }
+</style>
+</head>
+<body>
+<main class="lesson">
+  <div><div class="kicker">02 / Connected by design</div><h1>One decision.<br>A whole family.</h1><p class="intro">Each channel can follow, shift, stay fixed, or compute a value. Change the parent. The rules do the rest.</p></div>
+  <div class="rule-map">
+    <div class="seed"><div class="seed-swatch"></div><h2>Parent color</h2><p class="mono">L 55<br>C 0.19<br>H 262°</p></div>
+    <svg width="32" height="174" viewBox="0 0 32 174" aria-hidden="true"><path d="M0 87 H12 M12 45 V130 M12 45 H32 M12 130 H32" fill="none" stroke="var(--line)" stroke-width="1.5"/><circle cx="0" cy="87" r="3" fill="var(--blue)"/><circle cx="32" cy="45" r="3" fill="var(--blue)"/><circle cx="32" cy="130" r="3" fill="var(--blue)"/></svg>
+    <div class="rules">
+      <div class="rule"><h2>Inherit</h2><div class="calculation mono"><span>H</span> 262°</div><div class="hint">Keep the parent’s hue.</div></div>
+      <div class="rule"><h2>Offset</h2><div class="calculation mono"><span>L</span> 55 − 6 = 49</div><div class="hint">Make the hover darker.</div></div>
+      <div class="rule"><h2>Fixed</h2><div class="calculation mono"><span>C</span> 0.05</div><div class="hint">Hold chroma steady.</div></div>
+      <div class="rule"><h2>Formula</h2><div class="calculation mono"><span>C</span> parent.c × .4</div><div class="hint">Compute a softer accent.</div></div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

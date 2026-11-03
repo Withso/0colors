@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
-import { Check, Copy, Keyboard, Link2, Monitor, Moon, PanelRight, Plus, Redo2, Sun, Undo2 } from 'lucide-react';
+import { Check, Copy, Keyboard, Link2, Monitor, Moon, PanelRight, Plus, Redo2, RotateCcw, Search, Sun, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { encodeShare, shareUrl } from '@/engine/share';
 import { getEditor, useEditor } from '../store';
 import { useUI } from '../ui-store';
 import { addTheme } from '../actions';
-import { Button, Dialog, IconButton, Tooltip, cn } from '../ui';
+import { Badge, Button, Dialog, IconButton, Tooltip, cn } from '../ui';
+import { isSampleId } from '../sample';
 import { ProjectMenu } from './ProjectMenu';
 
 export function Logo({ className }: { className?: string }) {
@@ -124,6 +125,7 @@ export function TopBar() {
   const undo = useEditor((s) => s.undo);
   const redo = useEditor((s) => s.redo);
   const { appTheme, setAppTheme, panelOpen, setPanelOpen, setShortcutsOpen } = useUI();
+  const demo = useEditor((s) => isSampleId(s.project.id));
   const [share, setShare] = useState<{ open: boolean; url: string }>({ open: false, url: '' });
   const nextAppTheme = appTheme === 'system' ? 'dark' : appTheme === 'dark' ? 'light' : 'system';
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
@@ -145,6 +147,16 @@ export function TopBar() {
           <Logo className="h-[22px] w-[22px]" />
         </a>
         <ProjectMenu />
+        {demo && (
+          <span className="hidden items-center gap-0.5 sm:flex">
+            <Tooltip content="This is the demo — edit anything, then reset it whenever you like." side="bottom">
+              <span><Badge tone="accent">Demo</Badge></span>
+            </Tooltip>
+            <IconButton label="Reset demo" side="bottom" size="icon-sm" onClick={() => useUI.getState().setResetOpen(true)}>
+              <RotateCcw size={13} />
+            </IconButton>
+          </span>
+        )}
       </div>
 
       <div className="absolute left-1/2 hidden -translate-x-1/2 md:block">
@@ -153,6 +165,7 @@ export function TopBar() {
 
       <div className="flex items-center gap-0.5">
         <div className="mr-1 md:hidden"><ThemeSwitcher /></div>
+        <IconButton label="Search & commands" shortcut={`${mod}K`} side="bottom" size="icon-sm" className="hidden sm:inline-flex" onClick={() => useUI.getState().openPalette('all')}><Search size={15} /></IconButton>
         <IconButton label="Undo" shortcut={`${mod}Z`} side="bottom" size="icon-sm" disabled={!canUndo} onClick={undo}><Undo2 size={15} /></IconButton>
         <IconButton label="Redo" shortcut={mac ? '⇧⌘Z' : 'Ctrl+Y'} side="bottom" size="icon-sm" disabled={!canRedo} onClick={redo}><Redo2 size={15} /></IconButton>
         <span className="mx-1.5 hidden h-4 w-px bg-line-strong sm:block" />

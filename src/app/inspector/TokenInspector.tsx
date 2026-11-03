@@ -6,7 +6,7 @@ import { type TokenResult, computeAllThemes } from '@/engine/compute';
 import { canConnect, connect, disconnectInput, updateNodeData } from '../actions';
 import { useEditor } from '../store';
 import { Badge, CopyButton, Section, Swatch, cn } from '../ui';
-import { AutoTextarea, Code, Explain, FIELD_CLASS, InspectorHeader, focusNode, useDraft } from './common';
+import { AutoTextarea, FIELD_CLASS, InspectorHeader, focusNode, useDraft } from './common';
 
 interface Candidate { value: string; source: string; handle: string; label: string; group: string }
 
@@ -46,8 +46,8 @@ export function TokenInspector({ node }: { node: TokenNode }) {
       <InspectorHeader
         node={node}
         hint={
-          <span className="flex flex-wrap items-center gap-1">
-            Use <Code>/</Code> to group, e.g. <Code>bg/surface</Code> · exports as <Code>{cssName}</Code>
+          <span className="flex items-center gap-0.5">
+            <span className="num text-fg-2">{cssName}</span>
             <CopyButton text={`var(${cssName})`} label="Copy CSS variable" className="h-5 w-5" />
           </span>
         }
@@ -137,10 +137,6 @@ export function TokenInspector({ node }: { node: TokenNode }) {
             );
           })}
         </div>
-        <Explain className="mt-2">
-          A <b className="font-medium text-fg-2">semantic token</b> names a purpose (“surface”), not a color. Each theme can point it at a
-          different primitive. Leave a theme empty to fall back to {primary.name}.
-        </Explain>
       </Section>
 
       {usedBy.length > 0 && (
@@ -155,7 +151,6 @@ export function TokenInspector({ node }: { node: TokenNode }) {
               </li>
             ))}
           </ul>
-          <Explain className="mt-2">Tokens that point at other tokens are <b className="font-medium text-fg-2">aliases</b>: change this one and they follow.</Explain>
         </Section>
       )}
     </div>
