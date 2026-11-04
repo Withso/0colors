@@ -23,6 +23,13 @@ describe('formulaTags', () => {
     expect(tags.find((t) => t.kind === 'row')).toMatchObject({ text: 'row1.l', base: 'row1', path: ['l'], atomic: true });
   });
 
+  it('never lets a row label cover a line break or a comment', () => {
+    for (const src of ['row1 =\n20\nrow1', 'row1 = // note\n  20\nrow1', 'row1 =\t 20\nrow1']) {
+      const label = formulaTags(src).find((t) => t.kind === 'label')!;
+      expect(label.text, src).toMatch(/^row1 =[ \t]*$/);
+    }
+  });
+
   it('keeps @references, nested channel paths and math glyphs', () => {
     const tags = formulaTags('@Brand.hsl.l * 2 >= 10');
     expect(tags[0]).toMatchObject({ kind: 'color', base: '@Brand', path: ['hsl', 'l'], display: 'Brand', text: '@Brand.hsl.l' });

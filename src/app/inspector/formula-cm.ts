@@ -12,6 +12,8 @@ import { type Tag, formulaTags } from './formula-tags';
 export interface TagLook {
   colorOf: (base: string) => string | null;
   row: (name: string) => { type: 'number' | 'boolean' | 'color' | 'group'; value: string; hex?: string } | null;
+  /** The value of the statement starting at `start`, if it was evaluated. */
+  stepAt: (start: number) => { type: 'number' | 'boolean' | 'color' | 'group'; value: string; hex?: string } | null;
   /** The live value of a looked-up expression, e.g. `parent.h` → `262`. */
   valueOf: (text: string) => string | null;
   /** Channel key → short label, e.g. `l` → `L`. */
@@ -76,6 +78,27 @@ class TagWidget extends WidgetType {
   ignoreEvent() { return false; }
 }
 
+/** The value of a statement that shares its line with the next one (`a = 1; b = 2`). */
+class InlineValueWidget extends WidgetType {
+  constructor(readonly value: string, readonly hex: string | undefined) { super(); }
+  eq(other: InlineValueWidget) { return other.value === this.value && other.hex === this.hex; }
+  toDOM() {
+    const el = document.createElement('span');
+    el.className = 'fx-inline-value';
+    el.title = this.hex ?? this.value;
+    if (this.hex) {
+      const sw = document.createElement('span');
+      sw.className = 'fx-sw checker';
+      const fill = document.createElement('span');
+      fill.style.background = this.hex;
+      sw.appendChild(fill);
+      el.appendChild(sw);
+    } else el.textContent = `= ${this.value}`;
+    return el;
+  }
+  ignoreEvent() { return true; }
+}
+
 /** "Output" in front of the last row once there are several, so the result row is unmistakable. */
 class OutputWidget extends WidgetType {
   eq() { return true; }
@@ -114,7 +137,7 @@ function spec(tag: Tag, look: TagLook, active: boolean, error: boolean): TagSpec
         value: !isColor && !tag.path?.length && row ? row.value : undefined,
       };
     }
-    case 'label': return { ...base, title: `Row “${tag.display}” — click to rename or delete` };
+    case 'label': return { ...base, title: `Row “${tag.display}” — click or press F2 to rename or delete` };
     case 'hex': return { ...base, hex: tag.text, label: tag.text.toUpperCase() };
     case 'hole': return { ...base, title: `Fill in ${tag.display}` };
     case 'op': return { ...base, title: OP_NAMES[tag.display] ? `${OP_NAMES[tag.display]} — click to change` : undefined };
@@ -141,7 +164,8 @@ function build(view: EditorView, look: TagLook): TagState {
   for (const tag of tags) {
     const active = !sel.empty && sel.from === tag.from && sel.to === tag.to;
     const error = !!err && err.end > err.start && tag.from < err.end && tag.to > err.start;
-    if (tag.atomic) {
+    // Replacing a line break from a plugin throws inside CodeMirror; such a tag falls back to plain text.
+    if (tag.atomic && !/[\r\n]/.test(src.slice(tag.from, tag.to))) {
       const deco = Decoration.replace({ widget: new TagWidget(spec(tag, look, active, error)) });
       ranges.push(deco.range(tag.from, tag.to));
       atomic.push(deco.range(tag.from, tag.to));
@@ -159,7 +183,14 @@ function build(view: EditorView, look: TagLook): TagState {
   const rows = formulaRows(src);
   const doc = view.state.doc;
   const last = rows[rows.length - 1];
-  if (rows.length > 1 && last.name === null) ranges.push(Decoration.widget({ widget: new OutputWidget(), side: -1 }).range(last.start));
+  if (rows.length > 1) ranges.push(Decoration.widget({ widget: new OutputWidget(), side: -1 }).range(last.start));
+  rows.forEach((row, i) => {
+    // Values sit at the end of each line; statements sharing a line show theirs inline instead.
+    const next = rows[i + 1];
+    if (!next || doc.lineAt(next.start).number !== doc.lineAt(row.start).number) return;
+    const step = look.stepAt(row.start);
+    if (step) ranges.push(Decoration.widget({ widget: new InlineValueWidget(step.value, step.type === 'color' ? step.hex : undefined), side: 1 }).range(row.end));
+  });
   for (const row of rows) {
     const first = doc.lineAt(row.start).number;
     const last = doc.lineAt(Math.max(row.start, row.end)).number;

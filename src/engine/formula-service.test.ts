@@ -401,6 +401,13 @@ describe('slotSuggestions', () => {
     expect(items.map((i) => i.insert)).toContain(`self.${channel}`);
   });
 
+  it('keeps words apart when a tag is replaced', () => {
+    const src = 'if dark&&light then 20 else 80';
+    const res = slots(src, '&&')!;
+    const or = res.items.find((i) => i.label === 'or')!;
+    expect(src.slice(0, res.from) + or.insert + src.slice(res.to)).toBe('if dark or light then 20 else 80');
+  });
+
   it.each([
     'if {condition} then 20 else 80', '{condition} ? 20 : 80', 'if({condition}, 20, 80)',
     'dark and {condition}', '{condition} or light', 'not {condition}', 'if ({condition}) then 20 else 80',

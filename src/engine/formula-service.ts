@@ -523,8 +523,8 @@ export function slotSuggestions(src: string, from: number, to: number, ctx: Comp
   const finish = (items: CompletionItem[]): CompletionResult | null => {
     const seen = new Set([current]);
     const unique = items.filter((item) => { if (seen.has(item.insert)) return false; seen.add(item.insert); return true; });
+    // Keep words apart, whether inserting at the caret or replacing a tag (`dark&&light` → `dark or light`).
     const spaced = unique.map((item) => {
-      if (from !== to) return item;
       const prefix = /\w/.test(src[from - 1] ?? '') && /^\w/.test(item.insert) ? ' ' : '';
       const suffix = /\w/.test(src[to] ?? '') && /[\w)]$/.test(item.insert) ? ' ' : '';
       if (!prefix && !suffix) return item;

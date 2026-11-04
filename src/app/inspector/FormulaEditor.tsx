@@ -12,9 +12,9 @@
 // ─────────────────────────────────────────────────────────────
 import { type ReactNode, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Annotation, EditorSelection, EditorState, Prec, Transaction } from '@codemirror/state';
+import { Annotation, EditorSelection, EditorState, Prec, type TransactionSpec } from '@codemirror/state';
 import { EditorView, type ViewUpdate, drawSelection, keymap, placeholder as placeholderText } from '@codemirror/view';
-import { defaultKeymap, history, historyKeymap, insertNewline } from '@codemirror/commands';
+import { defaultKeymap, insertNewline } from '@codemirror/commands';
 import { AtSign, CircleDashed, CornerDownLeft, CornerDownRight, Hash, Layers, Plus, Sparkles, Trash2, TriangleAlert } from 'lucide-react';
 import { type ChannelTrace, outputColor } from '@/engine/compute';
 import { type ChannelDef, type Space, SPACES, SPACE_ORDER, channelDefs, describe, formatChannel, spaceToRgb } from '@/engine/color/spaces';
@@ -67,7 +67,7 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
   const [typing, setTyping] = useState(false);
   const typingTimer = useRef<number | undefined>(undefined);
   const [rowTops, setRowTops] = useState<number[]>([]);
-  const [rename, setRename] = useState<{ index: number; name: string; left: number; top: number } | null>(null);
+  const [rename, setRename] = useState<{ index: number; name: string; anchor: { left: number; top: number; bottom: number } } | null>(null);
   /** The text the editor opened with; while it's untouched after switching to ƒ, it's a placeholder. */
   const initial = useRef(expr);
   const listId = useId();
@@ -118,6 +118,10 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
       const step = (live.current.trace?.explain?.steps ?? []).findLast((s) => s.name === name);
       return step ? { type: step.type, value: step.value, hex: step.hex } : null;
     },
+    stepAt: (start) => {
+      const step = (live.current.trace?.explain?.steps ?? []).find((s) => s.start === start);
+      return step ? { type: step.type, value: step.value, hex: step.hex } : null;
+    },
     valueOf: (text) => live.current.trace?.explain?.lookups.find((l) => l.text === text)?.value ?? null,
     channel: (key) => channelLabel(live.current.space, key),
     error: () => (live.current.showError && !live.current.pending ? live.current.trace?.error ?? null : null),
@@ -129,6 +133,12 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     space: live.current.space, channel: live.current.def.key, hasParent: live.current.hasParent, nodes: nodeInfos(live.current.nodeId),
   });
   const commit = (v: string) => setChannelRule(live.current.nodeId, live.current.def.key, { mode: 'formula', expr: v });
+  /** One undo step of its own (typing in between still coalesces): add/remove/rename a row, insert a pick. */
+  const structural = (view: EditorView, spec: TransactionSpec) => {
+    getEditor().breakCoalesce();
+    view.dispatch(spec);
+    getEditor().breakCoalesce();
+  };
 
   // ── Suggestions ────────────────────────────────────────────
   function titleFor(src: string, from: number, tag?: Tag): Popup['title'] {
@@ -141,6 +151,10 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     const d = live.current.def;
     if (!tag) return undefined;
     if (tag.kind === 'op') return { name: 'Operator', doc: 'Swap it for another one.' };
+    if (tag.kind === 'row' && !tag.path?.length) {
+      const type = lookRef.current.row(tag.base ?? '')?.type;
+      if (type !== 'color') return { name: type === 'number' ? 'Number' : 'Value', doc: 'Use another value.' };
+    }
     if (tag.kind === 'color' || tag.kind === 'row' || tag.kind === 'hex') return { name: tag.path?.length ? 'Value' : 'Color', doc: tag.path?.length ? 'Read a channel from another color, or another channel.' : 'Use another color.' };
     if (tag.kind === 'hole' && /condition/i.test(tag.display)) return { name: 'Condition', doc: 'Something true or false.' };
     if (tag.kind === 'num' || tag.kind === 'hole') return { name: d.label, doc: `${formatChannel(d, d.min)}–${formatChannel(d, d.max)}${d.unit ?? ''}${d.wrap ? ', wraps around' : ''}` };
@@ -184,6 +198,8 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     const p = popupRef.current;
     if (!view || !p) return;
     const { from, to } = p.res;
+    // A popup from before an undo or an outside change no longer fits the text.
+    if (to > view.state.doc.length) { setPopup(null); return; }
     const end = from + item.insert.length;
     const selection = item.select
       ? EditorSelection.range(from + item.select.from, from + item.select.to)
@@ -191,7 +207,7 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     // Typing into a selected blank keeps its start, so a pick there still counts as filling it.
     const filledBlank = blankAt.current === from;
     blankAt.current = null;
-    view.dispatch({ changes: { from, to, insert: item.insert }, selection, userEvent: 'input.complete', scrollIntoView: true });
+    structural(view, { changes: { from, to, insert: item.insert }, selection, userEvent: 'input.complete', scrollIntoView: true });
     setPopup(null);
     const tags = tagsOf(view, pluginRef.current!);
     if (item.select) {
@@ -205,10 +221,11 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     if (next) selectHole(view, next);
   }
 
-  /** The first placeholder at or after `pos` in the row that contains `pos`. */
-  function holeInRow(view: EditorView, pos: number): Tag | undefined {
+  /** The first placeholder at or after `pos` in the row that contains `pos`; with `wrap`, else the row's first. */
+  function holeInRow(view: EditorView, pos: number, wrap = false): Tag | undefined {
     const row = formulaRows(view.state.doc.toString()).find((r) => r.start <= pos && pos <= Math.max(r.end, r.exprStart));
-    return holes(tagsOf(view, pluginRef.current!)).find((h) => h.from >= pos && (!row || h.to <= row.end));
+    const inRow = holes(tagsOf(view, pluginRef.current!)).filter((h) => !row || (h.from >= row.start && h.to <= row.end));
+    return inRow.find((h) => h.from >= pos) ?? (wrap ? inRow[0] : undefined);
   }
 
   // ── Rows ───────────────────────────────────────────────────
@@ -220,7 +237,7 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     const index = rows.findLastIndex((r) => r.start <= head);
     const edit = addRowAfter(src, Math.max(0, index));
     if (!edit.changes.length) return;
-    view.dispatch({
+    structural(view, {
       changes: edit.changes, selection: EditorSelection.single(edit.selection.anchor, edit.selection.head ?? edit.selection.anchor),
       userEvent: 'input.row', scrollIntoView: true,
     });
@@ -232,7 +249,7 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
   function deleteRow(view: EditorView, index: number) {
     const name = formulaRows(view.state.doc.toString())[index]?.name;
     const edit = removeRow(view.state.doc.toString(), index);
-    view.dispatch({ changes: edit.changes, selection: EditorSelection.single(edit.selection.anchor, edit.selection.head ?? edit.selection.anchor), userEvent: 'delete.row' });
+    structural(view, { changes: edit.changes, selection: EditorSelection.single(edit.selection.anchor, edit.selection.head ?? edit.selection.anchor), userEvent: 'delete.row' });
     setPopup(null);
     setStatus(`Removed ${name ?? 'a row'}. Undo with ${navigator.platform.startsWith('Mac') ? '⌘' : 'Ctrl+'}Z.`);
   }
@@ -249,7 +266,7 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
       const range = call(near);
       const inside = src.slice(near.to, near.close).replace(/\{[^{}]*\}|[\s,]/g, '');
       // A call whose arguments are all still placeholders goes in one step; otherwise select it first.
-      if (!inside) view.dispatch({ changes: range, userEvent: forward ? 'delete.forward' : 'delete.backward' });
+      if (!inside) structural(view, { changes: range, userEvent: forward ? 'delete.forward' : 'delete.backward' });
       else view.dispatch({ selection: EditorSelection.range(range.from, range.to) });
       return true;
     }
@@ -293,6 +310,8 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
         typingTimer.current = window.setTimeout(() => setTyping(false), 700);
         if (u.transactions.some((tr) => tr.isUserEvent('input.type') || tr.isUserEvent('delete') || tr.isUserEvent('input.paste'))) refreshTyping(u.view);
       }
+      // Undo, redo and outside changes move text under any open popup: close it rather than apply stale offsets.
+      if (!u.transactions.some((tr) => tr.isUserEvent('input') || tr.isUserEvent('delete'))) { setPopup(null); blankAt.current = null; }
     } else if (u.selectionSet) {
       const p = popupRef.current;
       const sel = u.state.selection.main;
@@ -325,7 +344,7 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     if (tag.kind === 'label') {
       const row = formulaRows(view.state.doc.toString()).find((r) => r.start === tag!.from);
       const rect = el.getBoundingClientRect();
-      if (row?.name) setRename({ index: row.index, name: row.name, left: rect.left, top: rect.bottom + 4 });
+      if (row?.name) setRename({ index: row.index, name: row.name, anchor: { left: rect.left, top: rect.top, bottom: rect.bottom } });
       return true;
     }
     if (tag.kind === 'name') {
@@ -352,7 +371,7 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
         // `mix(` becomes `mix({a}, {b}, {t})` with the first placeholder selected.
         const start = from - word!.length;
         const selection = snippet.select ? EditorSelection.range(start + snippet.select.from, start + snippet.select.to) : EditorSelection.cursor(start + snippet.text.length);
-        view.dispatch({ changes: { from: start, to, insert: snippet.text }, selection, userEvent: 'input.complete' });
+        structural(view, { changes: { from: start, to, insert: snippet.text }, selection, userEvent: 'input.complete' });
         setPopup(null);
         if (snippet.select) {
           const hole = tagsOf(view, pluginRef.current!).find((t) => t.kind === 'hole' && t.from === start + snippet.select!.from);
@@ -412,8 +431,8 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     Enter: (view) => {
       const p = popupRef.current;
       if (p) { accept(p.res.items[p.active]); return true; }
-      // While the row still has placeholders, Enter moves to the next one; after that it adds a row.
-      const next = holeInRow(view, view.state.selection.main.to);
+      // While the row still has blanks, Enter moves to the next (or an earlier) one; after that it adds a row.
+      const next = holeInRow(view, view.state.selection.main.to, true);
       if (next) { selectHole(view, next); return true; }
       addRow(view);
       return true;
@@ -442,6 +461,20 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
       return true;
     },
     'Ctrl-Space': (view) => { refreshTyping(view, true); return true; },
+    // One history for the whole app: undo here is the same step as the toolbar's Undo.
+    'Mod-z': () => { setPopup(null); getEditor().undo(); return true; },
+    'Mod-y': () => { setPopup(null); getEditor().redo(); return true; },
+    'Mod-Shift-z': () => { setPopup(null); getEditor().redo(); return true; },
+    // Rename or delete the current row from the keyboard.
+    F2: (view) => {
+      const head = view.state.selection.main.head;
+      const row = formulaRows(view.state.doc.toString()).findLast((r) => r.start <= head);
+      const at = row?.name ? view.coordsAtPos(row.start, 1) : null;
+      if (!row?.name || !at) return false;
+      setPopup(null);
+      setRename({ index: row.index, name: row.name, anchor: { left: at.left, top: at.top, bottom: at.bottom } });
+      return true;
+    },
     Backspace: (view) => smartDelete(view, false),
     Delete: (view) => smartDelete(view, true),
   };
@@ -464,16 +497,15 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     const view = new EditorView({
       parent: host.current!,
       state: EditorState.create({
-        doc: expr,
+        doc: normalized(expr),
         extensions: [
-          history(),
           drawSelection(),
           EditorView.lineWrapping,
           placeholderText(hasParent ? `Type a value, @node or function` : 'Type a number, @node or function'),
           baseTheme,
           plugin,
           Prec.highest(keymap.of(Object.keys(h.keys).map((key) => ({ key, run: (v: EditorView) => h.keys[key](v) })))),
-          keymap.of([...historyKeymap, ...defaultKeymap]),
+          keymap.of(defaultKeymap),
           EditorView.inputHandler.of((v, from, to, text) => h.onInput(v, from, to, text)),
           EditorView.domEventHandlers({
             mousedown: (e, v) => h.onMouseDown(e, v),
@@ -496,9 +528,14 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     const view = viewRef.current;
     if (!view) return;
     const current = view.state.doc.toString();
-    if (expr !== current) {
-      view.dispatch({ changes: { from: 0, to: current.length, insert: expr }, annotations: [External.of(true), Transaction.addToHistory.of(false)] });
-    }
+    const next = normalized(expr);
+    if (next === current) return;
+    // Replace only the part that changed, so the caret stays put when an undo touches another row.
+    let start = 0;
+    while (start < current.length && start < next.length && current[start] === next[start]) start++;
+    let end = 0;
+    while (end < current.length - start && end < next.length - start && current[current.length - 1 - end] === next[next.length - 1 - end]) end++;
+    view.dispatch({ changes: { from: start, to: current.length - end, insert: next.slice(start, next.length - end) }, annotations: External.of(true) });
   }, [expr]);
 
   useEffect(() => {
@@ -592,7 +629,9 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
         <div ref={host} />
         {rows.map((row, i) => {
           const top = rowTops[i];
-          if (top === undefined) return null;
+          // A statement that shares its line with the next one shows its value inline (see formula-cm).
+          const next = rows[i + 1];
+          if (top === undefined || (next && !doc.slice(row.start, next.start).includes('\n'))) return null;
           const step = steps.find((s) => s.start === row.start);
           const waiting = !!failed && row.index > failed.index;
           return (
@@ -666,7 +705,7 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
             const src = view.state.doc.toString();
             const next = renameLocal(src, rename.name, to);
             if (typeof next !== 'string') return next.error;
-            view.dispatch({ changes: { from: 0, to: src.length, insert: next }, userEvent: 'input.rename' });
+            structural(view, { changes: { from: 0, to: src.length, insert: next }, userEvent: 'input.rename' });
             setRename(null);
             setStatus(`Renamed ${rename.name} to ${to}.`);
             view.focus();
@@ -678,6 +717,9 @@ export function FormulaEditor({ nodeId, def, space, trace, hasParent, expr, auto
     </div>
   );
 }
+
+/** The editor and the evaluator use the same offsets only with one newline convention. */
+const normalized = (src: string) => src.replace(/\r\n?/g, '\n');
 
 /** The rows after `name`'s declaration that read it ("row3", "Output"). */
 function usersOf(src: string, name: string): string[] {
@@ -801,12 +843,23 @@ function SuggestionPopup({ id, view, popup, onHover, onPick }: {
 }
 
 // ── Rename a row ─────────────────────────────────────────────
-function RenamePopover({ name, left, top, usedBy, onClose, onRename, onDelete }: {
-  name: string; left: number; top: number; usedBy: string[]; onClose: () => void; onRename: (to: string) => string | null; onDelete: () => void;
+function RenamePopover({ name, anchor, usedBy, onClose, onRename, onDelete }: {
+  name: string; anchor: { left: number; top: number; bottom: number }; usedBy: string[];
+  onClose: () => void; onRename: (to: string) => string | null; onDelete: () => void;
 }) {
   const [value, setValue] = useState(name);
   const [problem, setProblem] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ left: anchor.left, top: anchor.bottom + 4 });
+  // Below the label when it fits, otherwise above; always inside the window.
+  useLayoutEffect(() => {
+    const el = panel.current;
+    if (!el) return;
+    const { width, height } = el.getBoundingClientRect();
+    const top = anchor.bottom + 4 + height <= innerHeight - 8 ? anchor.bottom + 4 : Math.max(8, anchor.top - 4 - height);
+    setPos({ left: Math.max(8, Math.min(anchor.left, innerWidth - width - 8)), top });
+  }, [anchor, problem, usedBy.length]);
   useEffect(() => { input.current?.select(); }, []);
   useEffect(() => {
     const away = (e: PointerEvent) => { if (!(e.target as HTMLElement).closest('[data-rename]')) onClose(); };
@@ -814,7 +867,7 @@ function RenamePopover({ name, left, top, usedBy, onClose, onRename, onDelete }:
     return () => window.removeEventListener('pointerdown', away, true);
   }, [onClose]);
   return createPortal(
-    <div data-rename className="glass animate-pop fixed z-[60] w-[220px] rounded-[10px] p-2 shadow-panel" style={{ left, top }}>
+    <div ref={panel} data-rename className="glass animate-pop fixed z-[60] w-[220px] rounded-[10px] p-2 shadow-panel" style={pos}>
       <div className="mb-1.5 text-[11px] text-fg-3">Row name — other rows use it to read this value</div>
       <div className="flex items-center gap-1.5">
         <input
@@ -825,6 +878,8 @@ function RenamePopover({ name, left, top, usedBy, onClose, onRename, onDelete }:
           onChange={(e) => { setValue(e.target.value); setProblem(null); }}
           onKeyDown={(e) => {
             e.stopPropagation();
+            // Enter or Escape that confirms an input method's composition isn't meant for this field.
+            if (e.nativeEvent.isComposing || e.keyCode === 229) return;
             if (e.key === 'Escape') { e.preventDefault(); onClose(); }
             if (e.key === 'Enter') {
               e.preventDefault();

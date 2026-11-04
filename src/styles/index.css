@@ -282,6 +282,16 @@
     font-size: 10.5px;
     box-shadow: inset 0 0 0 1px var(--app-line-strong);
   }
+  .fx-inline-value {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 4px 0 2px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--app-fg-3);
+    vertical-align: top;
+    height: 26px;
+  }
   .fx-hole {
     background: transparent;
     color: var(--app-fg-3);

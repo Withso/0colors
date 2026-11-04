@@ -57,8 +57,17 @@ export const operatorGlyph = (op: string) => GLYPHS[op] ?? op;
 export function formulaTags(src: string): Tag[] {
   const spans = highlightFormula(src);
   const rows = formulaRows(src);
+  // A row label covers `name =` and the spaces after it, never a line break or comment (CodeMirror can't
+  // replace line breaks from a plugin, and the expression may start on the next line).
   const labels = new Map<number, number>();
-  for (const row of rows) if (row.name !== null && row.exprStart > row.start) labels.set(row.start, row.exprStart);
+  for (const row of rows) {
+    if (row.name === null) continue;
+    const eq = spans.find((s) => s.start >= row.start && s.kind === 'operator' && src.slice(s.start, s.end) === '=');
+    if (!eq) continue;
+    let end = eq.end;
+    while (end < row.exprStart && (src[end] === ' ' || src[end] === '\t')) end++;
+    labels.set(row.start, end);
+  }
 
   const text = (s: FormulaSpan) => src.slice(s.start, s.end);
   const out: Tag[] = [];
