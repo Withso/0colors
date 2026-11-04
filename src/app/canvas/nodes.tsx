@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────
 import { type CSSProperties, memo, type ReactNode, useEffect, useRef, useState } from 'react';
 import { Handle, type NodeProps, NodeResizeControl, NodeResizer, Position, type Node as RFNode, useStore } from '@xyflow/react';
-import { Blend, Contrast, Lock, Palette as PaletteIcon, Tag, TriangleAlert } from 'lucide-react';
+import { Blend, CircleDashed, Contrast, Lock, Palette as PaletteIcon, Tag, TriangleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import type { CanvasNode, ColorNode, ContrastNode, HtmlNode, MixNode, NoteNode, NoteTone, PaletteNode, SectionNode, TokenNode } from '@/engine/model';
 import { shadeHandle, tokenHandle } from '@/engine/model';
@@ -20,6 +20,7 @@ import { cn } from '../ui';
 import { fmt, inkOn } from '../lib/color-ui';
 import { useCompatibleHandles, useIsDropTarget } from './interaction';
 import { frameDoc, frameUrl, runFrameCommand } from './html-frames';
+import { isBlankError } from '../inspector/formula-tags';
 
 export type FlowNode = RFNode<{ node: CanvasNode }>;
 type ViewProps = NodeProps<FlowNode>;
@@ -161,6 +162,7 @@ function ColorCard({ id, node, res, selected, ink, hasParent, errors, defs, chan
 }) {
   const compat = useCompatibleHandles(id);
   const { color } = res;
+  const incomplete = res.channels.filter((c) => isBlankError(c.error)).length;
 
   // Drag a channel cell sideways to scrub its value (⇧ ×10, ⌥ ÷10), right on the canvas.
   const scrub = (e: React.PointerEvent, key: string, start: number, def: { step: number; min: number; max: number; wrap?: boolean }) => {
@@ -229,7 +231,7 @@ function ColorCard({ id, node, res, selected, ink, hasParent, errors, defs, chan
                   'min-w-0 px-2 py-1.5 transition-colors',
                   c.mode !== 'formula' && 'nodrag cursor-ew-resize hover:bg-surface-3/70',
                   i > 0 && 'shadow-[inset_0.5px_0_0_var(--app-line-strong)]',
-                  c.error && 'bg-danger/10',
+                  c.error && !isBlankError(c.error) && 'bg-danger/10',
                 )}
               >
                 <div className="flex h-3.5 items-center justify-between gap-1">
@@ -238,7 +240,7 @@ function ColorCard({ id, node, res, selected, ink, hasParent, errors, defs, chan
                     <span className="num text-[9.5px] font-medium text-accent">{(c.delta ?? 0) >= 0 ? '+' : '−'}{fmt(Math.abs(c.delta ?? 0), def.decimals)}</span>
                   )}
                   {derived && c.mode === 'fixed' && <Lock size={8.5} className="text-fg-3" />}
-                  {c.mode === 'formula' && <span className={cn('num text-[10px] font-semibold', c.error ? 'text-danger' : 'text-warning')}>ƒ</span>}
+                  {c.mode === 'formula' && <span className={cn('num text-[10px] font-semibold', c.error ? (isBlankError(c.error) ? 'text-fg-3' : 'text-danger') : 'text-warning')}>ƒ</span>}
                 </div>
                 <div className="num truncate text-[11.5px] leading-snug text-fg">{formatChannel(def, c.value)}</div>
               </div>
@@ -247,9 +249,16 @@ function ColorCard({ id, node, res, selected, ink, hasParent, errors, defs, chan
         </div>
       </div>
       {errors > 0 && (
-        <div className="flex items-center gap-1.5 px-3 pb-2 text-[11px] font-medium text-danger">
-          <TriangleAlert size={11} /> {errors === 1 ? 'Formula error' : `${errors} formula errors`}
-        </div>
+        // Unfilled blanks are work in progress, not mistakes.
+        incomplete === errors ? (
+          <div className="flex items-center gap-1.5 px-3 pb-2 text-[11px] font-medium text-fg-3">
+            <CircleDashed size={11} /> Formula has blanks to fill in
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 px-3 pb-2 text-[11px] font-medium text-danger">
+            <TriangleAlert size={11} /> {errors === 1 ? 'Formula error' : `${errors} formula errors`}
+          </div>
+        )
       )}
     </Card>
   );

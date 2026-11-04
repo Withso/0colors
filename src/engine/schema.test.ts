@@ -80,6 +80,13 @@ describe('normalizeProject', () => {
     expect(node.data.rules).toEqual({ l: { mode: 'offset', delta: 5 }, h: { mode: 'formula', expr: 'parent.h + 1' } });
   });
 
+  it('stores formulas with one newline convention', () => {
+    const p = normalizeProject({
+      nodes: [{ id: 'c', type: 'color', position: at, data: { space: 'oklch', rules: { l: { mode: 'formula', expr: 'row1 = 20\r\nrow2 = 30\rrow1 + row2' } } } }],
+    });
+    expect((p.nodes[0] as ColorNode).data.rules.l.expr).toBe('row1 = 20\nrow2 = 30\nrow1 + row2');
+  });
+
   it('fills palette, mix, note and token defaults', () => {
     const p = normalizeProject({
       nodes: [

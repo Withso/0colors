@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { type CanvasNode, type ChannelValues, type ColorNode, type Edge, type Project, type Space, type Theme, tokenHandle } from './model';
 import { createColorNode, createContrastNode, createMixNode, createPaletteNode, createSectionNode, createTokenNode, makeEdge } from './defaults';
+import { describe as describeColor } from './color/spaces';
+import { mixRgb } from './color/mix';
 import {
   type ColorResult, type ContrastResult, type MixResult, type PaletteResult, type TokenResult,
   computeAllThemes, computeProject, outputColor, outputNative, wouldCreateCycle,
@@ -24,6 +26,36 @@ const asColor = (r: ReturnType<typeof computeProject>, id: string) => r.nodes[id
 const channel = (r: ColorResult, key: string) => r.channels.find((c) => c.key === key)!;
 
 describe('computeProject — color rules', () => {
+  it('takes the edited channel from a final color formula', () => {
+    const p = project([
+      color('a', 'Parent', 'oklch', oklch(60, 0.1, 200)),
+      color('b', 'Child', 'oklch', oklch(20, 0, 0), {
+        l: { mode: 'formula', expr: 'mix(parent, white, 0.5)' },
+        alpha: { mode: 'formula', expr: '#ff000080' },
+      }),
+    ], [edge('a', 'b')]);
+    const result = computeProject(p, 'light');
+    const mixed = mixRgb(asColor(result, 'a').color.rgb, { r: 1, g: 1, b: 1 }, 0.5, 'oklab');
+    const expected = describeColor(mixed.rgb);
+    const l = channel(asColor(result, 'b'), 'l');
+    expect(l.error).toBeUndefined();
+    expect(l.value).toBeCloseTo(expected.oklch.l * 100, 10);
+    expect(l.explain?.steps[0]).toMatchObject({ type: 'color', hex: expected.hexa });
+    expect(channel(asColor(result, 'b'), 'alpha').value).toBeCloseTo(128 / 255 * 100, 10);
+  });
+
+  it.each(['{value}', 'round('])('preserves successful row explanations before %s fails', (failure) => {
+    const expr = `row1 = white\nrow2 = 50\n${failure}`;
+    const p = project([color('a', 'Color', 'oklch', oklch(40, 0.1, 200), { l: { mode: 'formula', expr } })]);
+    const l = channel(asColor(computeProject(p, 'light'), 'a'), 'l');
+    expect(l.error).toBeDefined();
+    expect(l.value).toBe(40);
+    expect(l.explain).toEqual({ lookups: [], substituted: '', steps: [
+      { name: 'row1', text: 'row1 = white', value: '#FFFFFF', start: 0, end: 12, type: 'color', hex: '#FFFFFF' },
+      { name: 'row2', text: 'row2 = 50', value: '50', start: 13, end: 22, type: 'number' },
+    ] });
+  });
+
   it('explains formula rows and collects references from named statements', () => {
     const p = project([
       color('a', 'Base', 'oklch', oklch(60, 0.1, 200)),

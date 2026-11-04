@@ -38,7 +38,8 @@ function normalizeRule(v: unknown): ChannelRule | null {
   if (!isObj(v) || !(RULE_MODES as readonly unknown[]).includes(v.mode)) return null;
   const rule: ChannelRule = { mode: v.mode as ChannelRule['mode'] };
   if (isNum(v.delta)) rule.delta = v.delta;
-  if (isStr(v.expr)) rule.expr = v.expr;
+  // One newline convention, so editor and evaluator offsets always agree.
+  if (isStr(v.expr)) rule.expr = v.expr.replace(/\r\n?/g, '\n');
   return rule;
 }
 
