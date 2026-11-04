@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { type CompletionContext, formulaCompletions, formulaDisplay, highlightFormula, signatureAt } from './formula-service';
-import { type FormulaEnv, evaluateFormula } from './formula';
+import { type CompletionContext, type TextEdit, addRowAfter, formulaCompletions, formulaDisplay, formulaRows, functionSnippet, highlightFormula, nextRowName, removeRow, renameLocal, signatureAt, slotSuggestions } from './formula-service';
+import { type FormulaEnv, FORMULA_FUNCTIONS, evaluateFormula, parse } from './formula';
 import { SPACE_ORDER, channelDefs, describe as describeColor, infoToSpace } from './color/spaces';
 
 const ctx: CompletionContext = {
@@ -139,8 +139,8 @@ describe('formulaCompletions', () => {
     expect(labels('out_1 = 2\n|')).toContain('out_1');
   });
 
-  it('inserts calls with the caret inside and avoids duplicating an existing parenthesis', () => {
-    expect(complete('cl|')?.items[0]).toMatchObject({ label: 'clamp', insert: 'clamp()', caret: 6, detail: 'clamp(x, min, max)' });
+  it('inserts calls with selected placeholders and avoids duplicating an existing parenthesis', () => {
+    expect(complete('cl|')?.items[0]).toMatchObject({ label: 'clamp', insert: 'clamp({x}, {min}, {max})', select: { from: 6, to: 9 }, detail: 'clamp(x, min, max)' });
     expect(complete('CL|amp(1, 0, 10)')?.items[0]).toMatchObject({ label: 'clamp', insert: 'clamp', caret: 5 });
     expect(complete('clamp(|parent.l, 0, 100)')).toMatchObject({ from: 6, to: 12 });
     expect(complete('hu|', { ...ctx, channel: 'h' })?.items[0].label).toBe('huelerp');
@@ -200,7 +200,7 @@ describe('formulaCompletions', () => {
           const items = formulaCompletions('', 0, context)!.items.filter((i) => i.kind === 'example');
           expect(items.length).toBeGreaterThanOrEqual(3);
           const color = { info, native: { space, values: { ...infoToSpace(space, info), alpha: 100 } }, label: 'self' };
-          const env: FormulaEnv = { space, parent: hasParent ? color : null, self: color, dark: false, ref: () => color };
+          const env: FormulaEnv = { space, channel: channel.key, parent: hasParent ? color : null, self: color, dark: false, ref: () => color };
           for (const item of items) {
             expect(item.doc!.length).toBeGreaterThan(10);
             if (!hasParent) expect(item.insert).not.toContain('parent');
@@ -284,7 +284,7 @@ describe('formulaDisplay', () => {
 });
 
 it('all language services tolerate arbitrary unfinished input', () => {
-  const alphabet = 'abc01_@#().,;=<>?!+-*/ \n\r×😄';
+  const alphabet = 'abc01_@#{}().,;=<>?!+-*/ \n\r×😄';
   let seed = 42;
   for (let i = 0; i < 200; i++) {
     let source = '';
@@ -297,6 +297,334 @@ it('all language services tolerate arbitrary unfinished input', () => {
       formulaCompletions(source, i % (source.length + 1), ctx);
       signatureAt(source, i % (source.length + 1));
       formulaDisplay(source);
+      formulaRows(source);
+      nextRowName(source);
+      addRowAfter(source, 0);
+      removeRow(source, 0);
+      renameLocal(source, 'a', 'b');
+      slotSuggestions(source, i % (source.length + 1), i % (source.length + 1), ctx);
     }).not.toThrow();
   }
+});
+
+describe('formula placeholders and snippets', () => {
+  it('highlights and displays each placeholder as one tag', () => {
+    const source = 'mix({ a }, {b}, {t})';
+    expect(highlightFormula(source).filter((s) => s.kind === 'placeholder').map((s) => source.slice(s.start, s.end))).toEqual(['{ a }', '{b}', '{t}']);
+    expect(formulaDisplay(source)?.filter((t) => t.kind === 'placeholder')).toEqual([
+      { kind: 'placeholder', text: 'a' }, { kind: 'placeholder', text: 'b' }, { kind: 'placeholder', text: 't' },
+    ]);
+    for (const source of ['{}', '{unfinished', `{${'a'.repeat(33)}}`]) expect(highlightFormula(source)[0].kind).toBe('error');
+    expect(highlightFormula('{value}\n50').map((t) => t.kind)).toEqual(['placeholder', 'number']);
+  });
+
+  it('builds complete snippets and selects the first required argument', () => {
+    expect(functionSnippet('mix')).toEqual({ text: 'mix({a}, {b}, {t})', select: { from: 4, to: 7 } });
+    expect(functionSnippet('round')?.text).toBe('round({x})');
+    expect(functionSnippet('min')?.text).toBe('min({a}, {b})');
+    expect(functionSnippet('max')?.text).toBe('max({a}, {b})');
+    expect(functionSnippet('MIX')).toEqual(functionSnippet('mix'));
+    expect(functionSnippet('missing')).toBeNull();
+    for (const fn of FORMULA_FUNCTIONS) {
+      const snippet = functionSnippet(fn.name)!;
+      expect(() => parse(snippet.text), fn.name).not.toThrow();
+      expect(snippet.text.slice(snippet.select!.from, snippet.select!.to)).toMatch(/^\{\w+\}$/);
+    }
+    const conditional = complete('if|')!.items.find((i) => i.label === 'if … then … else')!;
+    expect(conditional.insert).toBe('if {condition} then {value} else {value}');
+    expect(conditional.insert.slice(conditional.select!.from, conditional.select!.to)).toBe('{condition}');
+  });
+
+  it('completes inside and at the start of a hole by replacing the whole tag', () => {
+    const source = 'mix({a}, {b}, {t})';
+    for (const offset of [0, 1, 2, 3]) {
+      const start = source.indexOf('{b}');
+      const result = formulaCompletions(source, start + offset, ctx)!;
+      expect([result.from, result.to]).toEqual([start, start + 3]);
+      expect(result.items.some((i) => i.insert === 'parent')).toBe(true);
+      expect(result.items.some((i) => i.insert === '50')).toBe(false);
+    }
+    const amount = complete('mix({a}, {b}, {|t})')!;
+    expect(amount.items.slice(0, 3).map((i) => i.insert)).toEqual(['0.25', '0.5', '0.75']);
+  });
+});
+
+function slots(source: string, text: string, context = ctx, from = source.indexOf(text)) {
+  return slotSuggestions(source, from, from + text.length, context);
+}
+const slotLabels = (source: string, text: string, context = ctx) => slots(source, text, context)?.items.map((i) => i.label) ?? [];
+
+describe('slotSuggestions', () => {
+  it('offers colors, earlier color locals and output nodes with known swatches', () => {
+    const source = 'tint = #abc\nalias = @brand-blue\namount = 50\nmix({a}, white, 0.5)\nfuture = black';
+    const context: CompletionContext = { ...ctx, nodes: [...ctx.nodes, { slug: 'note', name: 'Note', type: 'note' }, { slug: 'contrast', name: 'Contrast', type: 'contrast' }] };
+    const items = slots(source, '{a}', context)!.items;
+    expect(items.slice(0, 2).map((i) => i.insert)).toEqual(['parent', 'self']);
+    expect(items.find((i) => i.insert === 'tint')).toMatchObject({ kind: 'local', detail: 'Color', hex: '#AABBCC' });
+    expect(items.find((i) => i.insert === 'alias')).toMatchObject({ hex: '#4488FF' });
+    expect(items.find((i) => i.insert === '@brand-blue')).toMatchObject({ kind: 'node', hex: '#4488FF' });
+    expect(items.find((i) => i.insert === 'white')).toMatchObject({ hex: '#FFFFFF' });
+    expect(items.some((i) => i.kind === 'value' && i.hex)).toBe(true);
+    for (const text of ['amount', 'future', '@note', '@contrast', 'dark', '50']) expect(items.some((i) => i.insert === text)).toBe(false);
+    expect(slotLabels('mix({a}, white, 0.5)', '{a}', { ...ctx, hasParent: false })).not.toContain('parent');
+  });
+
+  it('uses parameter examples, ranges, optional arguments and repeatable arguments', () => {
+    const items = slots('amount = 0.5\nmix(parent, white, {t})', '{t}')!.items;
+    expect(items.slice(0, 3).map((i) => [i.insert, i.kind, i.detail])).toEqual([
+      ['0.25', 'value', '0–1'], ['0.5', 'value', '0–1'], ['0.75', 'value', '0–1'],
+    ]);
+    expect(items.map((i) => i.insert)).toContain('amount');
+    expect(slotLabels('round(50, {step})', '{step}').slice(0, 3)).toEqual(['1', '5', '10']);
+    expect(slotLabels('sin({degrees})', '{degrees}').slice(0, 3)).toEqual(['30', '90', '180']);
+    expect(slotLabels('min(1, 2, 3, {more})', '{more}').slice(0, 3)).toEqual(['0', '50', '100']);
+    expect(slotLabels('result = if(dark, {then}, {else})\n{value}', '{value}')).toContain('result');
+  });
+
+  it('keeps a scaled argument on its own scale and channel values on the channel’s', () => {
+    // A 0–1 blend never offers a 0–100 channel reading.
+    expect(slotLabels('mix(parent, white, {t})', '{t}')).not.toContain('parent.l');
+    // Plain numbers (clamp's limits) follow the channel being edited, here OKLCH chroma.
+    const chroma = { ...ctx, channel: 'c' };
+    expect(slots('clamp(parent.c, {min}, {max})', '{min}', chroma)!.items.filter((i) => i.kind === 'value').map((i) => i.insert)).toEqual(['0', '0.05', '0.1', '0.2']);
+    expect(slots('clamp(parent.c, {min}, {max})', '{min}', chroma)!.items.map((i) => i.insert)).toContain('parent.c');
+  });
+
+  it.each([
+    ['oklch', 'l', ['0', '50', '100']], ['oklch', 'h', ['0', '90', '180', '270']],
+    ['oklch', 'c', ['0', '0.05', '0.1', '0.2']], ['hct', 't', ['0', '50', '100']],
+    ['rgb', 'g', ['0', '128', '255']], ['hsl', 'alpha', ['0', '50', '100']],
+  ] as const)('uses appropriate literals for %s.%s', (space, channel, expected) => {
+    const items = slots('{value}', '{value}', { ...ctx, space, channel })!.items;
+    expect(items.filter((i) => i.kind === 'value').map((i) => i.insert)).toEqual(expected);
+    expect(items.map((i) => i.insert)).toContain(`parent.${channel}`);
+    expect(items.map((i) => i.insert)).toContain(`self.${channel}`);
+  });
+
+  it.each([
+    'if {condition} then 20 else 80', '{condition} ? 20 : 80', 'if({condition}, 20, 80)',
+    'dark and {condition}', '{condition} or light', 'not {condition}', 'if ({condition}) then 20 else 80',
+  ])('suggests conditions inside %s', (source) => {
+    const labels = slotLabels(source, '{condition}');
+    expect(labels).toEqual(['dark', 'light', 'parent.l > 50', 'contrast(parent, white) >= 4.5', 'true', 'false']);
+  });
+
+  it('uses valid self conditions when there is no parent, in every space', () => {
+    const info = describeColor({ r: 0.3, g: 0.5, b: 0.7 });
+    for (const space of SPACE_ORDER) {
+      const items = slots('if {condition} then 20 else 80', '{condition}', { ...ctx, space, hasParent: false })!.items;
+      const env: FormulaEnv = { space, parent: null, self: { info, label: 'self' }, dark: false, ref: () => ({ info, label: 'ref' }) };
+      for (const item of items) {
+        expect(item.insert).not.toContain('parent');
+        expect(() => evaluateFormula(`if ${item.insert} then 20 else 80`, env)).not.toThrow();
+      }
+    }
+  });
+
+  it('distinguishes conditions, numeric operands, branches and named row expressions', () => {
+    for (const source of ['if {value} > 50 then 20 else 80', 'if dark then {value} else 80', 'dark ? 20 : {value}', '{value} + 10', 'parent.l <= {value}', '{value}']) {
+      const labels = slotLabels(source, '{value}');
+      expect(labels).toContain('50');
+      expect(labels).toContain('parent.l');
+      expect(labels).not.toContain('dark');
+      expect(labels).not.toContain('parent');
+    }
+    const any = slotLabels('row1 = {value}', '{value}');
+    for (const text of ['50', 'parent', 'dark', 'mix']) expect(any).toContain(text);
+    expect(slotLabels('contrast(parent, white) >= {ratio}', '{ratio}').slice(0, 3)).toEqual(['3', '4.5', '7']);
+    expect(slotLabels('mix(black, white, {value} + 0.5)', '{value}').slice(0, 3)).toEqual(['0', '50', '100']);
+  });
+
+  it('recovers argument and condition slots before the formula is complete', () => {
+    expect(slotSuggestions('mix(parent, white, ', 19, 19, ctx)?.items.slice(0, 3).map((i) => i.insert)).toEqual(['0.25', '0.5', '0.75']);
+    expect(slotSuggestions('if ', 3, 3, ctx)?.items[0].insert).toBe('dark');
+    expect(slotSuggestions('if dark then ', 13, 13, ctx)?.items[0].insert).toBe('0');
+    expect(slotSuggestions('parent.', 7, 7, ctx)?.items.map((i) => i.insert)).toContain('l');
+  });
+
+  it('keeps punctuation and the next statement intact when filling empty caret slots', () => {
+    for (const source of ['mix()', 'mix(, white, 0.5)']) {
+      const result = slotSuggestions(source, 4, 4, ctx)!;
+      expect([result.from, result.to]).toEqual([4, 4]);
+      expect(result.items[0].insert).toBe('parent');
+      expect(source.slice(0, result.from) + result.items[0].insert + source.slice(result.to)).toBe(source.replace('mix(', 'mix(parent'));
+    }
+    const condition = slotSuggestions('if then 20 else 80', 3, 3, ctx)!;
+    expect([condition.from, condition.to]).toEqual([3, 3]);
+    expect(condition.items[0].insert).toBe('dark ');
+    expect(evaluateFormula(`if ${condition.items[0].insert}then 20 else 80`, rowEnv).value).toBe(80);
+    expect(slotSuggestions('if', 2, 2, ctx)?.items[0].insert).toBe(' dark');
+    const source = 'row1 = 20\n';
+    const values = slotSuggestions(source, source.length, source.length, ctx)!.items.map((i) => i.insert);
+    expect(values).toContain('row1');
+    expect(values).toContain('parent.l');
+    expect(values).not.toContain('parent');
+    expect(values).not.toContain('dark');
+  });
+
+  it('suggests operator families with readable labels and executable insertions', () => {
+    expect(slots('20 + 10', '+')?.items.map((i) => [i.label, i.insert, i.kind])).toEqual([
+      ['−', '-', 'operator'], ['×', '*', 'operator'], ['÷', '/', 'operator'],
+    ]);
+    expect(slotLabels('20 × 10', '×')).toEqual(['+', '−', '÷']);
+    expect(slotLabels('parent.l > 50', '>')).toEqual(['≥', '<', '≤', '=', '≠']);
+    expect(slots('parent.l ≥ 50', '≥')?.items.find((i) => i.label === '=')?.insert).toBe('==');
+    expect(slotLabels('dark and light', 'and')).toEqual(['or']);
+    expect(slotLabels('dark || light', '||')).toEqual(['and']);
+    expect(slotLabels('-20', '-')).toEqual(['+']);
+    expect(slots('if dark then 20 else 80', 'then')).toBeNull();
+  });
+
+  it('suggests properties for the color or explicit namespace without duplicating dots', () => {
+    expect(slotLabels('parent.l', 'l')).toEqual(['c', 'h', 'alpha', 'oklch', 'hct', 'hsl', 'rgb']);
+    const source = 'parent.hsl.l';
+    expect(slots(source, 'l', ctx, source.lastIndexOf('l'))?.items.map((i) => i.insert)).toEqual(['h', 's', 'alpha']);
+    const spaces = slots(source, 'hsl')!.items.filter((i) => i.kind === 'space');
+    expect(spaces.map((i) => i.insert)).toEqual(['oklch', 'hct', 'rgb']);
+    expect(slots('(1).l', 'l')).toBeNull();
+  });
+
+  it('offers the same channel from other colors before other channels of the current color', () => {
+    const source = 'row1 = white\nnumber = 50\nparent.l';
+    const items = slots(source, 'parent.l')!.items;
+    const labels = items.map((i) => i.insert);
+    expect(labels[0]).toBe('self.l');
+    for (const text of ['@brand-blue.l', 'row1.l', 'parent.c', 'parent.h', 'parent.alpha']) expect(labels).toContain(text);
+    expect(labels.indexOf('@brand-blue.l')).toBeLessThan(labels.indexOf('parent.c'));
+    expect(labels).not.toContain('number.l');
+    expect(labels).not.toContain('parent.l');
+    expect(slotLabels('parent.hsl.l', 'parent.hsl.l')).toContain('self.hsl.l');
+    expect(slotLabels('parent.hsl.l', 'parent.hsl.l')).toContain('parent.hsl.s');
+    expect(slotLabels('row1 = parent.hsl\nrow1.l', 'row1.l')).toContain('self.hsl.l');
+  });
+
+  it('normalizes partial tag selections, excludes the current insertion and gives useful item details', () => {
+    const source = 'mix(parent, white, {t})';
+    const from = source.indexOf('{t}');
+    expect(slotSuggestions(source, from + 1, from + 2, ctx)).toMatchObject({ from, to: from + 3 });
+    for (const [source, text] of [['50', '50'], ['mix(parent, white, 0.5)', 'parent'], ['parent.l', 'parent.l'], ['parent.hsl', 'hsl'], ['dark and light', 'and'], ['row1 = {value}', '{value}']]) {
+      const items = slots(source, text)!.items;
+      expect(items.some((i) => i.insert === text)).toBe(false);
+      expect(new Set(items.map((i) => i.insert)).size).toBe(items.length);
+      for (const item of items) {
+        expect(item.label.length).toBeGreaterThan(0);
+        expect(item.detail!.length).toBeGreaterThan(0);
+        expect(item.doc!.length).toBeGreaterThan(0);
+      }
+    }
+    expect(slots('// {value}', '{value}')).toBeNull();
+    expect(slotSuggestions('', NaN, 0, ctx)).toBeNull();
+  });
+});
+
+function applyEdit(source: string, edit: TextEdit): string {
+  for (let i = 0; i < edit.changes.length; i++) {
+    const change = edit.changes[i];
+    expect(change.from).toBeGreaterThanOrEqual(i ? edit.changes[i - 1].to : 0);
+    expect(change.to).toBeGreaterThanOrEqual(change.from);
+    expect(change.to).toBeLessThanOrEqual(source.length);
+  }
+  for (const change of [...edit.changes].reverse()) source = source.slice(0, change.from) + change.insert + source.slice(change.to);
+  expect(edit.selection.anchor).toBeGreaterThanOrEqual(0);
+  expect(edit.selection.anchor).toBeLessThanOrEqual(source.length);
+  return source;
+}
+
+const rowInfo = describeColor({ r: 0.3, g: 0.5, b: 0.7 });
+const rowEnv: FormulaEnv = { space: 'oklch', channel: 'l', parent: { info: rowInfo, label: 'parent' }, self: { info: rowInfo, label: 'self' }, dark: false, ref: () => ({ info: rowInfo, label: 'ref' }) };
+
+describe('formula rows', () => {
+  it.each(['', ' \r\n ', '// note\n// another', ';\n; // note'])('has no rows for %s', (source) => {
+    expect(formulaRows(source)).toEqual([]);
+    expect(addRowAfter(source, 0)).toEqual({ changes: [], selection: { anchor: 0 } });
+  });
+
+  it.each([
+    '// color\nrow1 = mix(\nparent, white, 0.5\n)\nrow1.l',
+    'row1 = 20; row2 = 30; row1 + row2',
+    'row1 = 20\r\n// output\r\nrow1 +\r\n 10',
+    'row1 = if dark\nthen 20\nelse 80\nrow1',
+    'row1 = parent\n .hsl\n .l\nrow1',
+    '{value}\n50',
+  ])('matches parser statement spans in %s', (source) => {
+    const ast = parse(source);
+    const statements = ast.k === 'program' ? ast.statements : [{ s: ast.s, e: ast.e, name: null, expr: ast }];
+    const rows = formulaRows(source);
+    expect(rows.map((r) => [r.start, r.end, r.name])).toEqual(statements.map((s) => [s.s, s.e, s.name]));
+    expect(rows.map((r) => r.exprStart)).toEqual(statements.map((s) => s.expr.s));
+    expect(rows.map((r) => r.final)).toEqual(rows.map((_, i) => i === rows.length - 1));
+  });
+
+  it('keeps incomplete rows and comments out of statement spans', () => {
+    const source = '// first\nrow1 = 20; // second\r\nrow2 = clamp(\r\nrow1,';
+    const rows = formulaRows(source);
+    expect(rows.map((r) => [r.name, source.slice(r.start, r.end)])).toEqual([
+      ['row1', 'row1 = 20'], ['row2', 'row2 = clamp(\r\nrow1,'],
+    ]);
+    expect(formulaRows('row1 =   ')[0]).toMatchObject({ name: 'row1', exprStart: 9, end: 6, final: true });
+    expect(formulaRows('row1 = {value}\n{unfinished').map((r) => r.name)).toEqual(['row1', null]);
+  });
+
+  it('chooses the next row name without collisions, even for large suffixes', () => {
+    expect(nextRowName('')).toBe('row1');
+    expect(nextRowName('row1 = 2; row9 = 4; row1')).toBe('row10');
+    expect(nextRowName('row2 = {row99}\n@row100.l // row200\nparent.row300')).toBe('row3');
+    expect(nextRowName('row9007199254740993 = 2')).toBe('row9007199254740994');
+  });
+
+  it.each([
+    ['20', 0, 'row1 = 20\nrow1'],
+    ['row4 = 20', 0, 'row4 = 20\nrow4'],
+    ['row1 = 20\nrow1 + 10', 0, 'row1 = 20\nrow2 = row1\nrow1 + 10'],
+    ['20\n50', 0, 'row1 = 20\nrow2 = row1\n50'],
+    ['20; 50', 0, 'row1 = 20\nrow2 = row1; 50'],
+    ['// first\n20 // keep\n// final\n50', 0, '// first\nrow1 = 20 // keep\nrow2 = row1\n// final\n50'],
+    ['row1 = 20\r\nrow1 + 10', 1, 'row1 = 20\r\nrow2 = row1 + 10\r\nrow2'],
+    ['mix(parent, white, 0.5)', 0, 'row1 = mix(parent, white, 0.5)\nrow1'],
+  ])('adds after row %i of %s without changing the final value', (source, index, expected) => {
+    const edit = addRowAfter(source, index);
+    const result = applyEdit(source, edit);
+    expect(result).toBe(expected);
+    expect(evaluateFormula(result, rowEnv).value).toBeCloseTo(evaluateFormula(source, rowEnv).value, 10);
+    const added = formulaRows(result)[index + 1];
+    expect(edit.selection.anchor).toBe(added.end);
+  });
+
+  it.each([
+    ['// first\n20 // inline\n// second\n50', 0, '// second\n50', 0],
+    ['row1 = 20\nrow1', 1, '20', 2],
+    ['row1 = 20; row1', 1, '20', 2],
+    ['row1 = 20\r\n// final\r\nrow1', 1, '20', 2],
+    ['row1 = 20 // keep\n// remove\nrow1', 1, '20 // keep', 2],
+    ['row1 = // keep\n20\nrow1', 1, '// keep\n20', 10],
+    ['row1 = 20; row2 = 30; 50', 1, 'row1 = 20; 50', 9],
+    ['20\n// remove\n30\n// keep\n50', 1, '20\n// keep\n50', 2],
+    ['// only\nrow1 = 20\n', 0, '', 0],
+  ])('removes the selected row and its leading comments in %s', (source, index, expected, anchor) => {
+    const edit = removeRow(source, index);
+    expect(applyEdit(source, edit)).toBe(expected);
+    expect(edit.selection.anchor).toBe(anchor);
+    if (expected) expect(() => evaluateFormula(expected, rowEnv)).not.toThrow();
+  });
+
+  it('renames only declarations and later local uses, including multiline and unfinished rows', () => {
+    const source = 'row1\n// row1\nrow1 = #fff; row2 = mix(row1, @row1, 0.5)\r\nrow1.l + parent.row1 + {row1} // row1\nrow1 +';
+    expect(renameLocal(source, 'row1', 'base')).toBe('row1\n// row1\nbase = #fff; row2 = mix(base, @row1, 0.5)\r\nbase.l + parent.row1 + {row1} // row1\nbase +');
+    const valid = 'row1 = 20\nrow2 = row1 + 10\nrow1 + row2';
+    const renamed = renameLocal(valid, 'row1', 'base');
+    expect(typeof renamed).toBe('string');
+    expect(evaluateFormula(renamed as string, rowEnv).value).toBe(evaluateFormula(valid, rowEnv).value);
+    expect(renameLocal(valid, 'row1', 'row1')).toBe(valid);
+  });
+
+  it.each(['', '1value', 'bad-name', 'two words', 'parent', 'IF', 'then', 'mix', 'true', 'row2'])('rejects invalid or colliding local name %s', (name) => {
+    expect(renameLocal('row1 = 20\nrow2 = 30\nrow1 + row2', 'row1', name)).toEqual({ error: expect.any(String) });
+  });
+
+  it('handles absent locals and row indices without edits', () => {
+    expect(renameLocal('20', 'missing', 'base')).toEqual({ error: expect.any(String) });
+    expect(addRowAfter('20', 10).changes).toEqual([]);
+    expect(removeRow('20', -1).changes).toEqual([]);
+    expect(applyEdit('row1 = ;\n20', removeRow('row1 = ;\n20', 1))).toBe('');
+  });
 });

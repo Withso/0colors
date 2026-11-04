@@ -16,13 +16,14 @@ import { mixRgb } from './color/mix';
 import { deltaEOK, rgbToOklab } from './color/convert';
 
 export class FormulaError extends Error {
+  steps?: EvalStep[];
   constructor(message: string, public start = 0, public end = 0) {
     super(message);
   }
 }
 
 // ── Lexer ────────────────────────────────────────────────────
-type TokType = 'num' | 'hex' | 'ref' | 'id' | 'op' | 'sep' | 'eof';
+type TokType = 'num' | 'hex' | 'ref' | 'id' | 'hole' | 'op' | 'sep' | 'eof';
 interface Tok { t: TokType; v: string; s: number; e: number }
 
 const OPS2 = ['<=', '>=', '==', '!=', '&&', '||'];
@@ -46,6 +47,16 @@ export function tokenize(src: string): Tok[] {
       continue;
     }
     const start = i;
+    if (ch === '{') {
+      i++;
+      while (i < src.length && !/[{}\r\n]/.test(src[i])) i++;
+      const inner = src.slice(start + 1, i);
+      const closed = src[i] === '}';
+      if (closed) i++;
+      if (!closed || !inner.trim() || inner.length > 32) throw new FormulaError('Unfinished placeholder', start, i);
+      out.push({ t: 'hole', v: inner.trim(), s: start, e: i });
+      continue;
+    }
     if (/[0-9]/.test(ch) || (ch === '.' && /[0-9]/.test(src[i + 1] ?? ''))) {
       while (i < src.length && /[0-9.]/.test(src[i])) i++;
       if (/[eE]/.test(src[i] ?? '')) {
@@ -111,6 +122,7 @@ export type Expr = Span & (
   | { k: 'hex'; v: string }
   | { k: 'ref'; name: string }
   | { k: 'id'; name: string }
+  | { k: 'hole'; name: string }
   | { k: 'member'; obj: Expr; prop: string }
   | { k: 'call'; fn: string; args: Expr[] }
   | { k: 'unary'; op: string; arg: Expr }
@@ -120,12 +132,22 @@ export type Expr = Span & (
 );
 
 const KEYWORD_OPS: Record<string, string> = { and: '&&', or: '||', not: '!' };
+// Cacheable syntax errors keep only syntax here; evaluated steps always belong to one environment.
+const partialStatements = new WeakMap<FormulaError, FormulaStatement[]>();
 
 export function parse(src: string): Expr {
   if (!src.trim()) throw new FormulaError('Write a formula, e.g. parent.l - 10', 0, 0);
+  let lexError: FormulaError | undefined;
+  let lexed: Tok[];
+  try { lexed = tokenize(src); }
+  catch (err) {
+    if (!(err instanceof FormulaError)) throw err;
+    lexError = err;
+    lexed = tokenize(src.slice(0, err.start));
+  }
   // Inside parentheses, line breaks have always been ordinary whitespace.
   let depth = 0;
-  const toks = tokenize(src).filter((t) => {
+  const toks = lexed.filter((t) => {
     if (t.v === '(') depth++;
     if (t.v === ')') depth--;
     return !(t.t === 'sep' && t.v === '\n' && depth > 0);
@@ -179,6 +201,7 @@ export function parse(src: string): Expr {
       case 'num': return { k: 'num', v: parseFloat(t.v), s: t.s, e: t.e };
       case 'hex': return { k: 'hex', v: t.v, s: t.s, e: t.e };
       case 'ref': return { k: 'ref', name: t.v.toLowerCase(), s: t.s, e: t.e };
+      case 'hole': return { k: 'hole', name: t.v, s: t.s, e: t.e };
       case 'id': {
         const word = t.v.toLowerCase();
         if (word === 'true' || word === 'false') return { k: 'bool', v: word === 'true', s: t.s, e: t.e };
@@ -276,24 +299,31 @@ export function parse(src: string): Expr {
   }
 
   const statements: FormulaStatement[] = [];
-  while (peek().t !== 'eof') {
-    if (peek().t === 'sep') { next(); continue; }
-    const first = peek();
-    let name: string | null = null;
-    if (first.t === 'id' && toks[p + 1]?.v === '=') {
-      if (RESERVED_NAMES.has(first.v.toLowerCase())) {
-        throw new FormulaError(`"${first.v}" is reserved — choose a local name like out_1`, first.s, first.e);
+  try {
+    while (peek().t !== 'eof') {
+      if (peek().t === 'sep') { next(); continue; }
+      const first = peek();
+      let name: string | null = null;
+      if (first.t === 'id' && toks[p + 1]?.v === '=') {
+        if (RESERVED_NAMES.has(first.v.toLowerCase())) {
+          throw new FormulaError(`"${first.v}" is reserved — choose another name, like row1`, first.s, first.e);
+        }
+        name = next().v;
+        next();
       }
-      name = next().v;
-      next();
+      const expr = ternary();
+      const rest = peek();
+      failEquals(rest);
+      if (rest.t !== 'eof' && rest.t !== 'sep') {
+        throw new FormulaError(`Unexpected "${rest.v}" — missing an operator?`, rest.s, rest.e);
+      }
+      if (!lexError || rest.t !== 'eof') statements.push({ name, expr, s: first.s, e: expr.e });
     }
-    const expr = ternary();
-    statements.push({ name, expr, s: first.s, e: expr.e });
-    const rest = peek();
-    failEquals(rest);
-    if (rest.t !== 'eof' && rest.t !== 'sep') {
-      throw new FormulaError(`Unexpected "${rest.v}" — missing an operator?`, rest.s, rest.e);
-    }
+    if (lexError) throw lexError;
+  } catch (err) {
+    const failure = lexError ?? err;
+    if (failure instanceof FormulaError) partialStatements.set(failure, statements);
+    throw failure;
   }
   if (!statements.length) throw new FormulaError('Write a formula, e.g. parent.l - 10', 0, src.length);
   if (statements.length === 1 && statements[0].name === null) return statements[0].expr;
@@ -336,6 +366,7 @@ export interface ColorRef {
 
 export interface FormulaEnv {
   space: Space;
+  channel?: string;
   parent: ColorRef | null;
   self: ColorRef;
   dark: boolean;
@@ -354,48 +385,98 @@ const SPACE_NAMES: Space[] = ['oklch', 'hct', 'hsl', 'rgb'];
 const WHITE: ColorRef = { info: describe({ r: 1, g: 1, b: 1 }), label: 'white' };
 const BLACK: ColorRef = { info: describe({ r: 0, g: 0, b: 0 }), label: 'black' };
 
+export type FormulaValueType = 'number' | 'boolean' | 'color';
+export interface FormulaParam {
+  name: string;
+  type: FormulaValueType;
+  doc: string;
+  optional?: boolean;
+  rest?: boolean;
+  range?: [number, number];
+  examples?: string[];
+  /** A value on the channel being edited: suggestions follow that channel's range instead of `examples`. */
+  channel?: boolean;
+}
 export interface FormulaFunction {
   name: string;
   signature: string;
   params: string[];
   category: 'math' | 'logic' | 'color';
   description: string;
+  args: FormulaParam[];
+  returns: FormulaValueType;
 }
 
+const numberParam = (name: string, doc: string, examples?: string[], range?: [number, number]): FormulaParam => ({
+  name, type: 'number', doc, examples: examples ?? ['0', '50', '100'], ...(examples ? {} : { channel: true }), ...(range ? { range } : {}),
+});
+const colorParam = (name: string, doc: string): FormulaParam => ({ name, type: 'color', doc, examples: ['parent', 'white', '#3b82f6'] });
+const blendParam = (): FormulaParam => numberParam('t', 'How far to blend: 0 is all a, 1 is all b.', ['0.25', '0.5', '0.75'], [0, 1]);
+const angleParam = (name = 'degrees'): FormulaParam => numberParam(name, 'An angle on the color wheel, in degrees.', ['30', '90', '180'], [0, 360]);
+const rangeParams = (): FormulaParam[] => [numberParam('a', 'The start of the range.'), numberParam('b', 'The end of the range.'), numberParam('v', 'The value to locate within the range.')];
+
 export const FORMULA_FUNCTIONS: FormulaFunction[] = [
-  { name: 'clamp', signature: 'clamp(x, min, max)', params: ['x', 'min', 'max'], category: 'math', description: 'Keep x between min and max.' },
-  { name: 'min', signature: 'min(a, b, …)', params: ['a', 'b', '…'], category: 'math', description: 'Smallest value.' },
-  { name: 'max', signature: 'max(a, b, …)', params: ['a', 'b', '…'], category: 'math', description: 'Largest value.' },
-  { name: 'lerp', signature: 'lerp(a, b, t)', params: ['a', 'b', 't'], category: 'math', description: 'Blend from a to b; t = 0..1.' },
-  { name: 'map', signature: 'map(x, inMin, inMax, outMin, outMax)', params: ['x', 'inMin', 'inMax', 'outMin', 'outMax'], category: 'math', description: 'Re-map x from one range to another.' },
-  { name: 'round', signature: 'round(x, step?)', params: ['x', 'step?'], category: 'math', description: 'Round to the nearest step (default 1).' },
-  { name: 'floor', signature: 'floor(x)', params: ['x'], category: 'math', description: 'Round down.' },
-  { name: 'ceil', signature: 'ceil(x)', params: ['x'], category: 'math', description: 'Round up.' },
-  { name: 'abs', signature: 'abs(x)', params: ['x'], category: 'math', description: 'Absolute value.' },
-  { name: 'pow', signature: 'pow(x, y)', params: ['x', 'y'], category: 'math', description: 'x to the power of y.' },
-  { name: 'sqrt', signature: 'sqrt(x)', params: ['x'], category: 'math', description: 'Square root.' },
-  { name: 'mod', signature: 'mod(x, y)', params: ['x', 'y'], category: 'math', description: 'Remainder that stays positive (handy for hue).' },
-  { name: 'step', signature: 'step(edge, x)', params: ['edge', 'x'], category: 'math', description: '0 below the edge, 1 at or above it.' },
-  { name: 'smoothstep', signature: 'smoothstep(e0, e1, x)', params: ['e0', 'e1', 'x'], category: 'math', description: 'Smooth 0→1 transition between two edges.' },
-  { name: 'sin', signature: 'sin(degrees)', params: ['degrees'], category: 'math', description: 'Sine of an angle in degrees.' },
-  { name: 'cos', signature: 'cos(degrees)', params: ['degrees'], category: 'math', description: 'Cosine of an angle in degrees.' },
-  { name: 'sign', signature: 'sign(x)', params: ['x'], category: 'math', description: '−1 for negative x, 0 for zero, 1 for positive x.' },
-  { name: 'tan', signature: 'tan(degrees)', params: ['degrees'], category: 'math', description: 'Tangent of an angle in degrees.' },
-  { name: 'atan2', signature: 'atan2(y, x)', params: ['y', 'x'], category: 'math', description: 'Direction of (x, y) in degrees, wrapped to 0–360.' },
-  { name: 'log', signature: 'log(x)', params: ['x'], category: 'math', description: 'Natural logarithm; x must be positive.' },
-  { name: 'log2', signature: 'log2(x)', params: ['x'], category: 'math', description: 'Base-2 logarithm; x must be positive.' },
-  { name: 'log10', signature: 'log10(x)', params: ['x'], category: 'math', description: 'Base-10 logarithm; x must be positive.' },
-  { name: 'exp', signature: 'exp(x)', params: ['x'], category: 'math', description: 'Euler’s number raised to x.' },
-  { name: 'fract', signature: 'fract(x)', params: ['x'], category: 'math', description: 'Fractional part x − floor(x), always between 0 and 1.' },
-  { name: 'invlerp', signature: 'invlerp(a, b, v)', params: ['a', 'b', 'v'], category: 'math', description: 'Position of v between a and b; returns 0 when a equals b.' },
-  { name: 'inverselerp', signature: 'inverselerp(a, b, v)', params: ['a', 'b', 'v'], category: 'math', description: 'Alias for invlerp: position of v between a and b.' },
-  { name: 'huelerp', signature: 'huelerp(a, b, t)', params: ['a', 'b', 't'], category: 'color', description: 'Blend hue angles along the shortest arc; t = 0..1, result in degrees.' },
-  { name: 'if', signature: 'if(condition, then, else)', params: ['condition', 'then', 'else'], category: 'logic', description: 'Same as condition ? then : else.' },
-  { name: 'contrast', signature: 'contrast(a, b)', params: ['a', 'b'], category: 'color', description: 'WCAG 2 ratio of a over background b (1–21), including a’s alpha.' },
-  { name: 'apca', signature: 'apca(text, background)', params: ['text', 'background'], category: 'color', description: 'APCA lightness contrast Lc (about −108 to 106), including text alpha.' },
-  { name: 'luminance', signature: 'luminance(color)', params: ['color'], category: 'color', description: 'WCAG relative luminance (0–1).' },
-  { name: 'deltae', signature: 'deltaE(a, b)', params: ['a', 'b'], category: 'color', description: 'Perceptual difference (ΔE OK ×100; ~2 is barely visible).' },
-  { name: 'mix', signature: 'mix(a, b, t)', params: ['a', 'b', 't'], category: 'color', description: 'Blend two colors in OKLab; returns a color.' },
+  { name: 'clamp', signature: 'clamp(x, min, max)', params: ['x', 'min', 'max'], category: 'math', description: 'Keep x between min and max.',
+    args: [numberParam('x', 'The value to keep within the limits.'), numberParam('min', 'The lowest allowed value.'), numberParam('max', 'The highest allowed value.')], returns: 'number' },
+  { name: 'min', signature: 'min(a, b, …)', params: ['a', 'b', '…'], category: 'math', description: 'Smallest value.',
+    args: [numberParam('a', 'The first value to compare.'), { ...numberParam('b', 'Another value to compare; add more if needed.'), rest: true }], returns: 'number' },
+  { name: 'max', signature: 'max(a, b, …)', params: ['a', 'b', '…'], category: 'math', description: 'Largest value.',
+    args: [numberParam('a', 'The first value to compare.'), { ...numberParam('b', 'Another value to compare; add more if needed.'), rest: true }], returns: 'number' },
+  { name: 'lerp', signature: 'lerp(a, b, t)', params: ['a', 'b', 't'], category: 'math', description: 'Blend from a to b; t = 0..1.',
+    args: [numberParam('a', 'The starting channel value.'), numberParam('b', 'The ending channel value.'), blendParam()], returns: 'number' },
+  { name: 'map', signature: 'map(x, inMin, inMax, outMin, outMax)', params: ['x', 'inMin', 'inMax', 'outMin', 'outMax'], category: 'math', description: 'Re-map x from one range to another.',
+    args: [numberParam('x', 'The value to move into a new range.'), numberParam('inMin', 'The start of the original range.', ['0', '10', '20']), numberParam('inMax', 'The end of the original range.', ['1', '100', '360']), numberParam('outMin', 'The start of the new range.', ['0', '10', '20']), numberParam('outMax', 'The end of the new range.', ['1', '100', '360'])], returns: 'number' },
+  { name: 'round', signature: 'round(x, step?)', params: ['x', 'step?'], category: 'math', description: 'Round to the nearest step (default 1).',
+    args: [numberParam('x', 'The value to round.'), { ...numberParam('step', 'The spacing between rounded values; defaults to 1.', ['1', '5', '10']), optional: true }], returns: 'number' },
+  { name: 'floor', signature: 'floor(x)', params: ['x'], category: 'math', description: 'Round down.',
+    args: [numberParam('x', 'The value to round down.', ['25.5', '50.5', '75.5'])], returns: 'number' },
+  { name: 'ceil', signature: 'ceil(x)', params: ['x'], category: 'math', description: 'Round up.',
+    args: [numberParam('x', 'The value to round up.', ['25.5', '50.5', '75.5'])], returns: 'number' },
+  { name: 'abs', signature: 'abs(x)', params: ['x'], category: 'math', description: 'Absolute value.',
+    args: [numberParam('x', 'The value whose distance from zero you need.', ['-10', '0', '10'])], returns: 'number' },
+  { name: 'pow', signature: 'pow(x, y)', params: ['x', 'y'], category: 'math', description: 'x to the power of y.',
+    args: [numberParam('x', 'The base value.', ['0.25', '0.5', '1']), numberParam('y', 'The exponent that shapes the curve.', ['0.5', '2', '3'])], returns: 'number' },
+  { name: 'sqrt', signature: 'sqrt(x)', params: ['x'], category: 'math', description: 'Square root.',
+    args: [numberParam('x', 'A nonnegative value to take the square root of.', ['0.25', '1', '4'])], returns: 'number' },
+  { name: 'mod', signature: 'mod(x, y)', params: ['x', 'y'], category: 'math', description: 'Remainder that stays positive (handy for hue).',
+    args: [numberParam('x', 'The value to wrap.', ['30', '180', '390']), numberParam('y', 'The size of each repeating cycle.', ['1', '100', '360'])], returns: 'number' },
+  { name: 'step', signature: 'step(edge, x)', params: ['edge', 'x'], category: 'math', description: '0 below the edge, 1 at or above it.',
+    args: [numberParam('edge', 'The threshold where the result changes to 1.', ['0.5', '50', '75']), numberParam('x', 'The value to compare with the threshold.')], returns: 'number' },
+  { name: 'smoothstep', signature: 'smoothstep(e0, e1, x)', params: ['e0', 'e1', 'x'], category: 'math', description: 'Smooth 0→1 transition between two edges.',
+    args: [numberParam('e0', 'The value where the transition starts.', ['0', '20', '40']), numberParam('e1', 'The value where the transition ends.', ['1', '60', '100']), numberParam('x', 'The value to place along the transition.')], returns: 'number' },
+  { name: 'sin', signature: 'sin(degrees)', params: ['degrees'], category: 'math', description: 'Sine of an angle in degrees.', args: [angleParam()], returns: 'number' },
+  { name: 'cos', signature: 'cos(degrees)', params: ['degrees'], category: 'math', description: 'Cosine of an angle in degrees.', args: [angleParam()], returns: 'number' },
+  { name: 'sign', signature: 'sign(x)', params: ['x'], category: 'math', description: '−1 for negative x, 0 for zero, 1 for positive x.',
+    args: [numberParam('x', 'The value whose direction you want.', ['-10', '0', '10'])], returns: 'number' },
+  { name: 'tan', signature: 'tan(degrees)', params: ['degrees'], category: 'math', description: 'Tangent of an angle in degrees.', args: [angleParam()], returns: 'number' },
+  { name: 'atan2', signature: 'atan2(y, x)', params: ['y', 'x'], category: 'math', description: 'Direction of (x, y) in degrees, wrapped to 0–360.',
+    args: [numberParam('y', 'The vertical part of the direction.', ['-1', '0', '1']), numberParam('x', 'The horizontal part of the direction.', ['-1', '0', '1'])], returns: 'number' },
+  { name: 'log', signature: 'log(x)', params: ['x'], category: 'math', description: 'Natural logarithm; x must be positive.',
+    args: [numberParam('x', 'A positive value for the logarithm.', ['1', '10', '100'])], returns: 'number' },
+  { name: 'log2', signature: 'log2(x)', params: ['x'], category: 'math', description: 'Base-2 logarithm; x must be positive.',
+    args: [numberParam('x', 'A positive value for the base-2 logarithm.', ['1', '2', '8'])], returns: 'number' },
+  { name: 'log10', signature: 'log10(x)', params: ['x'], category: 'math', description: 'Base-10 logarithm; x must be positive.',
+    args: [numberParam('x', 'A positive value for the base-10 logarithm.', ['1', '10', '100'])], returns: 'number' },
+  { name: 'exp', signature: 'exp(x)', params: ['x'], category: 'math', description: 'Euler’s number raised to x.',
+    args: [numberParam('x', 'The exponent for an exponential curve.', ['0', '1', '2'])], returns: 'number' },
+  { name: 'fract', signature: 'fract(x)', params: ['x'], category: 'math', description: 'Fractional part x − floor(x), always between 0 and 1.',
+    args: [numberParam('x', 'The value whose fractional part you want.', ['0.25', '1.5', '2.75'])], returns: 'number' },
+  { name: 'invlerp', signature: 'invlerp(a, b, v)', params: ['a', 'b', 'v'], category: 'math', description: 'Position of v between a and b; returns 0 when a equals b.', args: rangeParams(), returns: 'number' },
+  { name: 'inverselerp', signature: 'inverselerp(a, b, v)', params: ['a', 'b', 'v'], category: 'math', description: 'Alias for invlerp: position of v between a and b.', args: rangeParams(), returns: 'number' },
+  { name: 'huelerp', signature: 'huelerp(a, b, t)', params: ['a', 'b', 't'], category: 'color', description: 'Blend hue angles along the shortest arc; t = 0..1, result in degrees.',
+    args: [angleParam('a'), angleParam('b'), blendParam()], returns: 'number' },
+  { name: 'if', signature: 'if(condition, then, else)', params: ['condition', 'then', 'else'], category: 'logic', description: 'Same as condition ? then : else.',
+    args: [{ name: 'condition', type: 'boolean', doc: 'The condition that chooses between the two values.', examples: ['dark', 'light', 'parent.l > 50'] }, numberParam('then', 'The value when the condition is true.'), numberParam('else', 'The value when the condition is false.')], returns: 'number' },
+  { name: 'contrast', signature: 'contrast(a, b)', params: ['a', 'b'], category: 'color', description: 'WCAG 2 ratio of a over background b (1–21), including a’s alpha.',
+    args: [colorParam('a', 'The foreground or text color.'), colorParam('b', 'The background behind the foreground.')], returns: 'number' },
+  { name: 'apca', signature: 'apca(text, background)', params: ['text', 'background'], category: 'color', description: 'APCA lightness contrast Lc (about −108 to 106), including text alpha.',
+    args: [colorParam('text', 'The text color to check.'), colorParam('background', 'The background behind the text.')], returns: 'number' },
+  { name: 'luminance', signature: 'luminance(color)', params: ['color'], category: 'color', description: 'WCAG relative luminance (0–1).',
+    args: [colorParam('color', 'The color whose relative brightness you want.')], returns: 'number' },
+  { name: 'deltae', signature: 'deltaE(a, b)', params: ['a', 'b'], category: 'color', description: 'Perceptual difference (ΔE OK ×100; ~2 is barely visible).',
+    args: [colorParam('a', 'The first color to compare.'), colorParam('b', 'The second color to compare.')], returns: 'number' },
+  { name: 'mix', signature: 'mix(a, b, t)', params: ['a', 'b', 't'], category: 'color', description: 'Blend two colors in OKLab; returns a color.',
+    args: [colorParam('a', 'The starting color.'), colorParam('b', 'The color to blend toward.'), blendParam()], returns: 'color' },
 ];
 
 export const FORMULA_VARIABLES: { name: string; description: string }[] = [
@@ -411,7 +492,7 @@ export const FORMULA_VARIABLES: { name: string; description: string }[] = [
 ];
 
 const VARIABLE_NAMES = ['parent', 'self', 'dark', 'light', 'white', 'black', 'pi'];
-const RESERVED_NAMES = new Set([...VARIABLE_NAMES, ...FORMULA_FUNCTIONS.map((f) => f.name), 'if', 'then', 'else', 'true', 'false', 'and', 'or', 'not']);
+export const RESERVED_NAMES = new Set([...VARIABLE_NAMES, ...FORMULA_FUNCTIONS.map((f) => f.name), 'if', 'then', 'else', 'true', 'false', 'and', 'or', 'not']);
 
 /** Small spelling corrections, including a swapped pair of letters. */
 function suggestName(name: string, candidates: Iterable<string>): string | null {
@@ -448,16 +529,34 @@ function describeVal(v: Val): string {
   }
 }
 
+export interface EvalStep {
+  name: string | null;
+  text: string;
+  value: string;
+  start: number;
+  end: number;
+  type: 'number' | 'boolean' | 'color' | 'group';
+  hex?: string;
+}
 export interface EvalResult {
   value: number;
   lookups: { text: string; value: string }[];
   substituted: string;
-  steps: { name: string | null; text: string; value: string; start: number; end: number }[];
+  steps: EvalStep[];
+  fromColor?: string;
 }
 
 export function evaluateFormula(src: string, env: FormulaEnv): EvalResult {
-  const ast = parseCached(src);
-  const statements: FormulaStatement[] = ast.k === 'program' ? ast.statements : [{ name: null, expr: ast, s: ast.s, e: ast.e }];
+  let statements: FormulaStatement[];
+  let syntaxError: FormulaError | undefined;
+  try {
+    const ast = parseCached(src);
+    statements = ast.k === 'program' ? ast.statements : [{ name: null, expr: ast, s: ast.s, e: ast.e }];
+  } catch (err) {
+    if (!(err instanceof FormulaError)) throw err;
+    statements = partialStatements.get(err) ?? [];
+    syntaxError = new FormulaError(err.message, err.start, err.end);
+  }
   const locals = new Map<string, Val>();
   const declared = new Set(statements.flatMap((s) => s.name === null ? [] : [s.name]));
   const steps: EvalResult['steps'] = [];
@@ -485,10 +584,18 @@ export function evaluateFormula(src: string, env: FormulaEnv): EvalResult {
     return values[key];
   };
 
-  const ev = (node: Expr): Val => {
+  const ev = (node: Expr, expected?: Pick<FormulaParam, 'type' | 'range'>): Val => {
     switch (node.k) {
       case 'num': return { t: 'num', v: node.v };
       case 'bool': return { t: 'bool', v: node.v };
+      case 'hole': {
+        const hint = expected?.type === 'color' ? ' — a color (parent, @name, white, #hex)'
+          : expected?.type === 'boolean' ? ' — e.g. dark or parent.l > 50'
+          : expected?.type === 'number' ? expected.range ? ` — a number from ${expected.range[0]} to ${expected.range[1]}` : ' — a number' : '';
+        // Parentheses expand AST spans; the editable hole still gets the exact brace span.
+        const start = src.indexOf('{', node.s);
+        throw new FormulaError(`Fill in ${node.name}${hint}`, start, src.indexOf('}', start) + 1);
+      }
       case 'hex': {
         const parsed = parseHex(node.v)!;
         return { t: 'color', c: { info: describe(parsed.rgb, parsed.alpha), label: node.v } };
@@ -520,7 +627,7 @@ export function evaluateFormula(src: string, env: FormulaEnv): EvalResult {
         throw new FormulaError(`Unknown name "${node.name}" — did you mean ${suggestion ?? `@${node.name}`}?`, node.s, node.e);
       }
       case 'member': {
-        const obj = ev(node.obj);
+        const obj = ev(node.obj, { type: 'color' });
         const prop = node.prop;
         let out: Val;
         if (obj.t === 'color') {
@@ -545,16 +652,16 @@ export function evaluateFormula(src: string, env: FormulaEnv): EvalResult {
         return out;
       }
       case 'unary': {
-        const v = ev(node.arg);
+        const v = ev(node.arg, { type: node.op === '!' ? 'boolean' : 'number' });
         if (node.op === '!') return { t: 'bool', v: !truthy(v) };
         const n = num(node.arg, v);
         return { t: 'num', v: node.op === '-' ? -n : n };
       }
       case 'bin': {
-        if (node.op === '&&') return { t: 'bool', v: truthy(ev(node.l)) && truthy(ev(node.r)) };
-        if (node.op === '||') return { t: 'bool', v: truthy(ev(node.l)) || truthy(ev(node.r)) };
-        const a = num(node.l, ev(node.l));
-        const b = num(node.r, ev(node.r));
+        if (node.op === '&&') return { t: 'bool', v: truthy(ev(node.l, { type: 'boolean' })) && truthy(ev(node.r, { type: 'boolean' })) };
+        if (node.op === '||') return { t: 'bool', v: truthy(ev(node.l, { type: 'boolean' })) || truthy(ev(node.r, { type: 'boolean' })) };
+        const a = num(node.l, ev(node.l, { type: 'number' }));
+        const b = num(node.r, ev(node.r, { type: 'number' }));
         switch (node.op) {
           case '+': return { t: 'num', v: a + b };
           case '-': return { t: 'num', v: a - b };
@@ -573,7 +680,7 @@ export function evaluateFormula(src: string, env: FormulaEnv): EvalResult {
         throw new FormulaError(`Unknown operator ${node.op}`, node.s, node.e);
       }
       case 'cond':
-        return truthy(ev(node.test)) ? ev(node.a) : ev(node.b);
+        return truthy(ev(node.test, { type: 'boolean' })) ? ev(node.a, expected) : ev(node.b, expected);
       case 'call':
         return call(node);
       case 'program':
@@ -583,18 +690,20 @@ export function evaluateFormula(src: string, env: FormulaEnv): EvalResult {
 
   const call = (node: Expr & { k: 'call' }): Val => {
     const { fn, args } = node;
+    const metadata = FORMULA_FUNCTIONS.find((f) => f.name === fn);
     const arity = (min: number, max = min) => {
       if (args.length < min || args.length > max) {
         const sig = FORMULA_FUNCTIONS.find((f) => f.name === fn)?.signature ?? fn;
         throw new FormulaError(`${sig} takes ${min === max ? min : `${min}–${max}`} argument${max === 1 ? '' : 's'}`, node.s, node.e);
       }
     };
-    const n = (i: number) => num(args[i], ev(args[i]));
-    const c = (i: number) => color(args[i], ev(args[i]));
+    const arg = (i: number) => ev(args[i], metadata?.args[i] ?? metadata?.args.find((p) => p.rest));
+    const n = (i: number) => num(args[i], arg(i));
+    const c = (i: number) => color(args[i], arg(i));
     const done = (v: number): Val => { const out: Val = { t: 'num', v }; record(node, out); return out; };
 
     switch (fn) {
-      case 'if': arity(3); return truthy(ev(args[0])) ? ev(args[1]) : ev(args[2]);
+      case 'if': arity(3); return truthy(arg(0)) ? arg(1) : arg(2);
       case 'clamp': arity(3); return { t: 'num', v: Math.min(Math.max(n(0), n(1)), n(2)) };
       case 'min': if (!args.length) arity(1, 99); return { t: 'num', v: Math.min(...args.map((_, i) => n(i))) };
       case 'max': if (!args.length) arity(1, 99); return { t: 'num', v: Math.max(...args.map((_, i) => n(i))) };
@@ -673,17 +782,31 @@ export function evaluateFormula(src: string, env: FormulaEnv): EvalResult {
   };
 
   let result: Val = { t: 'num', v: 0 };
-  for (const statement of statements) {
-    result = ev(statement.expr);
-    if (result.t === 'num' && !Number.isFinite(result.v)) {
-      throw new FormulaError('The formula produced an invalid number', statement.expr.s, statement.expr.e);
+  let fromColor: string | undefined;
+  try {
+    for (const statement of statements) {
+      result = ev(statement.expr);
+      if (result.t === 'num' && !Number.isFinite(result.v)) {
+        throw new FormulaError('The formula produced an invalid number', statement.expr.s, statement.expr.e);
+      }
+      if (statement.name !== null) locals.set(statement.name, result);
+      steps.push({ name: statement.name, text: src.slice(statement.s, statement.e), value: describeVal(result), start: statement.s, end: statement.e,
+        type: result.t === 'num' ? 'number' : result.t === 'bool' ? 'boolean' : result.t === 'ns' ? 'group' : 'color',
+        ...(result.t === 'color' ? { hex: result.c.info.hexa } : {}),
+      });
     }
-    if (statement.name !== null) locals.set(statement.name, result);
-    steps.push({ name: statement.name, text: src.slice(statement.s, statement.e), value: describeVal(result), start: statement.s, end: statement.e });
+    if (syntaxError) throw syntaxError;
+    const last = statements[statements.length - 1].expr;
+    if (result.t === 'color' && env.channel) {
+      fromColor = result.c.info.hexa;
+      result = { t: 'num', v: env.channel === 'alpha' || env.channel === 'a' ? result.c.info.alpha * 100 : channelOf(result.c, env.space, env.channel, last) };
+    }
+    if (result.t === 'bool') throw new FormulaError('The formula gives true/false — wrap it like: condition ? 20 : 90', last.s, last.e);
+    if (result.t !== 'num') throw new FormulaError(`The formula gives ${result.t === 'color' ? 'a color' : 'a channel group'} — pick a channel, e.g. parent.l`, last.s, last.e);
+  } catch (err) {
+    if (err instanceof FormulaError) err.steps = steps;
+    throw err;
   }
-  const last = statements[statements.length - 1].expr;
-  if (result.t === 'bool') throw new FormulaError('The formula gives true/false — wrap it like: condition ? 20 : 90', last.s, last.e);
-  if (result.t !== 'num') throw new FormulaError(`The formula gives ${result.t === 'color' ? 'a color' : 'a channel group'} — pick a channel, e.g. parent.l`, last.s, last.e);
 
   // Keep only the outermost lookups, then splice their values into the source.
   const sorted = [...lookups].sort((a, b) => a.s - b.s || b.e - a.e);
@@ -701,5 +824,6 @@ export function evaluateFormula(src: string, env: FormulaEnv): EvalResult {
     lookups: outer.map((l) => ({ text: src.slice(l.s, l.e), value: l.text })),
     substituted: substituted.trim(),
     steps,
+    ...(fromColor ? { fromColor } : {}),
   };
 }

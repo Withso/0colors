@@ -221,8 +221,9 @@ export function computeProject(project: Project, themeId?: string, previous?: Co
     for (const def of defs) own[def.key] = constrainChannel(def, node.data.values[def.key] ?? (def.key === 'alpha' ? 100 : 0));
 
     let selfRef: ColorRef | null = null;
-    const env = (): FormulaEnv => ({
+    const env = (channel: string): FormulaEnv => ({
       space,
+      channel,
       parent: parent && parentValues ? { info: parent, native: { space, values: parentValues }, label: 'parent' } : null,
       get self() {
         if (!selfRef) {
@@ -257,12 +258,13 @@ export function computeProject(project: Project, themeId?: string, previous?: Co
           trace.expr = expr;
           if (parentValues) trace.parent = parentValues[def.key];
           try {
-            const r = evaluateFormula(expr, env());
+            const r = evaluateFormula(expr, env(def.key));
             raw = r.value;
             trace.explain = { lookups: r.lookups, substituted: r.substituted, steps: r.steps };
           } catch (err) {
             const e = err instanceof FormulaError ? err : new FormulaError(String(err));
             trace.error = { message: e.message, start: e.start, end: e.end };
+            if (e.steps) trace.explain = { lookups: [], substituted: '', steps: e.steps };
             raw = parentValues?.[def.key] ?? own[def.key];
           }
           break;

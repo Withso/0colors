@@ -271,7 +271,7 @@ export function createSampleProject(): Project {
     '**Name the steps**',
     '`base = @logic-brand` stores a color. ratio stores a number; readable stores a yes/no result.',
     '`=` defines a local; `==` compares values. Locals belong to this channel only.',
-    '`//` starts a comment. Shift + Enter adds a line. Open How it’s computed to follow the steps.',
+    'Each row shows its value on the right and the last row is the output. Enter adds a row; `//` starts a comment.',
   ].join('\n'));
   color(logic, 'Hue journey', 400, 1000, oklch(60, 0.12, 307), {
     l: { mode: 'formula', expr: 'if dark then 80 else 60' },
@@ -279,13 +279,13 @@ export function createSampleProject(): Project {
     h: { mode: 'formula', expr: '// A quarter-turn toward the complement\nstart = @logic-brand.h\nend = start + 180\nhuelerp(start, end, 0.25)' },
   });
   note(logic, 696, 980, 464, [
-    '**Read it like math. Edit it like text.**',
-    'Hue journey uses huelerp to travel partway around the color wheel. Click a formula’s display to edit its source.',
-    'Autocomplete finds functions and shows their arguments. Try `clamp(` or `parent.` on a connected color.',
+    '**Every piece is a tag**',
+    'Hue journey uses huelerp to travel partway around the color wheel. Click any tag to swap it for something that fits there.',
+    'Type `mix(` and its blanks appear as tags: pick a value for each, Tab moves to the next.',
     'Dashed connections show @references; they come from the formula itself.',
   ].join('\n'));
   note(logic, 40, 760, 272, '**Reference a color**\nThe dashed links come from @logic-brand in the formulas. Change Logic brand and watch its readers update.');
-  note(logic, 40, 1080, 272, '**Find it as you type**\nType @ to find Logic brand. Add a dot to browse its channels. Locals from earlier lines appear in suggestions, too.');
+  note(logic, 40, 1080, 272, '**Find it as you type**\nType @ to find Logic brand. Add a dot to browse its channels. Earlier rows appear in suggestions, too.');
 
   // 8 · All original glossary terms, with one brief note per term.
   const glossary = frame('8 · Glossary', 8, 'neutral', 1360);

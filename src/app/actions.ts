@@ -149,7 +149,7 @@ export function duplicateForAltDrag(ids: string[], gestureKey?: string) {
     for (const n of d.nodes) {
       if (!inSet.has(n.id) || n.type !== 'color') continue;
       for (const rule of Object.values(n.data.rules)) {
-        if (rule.mode !== 'formula' || !rule.expr) continue;
+        if (!rule.expr) continue;
         for (const r of renamed) rule.expr = rule.expr.replace(refPattern(r.from), `@${r.to}`);
       }
     }
@@ -370,7 +370,7 @@ export function renameNode(id: string, rawName: string) {
     for (const other of d.nodes) {
       if (other.type !== 'color') continue;
       for (const rule of Object.values(other.data.rules)) {
-        if (rule.mode === 'formula' && rule.expr) rule.expr = rule.expr.replace(re, `@${after}`);
+        if (rule.expr) rule.expr = rule.expr.replace(re, `@${after}`);
       }
     }
   }, `rename:${id}`);
@@ -474,6 +474,9 @@ export function setChannelRule(id: string, key: string, rule: ChannelRule) {
   const trace = res?.channels.find((c) => c.key === key);
   const def = channelDef(node.data.space, key);
   let next: ChannelRule = { ...rule };
+  // Leaving Formula keeps the text, so switching back restores it instead of starting over.
+  const kept = node.data.rules[key]?.expr;
+  if (next.mode !== 'formula' && next.expr === undefined && kept) next.expr = kept;
   if (next.mode === 'offset' && next.delta === undefined) {
     next.delta = trace?.parent !== undefined && def ? round(shortestDelta(def, trace.value, trace.parent), def.decimals + 1) : 0;
   }

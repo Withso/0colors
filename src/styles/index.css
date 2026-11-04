@@ -159,18 +159,181 @@
     -webkit-backdrop-filter: saturate(180%) blur(20px);
     backdrop-filter: saturate(180%) blur(20px);
   }
-  /* Formula editor: the highlight layer and the textarea above it must share every metric. */
-  .formula-text {
-    font-family: var(--font-mono);
+  /*
+    Formula editor (CodeMirror): every token is drawn as a tag.
+    .fx-t = a widget tag the caret steps over; .fx-m = editable text with a tag look.
+  */
+  .fx {
+    font-family: var(--font-sans);
     font-size: 12px;
-    line-height: 18px;
-    letter-spacing: -0.01em;
-    font-variant-numeric: tabular-nums;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    tab-size: 2;
+    line-height: 26px;
+    --fx-tag-h: 20px;
   }
-  .formula-error {
+  .fx-t {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: var(--fx-tag-h);
+    padding: 0 6px;
+    margin: 0 1px;
+    border-radius: 6px;
+    vertical-align: top;
+    margin-top: 3px;
+    background: var(--app-surface-3);
+    color: var(--app-fg);
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: var(--fx-tag-h);
+    white-space: nowrap;
+    user-select: none;
+    transition: box-shadow 0.12s, background-color 0.12s;
+  }
+  .fx-t:hover,
+  .fx-m:hover {
+    box-shadow: inset 0 0 0 1px var(--app-line-strong);
+  }
+  .fx-t.is-active,
+  .fx-m.is-active {
+    background: var(--app-accent-soft);
+    box-shadow: inset 0 0 0 1.5px var(--app-accent);
+  }
+  .fx-t.is-error,
+  .fx-m.is-error {
+    box-shadow: inset 0 0 0 1px var(--app-danger);
+  }
+  .fx-sw {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    flex: none;
+    overflow: hidden;
+    border-radius: 3px;
+  }
+  .fx-sw > span {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 0.5px oklch(0 0 0 / 0.3);
+  }
+  .fx-sub,
+  .fx-val {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--app-fg-3);
+    letter-spacing: 0.02em;
+  }
+  .fx-fn {
+    color: var(--app-syn-fn);
+    background: color-mix(in oklch, var(--app-syn-fn) 15%, transparent);
+    padding-right: 4px;
+  }
+  .fx-fn .fx-tl::after {
+    content: '(';
+    margin-left: 1px;
+    opacity: 0.75;
+  }
+  .fx-close {
+    color: var(--app-syn-fn);
+    font-weight: 600;
+    padding: 0 2px;
+  }
+  .fx-paren {
+    color: var(--app-fg-3);
+    font-weight: 500;
+    padding: 0 1px;
+  }
+  .fx-comma {
+    color: var(--app-fg-3);
+    padding-right: 2px;
+  }
+  .fx-punct,
+  .fx-prop {
+    font-family: var(--font-mono);
+    color: var(--app-fg-2);
+  }
+  .fx-op {
+    min-width: 18px;
+    justify-content: center;
+    padding: 0 3px;
+    background: transparent;
+    color: var(--app-fg-2);
+    font-size: 13px;
+    font-weight: 400;
+  }
+  .fx-row {
+    color: var(--app-syn-local);
+    background: color-mix(in oklch, var(--app-syn-local) 14%, transparent);
+  }
+  .fx-label {
+    margin-right: 6px;
+    padding: 0 5px;
+    background: transparent;
+    color: var(--app-syn-local);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--app-syn-local) 40%, transparent);
+  }
+  .fx-out {
+    margin-right: 6px;
+    padding: 0 5px;
+    background: transparent;
+    color: var(--app-fg-3);
+    font-size: 10.5px;
+    box-shadow: inset 0 0 0 1px var(--app-line-strong);
+  }
+  .fx-hole {
+    background: transparent;
+    color: var(--app-fg-3);
+    font-weight: 400;
+    font-style: italic;
+    box-shadow: inset 0 0 0 1px var(--app-line-strong);
+    outline: 1px dashed var(--app-fg-3);
+    outline-offset: -1px;
+  }
+  .fx-hole.is-active {
+    color: var(--app-fg);
+    outline-color: var(--app-accent);
+  }
+  .fx-const {
+    color: var(--app-syn-var);
+    background: color-mix(in oklch, var(--app-syn-var) 14%, transparent);
+  }
+  .fx-hex {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+  }
+  .fx-m {
+    padding: 3px 4px;
+    margin: 0 1px;
+    border-radius: 5px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .fx-num {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--app-syn-num);
+    background: color-mix(in oklch, var(--app-syn-num) 13%, transparent);
+  }
+  .fx-kw {
+    color: var(--app-syn-kw);
+    font-weight: 500;
+    padding-inline: 2px;
+  }
+  .fx-name {
+    padding-inline: 1px;
+    color: var(--app-fg);
+  }
+  .fx-comment {
+    color: var(--app-fg-3);
+    font-style: italic;
+  }
+  .fx-bad {
+    color: var(--app-danger);
+  }
+  .fx-bad-gap {
     text-decoration: underline wavy var(--app-danger);
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;

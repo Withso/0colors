@@ -44,9 +44,10 @@ if parent.l > 60 then 15 else 98     dark text on light parents, light text on d
 clamp(parent.c * 0.5, 0, 0.1)        half the parent's chroma, capped
 @background.l + (dark ? 20 : -20)    follow another node and react to the theme
 contrast(parent, white) >= 4.5 ? 100 : 0
+mix(parent, white, 0.5)              a color: the channel takes that color's value for itself
 ```
 
-Longer logic can name its steps. Each line can define a local with `=`; the last line is the result, and `//` starts a comment:
+**Rows.** Longer logic is written in rows. Each row can name its result with `=`, later rows can use that name, and the last row is the output. `//` starts a comment:
 
 ```text
 // Pick readable text for whatever background this sits on
@@ -55,7 +56,9 @@ ratio = contrast(bg, white)
 if ratio >= 4.5 then 98 else 14
 ```
 
-**Editing.** Formulas read like math when you're not editing them (`×`, `≥`, `if … then … else`, node references as color chips) and show their live result. Click to edit: the field highlights syntax, autocompletes `@nodes`, channels after a dot, functions, locals and keywords (with ready-made examples for an empty formula), shows the current function's arguments, and points at the exact spot of an error. Enter finishes, Shift+Enter adds a line, Ctrl+Space shows suggestions. "How it's computed" lists every step's value.
+**Editing.** Every piece of a formula is a tag: colors with their swatch and channel, earlier rows with their live value, functions, numbers, operators and keywords. Type for suggestions (`@nodes`, channels after a dot, functions, earlier rows and keywords, with ready-made starters for an empty formula). Picking a function inserts its parentheses and one blank per argument, such as `mix( a , b , t )`, with the first blank selected and suggestions that fit it; Tab (or Enter) moves to the next blank, and typing `,` or `)` works too. Click any tag for choices that fit that spot: numbers with their range, colors with swatches, other channels or operators. Click a row's name to rename it (its uses follow) or delete the row.
+
+Each row shows its value on the right and the last row shows the channel's output. Enter or **+ Add row** adds a row that starts from the previous row's result, so the output doesn't change until you edit it. Blanks still to fill in are shown calmly ("Fill in t — a number from 0 to 1"); until then the channel keeps its previous value. Esc or ⌘Enter finishes, Ctrl+Space shows suggestions, and hovering a tag shows its live value.
 
 **Variables**
 

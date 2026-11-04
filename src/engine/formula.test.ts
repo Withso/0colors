@@ -17,6 +17,7 @@ function env(over: Partial<FormulaEnv> & { refs?: Record<string, ColorRef> } = {
   const refs = over.refs ?? {};
   return {
     space: over.space ?? 'oklch',
+    channel: over.channel,
     parent: over.parent === undefined ? ref('#3B82F6', 'parent') : over.parent,
     self: over.self ?? ref('#FF5733', 'self'),
     dark: over.dark ?? false,
@@ -269,8 +270,8 @@ describe('formula language v2', () => {
     const result = evaluateFormula(source, env());
     expect(result.value).toBe(6);
     expect(result.steps).toEqual([
-      { name: 'out_1', text: 'out_1 = 2', value: '2', start: 10, end: 19 },
-      { name: null, text: 'out_1 × 3', value: '6', start: 32, end: 41 },
+      { name: 'out_1', text: 'out_1 = 2', value: '2', start: 10, end: 19, type: 'number' },
+      { name: null, text: 'out_1 × 3', value: '6', start: 32, end: 41, type: 'number' },
     ]);
     expect(run('1 + // continue\n 2')).toBe(3);
     expectError('// only a comment', /Write a formula/);
@@ -278,7 +279,7 @@ describe('formula language v2', () => {
 
   it('includes a step for an existing single expression', () => {
     expect(evaluateFormula('  2 + 3  ', env()).steps).toEqual([
-      { name: null, text: '2 + 3', value: '5', start: 2, end: 7 },
+      { name: null, text: '2 + 3', value: '5', start: 2, end: 7, type: 'number' },
     ]);
   });
 
@@ -516,5 +517,122 @@ describe('substituted output and lookups', () => {
     const r = evaluateFormula('parent.l / 3', env({ parent: ref('#000', 'p', { space: 'oklch', values: { l: 10, c: 0, h: 0 } }) }));
     expect(r.value).toBeCloseTo(3.3333, 3);
     expect(r.substituted).toBe('10 / 3');
+  });
+});
+
+describe('formula language v3 — placeholders', () => {
+  it('lexes trimmed labels and parses holes as expressions with exact spans', () => {
+    expect(tokenize('mix({ a }, {color / hex}, {t})').filter((t) => t.t === 'hole')).toEqual([
+      { t: 'hole', v: 'a', s: 4, e: 9 }, { t: 'hole', v: 'color / hex', s: 11, e: 24 }, { t: 'hole', v: 't', s: 26, e: 29 },
+    ]);
+    expect(parse(' { value } ')).toEqual({ k: 'hole', name: 'value', s: 1, e: 10 });
+    expect(tokenize(`{${'a'.repeat(32)}}`)[0].t).toBe('hole');
+    const source = 'mix(@brand, {@not-a-ref}, {amount})';
+    expect([...collectRefs(parse(source))]).toEqual(['brand']);
+    expect(parseCached(source)).toBe(parseCached(source));
+  });
+
+  it.each(['{}', '{   }', '{abc', '{a\nb}', '{a\rb}', '{a{b}', `{${'a'.repeat(33)}}`])('positions unfinished placeholder %s at its brace', (hole) => {
+    const error = expectError(`2 + ${hole}`, /Unfinished placeholder/);
+    expect(error.start).toBe(4);
+    expect(error.end).toBeGreaterThan(error.start);
+  });
+
+  it.each([
+    ['mix(parent, {b}, 0.5)', 'Fill in b — a color (parent, @name, white, #hex)'],
+    ['mix(parent, white, {t})', 'Fill in t — a number from 0 to 1'],
+    ['round(50, {step})', 'Fill in step — a number'],
+    ['max(1, 2, {more})', 'Fill in more — a number'],
+    ['if {condition} then 20 else 80', 'Fill in condition — e.g. dark or parent.l > 50'],
+    ['{condition} ? 20 : 80', 'Fill in condition — e.g. dark or parent.l > 50'],
+    ['if({condition}, 20, 80)', 'Fill in condition — e.g. dark or parent.l > 50'],
+    ['not {condition} ? 20 : 80', 'Fill in condition — e.g. dark or parent.l > 50'],
+    ['true and {condition} ? 20 : 80', 'Fill in condition — e.g. dark or parent.l > 50'],
+    ['false or {condition} ? 20 : 80', 'Fill in condition — e.g. dark or parent.l > 50'],
+    ['{value}', 'Fill in value'],
+    ['mix(parent, ({b}), 0.5)', 'Fill in b — a color (parent, @name, white, #hex)'],
+  ])('explains the expected input in %s', (source, message) => {
+    const error = expectError(source, /Fill in/);
+    expect(error.message).toBe(message);
+    expect(source.slice(error.start, error.end)).toMatch(/^\{[^{}]+\}$/);
+    expect(error.steps).toEqual([]);
+  });
+
+  it('does not evaluate holes in untaken branches', () => {
+    expect(run('if true then 20 else {value}')).toBe(20);
+    expect(run('if(false, {value}, 80)')).toBe(80);
+    expect(run('false and {condition} ? 20 : 80')).toBe(80);
+    expect(run('true or {condition} ? 20 : 80')).toBe(20);
+  });
+
+  it('describes every parameter without changing existing signatures', () => {
+    for (const fn of FORMULA_FUNCTIONS) {
+      expect(fn.args.map((arg) => arg.name), fn.name).toEqual(fn.params.filter((p) => p !== '…').map((p) => p.replace('?', '')));
+      expect(fn.returns).toBe(fn.name === 'mix' ? 'color' : 'number');
+      for (const arg of fn.args) {
+        expect(['number', 'boolean', 'color']).toContain(arg.type);
+        expect(arg.doc.length).toBeGreaterThan(10);
+        expect(arg.examples?.length).toBeGreaterThan(0);
+        for (const example of arg.examples ?? []) expect(() => parse(example)).not.toThrow();
+        if (arg.range) expect(arg.range[0]).toBeLessThan(arg.range[1]);
+      }
+    }
+    expect(FORMULA_FUNCTIONS.find((f) => f.name === 'round')!.args[1].optional).toBe(true);
+    for (const name of ['min', 'max']) expect(FORMULA_FUNCTIONS.find((f) => f.name === name)!.args[1].rest).toBe(true);
+  });
+});
+
+describe('formula language v3 — typed results and partial steps', () => {
+  it.each([
+    ['oklch', 'l'], ['oklch', 'c'], ['oklch', 'h'], ['hsl', 's'], ['hct', 't'], ['rgb', 'r'], ['rgb', 'g'],
+    ['oklch', 'alpha'], ['hsl', 'a'],
+  ] as const)('takes a final color’s %s.%s channel', (space, channel) => {
+    const source = 'mixed = mix(#3b82f680, white, 0.5)\nmixed';
+    const result = evaluateFormula(source, env({ space, channel }));
+    expect(result.value).toBeCloseTo(run(`${source}.${channel}`, env({ space })), 10);
+    expect(result.fromColor).toBe(result.steps[1].hex);
+    expect(result.steps.map((s) => s.type)).toEqual(['color', 'color']);
+  });
+
+  it('preserves native channels and keeps color coercion limited to the final output', () => {
+    const result = evaluateFormula('parent', env({ parent: nativeParent, channel: 'h' }));
+    expect(result.value).toBe(255);
+    expect(result.fromColor).toBe(nativeParent.info.hexa);
+    expect(evaluateFormula('parent.h', env({ parent: nativeParent, channel: 'h' })).fromColor).toBeUndefined();
+    expectError('parent + 1', /Expected a number but got a color/, env({ channel: 'l' }));
+    expectError('parent', /gives a color/);
+    expectError('parent.hsl', /channel group/, env({ channel: 'l' }));
+    expectError('true', /true\/false/, env({ channel: 'l' }));
+    expectError('white', /not a OKLCH channel/, env({ channel: 's' }));
+  });
+
+  it('keeps numbers, conditions, colors and channel groups typed in each step', () => {
+    const source = 'row1 = #f008\nrow2 = row1.hsl\nrow3 = dark\nrow4 = 50\nrow2.l';
+    const result = evaluateFormula(source, env());
+    expect(result.steps.map((s) => s.type)).toEqual(['color', 'group', 'boolean', 'number', 'number']);
+    expect(result.steps[0]).toMatchObject({ value: '#FF000088', hex: '#FF000088' });
+    for (const step of result.steps) {
+      expect(source.slice(step.start, step.end)).toBe(step.text);
+      if (step.type !== 'color') expect(step.hex).toBeUndefined();
+    }
+  });
+
+  it.each(['{value}', '1 / 0', '@missing.l', 'exp(1000)', 'clamp(', '{unfinished', '1 +', '#12', '1 2', '1 $'])('keeps earlier row values when %s fails', (failure) => {
+    const source = `row1 = #fff;\r\nrow2 = 50\r\n${failure}`;
+    const error = expectError(source, /./);
+    expect(error.steps?.map((s) => [s.name, s.type, s.value])).toEqual([
+      ['row1', 'color', '#FFFFFF'], ['row2', 'number', '50'],
+    ]);
+    expect(error.start).toBeGreaterThanOrEqual(source.indexOf(failure));
+  });
+
+  it('does not leak partial values through cached parse errors', () => {
+    const source = 'row1 = parent.l\nround(';
+    const first = expectError(source, /ends too early/, env({ parent: nativeParent }));
+    const second = expectError(source, /ends too early/, env({ parent: ref('#000') }));
+    expect(first.steps?.[0].value).toBe('62.4');
+    expect(second.steps?.[0].value).toBe('0');
+    expect(first).not.toBe(second);
+    try { parseCached(source); } catch (error) { expect((error as FormulaError).steps).toBeUndefined(); }
   });
 });

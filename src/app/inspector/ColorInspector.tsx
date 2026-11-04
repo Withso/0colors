@@ -1,6 +1,6 @@
 // Inspector for a Color node: the color, its channels with one small rule control each,
 // formats, contrast and lineage. Explanations live in the demo canvas, not here.
-import { useEffect, useMemo, useRef } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef } from 'react';
 import { Check, ChevronDown, Lock, Link2, Pipette, TriangleAlert, Unlink } from 'lucide-react';
 import type { ColorNode, RuleMode } from '@/engine/model';
 import { slugify } from '@/engine/model';
@@ -17,8 +17,12 @@ import {
 } from '../ui';
 import { channelGradient, fmt } from '../lib/color-ui';
 import { HeroSwatch, HexInput, InspectorHeader, ValueRow, focusNode } from './common';
-import { FormulaEditor } from './FormulaEditor';
 import { ColorPlane } from './ColorPlane';
+
+// The formula editor (and CodeMirror) is its own chunk, fetched right after startup so it's ready when needed.
+const loadFormulaEditor = () => import('./FormulaEditor');
+const FormulaEditor = lazy(() => loadFormulaEditor().then((m) => ({ default: m.FormulaEditor })));
+if (typeof window !== 'undefined') setTimeout(() => void loadFormulaEditor(), 0);
 
 const RULES: { value: RuleMode; label: string; hint: string }[] = [
   { value: 'inherit', label: 'Inherit', hint: 'Same as the parent' },
@@ -211,7 +215,7 @@ function ChannelEditor({ node, result, def, hasParent }: { node: ColorNode; resu
   };
 
   return (
-    <div>
+    <div data-channel={def.key}>
       <div className="mb-1.5 flex h-6 items-center gap-1.5">
         <Tooltip content={def.hint} side="left">
           <span className="cursor-help text-[12px] font-medium text-fg">{def.label}</span>
@@ -240,16 +244,18 @@ function ChannelEditor({ node, result, def, hasParent }: { node: ColorNode; resu
       </div>
 
       {isFormula ? (
-        <FormulaEditor
-          key={`${node.id}:${def.key}`}
-          nodeId={node.id}
-          def={def}
-          space={space}
-          trace={trace}
-          hasParent={hasParent}
-          expr={rule?.expr ?? ''}
-          autoFocus={justSwitched.current}
-        />
+        <Suspense fallback={<div className="mt-2 h-[38px] rounded-[8px] bg-surface-2" />}>
+          <FormulaEditor
+            key={`${node.id}:${def.key}`}
+            nodeId={node.id}
+            def={def}
+            space={space}
+            trace={trace}
+            hasParent={hasParent}
+            expr={rule?.expr ?? ''}
+            autoFocus={justSwitched.current}
+          />
+        </Suspense>
       ) : (
         <>
           <div className="flex items-center gap-2.5">
