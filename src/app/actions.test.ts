@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ColorResult } from '@/engine/compute';
 import { createColorNode, makeEdge } from '@/engine/defaults';
 import type { CanvasNode, ColorNode, Edge, Project, Theme } from '@/engine/model';
-import { deleteSelection, moveNodes, renameNode, setColorSpace } from './actions';
+import { canConnect, deleteSelection, moveNodes, renameNode, setColorSpace } from './actions';
 import { getEditor } from './store';
 
 const at = { x: 0, y: 0 };
@@ -99,7 +99,7 @@ describe('setColorSpace', () => {
     for (const key of ['h', 's', 'l']) expect(child.data.rules[key]?.expr).toBeUndefined();
     expect(child.data.rules.c).toBeUndefined();
     expect(child.data.rules.alpha).toEqual({ mode: 'offset', delta: -20 });
-    expect(child.data.values.alpha).toBe(60);
+    expect(child.data.values.alpha).toBe(100);
     expect(child.data.spaceMemory?.hsl).toBeUndefined();
     expect(child.data.spaceMemory?.oklch).toEqual({
       values: { l: 30, c: 0.05, h: 100 },
@@ -111,7 +111,7 @@ describe('setColorSpace', () => {
 
     setColorSpace('child', 'oklch');
     child = childNode();
-    expect(child.data.values).toEqual({ l: 30, c: 0.05, h: 100, alpha: 60 });
+    expect(child.data.values).toEqual({ l: 30, c: 0.05, h: 100, alpha: 100 });
     expect(child.data.rules).toEqual({
       c: { mode: 'formula', expr: 'parent.c * 0.5' },
       h: { mode: 'offset', delta: 12, expr: 'parent.h + 12' },
@@ -124,6 +124,42 @@ describe('setColorSpace', () => {
     const chroma = result.channels.find((c) => c.key === 'c');
     expect(chroma).toMatchObject({ mode: 'formula', expr: 'parent.c * 0.5' });
     expect(chroma?.error).toBeUndefined();
+  });
+
+  it('keeps stored own alpha across round trips while inherited alpha still renders', () => {
+    const parent = createColorNode({
+      id: 'parent', name: 'Parent', position: at, space: 'oklch', values: { l: 60, c: 0.2, h: 250, alpha: 50 },
+    });
+    const child = createColorNode({
+      id: 'child', name: 'Child', position: at, space: 'oklch', values: { l: 30, c: 0.05, h: 100, alpha: 100 },
+      rules: { l: { mode: 'formula', expr: 'self.alpha / 2' } },
+    });
+    getEditor().load(project([parent, child], [edge('e', 'parent', 'child')]));
+
+    const lightness = () => (getEditor().result.nodes.child as ColorResult).channels.find((c) => c.key === 'l');
+    expect(lightness()?.value).toBe(50);
+    expect((getEditor().result.nodes.child as ColorResult).values.alpha).toBe(50);
+
+    setColorSpace('child', 'hsl');
+    expect(childNode().data.values.alpha).toBe(100);
+    setColorSpace('child', 'oklch');
+
+    expect(childNode().data.values.alpha).toBe(100);
+    expect(childNode().data.rules.l).toEqual({ mode: 'formula', expr: 'self.alpha / 2' });
+    expect((getEditor().result.nodes.child as ColorResult).values.alpha).toBe(50);
+    expect(lightness()).toMatchObject({ mode: 'formula', expr: 'self.alpha / 2', value: 50 });
+  });
+
+  it('rejects wires that would close a loop through a remembered inactive-space formula', () => {
+    const source = createColorNode({ id: 'source', name: 'Source', position: at, values: { l: 60, c: 0.2, h: 250, alpha: 100 } });
+    const child = createColorNode({
+      id: 'child', name: 'Child', position: at, values: { l: 30, c: 0.05, h: 100, alpha: 100 },
+      rules: { l: { mode: 'formula', expr: '@source.l' } },
+    });
+    getEditor().load(project([source, child]));
+    setColorSpace('child', 'hsl');
+
+    expect(canConnect({ source: 'child', sourceHandle: 'out', target: 'source', targetHandle: 'in' })).toBe(false);
   });
 
   it('renames references inside remembered formulas', () => {

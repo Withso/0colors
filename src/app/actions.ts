@@ -12,7 +12,7 @@ import { parseHex } from '@/engine/color/convert';
 import {
   createColorNode, createNode, createSectionNode, createTokenNode, makeEdge, uniqueName, valuesFromInfo,
 } from '@/engine/defaults';
-import { type ColorResult, outputColor, outputLabel, wouldCreateCycle } from '@/engine/compute';
+import { type ColorResult, formulaReferenceEdges, outputColor, outputLabel, wouldCreateCycle } from '@/engine/compute';
 import type { ParsedColor } from '@/engine/color/parse';
 import { normalizeProject } from '@/engine/schema';
 import { paletteKeys } from '@/engine/palette';
@@ -545,14 +545,16 @@ export function setColorSpace(id: string, space: Space) {
   delete memory[space];
 
   const alphaRule = node.data.rules.alpha ? { ...node.data.rules.alpha } : undefined;
+  // Alpha is stored on the node even when it is inherited for rendering; space switches must not overwrite it.
+  const ownAlpha = node.data.values.alpha ?? 100;
   let nextValues: ColorNode['data']['values'];
   const nextRules: ColorNode['data']['rules'] = {};
   if (remembered) {
     // Color channels are space-specific; alpha stays continuous across spaces.
-    nextValues = { ...values, ...remembered.values, alpha: values.alpha };
+    nextValues = { ...values, ...remembered.values, alpha: ownAlpha };
     Object.assign(nextRules, remembered.rules);
   } else {
-    nextValues = values;
+    nextValues = { ...values, alpha: ownAlpha };
     const old = node.data.rules;
     const anyOld = (mode: ChannelRule['mode']) => Object.entries(old).some(([k, r]) => k !== 'alpha' && r.mode === mode);
     for (const def of channelDefs(space, false)) {
@@ -616,8 +618,8 @@ function validWith(project: Project, edges: Edge[], c: Connection): boolean {
   if (source.type === 'palette' ? !/^(out|s\d+)$/.test(c.sourceHandle) : c.sourceHandle !== 'out') return false;
   if (!inputHandles(target, project.themes).includes(c.targetHandle)) return false;
   const others = edges.filter((e) => !(e.target === c.target && e.targetHandle === c.targetHandle));
-  // Formula references (@name) are dependencies too: a wire must not close a loop through them.
-  const refs = getEditor().result.refs.map((r) => ({ id: r.id, source: r.source, sourceHandle: 'out', target: r.target, targetHandle: 'ref' }));
+  // Formula references (@name), including remembered inactive-space formulas, are dependencies too.
+  const refs = formulaReferenceEdges(project, true).map((r) => ({ id: r.id, source: r.source, sourceHandle: 'out', target: r.target, targetHandle: 'ref' }));
   return !wouldCreateCycle([...others, ...refs], c.source, c.target);
 }
 

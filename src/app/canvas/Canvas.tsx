@@ -784,7 +784,7 @@ function CanvasInner() {
         return;
       }
       if (k === 'delete' || k === 'backspace') { e.preventDefault(); deleteSelection(); return; }
-      if (k.startsWith('arrow') && selection.length && useUI.getState().tool !== 'hand') {
+      if (k.startsWith('arrow') && selection.length && !handActive) {
         e.preventDefault();
         const step = e.shiftKey ? 40 : 8;
         const dx = k === 'arrowleft' ? -step : k === 'arrowright' ? step : 0;
@@ -813,7 +813,7 @@ function CanvasInner() {
     window.addEventListener('keydown', intercept, true);
     window.addEventListener('keydown', onKey);
     return () => { window.removeEventListener('keydown', intercept, true); window.removeEventListener('keydown', onKey); };
-  }, [rf, addAtCenter, viewportCenter, pointerFlow, zoomToSelection, wrapSelection, contentsOf]);
+  }, [rf, addAtCenter, viewportCenter, pointerFlow, zoomToSelection, wrapSelection, contentsOf, handActive]);
 
   // ── System clipboard: copy nodes across tabs, paste hex / CSS colors as color nodes ──
   const pasteSeen = useRef(false);
