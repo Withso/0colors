@@ -16,6 +16,7 @@ export interface ChannelDef {
   min: number;
   max: number;
   step: number;
+  /** Fractional digits shown in editors; not a bound on stored precision. */
   decimals: number;
   unit?: string;
   wrap?: boolean;

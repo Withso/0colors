@@ -66,6 +66,7 @@ export function MixInspector({ node }: { node: MixNode }) {
           </div>
           <span className="w-3 text-[11px] font-medium text-fg-3">B</span>
           <NumberField
+            ariaLabel="Mix ratio"
             className="w-[64px]"
             value={data.ratio * 100}
             min={0}

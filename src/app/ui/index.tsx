@@ -5,7 +5,7 @@
 // user colors are always inline styles.
 // ─────────────────────────────────────────────────────────────
 import {
-  type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, forwardRef, useEffect, useRef, useState,
+  type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, forwardRef, useEffect, useId, useRef, useState,
 } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -135,11 +135,12 @@ export function CommitInput({ value, onCommit, className, ...props }: Omit<Input
 
 /** Numeric field. Drag the label horizontally to scrub; type to set; ↑/↓ to nudge (⇧ ×10). */
 export function NumberField({
-  value, onChange, min = -Infinity, max = Infinity, step = 1, decimals = 0, label, suffix, disabled, className, onScrubEnd,
+  value, onChange, min = -Infinity, max = Infinity, step = 1, decimals = 0, label, suffix, disabled, className, onScrubEnd, ariaLabel,
 }: {
   value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number; decimals?: number;
-  label?: ReactNode; suffix?: string; disabled?: boolean; className?: string; onScrubEnd?: () => void;
+  label?: ReactNode; suffix?: string; disabled?: boolean; className?: string; onScrubEnd?: () => void; ariaLabel?: string;
 }) {
+  const labelId = useId();
   const format = (v: number) => {
     const f = v.toFixed(decimals);
     return decimals > 0 ? f.replace(/\.?0+$/, '') || '0' : f;
@@ -177,11 +178,13 @@ export function NumberField({
   return (
     <div className={cn('flex h-7 min-w-0 items-center', FIELD, disabled && 'pointer-events-none opacity-45', className)}>
       {label !== undefined && (
-        <span onPointerDown={scrub} className="flex h-full cursor-ew-resize select-none items-center pl-2 pr-0.5 text-[11px] font-medium text-fg-3">
+        <span id={labelId} onPointerDown={scrub} className="flex h-full cursor-ew-resize select-none items-center pl-2 pr-0.5 text-[11px] font-medium text-fg-3">
           {label}
         </span>
       )}
       <input
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabel === undefined && label !== undefined ? labelId : undefined}
         className="num h-full w-full min-w-0 bg-transparent px-1.5 text-[12px] text-fg outline-none"
         value={draft}
         disabled={disabled}

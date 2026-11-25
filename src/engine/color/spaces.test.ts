@@ -3,6 +3,8 @@ import {
   ALPHA, SPACES, SPACE_ORDER, channelDef, channelDefs, constrainChannel, cssColor, describe as describeColor,
   formatChannel, infoToSpace, rgbToSpace, round, spaceToRgb,
 } from './spaces';
+import { parseHex, toHex } from './convert';
+import { valuesFromHex, valuesFromInfo } from '../defaults';
 
 const rgb = (r: number, g: number, b: number) => ({ r: r / 255, g: g / 255, b: b / 255 });
 
@@ -73,6 +75,36 @@ describe('space conversions', () => {
       const b = rgbToSpace(space, c);
       for (const key of Object.keys(b)) expect(a[key]).toBeCloseTo(b[key], 6);
     }
+  });
+});
+
+describe('exact hex input fidelity', () => {
+  const pasteValues = (hex: string) => {
+    const parsed = parseHex(hex)!;
+    return valuesFromInfo('oklch', describeColor(parsed.rgb, parsed.alpha));
+  };
+
+  it.each([
+    '#0000FF', '#FF9500', // Regression: these previously gained one sRGB byte.
+    '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#3B82F6', '#8E8E93',
+  ])('round-trips %s through OKLCH channel storage', (hex) => {
+    for (const values of [valuesFromHex('oklch', hex), pasteValues(hex)]) {
+      expect(toHex(spaceToRgb('oklch', values).rgb, values.alpha / 100)).toBe(hex);
+    }
+  });
+
+  it('preserves byte-level alpha precision', () => {
+    const hex = '#3B82F602';
+    for (const values of [valuesFromHex('oklch', hex), pasteValues(hex)]) {
+      expect(toHex(spaceToRgb('oklch', values).rgb, values.alpha / 100)).toBe(hex);
+    }
+  });
+
+  it('keeps OKLCH display formatting at the existing precision', () => {
+    const values = valuesFromHex('oklch', '#0000FF');
+    expect(formatChannel(channelDef('oklch', 'l')!, values.l)).toBe('45.2');
+    expect(formatChannel(channelDef('oklch', 'c')!, values.c)).toBe('0.313');
+    expect(formatChannel(channelDef('oklch', 'h')!, values.h)).toBe('264.1');
   });
 });
 

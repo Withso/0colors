@@ -5,7 +5,7 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Background, BackgroundVariant, type Connection as RFConnection, type EdgeChange, MiniMap, type NodeChange,
-  type OnConnectEnd, type OnConnectStart, ReactFlow, useNodesInitialized, useReactFlow, useStoreApi, useViewport, ViewportPortal,
+  type OnConnectEnd, type OnConnectStart, ReactFlow, useKeyPress, useNodesInitialized, useReactFlow, useStoreApi, useViewport, ViewportPortal,
 } from '@xyflow/react';
 import {
   Blend, BoxSelect, Contrast, Copy, Crosshair, Frame, Hand, Map as MapIcon, Maximize, Minus, MousePointer2, Palette, Pencil, Plus,
@@ -55,6 +55,32 @@ const BACKDROPS: Record<Backdrop, { bg: string; dots: string; label: string }> =
   light: { bg: 'oklch(0.97 0 0)', dots: 'oklch(0 0 0 / 0.1)', label: 'Light' },
 };
 
+/**
+ * Hand tool (and spacebar panning): canvas objects don't take the pointer at all, so every
+ * press lands on the pane and dragging pans — like Figma's hand tool. React Flow draws nodes
+ * and edges with their own pointer-events (the node wrapper's are inline styles, handles and
+ * resize controls re-enable them by class), so the override needs `!important` everywhere.
+ * The multi-select rectangle, edge labels (the disconnect button lives there) and edges
+ * themselves are covered for the same reason. Panels — minimap, toolbar, zoom — stay live.
+ */
+const HAND_CSS = `
+.react-flow.hand-tool .react-flow__node,
+.react-flow.hand-tool .react-flow__node *,
+.react-flow.hand-tool .react-flow__edge,
+.react-flow.hand-tool .react-flow__edge *,
+.react-flow.hand-tool .react-flow__edgelabel-renderer,
+.react-flow.hand-tool .react-flow__edgelabel-renderer *,
+.react-flow.hand-tool .react-flow__nodesselection-rect {
+  pointer-events: none !important;
+}
+.react-flow.hand-tool .react-flow__pane {
+  cursor: grab;
+}
+.react-flow.hand-tool .react-flow__pane.dragging {
+  cursor: grabbing;
+}
+`;
+
 /** MIME type used when dragging a node type from the toolbar onto the canvas. */
 const DRAG_TYPE = 'application/x-0colors-node';
 
@@ -86,6 +112,10 @@ function CanvasInner() {
   const edgeSelection = useEditor((s) => s.edgeSelection);
   const loadCount = useEditor((s) => s.loadCount);
   const { tool, backdrop, minimap, resolvedTheme } = useUI();
+  // The spacebar is the temporary hand (React Flow pans while it's held), so it makes the
+  // canvas just as inert as the hand tool: a drag anywhere pans instead of moving things.
+  const spacePan = useKeyPress('Space');
+  const handActive = tool === 'hand' || spacePan;
   const rf = useReactFlow<FlowNode, ColorFlowEdge | RefFlowEdge>();
   const wrapper = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState<Record<string, { width: number; height: number }>>({});
@@ -754,7 +784,7 @@ function CanvasInner() {
         return;
       }
       if (k === 'delete' || k === 'backspace') { e.preventDefault(); deleteSelection(); return; }
-      if (k.startsWith('arrow') && selection.length) {
+      if (k.startsWith('arrow') && selection.length && useUI.getState().tool !== 'hand') {
         e.preventDefault();
         const step = e.shiftKey ? 40 : 8;
         const dx = k === 'arrowleft' ? -step : k === 'arrowright' ? step : 0;
@@ -767,8 +797,22 @@ function CanvasInner() {
         moveNodes(project.nodes.filter((n) => ids.has(n.id)).map((n) => ({ id: n.id, position: { x: n.position.x + dx, y: n.position.y + dy } })));
       }
     };
+    // React Flow's keyboard a11y also moves selected nodes on arrow keys (8px, ⇧ 4×) whenever a
+    // node or the multi-select box has focus — doubling this handler's nudge and, for sections,
+    // moving the frame without its contents. Capture those events before React Flow sees them and
+    // run this handler instead; text fields, menus, dialogs and sliders keep their arrow behavior.
+    const intercept = (e: KeyboardEvent) => {
+      if (!e.key.startsWith('Arrow')) return;
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      if (!t.closest('.react-flow__node, .react-flow__nodesselection-rect')) return;
+      if (t.closest('input, textarea, select, [contenteditable="true"], [role="dialog"], [role="menu"], [role="slider"]')) return;
+      e.stopPropagation();
+      onKey(e);
+    };
+    window.addEventListener('keydown', intercept, true);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => { window.removeEventListener('keydown', intercept, true); window.removeEventListener('keydown', onKey); };
   }, [rf, addAtCenter, viewportCenter, pointerFlow, zoomToSelection, wrapSelection, contentsOf]);
 
   // ── System clipboard: copy nodes across tabs, paste hex / CSS colors as color nodes ──
@@ -825,6 +869,8 @@ function CanvasInner() {
       onPointerMove={(e) => { pointer.current = { x: e.clientX, y: e.clientY }; }}
       onPointerLeave={() => { pointer.current = null; }}
       onDoubleClick={(e) => {
+        // With the hand tool every double-click lands on the pane; it's for panning, not creating.
+        if (handActive) return;
         if (!(e.target as Element).classList.contains('react-flow__pane')) return;
         addAt('color', rf.screenToFlowPosition({ x: e.clientX, y: e.clientY }));
       }}
@@ -840,6 +886,8 @@ function CanvasInner() {
         addAt(type, rf.screenToFlowPosition({ x: e.clientX, y: e.clientY }));
       }}
     >
+      {/* Inert canvas objects while the hand tool (or spacebar pan) is active — see HAND_CSS. */}
+      <style>{HAND_CSS}</style>
       <ReactFlow<FlowNode, ColorFlowEdge | RefFlowEdge>
         nodes={rfNodes}
         edges={rfEdges}
@@ -884,6 +932,10 @@ function CanvasInner() {
         deleteKeyCode={null}
         selectionKeyCode={null}
         multiSelectionKeyCode={['Meta', 'Control', 'Shift']}
+        nodesDraggable={!handActive}
+        nodesConnectable={!handActive}
+        edgesReconnectable={!handActive}
+        elementsSelectable={!handActive}
         selectionOnDrag={tool === 'select'}
         panOnDrag={tool === 'hand' ? true : [1]}
         panOnScroll={tool === 'select'}
@@ -893,7 +945,7 @@ function CanvasInner() {
         maxZoom={2.5}
         colorMode={resolvedTheme}
         connectionLineComponent={ConnectionLine}
-        className={cn(tool === 'hand' && '[&_.react-flow__pane]:cursor-grab', connecting && 'is-connecting')}
+        className={cn(handActive && 'hand-tool', connecting && 'is-connecting')}
       >
         <Background variant={BackgroundVariant.Dots} gap={22} size={1.3} color={bd.dots} />
         <Guides />
@@ -1074,7 +1126,9 @@ function CanvasMenu({ menu, close, addAt, contentsOf, wrapSelection }: {
         e.preventDefault();
         const items = [...(ref.current?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
         const i = items.indexOf(document.activeElement as HTMLButtonElement);
-        items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
+        // With nothing focused (i = -1) Down starts at the first item, Up at the last.
+        const at = i === -1 && e.key === 'ArrowUp' ? 0 : i;
+        items[(at + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
       }
     };
     window.addEventListener('pointerdown', onDown, true);
@@ -1086,6 +1140,7 @@ function CanvasMenu({ menu, close, addAt, contentsOf, wrapSelection }: {
     <button
       key={label}
       type="button"
+      role="menuitem"
       onClick={() => { run(); close(); }}
       className={cn(MENU_ITEM, 'hover:bg-accent hover:text-accent-fg focus-visible:bg-accent focus-visible:text-accent-fg', opts.danger ? 'text-danger' : 'text-fg')}
     >
@@ -1094,7 +1149,7 @@ function CanvasMenu({ menu, close, addAt, contentsOf, wrapSelection }: {
       {opts.shortcut && <span className="num text-[11px] text-fg-3 group-hover:text-accent-fg/80 group-focus-visible:text-accent-fg/80">{opts.shortcut}</span>}
     </button>
   );
-  const sep = (key: string) => <div key={key} className="mx-2 my-[5px] h-px bg-line" />;
+  const sep = (key: string) => <div key={key} role="separator" className="mx-2 my-[5px] h-px bg-line" />;
 
   const { selection } = getEditor();
   const ids = menu.targetId && selection.includes(menu.targetId) ? selection : menu.targetId ? [menu.targetId] : [];

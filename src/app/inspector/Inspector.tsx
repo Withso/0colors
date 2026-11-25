@@ -145,8 +145,8 @@ function SectionInspector({ node }: { node: SectionNode }) {
           }))}
         />
         <div className="mt-2.5 grid grid-cols-2 gap-1.5">
-          <NumberField label="W" value={node.data.width} min={160} max={8000} step={8} onChange={(v) => resizeNodes([{ id: node.id, width: v }])} onScrubEnd={() => getEditor().breakCoalesce()} />
-          <NumberField label="H" value={node.data.height} min={120} max={8000} step={8} onChange={(v) => resizeNodes([{ id: node.id, height: v }])} onScrubEnd={() => getEditor().breakCoalesce()} />
+          <NumberField ariaLabel="Section width" label="W" value={node.data.width} min={160} max={8000} step={8} onChange={(v) => resizeNodes([{ id: node.id, width: v }])} onScrubEnd={() => getEditor().breakCoalesce()} />
+          <NumberField ariaLabel="Section height" label="H" value={node.data.height} min={120} max={8000} step={8} onChange={(v) => resizeNodes([{ id: node.id, height: v }])} onScrubEnd={() => getEditor().breakCoalesce()} />
         </div>
         <Button size="sm" variant="secondary" className="mt-2.5 w-full" onClick={() => getEditor().select(contents())}>
           <BoxSelect size={13} /> Select contents

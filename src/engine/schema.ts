@@ -1,7 +1,7 @@
 // Validation for projects coming from IndexedDB, imported files and share links.
 // Anything unknown or malformed is dropped or replaced with a sensible default.
 import {
-  type CanvasNode, type ChannelRule, type Edge, type PreviewSlot, type Project, type Theme, type Viewport,
+  type CanvasNode, type ChannelRule, type ColorSpaceMemory, type Edge, type PreviewSlot, type Project, type Theme, type Viewport,
   PREVIEW_SLOTS, hasOutput, inputHandles, isHtmlDoc, uid,
 } from './model';
 import {
@@ -43,6 +43,28 @@ function normalizeRule(v: unknown): ChannelRule | null {
   return rule;
 }
 
+/** Validate remembered non-alpha channel state for spaces other than the active one. */
+function normalizeSpaceMemory(raw: unknown, activeSpace: Space): Partial<Record<Space, ColorSpaceMemory>> | undefined {
+  if (!isObj(raw)) return undefined;
+  const memory: Partial<Record<Space, ColorSpaceMemory>> = {};
+  for (const space of SPACE_KEYS) {
+    if (space === activeSpace) continue;
+    const entry = raw[space];
+    if (!isObj(entry)) continue;
+    const rawValues = isObj(entry.values) ? entry.values : {};
+    const values: ColorSpaceMemory['values'] = {};
+    const rules: ColorSpaceMemory['rules'] = {};
+    const rawRules = isObj(entry.rules) ? entry.rules : {};
+    for (const def of channelDefs(space, false)) {
+      if (isNum(rawValues[def.key])) values[def.key] = rawValues[def.key] as number;
+      const rule = normalizeRule(rawRules[def.key]);
+      if (rule) rules[def.key] = rule;
+    }
+    if (Object.keys(values).length || Object.keys(rules).length) memory[space] = { values, rules };
+  }
+  return Object.keys(memory).length ? memory : undefined;
+}
+
 function normalizeNode(raw: unknown): CanvasNode | null {
   if (!isObj(raw) || !nonEmpty(raw.id)) return null;
   const pos = raw.position;
@@ -66,7 +88,8 @@ function normalizeNode(raw: unknown): CanvasNode | null {
         const rule = normalizeRule(rawRules[def.key]);
         if (rule) rules[def.key] = rule;
       }
-      return { ...base, data: { space, values, rules } };
+      const spaceMemory = normalizeSpaceMemory(d.spaceMemory, space);
+      return { ...base, data: { space, values, rules, ...(spaceMemory ? { spaceMemory } : {}) } };
     }
     case 'palette': {
       const base = createPaletteNode({ id, name: name ?? 'Palette', position });

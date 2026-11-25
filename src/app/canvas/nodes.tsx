@@ -269,6 +269,18 @@ export const PaletteNodeView = memo(function PaletteNodeView({ id, data, selecte
   const node = data.node as PaletteNode;
   const res = useResult(id) as PaletteResult | undefined;
   const compat = useCompatibleHandles(id);
+  // Shade edges past the current step count stay in the document (raising steps reconnects
+  // them) but are not drawn and carry no color — surface how many are dormant.
+  const dormant = useEditor((s) => {
+    const self = s.project.nodes.find((n) => n.id === id);
+    if (self?.type !== 'palette') return 0;
+    const steps = Math.round(self.data.steps);
+    let n = 0;
+    for (const e of s.project.edges) {
+      if (e.source === id && e.sourceHandle !== 'out' && Number(e.sourceHandle.slice(1)) >= steps) n++;
+    }
+    return n;
+  });
   if (!res) return null;
   const last = res.shades.length - 1;
   return (
@@ -297,6 +309,15 @@ export const PaletteNodeView = memo(function PaletteNodeView({ id, data, selecte
           </div>
         ))}
       </div>
+      {dormant > 0 && (
+        <div
+          className="flex items-center gap-1.5 px-3 pb-2 text-[11px] font-medium text-warning"
+          title="Connections to steps that no longer exist are kept but carry no color — raise the step count to restore them"
+        >
+          <TriangleAlert size={11} />
+          {dormant === 1 ? '1 hidden shade connection' : `${dormant} hidden shade connections`}
+        </div>
+      )}
     </Card>
   );
 });
@@ -406,16 +427,26 @@ export const TokenNodeView = memo(function TokenNodeView({ id, data, selected }:
   const nodes = useEditor((s) => s.project.nodes);
   const results = useEditor((s) => s.result.nodes);
   const compat = useCompatibleHandles(id);
-  const label = (handle: string) => {
+  const label = (handle: string): { text: string; hidden?: boolean; title?: string } | null => {
     const e = edges.find((x) => x.target === id && x.targetHandle === handle);
     if (!e) return null;
     const src = nodes.find((n) => n.id === e.source);
     if (!src) return null;
     if (src.type === 'palette' && e.sourceHandle !== 'out') {
+      const index = Number(e.sourceHandle.slice(1));
+      // Shade edges past the step count stay in the document but are hidden and carry no
+      // color — say so instead of showing the palette name as if it were connected.
+      if (index >= Math.round(src.data.steps)) {
+        return {
+          text: `${src.name} step ${index + 1} hidden`,
+          hidden: true,
+          title: `Step ${index + 1} of ${src.name} no longer exists — the connection is kept and restores when the palette's step count is raised.`,
+        };
+      }
       const r = results[src.id] as PaletteResult | undefined;
-      return `${src.name} ${r?.shades[Number(e.sourceHandle.slice(1))]?.name ?? ''}`;
+      return { text: `${src.name} ${r?.shades[index]?.name ?? ''}` };
     }
-    return src.name;
+    return { text: src.name };
   };
   return (
     <Card id={id} selected={selected} width={228}>
@@ -433,8 +464,11 @@ export const TokenNodeView = memo(function TokenNodeView({ id, data, selected }:
             <div key={t.id} className={cn('relative flex h-7 items-center gap-2 rounded-[7px] px-1.5', active && 'bg-surface-2')}>
               <Port type="target" id={tokenHandle(t.id)} compat={compat} style={{ left: -6 }} />
               <span className={cn('w-11 shrink-0 truncate text-[10.5px]', active ? 'font-semibold text-fg' : 'text-fg-3')}>{t.name}</span>
-              <span className={cn('min-w-0 flex-1 truncate text-[11px]', src ? 'text-fg-2' : 'text-fg-3')}>
-                {src ?? (i === 0 ? 'Not set' : `Uses ${themes[0].name}`)}
+              <span
+                className={cn('min-w-0 flex-1 truncate text-[11px]', src ? (src.hidden ? 'text-warning' : 'text-fg-2') : 'text-fg-3')}
+                title={src?.title}
+              >
+                {src?.text ?? (i === 0 ? 'Not set' : `Uses ${themes[0].name}`)}
               </span>
             </div>
           );

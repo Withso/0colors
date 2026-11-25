@@ -4,16 +4,35 @@
 // ─────────────────────────────────────────────────────────────
 import { useDeferredValue, useMemo, useState } from 'react';
 import { ChevronRight, Tag } from 'lucide-react';
-import type { CanvasNode, TokenNode } from '@/engine/model';
+import { type CanvasNode, type Project, type TokenNode, tokenHandle } from '@/engine/model';
 import { type ComputeResult, type TokenResult, computeAllThemes, outputColor } from '@/engine/compute';
 import { useEditor } from '../store';
 import { Kbd, Section, Swatch, Tooltip, cn } from '../ui';
 import { focusNode } from './download';
 
-function TokenValue({ result, primaryName, compact }: { result: TokenResult | undefined; primaryName: string; compact: boolean }) {
+/**
+ * The token's connection for a theme (its own, or the inherited primary one) when it points at
+ * a palette step that no longer exists — the edge is kept but hidden and carries no color.
+ */
+function hiddenShadeStep(project: Project, tokenId: string, themeId: string, primaryId: string): { name: string; step: number } | null {
+  const edgeFor = (tid: string) => project.edges.find((e) => e.target === tokenId && e.targetHandle === tokenHandle(tid));
+  const edge = edgeFor(themeId) ?? (themeId === primaryId ? undefined : edgeFor(primaryId));
+  if (!edge) return null;
+  const src = project.nodes.find((n) => n.id === edge.source);
+  if (src?.type !== 'palette' || edge.sourceHandle === 'out') return null;
+  const index = Number(edge.sourceHandle.slice(1));
+  if (index < Math.round(src.data.steps)) return null;
+  return { name: src.name, step: index + 1 };
+}
+
+function TokenValue({ result, primaryName, compact, hidden }: { result: TokenResult | undefined; primaryName: string; compact: boolean; hidden?: { name: string; step: number } | null }) {
   const color = result?.color ?? null;
   const hex = color?.hexa ?? null;
-  const title = !color ? 'Not connected in this theme' : result?.inherited ? `${hex} · falls back to ${primaryName}` : hex ?? '';
+  const title = color
+    ? result?.inherited ? `${hex} · falls back to ${primaryName}` : hex ?? ''
+    : hidden
+      ? `Step ${hidden.step} of ${hidden.name} no longer exists — the connection is kept and restores when the palette's step count is raised`
+      : 'Not connected in this theme';
   return (
     <span className={cn('flex min-w-0 items-center gap-1.5', result?.inherited && 'opacity-60')} title={title}>
       <Swatch color={hex} className="h-4 w-4 rounded-[4px]" />
@@ -72,6 +91,7 @@ export function TokensPanel() {
               {tokens.map((token) => {
                 const activeResult = active?.nodes[token.id] as TokenResult | undefined;
                 const chain = activeResult?.chain.slice(1).map((l) => l.label) ?? [];
+                const hidden = chain.length ? null : hiddenShadeStep(project, token.id, active?.themeId ?? themeId, primary?.id ?? '');
                 const selected = selection.includes(token.id);
                 return (
                   <li key={token.id}>
@@ -87,7 +107,7 @@ export function TokensPanel() {
                       <span className="min-w-0">
                         <span className="num block truncate text-[12px] leading-tight text-fg">{token.name}</span>
                         <span className={cn('block truncate text-[10.5px] leading-tight', chain.length ? 'text-fg-3' : 'text-warning')}>
-                          {chain.length ? `→ ${chain.join(' → ')}` : 'Not connected'}
+                          {chain.length ? `→ ${chain.join(' → ')}` : hidden ? `${hidden.name} step ${hidden.step} hidden` : 'Not connected'}
                         </span>
                       </span>
                       {themes.map((t) => (
@@ -96,6 +116,7 @@ export function TokensPanel() {
                           result={all[t.id]?.nodes[token.id] as TokenResult | undefined}
                           primaryName={primary?.name ?? 'primary'}
                           compact={compact}
+                          hidden={hiddenShadeStep(project, token.id, t.id, primary?.id ?? '')}
                         />
                       ))}
                     </button>
