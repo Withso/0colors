@@ -124,10 +124,23 @@ function ShortcutsDialog() {
   );
 }
 
-let booted = false;
+let bootPromise: Promise<void> | null = null;
+let bootLoaded = false;
+
+function bootOnce(): Promise<void> {
+  bootPromise ??= bootProject().then(({ project, source, error }) => {
+    if (bootLoaded) return;
+    getEditor().load(project);
+    bootLoaded = true;
+    startAutosave();
+    if (source === 'share') toast.success('Opened a shared canvas. This is your own copy — edit away.');
+    if (error) toast.error(error);
+  });
+  return bootPromise;
+}
 
 export function App() {
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(bootLoaded);
   const panelOpen = useUI((s) => s.panelOpen);
   const resolvedTheme = useUI((s) => s.resolvedTheme);
 
@@ -154,15 +167,10 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (booted) { setReady(true); return; }
-    booted = true;
-    bootProject().then(({ project, source, error }) => {
-      getEditor().load(project);
-      setReady(true);
-      startAutosave();
-      if (source === 'share') toast.success('Opened a shared canvas. This is your own copy — edit away.');
-      if (error) toast.error(error);
-    });
+    if (bootLoaded) { setReady(true); return; }
+    let alive = true;
+    void bootOnce().then(() => { if (alive) setReady(true); });
+    return () => { alive = false; };
   }, []);
 
   return (

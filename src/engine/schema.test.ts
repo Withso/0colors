@@ -34,6 +34,7 @@ describe('normalizeProject', () => {
     const palette = createPaletteNode({ name: 'Neutral', position: { x: 300, y: 0 } });
     const token = createTokenNode({ name: 'bg/surface', position: { x: 600, y: 0 }, description: 'Background' });
     const child = createColorNode({ name: 'Child', position: { x: 0, y: 200 }, rules: { l: { mode: 'offset', delta: -10 }, h: { mode: 'formula', expr: 'parent.h + 30' } } });
+    child.data.spaceMemory = { hsl: { values: { h: 20, s: 50, l: 40 }, rules: { s: { mode: 'formula', expr: 'parent.s * 0.5' } } } };
     const p: Project = {
       ...base,
       nodes: [...base.nodes, palette, token, child],
@@ -85,6 +86,32 @@ describe('normalizeProject', () => {
       nodes: [{ id: 'c', type: 'color', position: at, data: { space: 'oklch', rules: { l: { mode: 'formula', expr: 'row1 = 20\r\nrow2 = 30\rrow1 + row2' } } } }],
     });
     expect((p.nodes[0] as ColorNode).data.rules.l.expr).toBe('row1 = 20\nrow2 = 30\nrow1 + row2');
+  });
+
+  it('validates remembered color space state without invalid channel keys', () => {
+    const p = normalizeProject({
+      nodes: [{
+        id: 'c', type: 'color', position: at,
+        data: {
+          space: 'hsl',
+          spaceMemory: {
+            oklch: {
+              values: { l: 55, c: 0.12, h: 250, alpha: 25, bogus: 4 },
+              rules: {
+                c: { mode: 'formula', expr: 'parent.c\r\n+ 1' },
+                h: { mode: 'bogus' }, alpha: { mode: 'fixed' }, bogus: { mode: 'fixed' },
+              },
+            },
+            hsl: { values: { h: 1, s: 2, l: 3 }, rules: {} },
+            cmyk: { values: { c: 1 }, rules: {} },
+          },
+        },
+      }],
+    });
+    const memory = (p.nodes[0] as ColorNode).data.spaceMemory;
+    expect(Object.keys(memory ?? {})).toEqual(['oklch']);
+    expect(memory?.oklch?.values).toEqual({ l: 55, c: 0.12, h: 250 });
+    expect(memory?.oklch?.rules).toEqual({ c: { mode: 'formula', expr: 'parent.c\n+ 1' } });
   });
 
   it('fills palette, mix, note and token defaults', () => {

@@ -141,6 +141,39 @@ export function outputLabel(node: CanvasNode | undefined, handle: string, result
 
 const edgeKey = (target: string, handle: string) => `${target}\u0000${handle}`;
 
+/** Formula dependency edges (`source` is referenced by a formula on `target`), optionally including remembered inactive spaces. */
+export function formulaReferenceEdges(project: Project, includeDormant = false): ComputeResult['refs'] {
+  const bySlug = new Map<string, string>();
+  for (const n of project.nodes) {
+    if (isAnnotation(n.type)) continue;
+    const s = slugify(n.name);
+    if (!bySlug.has(s)) bySlug.set(s, n.id);
+  }
+  const refs: ComputeResult['refs'] = [];
+  const seen = new Set<string>();
+  const scan = (node: ColorNode, rules: Record<string, { mode?: string; expr?: string }>) => {
+    for (const rule of Object.values(rules)) {
+      if (rule.mode !== 'formula' || !rule.expr) continue;
+      let names: Set<string>;
+      try { names = collectRefs(parseCached(rule.expr)); } catch { continue; }
+      for (const name of names) {
+        const src = bySlug.get(name);
+        const id = `ref:${src}->${node.id}`;
+        if (src && src !== node.id && !seen.has(id)) {
+          seen.add(id);
+          refs.push({ id, source: src, target: node.id });
+        }
+      }
+    }
+  };
+  for (const n of project.nodes) {
+    if (n.type !== 'color') continue;
+    scan(n, n.data.rules);
+    if (includeDormant) for (const memory of Object.values(n.data.spaceMemory ?? {})) if (memory) scan(n, memory.rules);
+  }
+  return refs;
+}
+
 export function computeProject(project: Project, themeId?: string, previous?: ComputeResult | null): ComputeResult {
   const themes: Theme[] = project.themes.length ? project.themes : [{ id: 'default', name: 'Default', dark: false }];
   const theme = themes.find((t) => t.id === themeId) ?? themes[0];
@@ -370,25 +403,8 @@ export function computeProject(project: Project, themeId?: string, previous?: Co
 
   for (const n of project.nodes) resolve(n.id);
 
-  // Formula references, drawn as dashed "logic" edges on the canvas.
-  const refs: ComputeResult['refs'] = [];
-  const seen = new Set<string>();
-  for (const n of project.nodes) {
-    if (n.type !== 'color') continue;
-    for (const rule of Object.values(n.data.rules)) {
-      if (rule.mode !== 'formula' || !rule.expr) continue;
-      let names: Set<string>;
-      try { names = collectRefs(parseCached(rule.expr)); } catch { continue; }
-      for (const name of names) {
-        const src = bySlug.get(name);
-        const id = `ref:${src}->${n.id}`;
-        if (src && src !== n.id && !seen.has(id)) {
-          seen.add(id);
-          refs.push({ id, source: src, target: n.id });
-        }
-      }
-    }
-  }
+  // Active formula references, drawn as dashed "logic" edges on the canvas.
+  const refs = formulaReferenceEdges(project);
 
   return reconcile(previous ?? null, { themeId: theme.id, nodes: results, refs });
 }

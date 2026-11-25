@@ -61,6 +61,7 @@ export function ColorInspector({ node }: { node: ColorNode }) {
         <div className="mt-2 flex items-center gap-1.5">
           <HexInput value={color.hexa} onCommit={(hex) => setColorHex(node.id, hex)} className="min-w-0 flex-1" />
           <NumberField
+            ariaLabel="Alpha"
             className="w-[68px]"
             value={alpha?.value ?? 100}
             min={0}
@@ -272,6 +273,7 @@ function ChannelEditor({ node, result, def, hasParent }: { node: ColorNode; resu
               />
             </div>
             <NumberField
+              ariaLabel={def.label}
               className="w-[72px]"
               value={value}
               min={def.min}
@@ -290,6 +292,7 @@ function ChannelEditor({ node, result, def, hasParent }: { node: ColorNode; resu
                   <span>parent <span className="text-fg-2">{f(trace.parent)}</span></span>
                   <span>+</span>
                   <NumberField
+                    ariaLabel={`${def.label} offset`}
                     className="h-6 w-[68px]"
                     label="Δ"
                     value={trace.delta ?? 0}

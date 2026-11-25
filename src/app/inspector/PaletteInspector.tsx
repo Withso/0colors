@@ -1,6 +1,6 @@
 // Inspector for a Palette node: scale settings, a lightness chart and the shade list.
 import { useMemo } from 'react';
-import { Link2, Unlink } from 'lucide-react';
+import { Link2, TriangleAlert, Unlink } from 'lucide-react';
 import type { ChromaMode, PaletteCurve, PaletteNaming, PaletteNode } from '@/engine/model';
 import type { PaletteResult } from '@/engine/compute';
 import { channelDef, SPACES } from '@/engine/color/spaces';
@@ -29,6 +29,15 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
     const src = edge && s.project.nodes.find((n) => n.id === edge.source);
     return { id: src?.id ?? '', name: src?.name ?? '' };
   }));
+  // Shade edges past the current step count stay in the document but carry no color.
+  const dormant = useEditor((s) => {
+    const steps = Math.round(node.data.steps);
+    let n = 0;
+    for (const e of s.project.edges) {
+      if (e.source === node.id && e.sourceHandle !== 'out' && Number(e.sourceHandle.slice(1)) >= steps) n++;
+    }
+    return n;
+  });
   const inputSource = input.id ? input : null;
   if (!result || result.type !== 'palette') return null;
 
@@ -36,6 +45,7 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
   const keys = paletteKeys(data.space);
   const hueDef = channelDef(data.space, keys.h)!;
   const chromaDef = channelDef(data.space, keys.c)!;
+  const chromaLabel = data.space === 'hsl' ? 'Saturation' : 'Chroma';
   const set = <K extends keyof PaletteNode['data']>(field: K, value: PaletteNode['data'][K]) =>
     updateNodeData<PaletteNode>(node.id, (d) => { d[field] = value as never; }, `palette:${node.id}:${String(field)}`);
   const end = () => getEditor().breakCoalesce();
@@ -83,7 +93,7 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
               onChange={(v) => set('hue', v)} onEnd={end}
             />
             <BaseChannel
-              label={data.space === 'hsl' ? 'Saturation' : 'Chroma'} def={chromaDef} value={data.chroma}
+              label={chromaLabel} def={chromaDef} value={data.chroma}
               gradient={channelGradient(data.space, baseValues, keys.c)}
               onChange={(v) => set('chroma', v)} onEnd={end}
             />
@@ -93,8 +103,18 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
 
       <Section title="Scale">
         <FieldRow label="Steps">
-          <NumberField value={data.steps} min={2} max={24} step={1} onChange={(v) => set('steps', Math.round(v))} onScrubEnd={end} />
+          <NumberField ariaLabel="Steps" value={data.steps} min={2} max={24} step={1} onChange={(v) => set('steps', Math.round(v))} onScrubEnd={end} />
         </FieldRow>
+        {dormant > 0 && (
+          <div className="flex items-start gap-1.5 py-1.5 text-[11.5px] leading-snug text-fg-2">
+            <TriangleAlert size={12} className="mt-px shrink-0 text-warning" />
+            <span>
+              {dormant === 1
+                ? '1 shade connection is hidden — downstream nodes get no color. Raising Steps restores it.'
+                : `${dormant} shade connections are hidden — downstream nodes get no color. Raising Steps restores them.`}
+            </span>
+          </div>
+        )}
         <FieldRow label="Names">
           <Select<PaletteNaming>
             label="Step names"
@@ -105,8 +125,8 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
         </FieldRow>
         <FieldRow label="Lightness">
           <div className="grid grid-cols-2 gap-1.5">
-            <NumberField label="from" value={data.lightStart} min={0} max={100} step={0.5} decimals={1} onChange={(v) => set('lightStart', v)} onScrubEnd={end} />
-            <NumberField label="to" value={data.lightEnd} min={0} max={100} step={0.5} decimals={1} onChange={(v) => set('lightEnd', v)} onScrubEnd={end} />
+            <NumberField ariaLabel="Lightness from" label="from" value={data.lightStart} min={0} max={100} step={0.5} decimals={1} onChange={(v) => set('lightStart', v)} onScrubEnd={end} />
+            <NumberField ariaLabel="Lightness to" label="to" value={data.lightEnd} min={0} max={100} step={0.5} decimals={1} onChange={(v) => set('lightEnd', v)} onScrubEnd={end} />
           </div>
         </FieldRow>
         <FieldRow label="Curve">
@@ -117,7 +137,7 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
             options={(Object.keys(CURVES) as PaletteCurve[]).map((k) => ({ value: k, label: CURVES[k].label }))}
           />
         </FieldRow>
-        <FieldRow label={data.space === 'hsl' ? 'Saturation' : 'Chroma'}>
+        <FieldRow label={chromaLabel}>
           <Segmented<ChromaMode>
             size="sm"
             value={data.chromaMode}
@@ -132,13 +152,13 @@ export function PaletteInspector({ node }: { node: PaletteNode }) {
         {data.chromaMode === 'manual' && (
           <FieldRow label="">
             <div className="grid grid-cols-2 gap-1.5">
-              <NumberField label="from" value={data.chromaStart} min={chromaDef.min} max={chromaDef.max} step={chromaDef.step} decimals={chromaDef.decimals} onChange={(v) => set('chromaStart', v)} onScrubEnd={end} />
-              <NumberField label="to" value={data.chromaEnd} min={chromaDef.min} max={chromaDef.max} step={chromaDef.step} decimals={chromaDef.decimals} onChange={(v) => set('chromaEnd', v)} onScrubEnd={end} />
+              <NumberField ariaLabel={`${chromaLabel} from`} label="from" value={data.chromaStart} min={chromaDef.min} max={chromaDef.max} step={chromaDef.step} decimals={chromaDef.decimals} onChange={(v) => set('chromaStart', v)} onScrubEnd={end} />
+              <NumberField ariaLabel={`${chromaLabel} to`} label="to" value={data.chromaEnd} min={chromaDef.min} max={chromaDef.max} step={chromaDef.step} decimals={chromaDef.decimals} onChange={(v) => set('chromaEnd', v)} onScrubEnd={end} />
             </div>
           </FieldRow>
         )}
         <FieldRow label={<Tooltip content="Rotates hue across the scale, centered on the base — e.g. warmer lights, cooler darks."><span className="cursor-help">Hue shift</span></Tooltip>}>
-          <NumberField value={data.hueShift} min={-90} max={90} step={1} decimals={1} suffix="°" onChange={(v) => set('hueShift', v)} onScrubEnd={end} />
+          <NumberField ariaLabel="Hue shift" value={data.hueShift} min={-90} max={90} step={1} decimals={1} suffix="°" onChange={(v) => set('hueShift', v)} onScrubEnd={end} />
         </FieldRow>
       </Section>
 
@@ -186,7 +206,7 @@ function BaseChannel({
         <div className="min-w-0 flex-1">
           <GradientSlider label={label} value={value} min={def.min} max={def.max} step={def.step} gradient={gradient} onChange={onChange} onCommit={onEnd} />
         </div>
-        <NumberField className="w-[72px]" value={value} min={def.min} max={def.max} step={def.step} decimals={def.decimals} suffix={def.unit} onChange={onChange} onScrubEnd={onEnd} />
+        <NumberField ariaLabel={label} className="w-[72px]" value={value} min={def.min} max={def.max} step={def.step} decimals={def.decimals} suffix={def.unit} onChange={onChange} onScrubEnd={onEnd} />
       </div>
     </div>
   );

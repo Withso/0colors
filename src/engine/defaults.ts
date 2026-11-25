@@ -3,7 +3,7 @@ import {
   type CanvasNode, type ColorNode, type ContrastNode, type Edge, type HtmlNode, type MixNode, type NodeType, type NoteNode,
   type PaletteNode, type Project, type SectionNode, type Theme, type TokenNode, type XY, isAnnotation, slugify, uid,
 } from './model';
-import { type ChannelValues, type ColorInfo, type Space, channelDefs, rgbToSpace, round } from './color/spaces';
+import { type ChannelValues, type ColorInfo, type Space, channelDefs, rgbToSpace } from './color/spaces';
 import { parseHex, toHex } from './color/convert';
 import { oklchToSrgbMapped } from './color/gamut';
 
@@ -14,21 +14,26 @@ export function defaultThemes(): Theme[] {
   ];
 }
 
-/** Channel values (incl. alpha 0..100) for a hex color in a space, rounded to each channel's precision. */
+/**
+ * Channel values (incl. alpha 0..100) for a hex color in a space.
+ * Keep converted values unrounded: channel decimals are for display and editing;
+ * rounding stored values to them can move boundary colors by an sRGB byte.
+ */
 export function valuesFromHex(space: Space, hex: string): ChannelValues {
   const parsed = parseHex(hex) ?? { rgb: { r: 0.4, g: 0.5, b: 0.9 }, alpha: 1 };
   const v = rgbToSpace(space, parsed.rgb);
   const out: ChannelValues = {};
-  for (const def of channelDefs(space, false)) out[def.key] = round(v[def.key], def.decimals);
-  out.alpha = Math.round(parsed.alpha * 100);
+  for (const def of channelDefs(space, false)) out[def.key] = v[def.key];
+  out.alpha = parsed.alpha * 100;
   return out;
 }
 
+/** Unrounded channel values for an already-resolved color; see valuesFromHex. */
 export function valuesFromInfo(space: Space, info: ColorInfo): ChannelValues {
   const out: ChannelValues = {};
   const v = rgbToSpace(space, info.rgb);
-  for (const def of channelDefs(space, false)) out[def.key] = round(v[def.key], def.decimals);
-  out.alpha = Math.round(info.alpha * 100);
+  for (const def of channelDefs(space, false)) out[def.key] = v[def.key];
+  out.alpha = info.alpha * 100;
   return out;
 }
 

@@ -4,15 +4,15 @@
 // ─────────────────────────────────────────────────────────────
 import type { Draft } from 'immer';
 import {
-  type CanvasNode, type ChannelRule, type ColorNode, type Edge, type NodeType, type PaletteNode, type PreviewSlot, type Project,
+  type CanvasNode, type ChannelRule, type ColorNode, type ColorSpaceMemory, type Edge, type NodeType, type PaletteNode, type PreviewSlot, type Project,
   type SectionNode, type Space, type Theme, type XY, hasOutput, inputHandles, isAnnotation, slugify, tokenHandle, uid,
 } from '@/engine/model';
-import { channelDefs, channelDef, describe, infoToSpace, round } from '@/engine/color/spaces';
+import { SPACE_ORDER, channelDefs, channelDef, describe, infoToSpace, round } from '@/engine/color/spaces';
 import { parseHex } from '@/engine/color/convert';
 import {
   createColorNode, createNode, createSectionNode, createTokenNode, makeEdge, uniqueName, valuesFromInfo,
 } from '@/engine/defaults';
-import { type ColorResult, outputColor, outputLabel, wouldCreateCycle } from '@/engine/compute';
+import { type ColorResult, formulaReferenceEdges, outputColor, outputLabel, wouldCreateCycle } from '@/engine/compute';
 import type { ParsedColor } from '@/engine/color/parse';
 import { normalizeProject } from '@/engine/schema';
 import { paletteKeys } from '@/engine/palette';
@@ -25,6 +25,16 @@ const nodeIn = (d: Draft<Project>, id: string) => d.nodes.find((n) => n.id === i
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
 /** Matches `@name` as a whole reference (not a prefix of a longer name). */
 const refPattern = (slug: string) => new RegExp(`@${escapeRegExp(slug)}(?![A-Za-z0-9_-])`, 'gi');
+
+/** Visit active rules and remembered per-space rules alike; inactive formulas are still user data. */
+function eachColorRule(node: Draft<CanvasNode>, visit: (rule: Draft<ChannelRule>) => void) {
+  if (node.type !== 'color') return;
+  for (const rule of Object.values(node.data.rules)) visit(rule);
+  for (const memory of Object.values(node.data.spaceMemory ?? {})) {
+    if (!memory) continue;
+    for (const rule of Object.values(memory.rules)) visit(rule);
+  }
+}
 
 export interface Connection { source: string; sourceHandle: string; target: string; targetHandle: string }
 
@@ -70,21 +80,28 @@ export function addConnectedNode(from: { nodeId: string; handle: string }, type:
   return node.id;
 }
 
-export function deleteNodes(ids: string[]) {
-  if (!ids.length) return;
-  const gone = new Set(ids);
+function removeNodesAndEdges(nodeIds: string[], edgeIds: string[] = []) {
+  if (!nodeIds.length && !edgeIds.length) return;
+  const goneNodes = new Set(nodeIds);
+  const goneEdges = new Set(edgeIds);
   update((d) => {
-    d.nodes = d.nodes.filter((n) => !gone.has(n.id));
-    d.edges = d.edges.filter((e) => !gone.has(e.source) && !gone.has(e.target));
-    for (const [slot, id] of Object.entries(d.preview.bindings)) if (id && gone.has(id)) delete d.preview.bindings[slot as PreviewSlot];
+    if (goneNodes.size) {
+      d.nodes = d.nodes.filter((n) => !goneNodes.has(n.id));
+      for (const [slot, id] of Object.entries(d.preview.bindings)) if (id && goneNodes.has(id)) delete d.preview.bindings[slot as PreviewSlot];
+    }
+    d.edges = d.edges.filter((e) => !goneNodes.has(e.source) && !goneNodes.has(e.target) && !goneEdges.has(e.id));
   });
   getEditor().select([]);
 }
 
+export function deleteNodes(ids: string[]) {
+  if (!ids.length) return;
+  removeNodesAndEdges(ids);
+}
+
 export function deleteSelection() {
   const { selection, edgeSelection } = getEditor();
-  if (selection.length) deleteNodes(selection);
-  else if (edgeSelection.length) removeEdges(edgeSelection);
+  if (selection.length || edgeSelection.length) removeNodesAndEdges(selection, edgeSelection);
 }
 
 /** Copy nodes (and the edges between them) with fresh ids and names. */
@@ -148,10 +165,10 @@ export function duplicateForAltDrag(ids: string[], gestureKey?: string) {
       .filter((r) => r.from !== r.to);
     for (const n of d.nodes) {
       if (!inSet.has(n.id) || n.type !== 'color') continue;
-      for (const rule of Object.values(n.data.rules)) {
-        if (!rule.expr) continue;
+      eachColorRule(n, (rule) => {
+        if (!rule.expr) return;
         for (const r of renamed) rule.expr = rule.expr.replace(refPattern(r.from), `@${r.to}`);
-      }
+      });
     }
     const next: Edge[] = [];
     for (const e of d.edges) {
@@ -267,7 +284,7 @@ export function pasteColors(colors: ParsedColor[], at: XY): string[] {
   return nodes.map((n) => n.id);
 }
 
-/** Move nodes. Pass the same `gestureKey` for every step of one drag so it undoes as one step. */
+/** Move nodes. Pass the same `gestureKey` through one drag; keyboard nudges use normal time-based coalescing. */
 export function moveNodes(moves: { id: string; position: XY }[], gestureKey?: string) {
   getEditor().update((d) => {
     for (const m of moves) {
@@ -277,7 +294,7 @@ export function moveNodes(moves: { id: string; position: XY }[], gestureKey?: st
       // Untouched positions keep their identity, so a no-op move adds no history entry.
       if (n && (n.position.x !== x || n.position.y !== y)) n.position = { x, y };
     }
-  }, { key: gestureKey ?? `move:${moves.map((m) => m.id).join(',')}`, compute: false, gesture: true });
+  }, { key: gestureKey ?? `move:${moves.map((m) => m.id).join(',')}`, compute: false, gesture: !!gestureKey });
 }
 
 /** Apply a resize from the canvas (sections: width + height; notes: width) as one undo step per gesture. */
@@ -369,9 +386,9 @@ export function renameNode(id: string, rawName: string) {
     const re = refPattern(before);
     for (const other of d.nodes) {
       if (other.type !== 'color') continue;
-      for (const rule of Object.values(other.data.rules)) {
+      eachColorRule(other, (rule) => {
         if (rule.expr) rule.expr = rule.expr.replace(re, `@${after}`);
-      }
+      });
     }
   }, `rename:${id}`);
 }
@@ -384,6 +401,18 @@ export function updateNodeData<T extends CanvasNode>(id: string, recipe: (data: 
 }
 
 // ── Color channels ───────────────────────────────────────────
+/** Copy the space-specific channels (never alpha) without leaking keys from another space. */
+function channelState(space: Space, values: ColorNode['data']['values'], rules: ColorNode['data']['rules']): ColorSpaceMemory {
+  const keptValues: ColorSpaceMemory['values'] = {};
+  const keptRules: ColorSpaceMemory['rules'] = {};
+  for (const def of channelDefs(space, false)) {
+    if (values[def.key] !== undefined) keptValues[def.key] = values[def.key];
+    const rule = rules[def.key];
+    if (rule) keptRules[def.key] = { ...rule };
+  }
+  return { values: keptValues, rules: keptRules };
+}
+
 function shortestDelta(def: { wrap?: boolean }, value: number, parent: number) {
   if (!def.wrap) return value - parent;
   return ((((value - parent) % 360) + 540) % 360) - 180;
@@ -492,7 +521,7 @@ export function setChannelRule(id: string, key: string, rule: ChannelRule) {
   }, next.mode === 'formula' ? `formula:${id}:${key}` : undefined);
 }
 
-/** Change a color node's space while keeping its current color and its relationships. */
+/** Change a color node's space. First visits convert the current intent; revisits restore that space's own state. */
 export function setColorSpace(id: string, space: Space) {
   const { project, result } = getEditor();
   const node = project.nodes.find((n) => n.id === id);
@@ -502,28 +531,55 @@ export function setColorSpace(id: string, space: Space) {
   const parentEdge = project.edges.find((e) => e.target === id && e.targetHandle === 'in');
   const parentInfo = parentEdge ? outputColor(result.nodes[parentEdge.source], parentEdge.sourceHandle) : null;
   const parentValues = parentInfo ? infoToSpace(space, parentInfo) : null;
-  update((d) => {
-    const n = nodeIn(d, id) as Draft<ColorNode> | undefined;
-    if (!n) return;
-    const old = n.data.rules;
-    const rules: Record<string, ChannelRule> = {};
+
+  // Copy validated per-space state outside the draft. The active space is never left in memory.
+  const memory: Partial<Record<Space, ColorSpaceMemory>> = {};
+  for (const key of SPACE_ORDER) {
+    const state = node.data.spaceMemory?.[key];
+    const copy = state ? channelState(key, state.values, state.rules) : null;
+    if (copy && (Object.keys(copy.values).length || Object.keys(copy.rules).length)) memory[key] = copy;
+  }
+  const remembered = memory[space];
+  const leaving = channelState(node.data.space, node.data.values, node.data.rules);
+  if (Object.keys(leaving.values).length || Object.keys(leaving.rules).length) memory[node.data.space] = leaving;
+  delete memory[space];
+
+  const alphaRule = node.data.rules.alpha ? { ...node.data.rules.alpha } : undefined;
+  // Alpha is stored on the node even when it is inherited for rendering; space switches must not overwrite it.
+  const ownAlpha = node.data.values.alpha ?? 100;
+  let nextValues: ColorNode['data']['values'];
+  const nextRules: ColorNode['data']['rules'] = {};
+  if (remembered) {
+    // Color channels are space-specific; alpha stays continuous across spaces.
+    nextValues = { ...values, ...remembered.values, alpha: ownAlpha };
+    Object.assign(nextRules, remembered.rules);
+  } else {
+    nextValues = { ...values, alpha: ownAlpha };
+    const old = node.data.rules;
     const anyOld = (mode: ChannelRule['mode']) => Object.entries(old).some(([k, r]) => k !== 'alpha' && r.mode === mode);
     for (const def of channelDefs(space, false)) {
       if (!parentValues) {
-        if (anyOld('formula')) rules[def.key] = { mode: 'fixed' };
+        if (anyOld('formula')) nextRules[def.key] = { mode: 'fixed' };
         continue;
       }
       // Channels don't map 1:1 between spaces, so carry over the overall intent.
       if (anyOld('offset') || anyOld('fixed') || anyOld('formula')) {
-        rules[def.key] = { mode: 'offset', delta: round(shortestDelta(def, values[def.key], parentValues[def.key]), def.decimals + 1) };
+        nextRules[def.key] = { mode: 'offset', delta: round(shortestDelta(def, values[def.key], parentValues[def.key]), def.decimals + 1) };
       } else {
-        rules[def.key] = { mode: 'inherit' };
+        nextRules[def.key] = { mode: 'inherit' };
       }
     }
-    if (old.alpha) rules.alpha = old.alpha;
+  }
+  if (alphaRule) nextRules.alpha = alphaRule;
+
+  update((d) => {
+    const n = nodeIn(d, id) as Draft<ColorNode> | undefined;
+    if (!n) return;
     n.data.space = space;
-    n.data.values = values;
-    n.data.rules = rules;
+    n.data.values = nextValues;
+    n.data.rules = nextRules;
+    if (Object.keys(memory).length) n.data.spaceMemory = memory;
+    else delete n.data.spaceMemory;
   });
 }
 
@@ -562,8 +618,8 @@ function validWith(project: Project, edges: Edge[], c: Connection): boolean {
   if (source.type === 'palette' ? !/^(out|s\d+)$/.test(c.sourceHandle) : c.sourceHandle !== 'out') return false;
   if (!inputHandles(target, project.themes).includes(c.targetHandle)) return false;
   const others = edges.filter((e) => !(e.target === c.target && e.targetHandle === c.targetHandle));
-  // Formula references (@name) are dependencies too: a wire must not close a loop through them.
-  const refs = getEditor().result.refs.map((r) => ({ id: r.id, source: r.source, sourceHandle: 'out', target: r.target, targetHandle: 'ref' }));
+  // Formula references (@name), including remembered inactive-space formulas, are dependencies too.
+  const refs = formulaReferenceEdges(project, true).map((r) => ({ id: r.id, source: r.source, sourceHandle: 'out', target: r.target, targetHandle: 'ref' }));
   return !wouldCreateCycle([...others, ...refs], c.source, c.target);
 }
 
@@ -674,9 +730,7 @@ export function insertColorOnEdge(edgeId: string, position: XY): string | null {
 }
 
 export function removeEdges(ids: string[]) {
-  const gone = new Set(ids);
-  update((d) => { d.edges = d.edges.filter((e) => !gone.has(e.id)); });
-  getEditor().select([], []);
+  removeNodesAndEdges([], ids);
 }
 
 export function disconnectInput(nodeId: string, handle: string) {

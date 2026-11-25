@@ -20,6 +20,12 @@ export interface ChannelRule {
   expr?: string;
 }
 
+/** A color node's channel values and rules in one previously used space. Alpha is space-independent and is not stored here. */
+export interface ColorSpaceMemory {
+  values: ChannelValues;
+  rules: Record<string, ChannelRule>;
+}
+
 export interface Theme {
   id: string;
   name: string;
@@ -42,6 +48,8 @@ export type ColorNode = NodeBase<'color', {
   values: ChannelValues;
   /** Rules per channel key (and 'alpha'). Missing = inherit. Ignored for roots, except formulas. */
   rules: Record<string, ChannelRule>;
+  /** Non-alpha state remembered per previously used space, so space-specific formulas survive round trips. */
+  spaceMemory?: Partial<Record<Space, ColorSpaceMemory>>;
 }>;
 
 export type PaletteSpace = 'oklch' | 'hct' | 'hsl';
